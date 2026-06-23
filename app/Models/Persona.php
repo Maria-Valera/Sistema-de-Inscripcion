@@ -91,6 +91,11 @@ class Persona extends Model
         return $this->hasOne(Representante::class, 'persona_id');
     }
 
+    public function user()
+    {
+        return $this->hasOne(User::class, 'persona_id');
+    }
+
     public function getNombreCompletoAttribute()
     {
         return trim(

@@ -31,6 +31,7 @@ use App\Http\Controllers\EntradasPercentilController;
 use App\Http\Controllers\HistoricoController;
 use App\Http\Controllers\InscripcionProsecucionController;
 use App\Http\Controllers\InstitucionProcedenciaController;
+use App\Http\Controllers\BloqueHorarioController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -178,6 +179,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('grado/modales/store', [GradoController::class, 'store'])->name('grado.modales.store');
         Route::post('grado/{id}/update', [GradoController::class, 'update'])->name('grado.modales.update');
         Route::delete('grado/{id}', [GradoController::class, 'destroy'])->name('grado.destroy');
+    });
+
+    // ===== BLOQUE HORARIO =====
+    Route::get('bloque_horario', [BloqueHorarioController::class, 'index'])->name('bloque_horario.index');
+    Route::get('bloque_horario/verificar', [BloqueHorarioController::class, 'verificarExistencia'])->name('bloque_horario.verificar');
+
+    Route::middleware(['verificar.anio.escolar'])->group(function () {
+        Route::post('bloque_horario/modales/store', [BloqueHorarioController::class, 'store'])->name('bloque_horario.modales.store');
+        Route::match(['post', 'put'], 'bloque_horario/{id}/update', [BloqueHorarioController::class, 'update'])->name('bloque_horario.modales.update');
+        Route::delete('bloque_horario/{id}', [BloqueHorarioController::class, 'destroy'])->name('bloque_horario.destroy');
     });
 
     // ===== ÁREA DE FORMACIÓN =====
