@@ -66,8 +66,9 @@ class DatabaseSeeder extends Seeder
             RepresentanteLegalSeeder::class,
             InscripcionSeeder::class,
             InscripcionNuevoIngresoSeeder::class,
+            aulaSeeder::class,
 
-            
+
             /*InscripcionProsecucionSeeder::class,
             ProsecucionAreaSeeder::class,  */
             /*  DocenteAreaGrado::class, */

@@ -31,6 +31,7 @@ use App\Http\Controllers\EntradasPercentilController;
 use App\Http\Controllers\HistoricoController;
 use App\Http\Controllers\InscripcionProsecucionController;
 use App\Http\Controllers\InstitucionProcedenciaController;
+use App\Http\Controllers\AulaController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -400,7 +401,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('historico.index');
 });
 
-
+// ======  AULAS  ======
+    // Route::resource('aulas', AulaController::class);
+    // Route::get('aulas', [AulaController::class, 'index'])->name('aulas.index');
+    Route::resource('aulas', AulaController::class);
+Route::post('aulas/verificar-existencia', [AulaController::class, 'verificarExistencia'])
+    ->name('aulas.verificarExistencia');
 
 // ======  REPRESENTANTE  ======
 Route::middleware(['auth'])->prefix('representante')->name('representante.')->group(function () {
@@ -440,4 +446,6 @@ Route::middleware(['auth'])->prefix('representante')->name('representante.')->gr
 
     // Generar reporte PDF
     Route::get('/reporte-pdf', [RepresentanteController::class, 'reportePDF'])->name('reporte_pdf');
+
+
 });

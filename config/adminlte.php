@@ -225,7 +225,7 @@ return [
             'text' => 'Panel Principal',
             'url' => 'home',
             'icon' => 'fas fa-fw fa-tachometer-alt',
-            
+
             'active' => ['home', 'home/*'],
         ],
 
@@ -289,6 +289,13 @@ return [
             'active' => ['representante', 'representante/*'],
         ],
 
+        [
+            'text' => 'Aulas',
+            'url' => 'aulas',
+            'icon' => 'fas fa-fw fa-door-open',
+            'active' => ['aulas', 'aulas/*'],
+        ],
+
         // ============================================================
         //  GESTIÓN DOCENTES
         // ============================================================
@@ -344,7 +351,7 @@ return [
 
                 // Asignaciones
                 [
-                    
+
                     'text' => 'ASIGNACIONES',
                     'icon' => 'fas fa-fw fa-link',
                     'active' => ['admin/transacciones/grado_area_formacion*', 'admin/transacciones/area_estudio_realizado*', 'admin/transacciones/docente*'],
@@ -368,9 +375,9 @@ return [
                 ],
 
                 ['header' => 'DATOS PERSONALES'],
-                
+
                 [
-                    
+
                     'text' => 'DATOS',
                     'icon' => 'fas fa-fw fa-user',
                     'active' => ['admin/etnia_indigena*', 'admin/discapacidad*', 'admin/ocupacion*'],
