@@ -456,6 +456,17 @@ return [
                 ],
             ],
         ],
+         // ============================================================
+        //  MENU DE LA SUBDIRECTORA
+        // ============================================================
+        [
+            'text' => 'Panel Subdirectora',
+            'url' => 'dashboard/subdirectora',
+            'icon' => 'fas fa-user-tie',
+            'role' => 'Subdirectora',
+        ],
+
+
 /*         ['header' => 'ADMINISTRACIÓN'],
 
         [

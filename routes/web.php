@@ -48,6 +48,11 @@ Route::get('/check-email', function (Illuminate\Http\Request $request) {
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+// Rutas para Dashboards por rol
+Route::middleware(['auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
+    Route::get('/subdirectora', [App\Http\Controllers\HomeController::class, 'subdirectora'])->name('subdirectora');
+});
+
 //HomePage!!
 
 Route::get("/", function () {
