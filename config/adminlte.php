@@ -473,6 +473,17 @@ return [
             'role' => 'Subdirectora',
         ],
 
+// ============================================================
+//  MENU DEL DOCENTE
+// ============================================================
+[
+    'text' => 'Panel Docente',
+    'url' => 'dashboard/docente',
+    'icon' => 'fas fa-chalkboard-teacher',
+    'role' => 'Docente',
+],
+
+
 
 /*         ['header' => 'ADMINISTRACIÓN'],
 

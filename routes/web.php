@@ -26,12 +26,14 @@ use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\DocenteAreaGradoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\AulaController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\EntradasPercentilController;
 use App\Http\Controllers\HistoricoController;
 use App\Http\Controllers\InscripcionProsecucionController;
 use App\Http\Controllers\InstitucionProcedenciaController;
 use App\Http\Controllers\BloqueHorarioController;
+
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -51,7 +53,10 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // Rutas para Dashboards por rol
 Route::middleware(['auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/subdirectora', [App\Http\Controllers\HomeController::class, 'subdirectora'])->name('subdirectora');
+    Route::get('/docente', [App\Http\Controllers\HomeController::class, 'docente'])->name('docente');
 });
+
+
 
 //HomePage!!
 
@@ -416,6 +421,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('historico.index');
 });
 
+
+// ======  AULAS  ======
+    // Route::resource('aulas', AulaController::class);
+    // Route::get('aulas', [AulaController::class, 'index'])->name('aulas.index');
+    Route::resource('aulas', AulaController::class);
+Route::post('aulas/verificar-existencia', [AulaController::class, 'verificarExistencia'])
+    ->name('aulas.verificarExistencia');
 
 
 // ======  REPRESENTANTE  ======
