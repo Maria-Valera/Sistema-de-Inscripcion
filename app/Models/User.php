@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'persona_id',
     ];
 
     /**
@@ -46,5 +47,31 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function persona()
+    {
+        return $this->belongsTo(Persona::class);
+    }
+
+    public function isDocente()
+    {
+        return $this->persona && $this->persona->docente;
+    }
+
+    public function isRepresentante()
+    {
+        return $this->persona && $this->persona->representante;
+    }
+
+    public function getTipoUsuarioAttribute()
+    {
+        if ($this->isDocente()) {
+            return 'docente';
+        }
+        if ($this->isRepresentante()) {
+            return 'representante';
+        }
+        return 'admin';
     }
 }

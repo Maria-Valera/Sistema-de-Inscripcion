@@ -349,6 +349,13 @@ return [
                     'active' => ['admin/grado', 'admin/grado/*'],
                 ],
 
+                [
+                    'text' => 'Bloques Horarios',
+                    'url' => 'admin/bloque_horario',
+                    'icon' => 'fas fa-fw fa-clock',
+                    'active' => ['admin/bloque_horario', 'admin/bloque_horario/*'],
+                ],
+
                 // Asignaciones
                 [
 
@@ -456,6 +463,17 @@ return [
                 ],
             ],
         ],
+         // ============================================================
+        //  MENU DE LA SUBDIRECTORA
+        // ============================================================
+        [
+            'text' => 'Panel Subdirectora',
+            'url' => 'dashboard/subdirectora',
+            'icon' => 'fas fa-user-tie',
+            'role' => 'Subdirectora',
+        ],
+
+
 /*         ['header' => 'ADMINISTRACIÓN'],
 
         [
