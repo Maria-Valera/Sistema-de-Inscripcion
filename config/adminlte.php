@@ -465,6 +465,15 @@ return [
             'icon' => 'fas fa-user-tie',
             'role' => 'Subdirectora',
         ],
+        // ============================================================
+        //  HORARIOS
+        // ============================================================
+        [
+            'text' => 'Horarios',
+            'url' => 'admin/horario',
+            'icon' => 'fas fa-clock',
+            'role' => 'Subdirectora',
+        ],
 
 
 /*         ['header' => 'ADMINISTRACIÓN'],

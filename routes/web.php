@@ -32,6 +32,7 @@ use App\Http\Controllers\HistoricoController;
 use App\Http\Controllers\InscripcionProsecucionController;
 use App\Http\Controllers\InstitucionProcedenciaController;
 use App\Http\Controllers\BloqueHorarioController;
+use App\Http\Controllers\HorarioController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -414,6 +415,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // ================== HISTÓRICO ==================
     Route::get('historico', [HistoricoController::class, 'index'])
         ->name('historico.index');
+
+    // ================== HORARIO ==================
+    Route::get('horario', [HorarioController::class, 'index'])
+        ->name('horario.index');
+    Route::get('horario/create', [HorarioController::class, 'create'])
+        ->name('horario.create');
 });
 
 
