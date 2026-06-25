@@ -35,6 +35,7 @@ use App\Http\Controllers\InstitucionProcedenciaController;
 use App\Http\Controllers\BloqueHorarioController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\InasistenciaController;
+use App\Http\Controllers\ActaEntrevistaController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -88,6 +89,15 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('institucion-procedencia/{institucionProcedencia}', [InstitucionProcedenciaController::class, 'update'])->name('institucion-procedencia.update');
     Route::delete('institucion-procedencia/{institucionProcedencia}', [InstitucionProcedenciaController::class, 'destroy'])->name('institucion-procedencia.destroy');
 
+
+            // ===== ACTA ENTREVISTA =====
+    Route::get('acta_entrevista', [ActaEntrevistaController::class, 'index'])->name('acta.index');
+    Route::get('acta_entrevista/crear', [ActaEntrevistaController::class, 'create'])->name('acta.create');
+    Route::post('acta_entrevista', [ActaEntrevistaController::class, 'store'])->name('acta.store');
+    Route::get('acta_entrevista/{actaEntrevista}', [ActaEntrevistaController::class, 'show'])->name('acta.show');
+    Route::get('acta_entrevista/{actaEntrevista}/editar', [ActaEntrevistaController::class, 'edit'])->name('acta.edit');
+    Route::put('acta_entrevista/{actaEntrevista}', [ActaEntrevistaController::class, 'update'])->name('acta.update');
+    Route::delete('acta_entrevista/{actaEntrevista}', [ActaEntrevistaController::class, 'destroy'])->name('acta.destroy');
 
     // ===== Calendario Escolar (SIEMPRE ACCESIBLE - SIN VERIFICACIÓN) =====
     Route::get('anio_escolar', [AnioEscolarController::class, 'index'])->name('anio_escolar.index');
@@ -479,4 +489,8 @@ Route::middleware(['auth'])->prefix('representante')->name('representante.')->gr
 
     // Generar reporte PDF
     Route::get('/reporte-pdf', [RepresentanteController::class, 'reportePDF'])->name('reporte_pdf');
+
+
+
+
 });

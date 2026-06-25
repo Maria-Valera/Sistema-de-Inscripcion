@@ -66,10 +66,10 @@
                     <i class="fas fa-plus-circle"></i>
                     <span>Justificación de Inasistencia</span>
                 </button>
-                <button class="quick-action-btn">
-                    <i class="fas fa-file-alt"></i>
-                    <span>Generar Acta</span>
-                </button>
+                <a href="{{ route('admin.acta.create') }}" class="quick-action-btn">
+            <i class="fas fa-file-alt"></i>
+            <span>Acta de Entrevista</span>
+        </a>
                 <button class="quick-action-btn">
                     <i class="fas fa-search"></i>
                     <span>Buscar Docente</span>
