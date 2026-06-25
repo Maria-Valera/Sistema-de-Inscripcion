@@ -472,6 +472,25 @@ return [
             'icon' => 'fas fa-user-tie',
             'role' => 'Subdirectora',
         ],
+        // ============================================================
+        //  HORARIOS
+        // ============================================================
+        [
+            'text' => 'Horarios',
+            'url' => 'admin/horario',
+            'icon' => 'fas fa-clock',
+            'role' => 'Subdirectora',
+        ],
+
+        // ============================================================
+        //  INASISTENCIAS
+        // ============================================================
+        [
+            'text' => 'Gestión de Inasistencias',
+            'url' => 'admin/inasistencia',
+            'icon' => 'fas fa-clipboard-list',
+            'role' => 'Subdirectora',
+        ],
 
 // ============================================================
 //  MENU DEL DOCENTE
