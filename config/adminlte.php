@@ -475,6 +475,16 @@ return [
             'role' => 'Subdirectora',
         ],
 
+        // ============================================================
+        //  INASISTENCIAS
+        // ============================================================
+        [
+            'text' => 'Gestión de Inasistencias',
+            'url' => 'admin/inasistencia',
+            'icon' => 'fas fa-clipboard-list',
+            'role' => 'Subdirectora',
+        ],
+
 
 /*         ['header' => 'ADMINISTRACIÓN'],
 
