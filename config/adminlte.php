@@ -222,7 +222,7 @@ return [
 
         // ================== PANEL PRINCIPAL ==================
         [
-            'text' => 'Panel Principal',
+            'text' => 'Panel Director',
             'url' => 'home',
             'icon' => 'fas fa-fw fa-tachometer-alt',
 

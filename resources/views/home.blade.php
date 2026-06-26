@@ -372,7 +372,7 @@
             </div>
         </div>
 
-        <div class="card-modern">
+        {{-- <div class="card-modern">
             <div class="card-header-modern">
                 <div class="header-left">
                     <div class="header-icon">
@@ -425,9 +425,182 @@
                         </div>
                         <p class="action-title">Historico</p>
                     </a>
+
+
+    <a href="{{ route('admin.acta.create') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-file-signature"></i>
+        </div>
+        <p class="action-title">Nueva Acta de Entrevista</p>
+    </a>
+
+    <a href="{{ route('admin.grado.index') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-graduation-cap"></i>
+        </div>
+        <p class="action-title">Niveles Academicos</p>
+    </a>
+
+    <a href="{{ route('admin.bloque_horario.index') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <p class="action-title">Bloques de Horario</p>
+    </a>
+
+    <a href="{{ route('admin.area_formacion.index') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-book"></i>
+        </div>
+        <p class="action-title">Áreas de Formación</p>
+    </a>
+
+    <a href="{{ route('admin.transacciones.grado_area_formacion.index') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-project-diagram"></i>
+        </div>
+        <p class="action-title">Grado - Área Formación</p>
+    </a>
+
+    <a href="{{ route('admin.roles.index') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <p class="action-title">Roles</p>
+    </a>
+
+    <a href="{{ route('aulas.index') }}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-door-open"></i>
+        </div>
+        <p class="action-title">Aulas</p>
+    </a>
                 </div>
             </div>
+        </div> --}}
+
+        <div class="card-modern">
+    <div class="card-header-modern">
+        <div class="header-left">
+            <div class="header-icon">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <div>
+                <h3>Acciones Rápidas</h3>
+                <p>Accesos directos a funciones principales</p>
+            </div>
         </div>
+    </div>
+    <div class="card-body-modern" style="padding: 2rem;">
+        <div class="quick-actions">
+            <a href="{{ url('admin/transacciones/inscripcion') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <p class="action-title">Nuevo Ingreso</p>
+            </a>
+            <a href="{{ url('admin/transacciones/inscripcion_prosecucion') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <p class="action-title">Nueva Prosecucion</p>
+            </a>
+            <a href="{{ url('representante') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <p class="action-title">Nuevo Representante</p>
+            </a>
+
+            <a href="{{ route('admin.docente.create') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <p class="action-title">Nuevo Docente</p>
+            </a>
+
+            <a href="{{ route('admin.anio_escolar.index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <p class="action-title">Calendario Escolar</p>
+            </a>
+
+            <a href="{{ route('admin.historico.index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <p class="action-title">Historico</p>
+            </a>
+
+            <a href="{{ route('admin.acta.create') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+                <p class="action-title">Nueva Acta de Entrevista</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card-modern mt-4">
+    <div class="card-header-modern">
+        <div class="header-left">
+            <div class="header-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <div>
+                <h3>Configuración Académica</h3>
+                <p>Mantenimiento de estructura escolar</p>
+            </div>
+        </div>
+    </div>
+    <div class="card-body-modern" style="padding: 2rem;">
+        <div class="quick-actions">
+            <a href="{{ route('admin.grado.index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <p class="action-title">Niveles Academicos</p>
+            </a>
+
+            <a href="{{ route('admin.bloque_horario.index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <p class="action-title">Bloques de Horario</p>
+            </a>
+
+            <a href="{{ route('admin.area_formacion.index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <p class="action-title">Áreas de Formación</p>
+            </a>
+
+            <a href="{{ route('admin.transacciones.grado_area_formacion.index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <p class="action-title">Grado - Área Formación</p>
+            </a>
+
+            {{-- <a href="{{ route('admin.roles.index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <p class="action-title">Roles</p>
+            </a> --}}
+
+            <a href="{{ route('aulas.index') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-door-open"></i>
+                </div>
+                <p class="action-title">Aulas</p>
+            </a>
+        </div>
+    </div>
+</div>
 
         <div class="row mt-4">
             <div class="col-md-6">
