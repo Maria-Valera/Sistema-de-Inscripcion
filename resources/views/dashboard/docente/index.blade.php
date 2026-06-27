@@ -103,15 +103,65 @@
             font-weight: 600;
         }
 
+        /* ===== Card modern (mismo lenguaje visual que el dashboard admin) ===== */
+        .card-modern {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header-modern {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 1px solid var(--gray-100, #f1f5f9);
+        }
+
+        .card-header-modern .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-header-modern .header-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .card-header-modern h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .card-header-modern p {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin: 0.15rem 0 0;
+        }
+
+        .card-body-modern {
+            padding: 1.5rem;
+        }
+
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
-            margin-bottom: 2rem;
         }
 
         .action-card {
             background: white;
+            border: 1px solid var(--gray-100, #f1f5f9);
             border-radius: var(--radius);
             padding: 1.25rem;
             text-align: center;
@@ -128,6 +178,7 @@
             box-shadow: var(--shadow-lg);
             text-decoration: none;
             color: inherit;
+            border-color: var(--primary-light);
         }
 
         .action-icon {
@@ -271,20 +322,37 @@
             </div>
         </div>
 
-        <div class="quick-actions">
-            <a href="{{ route('admin.grado.index') }}" class="action-card">
-                <div class="action-icon">
-                <i class="fas fa-school"></i>
-                </div>
-                <p class="action-title">Niveles Academicos</p>
-            </a>
+        @php
+            // TEMPORAL: mientras no tengas un usuario docente real para probar,
+            // usamos un id de prueba para que la tarjeta siempre se vea.
+            // Cuando tengas un usuario docente real, esto vuelve a calcularse solo.
+            $docenteId = Auth::user()->persona->docente->id ?? 1;
+        @endphp
 
-            <a href="{{ route('admin.area_formacion.index') }}" class="action-card">
-                <div class="action-icon">
-                    <i class="fas fa-book"></i>
+        <div class="card-modern">
+            <div class="card-header-modern">
+                <div class="header-left">
+                    <div class="header-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div>
+                        <h3>Accesos Rápidos</h3>
+                        <p>Funciones principales</p>
+                    </div>
                 </div>
-                <p class="action-title">Área de Formación</p>
-            </a>
+            </div>
+            <div class="card-body-modern">
+                <div class="quick-actions">
+
+
+                    <a href="{{ route('admin.docente.reportePDF', $docenteId) }}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <p class="action-title">Ficha de Docente</p>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 @stop

@@ -288,6 +288,14 @@
                 font-size: 1.5rem;
             }
         }
+
+        .stat-card.danger::before {
+    background: linear-gradient(180deg, var(--danger), #b91c1c);
+    }
+
+    .stat-icon.danger {
+        background: linear-gradient(135deg, var(--danger), #b91c1c);
+    }
     </style>
 @stop
 
@@ -370,114 +378,48 @@
                     </div>
                 </div>
             </div>
+
+             <div class="stat-card danger">
+        <div class="stat-card-header">
+            <div>
+                <div class="stat-number">{{ $totalDocentesInasistentes ?? 7 }}</div>
+                <div class="stat-label">Docentes Inasistentes</div>
+                <span class="stat-trend down">
+                    <i class="fas fa-arrow-down"></i> Hoy
+                </span>
+            </div>
+            <div class="stat-icon danger">
+                <i class="fas fa-user-clock"></i>
+            </div>
+        </div>
+    </div>
+
+
+
         </div>
 
-        {{-- <div class="card-modern">
-            <div class="card-header-modern">
-                <div class="header-left">
-                    <div class="header-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <div>
-                        <h3>Acciones Rápidas</h3>
-                        <p>Accesos directos a funciones principales</p>
-                    </div>
+        {{--  --}}
+            <div class="charts-grid">
+    <div class="card-modern">
+        <div class="card-header-modern">
+            <div class="header-left">
+                <div class="header-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div>
+                    <h3>Estudiantes por Sección</h3>
+                    <p>Distribución actual de matrícula</p>
                 </div>
             </div>
-            <div class="card-body-modern" style="padding: 2rem;">
-                <div class="quick-actions">
-                    <a href="{{ url('admin/transacciones/inscripcion') }}" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <p class="action-title">Nuevo Ingreso</p>
-                    </a>
-                    <a href="{{ url('admin/transacciones/inscripcion_prosecucion') }}" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-sync-alt"></i>
-                        </div>
-                        <p class="action-title">Nueva Prosecucion</p>
-                    </a>
-                    <a href="{{ url('representante') }}" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <p class="action-title">Nuevo Representante</p>
-                    </a>
-
-                    <a href="{{ route('admin.docente.create') }}" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <p class="action-title">Nuevo Docente</p>
-                    </a>
-
-                    <a href="{{ route('admin.anio_escolar.index') }}" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <p class="action-title">Calendario Escolar</p>
-                    </a>
-
-                    <a href="{{ route('admin.historico.index') }}" class="action-card">
-                        <div class="action-icon">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <p class="action-title">Historico</p>
-                    </a>
-
-
-    <a href="{{ route('admin.acta.create') }}" class="action-card">
-        <div class="action-icon">
-            <i class="fas fa-file-signature"></i>
         </div>
-        <p class="action-title">Nueva Acta de Entrevista</p>
-    </a>
-
-    <a href="{{ route('admin.grado.index') }}" class="action-card">
-        <div class="action-icon">
-            <i class="fas fa-graduation-cap"></i>
+        <div class="card-body-modern" style="padding: 1.5rem;">
+            <canvas id="chartSecciones" height="260"></canvas>
         </div>
-        <p class="action-title">Niveles Academicos</p>
-    </a>
+    </div>
+</div>
+        {{--  --}}
 
-    <a href="{{ route('admin.bloque_horario.index') }}" class="action-card">
-        <div class="action-icon">
-            <i class="fas fa-clock"></i>
-        </div>
-        <p class="action-title">Bloques de Horario</p>
-    </a>
 
-    <a href="{{ route('admin.area_formacion.index') }}" class="action-card">
-        <div class="action-icon">
-            <i class="fas fa-book"></i>
-        </div>
-        <p class="action-title">Áreas de Formación</p>
-    </a>
-
-    <a href="{{ route('admin.transacciones.grado_area_formacion.index') }}" class="action-card">
-        <div class="action-icon">
-            <i class="fas fa-project-diagram"></i>
-        </div>
-        <p class="action-title">Grado - Área Formación</p>
-    </a>
-
-    <a href="{{ route('admin.roles.index') }}" class="action-card">
-        <div class="action-icon">
-            <i class="fas fa-user-shield"></i>
-        </div>
-        <p class="action-title">Roles</p>
-    </a>
-
-    <a href="{{ route('aulas.index') }}" class="action-card">
-        <div class="action-icon">
-            <i class="fas fa-door-open"></i>
-        </div>
-        <p class="action-title">Aulas</p>
-    </a>
-                </div>
-            </div>
-        </div> --}}
 
         <div class="card-modern">
     <div class="card-header-modern">
@@ -551,7 +493,7 @@
             </div>
             <div>
                 <h3>Configuración Académica</h3>
-                <p>Mantenimiento de estructura escolar</p>
+
             </div>
         </div>
     </div>
@@ -584,13 +526,6 @@
                 </div>
                 <p class="action-title">Grado - Área Formación</p>
             </a>
-
-            {{-- <a href="{{ route('admin.roles.index') }}" class="action-card">
-                <div class="action-icon">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <p class="action-title">Roles</p>
-            </a> --}}
 
             <a href="{{ route('aulas.index') }}" class="action-card">
                 <div class="action-icon">
@@ -663,11 +598,86 @@
     </div>
 @stop
 
-@section('js')
+{{-- @section('js')
     <script>
         console.log("Dashboard cargado correctamente");
         setTimeout(function() {
             $('.alert').fadeOut('slow');
         }, 5000);
+    </script>
+@stop --}}
+
+@section('js')
+    @if (!isset($chartJsLoaded))
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    @endif
+    <script>
+        console.log("Dashboard cargado correctamente");
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+
+        // Datos de prueba - reemplazar con datos reales desde el controller
+        const seccionesData = {
+            labels: ['Sección A', 'Sección B', 'Sección C', 'Sección D', 'Sección F'],
+            estudiantes: [32, 28, 35, 24, 19]
+        };
+
+        const ctxSecciones = document.getElementById('chartSecciones');
+
+        if (ctxSecciones) {
+            new Chart(ctxSecciones, {
+                type: 'bar',
+                data: {
+                    labels: seccionesData.labels,
+                    datasets: [{
+                        label: 'Estudiantes',
+                        data: seccionesData.estudiantes,
+                        backgroundColor: [
+                            'rgba(99, 102, 241, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        maxBarThickness: 60
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' estudiantes';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 10
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
     </script>
 @stop
