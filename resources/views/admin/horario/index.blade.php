@@ -74,7 +74,15 @@
                     </div>
                     <div>
                         <h3>Listado de Horarios</h3>
-                        <p>1 registro encontrado</p>
+                        <p></p>
+                    </div>
+                </div>
+                
+                <!-- Barra de búsqueda -->
+                <div class="search-section mb-4">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="form-control-modern" placeholder="Buscar horario..." id="searchInput">
                     </div>
                 </div>
                 <div class="header-right">
@@ -85,13 +93,7 @@
                 </div>
             </div>
             <div class="card-body-modern">
-                <!-- Barra de búsqueda -->
-                <div class="search-section mb-4">
-                    <div class="search-box">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="form-control-modern" placeholder="Buscar horario..." id="searchInput">
-                    </div>
-                </div>
+                
 
                 <!-- Tarjetas de horarios -->
                 <div class="cards-grid" id="horariosGrid">
@@ -128,7 +130,7 @@
         }
 
         .btn-filter {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #4f46e5;
             color: white;
             border: none;
             padding: 10px 20px;
