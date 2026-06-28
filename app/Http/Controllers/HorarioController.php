@@ -11,9 +11,26 @@ use Illuminate\Support\Facades\DB;
 
 class HorarioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.horario.index');
+        $grados = Grado::where('status', true)
+            ->orderBy('numero_grado', 'asc')
+            ->get();
+
+        $areasFormacion = AreaFormacion::where('status', true)
+            ->orderBy('nombre_area_formacion', 'asc')
+            ->get();
+
+        $secciones = Seccion::where('status', true)
+            ->orderBy('nombre', 'asc')
+            ->get()
+            ->unique('nombre');
+
+        $bloquesHorarios = \App\Models\BloqueHorario::where('status', true)
+            ->orderBy('hora_inicio', 'asc')
+            ->get();
+
+        return view('admin.horario.index', compact('grados', 'areasFormacion', 'secciones', 'bloquesHorarios'));
     }
 
     public function create()
