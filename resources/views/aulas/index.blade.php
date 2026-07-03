@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+{{ Breadcrumbs::render('aulas.index') }}
+
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">

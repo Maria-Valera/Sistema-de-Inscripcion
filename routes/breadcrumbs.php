@@ -6,11 +6,17 @@ use Diglactic\Breadcrumbs\Generator as Trail;
 use App\Models\Docente;
 use App\Models\Inscripcion;
 use App\Models\Representante;
+use App\Models\Aula;
+use App\Models\ActaEntrevista;
+
 
 // Inicio (Home)
 Breadcrumbs::for('home', function (Trail $trail) {
     $trail->push('Inicio', route('home'));
+
 });
+
+
 
 // Calendario Escolar
 Breadcrumbs::for('admin.anio_escolar.index', function (Trail $trail) {
@@ -126,7 +132,7 @@ Breadcrumbs::for('admin.docente.index', function (Trail $trail) {
     $trail->push('Docentes', route('admin.docente.index'));
 });
 
-// Docente crear 
+// Docente crear
 Breadcrumbs::for('admin.docente.create', function (Trail $trail) {
     $trail->parent('admin.docente.index');
     $trail->push('Crear Docente', route('admin.docente.create'));
@@ -152,13 +158,13 @@ Breadcrumbs::for('admin.transacciones.docente_area_grado.index', function (Trail
     $trail->push('Asignacion de Areas', route('admin.transacciones.docente_area_grado.index'));
 });
 
-// Docente crear 
+// Docente crear
 Breadcrumbs::for('admin.transacciones.docente_area_grado.create', function (Trail $trail) {
     $trail->parent('admin.transacciones.docente_area_grado.index');
     $trail->push('Crear Asignacion', route('admin.transacciones.docente_area_grado.create'));
 });
 
-// Docente editar 
+// Docente editar
 Breadcrumbs::for('admin.transacciones.docente_area_grado.edit', function (Trail $trail, $docenteId) {
     $docente = Docente::with('persona')->findOrFail($docenteId);
     $trail->parent('admin.transacciones.docente_area_grado.index');
@@ -209,7 +215,7 @@ Breadcrumbs::for('admin.alumnos.edit', function (Trail $trail, Alumno $alumno) {
     $trail->parent('admin.alumnos.index');
 
     $trail->push('Editar Alumno', route('admin.alumnos.edit', $alumno));
-}); 
+});
 
 // Historico
 Breadcrumbs::for('admin.historico.index', function (Trail $trail) {
@@ -272,4 +278,20 @@ Breadcrumbs::for('admin.transacciones.inscripcion_prosecucion.create', function 
     );
 });
 
+// Dashboard Docente
+Breadcrumbs::for('dashboard.docente', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Panel de Docente', route('dashboard.docente'));
+});
 
+// Acta de Entrevista - crear
+Breadcrumbs::for('admin.acta.create', function (Trail $trail) {
+    $trail->parent('home'); // cambiamos luego a 'admin.acta.index' si esa ruta existe xd
+    $trail->push('Crear Acta de Entrevista', route('admin.acta.create'));
+});
+
+// Aulas - listado
+Breadcrumbs::for('aulas.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Aulas', route('aulas.index'));
+});
