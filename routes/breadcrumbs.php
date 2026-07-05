@@ -272,4 +272,32 @@ Breadcrumbs::for('admin.transacciones.inscripcion_prosecucion.create', function 
     );
 });
 
+// Horario
+Breadcrumbs::for('admin.horario.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Gestión de Horarios', route('admin.horario.index'));
+});
 
+// Horario crear
+Breadcrumbs::for('admin.horario.create', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Nuevo Horario', route('admin.horario.create'));
+});
+
+// Inasistencia
+Breadcrumbs::for('admin.inasistencia.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Gestión de Inasistencias', route('admin.inasistencia.index'));
+});
+
+// Inasistencia justificación
+Breadcrumbs::for('admin.inasistencia.justificacion', function (Trail $trail) {
+    $trail->parent('admin.inasistencia.index');
+    $trail->push('Inasistencias Diarias', route('admin.inasistencia.justificacion'));
+});
+
+// Bloque Horario
+Breadcrumbs::for('admin.bloque_horario.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Gestión de Bloques Horarios', route('admin.bloque_horario.index'));
+});
