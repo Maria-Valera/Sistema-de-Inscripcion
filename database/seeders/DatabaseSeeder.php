@@ -72,6 +72,23 @@ class DatabaseSeeder extends Seeder
             ProsecucionAreaSeeder::class,  */
             /*  DocenteAreaGrado::class, */
         ]);
+
+        // Asignar rol al usuario Admin ya existente
+        $adminUser = User::where('email', 'admin@example.com')->first();
+        if ($adminUser) {
+            $adminUser->assignRole('Admin');
+        }
+
+        // Crear y asignar rol de Representante
+        $repUser = User::firstOrCreate(
+            ['email' => 'representante@example.com'],
+            [
+                'name' => 'Representante de Prueba',
+                'password' => bcrypt('12345678'),
+            ]
+        );
+        $repUser->assignRole('Representante');
+
         $this->command->info('¡Base de datos poblada con éxito!');
     }
 }

@@ -272,4 +272,35 @@ Breadcrumbs::for('admin.transacciones.inscripcion_prosecucion.create', function 
     );
 });
 
+Breadcrumbs::for('admin.permisos_reposos.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Gestión de Inasistencias', route('admin.permisos_reposos.index'));
+});
+
+Breadcrumbs::for('admin.permisos_reposos.create', function (Trail $trail) {
+    $trail->parent('admin.permisos_reposos.index');
+    $trail->push('Registrar Permiso o Reposo', route('admin.permisos_reposos.create'));
+});
+
+// Portal del Representante
+Breadcrumbs::for('portal-representante.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Portal del Representante', route('portal-representante.index'));
+});
+
+Breadcrumbs::for('portal-representante.prosecucion.index', function (Trail $trail) {
+    $trail->parent('portal-representante.index');
+    $trail->push('Inscripción por Prosecución', route('portal-representante.prosecucion.index'));
+});
+
+Breadcrumbs::for('portal-representante.prosecucion.create', function (Trail $trail) {
+    $trail->parent('portal-representante.prosecucion.index');
+    $trail->push('Nueva Inscripción', route('portal-representante.prosecucion.create'));
+});
+
+Breadcrumbs::for('portal-representante.carnet.index', function (Trail $trail) {
+    $trail->parent('portal-representante.index');
+    $trail->push('Mi Carnet Estudiantil', route('portal-representante.carnet.index'));
+});
+
 
