@@ -440,6 +440,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // ================== INASISTENCIA ==================
     Route::get('inasistencia', [InasistenciaController::class, 'index'])
         ->name('inasistencia.index');
+    Route::get('inasistencia/inasistencia_justificacion', [InasistenciaController::class, 'inasistencia_justificacion'])
+        ->name('inasistencia.justificacion');
 });
 
 
