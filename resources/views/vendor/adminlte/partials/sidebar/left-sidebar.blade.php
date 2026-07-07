@@ -19,7 +19,28 @@
                     data-accordion="false"
                 @endif>
                 {{-- Configured sidebar links --}}
-                @each('adminlte::partials.sidebar.menu-item', $adminlte->menu('sidebar'), 'item')
+                @role('Representante')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('portal-representante.index') ? 'active' : '' }}" href="{{ route('portal-representante.index') }}">
+                            <i class="nav-icon fas fa-fw fa-tachometer-alt"></i>
+                            <p>Panel Principal</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('portal-representante.prosecucion.*') ? 'active' : '' }}" href="{{ route('portal-representante.prosecucion.index') }}">
+                            <i class="nav-icon fas fa-fw fa-sync-alt"></i>
+                            <p>Inscripción por Prosecución</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('portal-representante.carnet.*') ? 'active' : '' }}" href="{{ route('portal-representante.carnet.index') }}">
+                            <i class="nav-icon fas fa-fw fa-id-card"></i>
+                            <p>Mi Carnet</p>
+                        </a>
+                    </li>
+                @else
+                    @each('adminlte::partials.sidebar.menu-item', $adminlte->menu('sidebar'), 'item')
+                @endrole
             </ul>
         </nav>
     </div>

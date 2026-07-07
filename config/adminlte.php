@@ -264,6 +264,15 @@ return [
             ],
         ],
 
+        ['header' => 'ASISTENCIA'],
+
+        [
+            'text' => 'Permisos y Reposos',
+            'url' => 'admin/permisos_reposos',
+            'icon' => 'fas fa-fw fa-calendar-check',
+            'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
+        ],
+
         // ================== EVALUACIÓN ==================
         [
             'text' => 'Historial del Percentil',

@@ -32,6 +32,7 @@ use App\Http\Controllers\EntradasPercentilController;
 use App\Http\Controllers\HistoricoController;
 use App\Http\Controllers\InscripcionProsecucionController;
 use App\Http\Controllers\InstitucionProcedenciaController;
+use App\Http\Controllers\PermisoReposoController;
 use App\Http\Controllers\BloqueHorarioController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\InasistenciaController;
@@ -354,6 +355,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('alumnos/reporte/{id}', [AlumnoController::class, 'reportePDF'])->name('alumnos.reporte.individual');
     Route::get('alumnos/reportes/general', [AlumnoController::class, 'reporteGeneralPDF'])->name('alumnos.reporteGeneralPDF');
 
+    // ===== PERMISOS Y REPOSOS =====
+    Route::get('permisos_reposos', [PermisoReposoController::class, 'index'])->name('permisos_reposos.index');
+
     // ================== TRANSACCIONES ==================
     Route::prefix('transacciones')->name('transacciones.')->group(function () {
 
@@ -431,6 +435,29 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('historico', [HistoricoController::class, 'index'])
         ->name('historico.index');
 
+    // ================== PERMISOS Y REPOSOS ==================
+    Route::get('permisos_reposos', function () {
+        return view('admin.permisos_reposos.index');
+    })->name('permisos_reposos.index');
+
+    Route::get('permisos_reposos/create', function () {
+        return view('admin.permisos_reposos.create');
+    })->name('permisos_reposos.create');
+});
+
+// ====== PORTAL DEL REPRESENTANTE ======
+Route::middleware(['auth'])->prefix('portal-representante')->name('portal-representante.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'index'])->name('index');
+    
+    Route::prefix('prosecucion')->name('prosecucion.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'prosecucionIndex'])->name('index');
+        Route::get('/registrar', [\App\Http\Controllers\PortalRepresentanteController::class, 'prosecucionCreate'])->name('create');
+    });
+    
+    Route::prefix('carnet')->name('carnet.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'carnetIndex'])->name('index');
+        Route::get('/imprimir', [\App\Http\Controllers\PortalRepresentanteController::class, 'carnetImprimir'])->name('imprimir');
+    });
     // ================== HORARIO ==================
     Route::get('horario', [HorarioController::class, 'index'])
         ->name('horario.index');
@@ -451,6 +478,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('aulas', AulaController::class);
 Route::post('aulas/verificar-existencia', [AulaController::class, 'verificarExistencia'])
     ->name('aulas.verificarExistencia');
+
 
 
 // ======  REPRESENTANTE  ======
