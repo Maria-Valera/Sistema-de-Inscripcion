@@ -222,10 +222,10 @@ return [
 
         // ================== PANEL PRINCIPAL ==================
         [
-            'text' => 'Panel Principal',
+            'text' => 'Panel Director',
             'url' => 'home',
             'icon' => 'fas fa-fw fa-tachometer-alt',
-            
+
             'active' => ['home', 'home/*'],
         ],
 
@@ -298,6 +298,13 @@ return [
             'active' => ['representante', 'representante/*'],
         ],
 
+        [
+            'text' => 'Aulas',
+            'url' => 'aulas',
+            'icon' => 'fas fa-fw fa-door-open',
+            'active' => ['aulas', 'aulas/*'],
+        ],
+
         // ============================================================
         //  GESTIÓN DOCENTES
         // ============================================================
@@ -351,9 +358,16 @@ return [
                     'active' => ['admin/grado', 'admin/grado/*'],
                 ],
 
+                [
+                    'text' => 'Bloques Horarios',
+                    'url' => 'admin/bloque_horario',
+                    'icon' => 'fas fa-fw fa-clock',
+                    'active' => ['admin/bloque_horario', 'admin/bloque_horario/*'],
+                ],
+
                 // Asignaciones
                 [
-                    
+
                     'text' => 'ASIGNACIONES',
                     'icon' => 'fas fa-fw fa-link',
                     'active' => ['admin/transacciones/grado_area_formacion*', 'admin/transacciones/area_estudio_realizado*', 'admin/transacciones/docente*'],
@@ -377,9 +391,9 @@ return [
                 ],
 
                 ['header' => 'DATOS PERSONALES'],
-                
+
                 [
-                    
+
                     'text' => 'DATOS',
                     'icon' => 'fas fa-fw fa-user',
                     'active' => ['admin/etnia_indigena*', 'admin/discapacidad*', 'admin/ocupacion*'],
@@ -458,6 +472,47 @@ return [
                 ],
             ],
         ],
+         // ============================================================
+        //  MENU DE LA SUBDIRECTORA
+        // ============================================================
+        [
+            'text' => 'Panel Subdirectora',
+            'url' => 'dashboard/subdirectora',
+            'icon' => 'fas fa-user-tie',
+            'role' => 'Subdirectora',
+        ],
+        // ============================================================
+        //  HORARIOS
+        // ============================================================
+        [
+            'text' => 'Horarios',
+            'url' => 'admin/horario',
+            'icon' => 'fas fa-clock',
+            'role' => 'Subdirectora',
+        ],
+
+        // ============================================================
+        //  INASISTENCIAS
+        // ============================================================
+        [
+            'text' => 'Gestión de Inasistencias',
+            'url' => 'admin/inasistencia',
+            'icon' => 'fas fa-clipboard-list',
+            'role' => 'Subdirectora',
+        ],
+
+// ============================================================
+//  MENU DEL DOCENTE
+// ============================================================
+[
+    'text' => 'Panel Docente',
+    'url' => 'dashboard/docente',
+    'icon' => 'fas fa-chalkboard-teacher',
+    'role' => 'Docente',
+],
+
+
+
 /*         ['header' => 'ADMINISTRACIÓN'],
 
         [

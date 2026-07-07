@@ -26,12 +26,17 @@ use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\DocenteAreaGradoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\AulaController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\EntradasPercentilController;
 use App\Http\Controllers\HistoricoController;
 use App\Http\Controllers\InscripcionProsecucionController;
 use App\Http\Controllers\InstitucionProcedenciaController;
 use App\Http\Controllers\PermisoReposoController;
+use App\Http\Controllers\BloqueHorarioController;
+use App\Http\Controllers\HorarioController;
+use App\Http\Controllers\InasistenciaController;
+use App\Http\Controllers\ActaEntrevistaController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -47,6 +52,14 @@ Route::get('/check-email', function (Illuminate\Http\Request $request) {
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// Rutas para Dashboards por rol
+Route::middleware(['auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
+    Route::get('/subdirectora', [App\Http\Controllers\HomeController::class, 'subdirectora'])->name('subdirectora');
+    Route::get('/docente', [App\Http\Controllers\HomeController::class, 'docente'])->name('docente');
+});
+
+
 
 //HomePage!!
 
@@ -77,6 +90,15 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('institucion-procedencia/{institucionProcedencia}', [InstitucionProcedenciaController::class, 'update'])->name('institucion-procedencia.update');
     Route::delete('institucion-procedencia/{institucionProcedencia}', [InstitucionProcedenciaController::class, 'destroy'])->name('institucion-procedencia.destroy');
 
+
+            // ===== ACTA ENTREVISTA =====
+    Route::get('acta_entrevista', [ActaEntrevistaController::class, 'index'])->name('acta.index');
+    Route::get('acta_entrevista/crear', [ActaEntrevistaController::class, 'create'])->name('acta.create');
+    Route::post('acta_entrevista', [ActaEntrevistaController::class, 'store'])->name('acta.store');
+    Route::get('acta_entrevista/{actaEntrevista}', [ActaEntrevistaController::class, 'show'])->name('acta.show');
+    Route::get('acta_entrevista/{actaEntrevista}/editar', [ActaEntrevistaController::class, 'edit'])->name('acta.edit');
+    Route::put('acta_entrevista/{actaEntrevista}', [ActaEntrevistaController::class, 'update'])->name('acta.update');
+    Route::delete('acta_entrevista/{actaEntrevista}', [ActaEntrevistaController::class, 'destroy'])->name('acta.destroy');
 
     // ===== Calendario Escolar (SIEMPRE ACCESIBLE - SIN VERIFICACIÓN) =====
     Route::get('anio_escolar', [AnioEscolarController::class, 'index'])->name('anio_escolar.index');
@@ -179,6 +201,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('grado/modales/store', [GradoController::class, 'store'])->name('grado.modales.store');
         Route::post('grado/{id}/update', [GradoController::class, 'update'])->name('grado.modales.update');
         Route::delete('grado/{id}', [GradoController::class, 'destroy'])->name('grado.destroy');
+    });
+
+    // ===== BLOQUE HORARIO =====
+    Route::get('bloque_horario', [BloqueHorarioController::class, 'index'])->name('bloque_horario.index');
+    Route::get('bloque_horario/verificar', [BloqueHorarioController::class, 'verificarExistencia'])->name('bloque_horario.verificar');
+
+    Route::middleware(['verificar.anio.escolar'])->group(function () {
+        Route::post('bloque_horario/modales/store', [BloqueHorarioController::class, 'store'])->name('bloque_horario.modales.store');
+        Route::match(['post', 'put'], 'bloque_horario/{id}/update', [BloqueHorarioController::class, 'update'])->name('bloque_horario.modales.update');
+        Route::delete('bloque_horario/{id}', [BloqueHorarioController::class, 'destroy'])->name('bloque_horario.destroy');
     });
 
     // ===== ÁREA DE FORMACIÓN =====
@@ -426,8 +458,26 @@ Route::middleware(['auth'])->prefix('portal-representante')->name('portal-repres
         Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'carnetIndex'])->name('index');
         Route::get('/imprimir', [\App\Http\Controllers\PortalRepresentanteController::class, 'carnetImprimir'])->name('imprimir');
     });
+    // ================== HORARIO ==================
+    Route::get('horario', [HorarioController::class, 'index'])
+        ->name('horario.index');
+    Route::get('horario/create', [HorarioController::class, 'create'])
+        ->name('horario.create');
+
+    // ================== INASISTENCIA ==================
+    Route::get('inasistencia', [InasistenciaController::class, 'index'])
+        ->name('inasistencia.index');
+    Route::get('inasistencia/inasistencia_justificacion', [InasistenciaController::class, 'inasistencia_justificacion'])
+        ->name('inasistencia.justificacion');
 });
 
+
+// ======  AULAS  ======
+    // Route::resource('aulas', AulaController::class);
+    // Route::get('aulas', [AulaController::class, 'index'])->name('aulas.index');
+    Route::resource('aulas', AulaController::class);
+Route::post('aulas/verificar-existencia', [AulaController::class, 'verificarExistencia'])
+    ->name('aulas.verificarExistencia');
 
 
 
@@ -469,4 +519,8 @@ Route::middleware(['auth'])->prefix('representante')->name('representante.')->gr
 
     // Generar reporte PDF
     Route::get('/reporte-pdf', [RepresentanteController::class, 'reportePDF'])->name('reporte_pdf');
+
+
+
+
 });
