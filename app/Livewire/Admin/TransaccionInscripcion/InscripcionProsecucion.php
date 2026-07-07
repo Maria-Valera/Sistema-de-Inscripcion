@@ -116,13 +116,33 @@ class InscripcionProsecucion extends Component
             return;
         }
 
-        $this->alumnos = Alumno::whereHas('inscripciones', function ($q) use ($anioAnterior) {
+        $query = Alumno::whereHas('inscripciones', function ($q) use ($anioAnterior) {
             $q->where('anio_escolar_id', $anioAnterior->id);
         })
             ->whereDoesntHave('inscripciones', function ($q) use ($anioActual) {
                 $q->where('anio_escolar_id', $anioActual->id);
-            })
-            ->with([
+            });
+
+        // En el portal del representante, limitar a sus representados por correo registrado
+        if (request()->routeIs('portal-representante.*') && auth()->check() && auth()->user()->hasRole('Representante')) {
+            $userEmail = auth()->user()->email;
+            $query->whereHas('inscripciones', function ($q) use ($userEmail, $anioAnterior) {
+                $q->where('anio_escolar_id', $anioAnterior->id)
+                  ->where(function ($sub) use ($userEmail) {
+                      $sub->whereHas('padre.persona', function ($p) use ($userEmail) {
+                          $p->where('email', $userEmail);
+                      })
+                      ->orWhereHas('madre.persona', function ($p) use ($userEmail) {
+                          $p->where('email', $userEmail);
+                      })
+                      ->orWhereHas('representanteLegal.representante.persona', function ($p) use ($userEmail) {
+                          $p->where('email', $userEmail);
+                      });
+                  });
+            });
+        }
+
+        $this->alumnos = $query->with([
                 'persona.tipoDocumento',
                 'inscripciones' => function ($q) use ($anioAnterior) {
                     $q->where('anio_escolar_id', $anioAnterior->id)
@@ -169,6 +189,14 @@ class InscripcionProsecucion extends Component
 
     public function seleccionarAlumno($alumnoId)
     {
+        if (is_array($alumnoId)) {
+            $alumnoId = $alumnoId['alumnoId'] ?? null;
+        }
+
+        if (!$alumnoId) {
+            return;
+        }
+
         $this->reset([
             'alumnoSeleccionado',
             'gradoAnteriorId',
@@ -565,6 +593,11 @@ class InscripcionProsecucion extends Component
 
             DB::commit();
             session()->flash('success', 'Inscripción por prosecución registrada correctamente.');
+
+            if (auth()->check() && auth()->user()->hasRole('Representante') && request()->routeIs('portal-representante.*')) {
+                return redirect()->route('portal-representante.prosecucion.index');
+            }
+
             return redirect()->route('admin.transacciones.inscripcion_prosecucion.index');
         } catch (\Throwable $e) {
             DB::rollBack();

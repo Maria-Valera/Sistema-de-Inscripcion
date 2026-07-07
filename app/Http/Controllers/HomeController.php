@@ -17,6 +17,11 @@ class HomeController extends Controller
 
     public function index()
     {
+        // Redirigir si es representante
+        if (auth()->check() && auth()->user()->hasRole('Representante')) {
+            return redirect()->route('portal-representante.index');
+        }
+
         $anioEscolar = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
 
         $totalGrados = Grado::where('status', true)->count();

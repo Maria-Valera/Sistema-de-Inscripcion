@@ -79,15 +79,32 @@ class DatabaseSeeder extends Seeder
             $adminUser->assignRole('Admin');
         }
 
-        // Crear y asignar rol de Representante
-        $repUser = User::firstOrCreate(
-            ['email' => 'representante@example.com'],
-            [
-                'name' => 'Representante de Prueba',
-                'password' => bcrypt('12345678'),
-            ]
-        );
-        $repUser->assignRole('Representante');
+        /* 
+        |--------------------------------------------------------------------------
+        | GENERACIÓN DINÁMICA DE USUARIOS PARA REPRESENTANTES
+        |--------------------------------------------------------------------------
+        | Recorremos todos los representantes que fueron registrados por los seeders.
+        | Para cada uno, creamos una cuenta en la tabla 'users' utilizando su email
+        | y le asignamos el rol 'Representante' para que puedan loguearse.
+        */
+        $representantes = \App\Models\Representante::with('persona')->get();
+        
+        foreach ($representantes as $rep) {
+            // Verificamos que el representante tenga datos personales y una dirección de correo válida
+            if ($rep->persona && $rep->persona->email) {
+                // Buscamos o creamos el usuario correspondiente con contraseña por defecto '12345678'
+                $user = User::firstOrCreate(
+                    ['email' => $rep->persona->email],
+                    [
+                        'name' => $rep->persona->primer_nombre . ' ' . $rep->persona->primer_apellido,
+                        'password' => bcrypt('12345678'), // Encriptación bcrypt de la contraseña por defecto
+                    ]
+                );
+                
+                // Asignamos el rol 'Representante' usando Spatie Laravel-Permission
+                $user->assignRole('Representante');
+            }
+        }
 
         $this->command->info('¡Base de datos poblada con éxito!');
     }
