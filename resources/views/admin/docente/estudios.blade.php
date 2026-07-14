@@ -124,6 +124,11 @@
                         <span class="info-label"><i class="fas fa-map-marker-alt"></i> Dirección:</span>
                         <span class="info-value">{{ $docentes->persona->direccion ?? '—' }}</span>
                     </div>
+
+                    <div class="info-item info-wide">
+                        <span class="info-label"><i class="fas fa-map-marker-alt"></i> Horas academicas</span>
+                        <span class="info-value">{{ $docentes->horas_academicas ?? '—' }}</span>
+                    </div>
                 </div>
             </div>
         </div>

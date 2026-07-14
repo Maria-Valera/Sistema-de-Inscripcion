@@ -151,6 +151,17 @@
                                     </span>
                                 </div>
                             </div>
+
+                            <div class="col-md-6 mt-3">
+                                <div class="detail-item">
+                                    <span class="detail-label">
+                                        Horas academicas
+                                    </span>
+                                    <span class="detail-value">
+                                        {{ $datos->horas_academicas ?? 'Sin especificar' }}
+                                    </span>
+                                </div>
+                            </div
                         </div>
                     </div>
                 </div>

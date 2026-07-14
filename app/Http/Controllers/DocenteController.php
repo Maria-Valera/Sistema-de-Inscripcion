@@ -125,6 +125,7 @@ class DocenteController extends Controller
             'telefono_dos' => 'nullable|string|max:20',
             'codigo' => 'nullable|numeric',
             'dependencia' => 'nullable|string|max:100',
+            'horas_academicas' => 'nullable',
         ], [
             'tipo_documento_id.required' => 'El tipo de documento es obligatorio',
             'numero_documento.required' => 'La cédula es obligatoria',
@@ -165,6 +166,7 @@ class DocenteController extends Controller
                 'codigo' => $request->codigo,
                 'dependencia' => $request->dependencia,
                 'persona_id' => $persona->id,
+                'horas_academicas' => $request->horas_academicas,
                 'status' => true,
             ]);
 
@@ -220,6 +222,7 @@ class DocenteController extends Controller
                 'telefono_dos' => 'nullable|string|max:20',
                 'codigo' => 'nullable|numeric',
                 'dependencia' => 'nullable|string|max:100',
+                'horas_academicas' => 'nullable',
             ],
             [
                 'tipo_documento_id.required' => 'El tipo de documento es obligatorio',
@@ -260,6 +263,7 @@ class DocenteController extends Controller
                 'anio_escolar_id' => $anioEscolar->id,
                 'codigo' => $request->codigo,
                 'dependencia' => $request->dependencia,
+                'horas_academicas' => $request->horas_academicas,
             ]);
 
             DB::commit();
