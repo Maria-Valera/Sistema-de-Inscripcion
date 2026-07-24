@@ -304,7 +304,7 @@
                         <div class="stat-label">Áreas de Formación</div>
                     </div>
                     <div class="stat-icon success">
-                        <i class="fas fa-book"></i>
+                        <i class="fas fa-fw fa-book-open"></i>
                     </div>
                 </div>
             </div>
@@ -316,7 +316,7 @@
                         <div class="stat-label">Año Escolar Activo</div>
                     </div>
                     <div class="stat-icon warning">
-                        <i class="fas fa-calendar-alt"></i>
+                        <i class="fas fa-calendar-check"></i>
                     </div>
                 </div>
             </div>
