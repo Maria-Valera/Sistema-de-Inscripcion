@@ -570,20 +570,22 @@
                 <p class="access-description">Ver y gestionar el personal docente</p>
             </a>
 
-            <div class="access-card disabled" onclick="alert('Módulo de Inasistencias en desarrollo')">
+            <div class="access-card">
+                <a href="{{ route('admin.inasistencia.index') }}" class="access-card">
                 <div class="access-icon inasistencia">
                     <i class="fas fa-user-times"></i>
                 </div>
                 <h4 class="access-title">Generar Inasistencias</h4>
                 <p class="access-description">Registrar inasistencias de alumnos</p>
+                </a>
             </div>
 
-            <a href="{{ url('admin/bloque_horario') }}" class="access-card">
+            <a href="{{ route('admin.horario.index') }}" class="access-card">
                 <div class="access-icon horario">
                     <i class="fas fa-clock"></i>
                 </div>
                 <h4 class="access-title">Módulo Horario</h4>
-                <p class="access-description">Gestionar bloques horarios</p>
+                <p class="access-description">Gestionar horarios</p>
             </a>
         </div>
 

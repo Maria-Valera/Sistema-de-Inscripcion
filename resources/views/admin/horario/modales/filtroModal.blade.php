@@ -19,15 +19,6 @@
                         </label>
                         <select class="form-select" id="nivel_academico" name="nivel_academico">
                             <option value="">Todos los niveles</option>
-                            <option value="primaria" {{ request('nivel_academico') == 'primaria' ? 'selected' : '' }}>
-                                Primaria
-                            </option>
-                            <option value="secundaria" {{ request('nivel_academico') == 'secundaria' ? 'selected' : '' }}>
-                                Secundaria
-                            </option>
-                            <option value="bachillerato" {{ request('nivel_academico') == 'bachillerato' ? 'selected' : '' }}>
-                                Bachillerato
-                            </option>
                         </select>
                     </div>
 
@@ -38,18 +29,6 @@
                         </label>
                         <select class="form-select" id="area_formacion" name="area_formacion">
                             <option value="">Todas las áreas</option>
-                            <option value="ciencias" {{ request('area_formacion') == 'ciencias' ? 'selected' : '' }}>
-                                Ciencias
-                            </option>
-                            <option value="humanidades" {{ request('area_formacion') == 'humanidades' ? 'selected' : '' }}>
-                                Humanidades
-                            </option>
-                            <option value="tecnica" {{ request('area_formacion') == 'tecnica' ? 'selected' : '' }}>
-                                Técnica
-                            </option>
-                            <option value="artistica" {{ request('area_formacion') == 'artistica' ? 'selected' : '' }}>
-                                Artística
-                            </option>
                         </select>
                     </div>
 
@@ -60,18 +39,6 @@
                         </label>
                         <select class="form-select" id="seccion" name="seccion">
                             <option value="">Todas las secciones</option>
-                            <option value="A" {{ request('seccion') == 'A' ? 'selected' : '' }}>
-                                Sección A
-                            </option>
-                            <option value="B" {{ request('seccion') == 'B' ? 'selected' : '' }}>
-                                Sección B
-                            </option>
-                            <option value="C" {{ request('seccion') == 'C' ? 'selected' : '' }}>
-                                Sección C
-                            </option>
-                            <option value="D" {{ request('seccion') == 'D' ? 'selected' : '' }}>
-                                Sección D
-                            </option>
                         </select>
                     </div>
 

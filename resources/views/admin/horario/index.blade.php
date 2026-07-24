@@ -30,8 +30,6 @@
 
 @section('content')
     <div class="main-container">
-        @include('admin.horario.modales.filtroModal')
-
         @if (session('success') || session('error'))
             <div class="alerts-container">
                 @if (session('success'))
@@ -66,231 +64,288 @@
             </div>
         @endif
 
+        <!-- Encabezado de Filtros Inteligentes -->
+        <div class="card-modern mb-4">
+            <div class="card-header-modern">
+                <div class="header-left">
+                    <div class="header-icon">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <div>
+                        <h3>Filtros de Consulta</h3>
+                        <p>Selecciona los parámetros para visualizar horarios (opcional)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body-modern">
+                <form id="filtroHorarioForm" action="{{ route('admin.horario.index') }}" method="GET" class="filtro-form">
+                    <div class="row g-3 justify-content-center">
+                        <div class="col-md-3">
+                            <label class="form-label-modern text-center">
+                                <i class="fas fa-graduation-cap" style="color: var(--primary);"></i>
+                                Año / Grado
+                            </label>
+                            <select class="form-select text-center" id="grado_id" name="grado_id">
+                                <option value="">Todos los años</option>
+                                @foreach($grados as $grado)
+                                    <option value="{{ $grado->id }}" {{ old('grado_id') == $grado->id ? 'selected' : '' }}>
+                                        {{ $grado->numero_grado }}° Año
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label-modern text-center">
+                                <i class="fas fa-users" style="color: var(--primary);"></i>
+                                Sección
+                            </label>
+                            <select class="form-select text-center" id="seccion_id" name="seccion_id">
+                                <option value="">Todas las secciones</option>
+                                @foreach($secciones as $seccion)
+                                    <option value="{{ $seccion->id }}" {{ old('seccion_id') == $seccion->id ? 'selected' : '' }}>
+                                        Sección {{ $seccion->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label-modern text-center">
+                                <i class="fas fa-book" style="color: var(--primary);"></i>
+                                Área de Formación
+                            </label>
+                            <select class="form-select text-center" id="area_formacion_id" name="area_formacion_id">
+                                <option value="">Todas las áreas</option>
+                                @foreach($areasFormacion as $area)
+                                    <option value="{{ $area->id }}" {{ old('area_formacion_id') == $area->id ? 'selected' : '' }}>
+                                        {{ $area->nombre_area_formacion }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 d-flex justify-content-center">
+                            <button type="submit" class="btn-generate">
+                                <i class="fas fa-search"></i>
+                                <span>Filtrar</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Listado de Horarios Generados -->
         <div class="card-modern">
             <div class="card-header-modern">
                 <div class="header-left">
                     <div class="header-icon">
-                        <i class="fas fa-list-ul"></i>
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
                     <div>
-                        <h3>Listado de Horarios</h3>
-                        <p>1 registro encontrado</p>
+                        <h3>Horarios Disponibles</h3>
+                        <p>Gestión de horarios académicos</p>
                     </div>
-                </div>
-                <div class="header-right">
-                    <button type="button" class="btn-filter" data-bs-toggle="modal" data-bs-target="#modalFiltros">
-                        <i class="fas fa-filter"></i>
-                        Filtros
-                    </button>
                 </div>
             </div>
             <div class="card-body-modern">
-                <!-- Barra de búsqueda -->
-                <div class="search-section mb-4">
-                    <div class="search-box">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="form-control-modern" placeholder="Buscar horario..." id="searchInput">
+                <div class="horarios-list" id="horariosList">
+                    <!-- Ejemplo de horario generado -->
+                    <div class="horario-item" data-horario-id="1">
+                        <div class="horario-item-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="horario-item-content">
+                            <h4>1° Año - Sección A</h4>
+                            <p>Horario académico - Ciencias</p>
+                        </div>
+                        <div class="horario-item-actions">
+                            <button class="btn-action btn-view" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-edit" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-pdf" title="Generar PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="btn-action btn-delete" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Tarjetas de horarios -->
-                <div class="cards-grid" id="horariosGrid">
-                    <!-- Las tarjetas se cargarán dinámicamente -->
+                    <div class="horario-item" data-horario-id="2">
+                        <div class="horario-item-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="horario-item-content">
+                            <h4>2° Año - Sección B</h4>
+                            <p>Horario académico - Humanidades</p>
+                        </div>
+                        <div class="horario-item-actions">
+                            <button class="btn-action btn-view" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-edit" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-pdf" title="Generar PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            <button class="btn-action btn-delete" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <style>
-        .search-section {
-            margin-bottom: 20px;
+        /* Filtros Inteligentes */
+        .filtro-form {
+            padding: 10px 0;
         }
 
-        .search-box {
-            position: relative;
-        }
-
-        .search-box .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }
-
-        .search-box input {
-            padding-left: 40px;
-        }
-
-        .header-right {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-filter {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-generate {
+            background: #667eea;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 32px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            font-weight: 500;
+            height: 46px;
         }
 
-        .btn-filter:hover {
+        .btn-generate:hover {
+            background: #5568d3;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .horario-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        .horario-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-header-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 20px;
+        /* Listado de Horarios */
+        .horarios-list {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
+        .horario-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .horario-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateX(4px);
+        }
+
+        .horario-item-icon {
+            width: 48px;
+            height: 48px;
+            background: #667eea;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
-        .card-body-custom {
-            padding: 20px;
+        .horario-item-content {
+            flex: 1;
         }
 
-        .card-title {
-            color: #333;
-            font-size: 18px;
+        .horario-item-content h4 {
+            margin: 0 0 4px 0;
+            color: #1f2937;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 15px;
         }
 
-        .card-info {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #555;
+        .horario-item-content p {
+            margin: 0;
+            color: #6b7280;
             font-size: 14px;
         }
 
-        .info-item i {
-            color: #667eea;
-            width: 20px;
-        }
-
-        .card-footer-custom {
-            padding: 15px 20px;
-            background: #f8f9fa;
+        .horario-item-actions {
             display: flex;
-            gap: 10px;
-            justify-content: flex-end;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         .btn-action {
-            padding: 8px 12px;
+            width: 36px;
+            height: 36px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 14px;
         }
 
         .btn-view {
-            background: #17a2b8;
+            background: #3b82f6;
             color: white;
         }
 
         .btn-view:hover {
-            background: #138496;
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .btn-edit {
-            background: #ffc107;
-            color: #333;
+            background: #f59e0b;
+            color: white;
         }
 
         .btn-edit:hover {
-            background: #e0a800;
+            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-pdf {
+            background: #df0c0c;
+            color: white;
+        }
+
+        .btn-pdf:hover {
+            background: #c51f1f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .btn-delete {
-            background: #dc3545;
+            background: #ef4444;
             color: white;
         }
 
         .btn-delete:hover {
-            background: #c82333;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
-
-        .status-active .status-dot {
-            background: #28a745;
-        }
-
-        .status-inactive .status-dot {
-            background: #dc3545;
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 
