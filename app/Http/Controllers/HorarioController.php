@@ -32,6 +32,12 @@ class HorarioController extends Controller
 
         return view('admin.horario.index', compact('grados', 'areasFormacion', 'secciones', 'bloquesHorarios'));
     }
+/*
+    public function apiIndex(
+       $resultado=Horario::where('status', true)->get();
+
+       return response()->json($resultado);
+    )*/
 
     public function create()
     {

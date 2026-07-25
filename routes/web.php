@@ -34,6 +34,7 @@ use App\Http\Controllers\InstitucionProcedenciaController;
 use App\Http\Controllers\BloqueHorarioController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\InasistenciaController;
+use App\Http\Controllers\Permisos_RepososController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -428,6 +429,21 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('inasistencia.index');
     Route::get('inasistencia/inasistencia_justificacion', [InasistenciaController::class, 'inasistencia_justificacion'])
         ->name('inasistencia.justificacion');
+
+        // ================== REPOSOS Y PERMISOS ==================
+    Route::get('permisos_reposos', [Permisos_RepososController::class, 'index'])
+        ->name('permisos_reposos.index');
+    Route::get('permisos_reposos/verificar', [Permisos_RepososController::class, 'verificarExistencia'])
+        ->name('permisos_reposos.verificar');
+
+    Route::middleware(['verificar.anio.escolar'])->group(function () {
+        Route::post('permisos_reposos/modales/store', [Permisos_RepososController::class, 'store'])
+            ->name('permisos_reposos.modales.store');
+        Route::post('permisos_reposos/{id}/update', [Permisos_RepososController::class, 'update'])
+            ->name('permisos_reposos.modales.update');
+        Route::delete('permisos_reposos/{id}', [Permisos_RepososController::class, 'destroy'])
+            ->name('permisos_reposos.destroy');
+    });
 });
 
 

@@ -27,6 +27,12 @@ class DocenteController extends Controller
             ->exists();
     }
 
+    public function apiIndex(){
+        $registros=Docente::where('status', true)->get();
+
+        return response()->json($registros);
+    }
+
     public function index()
     {
         $buscar = request('buscar');
