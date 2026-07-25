@@ -27,8 +27,10 @@
                     </a>
                 </button>
                 <button class="quick-action-btn">
-                    <i class="fas fa-file-alt"></i>
-                    <span>Generar Acta</span>
+                    <a href="{{ route('admin.acta.create') }}">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Acta de Entrevista</span>
+                    </a>
                 </button>
             </div>
         </div>

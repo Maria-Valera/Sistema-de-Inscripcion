@@ -222,10 +222,10 @@ return [
 
         // ================== PANEL PRINCIPAL ==================
         [
-            'text' => 'Panel Principal',
+            'text' => 'Panel Director',
             'url' => 'home',
             'icon' => 'fas fa-fw fa-tachometer-alt',
-            
+
             'active' => ['home', 'home/*'],
         ],
 
@@ -264,6 +264,15 @@ return [
             ],
         ],
 
+        ['header' => 'ASISTENCIA'],
+
+        [
+            'text' => 'Permisos y Reposos',
+            'url' => 'admin/permisos_reposos',
+            'icon' => 'fas fa-fw fa-calendar-check',
+            'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
+        ],
+
         // ================== EVALUACIÓN ==================
         [
             'text' => 'Historial del Percentil',
@@ -287,6 +296,13 @@ return [
             'url' => 'representante',
             'icon' => 'fas fa-fw fa-user-tie',
             'active' => ['representante', 'representante/*'],
+        ],
+
+        [
+            'text' => 'Aulas',
+            'url' => 'aulas',
+            'icon' => 'fas fa-fw fa-door-open',
+            'active' => ['aulas', 'aulas/*'],
         ],
 
         // ============================================================
@@ -358,7 +374,7 @@ return [
 
                 // Asignaciones
                 [
-                    
+
                     'text' => 'ASIGNACIONES',
                     'icon' => 'fas fa-fw fa-link',
                     'active' => ['admin/transacciones/grado_area_formacion*', 'admin/transacciones/area_estudio_realizado*', 'admin/transacciones/docente*'],
@@ -382,9 +398,9 @@ return [
                 ],
 
                 ['header' => 'DATOS PERSONALES'],
-                
+
                 [
-                    
+
                     'text' => 'DATOS',
                     'icon' => 'fas fa-fw fa-user',
                     'active' => ['admin/etnia_indigena*', 'admin/discapacidad*', 'admin/ocupacion*'],
@@ -491,6 +507,17 @@ return [
             'icon' => 'fas fa-clipboard-list',
             'role' => 'Subdirectora',
         ],
+
+// ============================================================
+//  MENU DEL DOCENTE
+// ============================================================
+[
+    'text' => 'Panel Docente',
+    'url' => 'dashboard/docente',
+    'icon' => 'fas fa-chalkboard-teacher',
+    'role' => 'Docente',
+],
+
 
 
 /*         ['header' => 'ADMINISTRACIÓN'],

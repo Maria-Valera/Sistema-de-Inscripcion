@@ -649,10 +649,10 @@
         function loadNotifications() {
             const container = document.getElementById('notifications-container');
             const countBadge = document.getElementById('notification-count');
-            
+
             // Actualizar contador
             countBadge.textContent = notificationsData.length;
-            
+
             // Generar HTML para cada notificación
             container.innerHTML = notificationsData.map(notification => `
                 <div class="notification-item">
