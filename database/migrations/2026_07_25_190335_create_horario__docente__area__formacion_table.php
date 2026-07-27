@@ -15,10 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('horario_id');
             $table->foreign('horario_id')->references('id')->on('horario')->onDelete('cascade');
-            $table->unsignedBigInteger('docente_id');
-            $table->foreign('docente_id')->references('id')->on('docentes')->onDelete('cascade');
-            $table->unsignedBigInteger('area_formacion_id');
-            $table->foreign('area_formacion_id')->references('id')->on('area_formacions')->onDelete('cascade');
+            $table->unsignedBigInteger('docente_area_grado_id');
+            $table->foreign('docente_area_grado_id')->references('id')->on('docente_area_grados')->onDelete('cascade');
             $table->timestamps();
         });
     }
