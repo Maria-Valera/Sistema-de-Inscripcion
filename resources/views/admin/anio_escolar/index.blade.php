@@ -119,7 +119,7 @@
 
         <div class="card-body-modern">
             <div class="table-wrapper">
-                <table class="table-modern overflow-hidden hidden">
+                <table class="table-modern overflow-hidden ">
                     <thead>
                         <tr style="text-align: center">
                             <th width="60">#</th>

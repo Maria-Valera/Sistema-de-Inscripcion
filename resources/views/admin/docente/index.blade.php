@@ -96,7 +96,7 @@
                 </div>
 
                 <div class="header-right d-flex align-items-center gap-2 flex-wrap">
-                   
+
                     <form action="{{ route('admin.docente.index') }}" class="mb-0 search-sm">
                         <div class="search-modern">
                             <i class="fas fa-search"></i>
@@ -114,7 +114,7 @@
 
             <div class="card-body-modern">
                 <div class="table-wrapper">
-                    <table class="table-modern overflow-hidden hidden">
+                    <table class="table-modern overflow-hidden ">
                         <thead>
                             <tr style="text-align: center">
                                 <th style="text-align: center">Cédula</th>

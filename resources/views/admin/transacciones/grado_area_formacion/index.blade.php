@@ -126,7 +126,7 @@
             </div>
             <div class="card-body-modern">
                 <div class="table-wrapper">
-                    <table class="table-modern overflow-hidden hidden " style="text-align: center">
+                    <table class="table-modern overflow-hidden  " style="text-align: center">
                         <thead>
                             <tr>
                                 <th style="text-align: center">Código</th>
