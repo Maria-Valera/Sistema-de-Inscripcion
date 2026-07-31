@@ -24,6 +24,6 @@ class Horario_DiasSemana extends Model
     
     public function diaSemana()
     {
-        return $this->belongsTo(DiaSemana::class);
+        return $this->belongsTo(Dias_semana::class);
     }
 }

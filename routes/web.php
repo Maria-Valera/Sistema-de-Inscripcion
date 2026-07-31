@@ -444,6 +444,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('permisos_reposos/create', function () {
         return view('admin.permisos_reposos.create');
     })->name('permisos_reposos.create');
+
+    // ================== HORARIO ==================
+    Route::get('horario', [HorarioController::class, 'index'])
+        ->name('horario.index');
+    Route::get('horario/create', [HorarioController::class, 'create'])
+        ->name('horario.create');
 });
 
 // ====== PORTAL DEL REPRESENTANTE ======
@@ -459,11 +465,6 @@ Route::middleware(['auth'])->prefix('portal-representante')->name('portal-repres
         Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'carnetIndex'])->name('index');
         Route::get('/imprimir', [\App\Http\Controllers\PortalRepresentanteController::class, 'carnetImprimir'])->name('imprimir');
     });
-    // ================== HORARIO ==================
-    Route::get('horario', [HorarioController::class, 'index'])
-        ->name('horario.index');
-    Route::get('horario/create', [HorarioController::class, 'create'])
-        ->name('horario.create');
 
     // ================== INASISTENCIA ==================
     Route::get('inasistencia', [InasistenciaController::class, 'index'])

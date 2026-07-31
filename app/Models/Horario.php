@@ -36,7 +36,7 @@ class Horario extends Model
     
     public function diasSemana()
     {
-        return $this->belongsToMany(DiaSemana::class, 'horario__dias_semana', 'horario_id', 'dia_semana_id')
+        return $this->belongsToMany(Dias_semana::class, 'horario__dias_semana', 'horario_id', 'dias_semana_id')
                     ->withPivot('status')
                     ->withTimestamps();
     }
@@ -44,5 +44,10 @@ class Horario extends Model
     public function docentesAreaFormacion()
     {
         return $this->hasMany(Horario_Docente_AreaFormacion::class, 'horario_id');
+    }
+    
+    public function secciones()
+    {
+        return $this->hasMany(Horario_Seccion::class, 'horario_id');
     }
 }
