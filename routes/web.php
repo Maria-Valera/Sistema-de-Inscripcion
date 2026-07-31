@@ -437,13 +437,29 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('historico.index');
 
     // ================== PERMISOS Y REPOSOS ==================
-    Route::get('permisos_reposos', function () {
-        return view('admin.permisos_reposos.index');
-    })->name('permisos_reposos.index');
+    Route::get('permisos_reposos', [Permisos_RepososController::class, 'index'])
+        ->name('permisos_reposos.index');
 
-    Route::get('permisos_reposos/create', function () {
-        return view('admin.permisos_reposos.create');
-    })->name('permisos_reposos.create');
+    Route::get('permisos_reposos/create', [Permisos_RepososController::class, 'create'])
+        ->name('permisos_reposos.create');
+
+    Route::get('permisos_reposos/verificar', [Permisos_RepososController::class, 'verificarExistencia'])
+        ->name('permisos_reposos.verificar');
+
+    Route::middleware(['verificar.anio.escolar'])->group(function () {
+        Route::post('permisos_reposos/modales/store', [Permisos_RepososController::class, 'store'])
+            ->name('permisos_reposos.modales.store');
+        Route::post('permisos_reposos/{id}/update', [Permisos_RepososController::class, 'update'])
+            ->name('permisos_reposos.modales.update');
+        Route::delete('permisos_reposos/{id}', [Permisos_RepososController::class, 'destroy'])
+            ->name('permisos_reposos.destroy');
+    });
+
+    // ================== INASISTENCIA ==================
+    Route::get('inasistencia', [InasistenciaController::class, 'index'])
+        ->name('inasistencia.index');
+    Route::get('inasistencia/inasistencia_justificacion', [InasistenciaController::class, 'inasistencia_justificacion'])
+        ->name('inasistencia.justificacion');
 
     // ================== HORARIO ==================
     Route::get('horario', [HorarioController::class, 'index'])

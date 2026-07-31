@@ -25,6 +25,13 @@ class Permisos_RepososController extends Controller
         return view('admin.permisos_reposos.index', compact('permisosReposos', 'anioEscolarActivo'));
     }
 
+    public function create()
+    {
+        $anioEscolarActivo = $this->verificarAnioEscolar();
+
+        return view('admin.permisos_reposos.create', compact('anioEscolarActivo'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
