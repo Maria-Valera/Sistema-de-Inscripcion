@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('primer_telefono')->nullable(); 
             $table->string('codigo')->nullable();
             $table->string('dependencia')->nullable();
+            $table->string('horas_academicas')->nullable();
             $table->boolean('status')->default(true);
             $table->foreignId('persona_id')->constrained('personas')->cascadeOnDelete();
             $table->timestamps();

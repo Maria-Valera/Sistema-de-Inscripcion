@@ -27,6 +27,12 @@ class GradoController extends Controller
         return view('admin.grado.index', compact('grados', 'anioEscolarActivo'));
     }
 
+    public function apiIndex(){
+        $registros= Grado::where('status', true)
+        ->get();
+        
+        return response()->json($registros);
+    }
 
     public function store(Request $request)
     {

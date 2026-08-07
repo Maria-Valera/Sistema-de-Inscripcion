@@ -14,6 +14,15 @@ class BloqueHorarioController extends Controller
             ->orWhere('status', 'Extendido')
             ->exists();
     }
+    
+    public function apiIndex()
+    {
+        $bloques = BloqueHorario::where('status', true)
+            ->orderBy('hora_inicio', 'asc')
+            ->get();
+        
+        return response()->json($bloques);
+    }
 
     public function index()
     {
@@ -141,3 +150,7 @@ class BloqueHorarioController extends Controller
             ->with('success', 'El bloque horario fue inactivado correctamente.');
     }
 }
+
+
+
+

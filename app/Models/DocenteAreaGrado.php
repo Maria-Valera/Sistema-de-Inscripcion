@@ -73,4 +73,9 @@ class DocenteAreaGrado extends Model
     {
         return $this->belongsTo(GrupoEstable::class);
     }
+    
+    public function horarios()
+    {
+        return $this->hasMany(HorarioDocenteAreaFormacion::class, 'docente_area_grado_id');
+    }
 }

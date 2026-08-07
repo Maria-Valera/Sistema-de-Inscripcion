@@ -398,6 +398,15 @@
                                 </div>
                             @enderror
                         </div>
+                        <div class="col-md-6 mb-2">
+                        <label class="form-label-modern">
+                            <i class=""></i>
+                            Horas academicas disponibles
+                        </label>
+                        <input type="number" name="horas_academicas" id="horas_academicas" required
+                                class=" text-capitalize form-control-modern"
+                                value="{{ old('hora_academica') }}" placeholder="Ej: 5" >
+                    </div>
                     </div> 
                     <div class="form-actions-modern">
                         <a href="{{ route('admin.docente.index') }}" class="btn-secondary-modern">

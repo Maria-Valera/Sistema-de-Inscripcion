@@ -98,6 +98,22 @@
             color: var(--primary);
         }
 
+        .docente-horas {
+            font-size: 0.625rem;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+            padding-top: 0.25rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .docente-horas i {
+            color: var(--warning);
+            font-size: 0.5625rem;
+        }
+
         .selection-section {
             background: white;
             border-radius: 12px;
@@ -457,28 +473,9 @@
                         <thead>
                             <tr>
                                 <th class="time-header">Hora / Bloque</th>
-                                <th>Lunes</th>
-                                <th>Martes</th>
-                                <th>Miércoles</th>
-                                <th>Jueves</th>
-                                <th>Viernes</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @for ($i = 1; $i <= 8; $i++)
-                            <tr>
-                                <td class="time-cell">
-                                    <strong>Bloque {{ $i }}</strong>
-                                    <br>
-                                    <small>{{ 6 + $i }}:00 - {{ 6 + $i }}:45</small>
-                                </td>
-                                <td class="drop-zone" data-day="lunes" data-block="{{ $i }}"></td>
-                                <td class="drop-zone" data-day="martes" data-block="{{ $i }}"></td>
-                                <td class="drop-zone" data-day="miercoles" data-block="{{ $i }}"></td>
-                                <td class="drop-zone" data-day="jueves" data-block="{{ $i }}"></td>
-                                <td class="drop-zone" data-day="viernes" data-block="{{ $i }}"></td>
-                            </tr>
-                            @endfor
                         </tbody>
                     </table>
                 </div>
@@ -537,6 +534,157 @@
             let horarioAsignaciones = {};
             const notificationsContainer = document.getElementById('notificationsContainer');
 
+            // Variables para almacenar datos de la API
+            let diasSemana = [];
+            let bloquesHorario = [];
+            let horarioData = [];
+
+            // Función para cargar datos de la API
+            async function cargarDatosAPI() {
+                try {
+                    const [diasResponse, bloquesResponse, horarioResponse] = await Promise.all([
+                        fetch('/api/dias-semana'),
+                        fetch('/api/bloques-horario'),
+                        fetch('/api/horario')
+                    ]);
+
+                    diasSemana = await diasResponse.json();
+                    bloquesHorario = await bloquesResponse.json();
+                    horarioData = await horarioResponse.json();
+
+                    console.log('Días de semana:', diasSemana);
+                    console.log('Bloques horario:', bloquesHorario);
+                    console.log('Horario data:', horarioData);
+
+                    renderizarCalendario();
+                } catch (error) {
+                    console.error('Error al cargar datos de la API:', error);
+                    mostrarNotificacion('Error al cargar datos del horario', 'error');
+                }
+            }
+
+            // Función para cargar docentes desde la API
+            async function cargarDocentesAPI(nivel) {
+                try {
+                    const areaFormacionId = areaFormacion.value;
+                    const seccionId = document.getElementById('seccion').value;
+
+                    const params = new URLSearchParams();
+                    if (nivel) params.append('grado_id', nivel);
+                    if (areaFormacionId) params.append('area_formacion_id', areaFormacionId);
+                    if (seccionId) params.append('seccion_id', seccionId);
+
+                    const url = `/api/docente?${params.toString()}`;
+                    const response = await fetch(url);
+                    const docentes = await response.json();
+
+                    console.log('Docentes cargados:', docentes);
+
+                    renderizarDocentes(docentes);
+                } catch (error) {
+                    console.error('Error al cargar docentes:', error);
+                    mostrarNotificacion('Error al cargar docentes', 'error');
+                }
+            }
+
+            // Función para renderizar docentes en el sidebar
+            function renderizarDocentes(docentes) {
+                if (docentes.length === 0) {
+                    docentesList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-user-tie"></i>
+                            <p>No hay docentes disponibles</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                docentesList.innerHTML = docentes.map(docente => {
+                    const nombre = docente.nombre_completo || 'Sin nombre';
+                    const area = docente.area || 'Sin área';
+                    const horasAcademicas = docente.horas_academicas || 0;
+
+                    return `
+                        <div class="docente-card" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${area}" data-horas="${horasAcademicas}">
+                            <div class="docente-name">${nombre}</div>
+                            <div class="docente-area">
+                                <i class="fas fa-book"></i>
+                                ${area}
+                            </div>
+                            <div class="docente-horas">
+                                <i class="fas fa-clock"></i>
+                                ${horasAcademicas} horas académicas
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Función para renderizar el calendario dinámicamente
+            function renderizarCalendario() {
+                const thead = document.querySelector('.horario-matrix thead tr');
+                const tbody = document.querySelector('.horario-matrix tbody');
+
+                // Renderizar columnas (días de la semana)
+                thead.innerHTML = '<th class="time-header">Hora / Bloque</th>';
+                diasSemana.forEach(dia => {
+                    const th = document.createElement('th');
+                    th.textContent = dia.nombre_dia || dia.nombre;
+                    thead.appendChild(th);
+                });
+
+                // Renderizar filas (bloques horarios) y celdas
+                tbody.innerHTML = '';
+                bloquesHorario.forEach((bloque, index) => {
+                    const tr = document.createElement('tr');
+
+                    // Celda de tiempo
+                    const timeCell = document.createElement('td');
+                    timeCell.className = 'time-cell';
+                    timeCell.innerHTML = `
+                        <strong>Bloque ${index + 1}</strong>
+                        <br>
+                        <small>${bloque.hora_inicio} - ${bloque.hora_fin}</small>
+                    `;
+                    tr.appendChild(timeCell);
+
+                    // Celdas de días
+                    diasSemana.forEach(dia => {
+                        const td = document.createElement('td');
+                        td.className = 'drop-zone';
+                        const diaNombre = dia.nombre_dia || dia.nombre;
+                        td.dataset.day = diaNombre.toLowerCase();
+                        td.dataset.block = index + 1;
+
+                        // Buscar si hay horario asignado para este día y bloque
+                        const horarioAsignado = horarioData.find(h => {
+                            const apiDiaNombre = h.dias ? (h.dias.nombre_dia || h.dias.nombre) : '';
+                            const apiBloqueId = h.bloques ? h.bloques.id : null;
+                            return apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
+                        });
+
+                        if (horarioAsignado) {
+                            const docenteNombre = horarioAsignado.docente ? horarioAsignado.docente.nombre : 'N/A';
+                            const materiaNombre = horarioAsignado.materia ? horarioAsignado.materia.nombre : 'N/A';
+
+                            td.innerHTML = `
+                                <div class="assigned-docente">
+                                    <span class="docente-nombre">${docenteNombre}</span>
+                                    <span class="docente-area">${materiaNombre}</span>
+                                </div>
+                            `;
+                        }
+
+                        tr.appendChild(td);
+                    });
+
+                    tbody.appendChild(tr);
+                });
+
+                // Re-inicializar drag and drop después de renderizar
+                inicializarDragAndDrop();
+            }
+
             // Función para mostrar notificaciones
             function mostrarNotificacion(mensaje, tipo = 'info') {
                 const icon = tipo === 'error' ? 'fa-exclamation-circle' : 
@@ -572,8 +720,8 @@
                 seccionNivel.style.display = 'none';
                 vistaCalendario.style.display = 'flex';
 
-                cargarDocentes(nivel);
-                inicializarDragAndDrop();
+                cargarDocentesAPI(nivel);
+                cargarDatosAPI();
             });
 
             // Cargar docentes según nivel
@@ -601,19 +749,17 @@
                 `).join('');
             }
 
-            // Filtrar docentes por área
+            // Filtrar docentes por área de formación
             areaFormacion.addEventListener('change', function() {
-                const area = this.value.toLowerCase();
-                const cards = document.querySelectorAll('.docente-card');
-                
-                cards.forEach(card => {
-                    const cardArea = card.dataset.area.toLowerCase();
-                    if (!area || cardArea === area) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
+                const nivel = nivelSelect.value;
+                cargarDocentesAPI(nivel);
+            });
+
+            // Filtrar docentes por sección
+            const seccionSelect = document.getElementById('seccion');
+            seccionSelect.addEventListener('change', function() {
+                const nivel = nivelSelect.value;
+                cargarDocentesAPI(nivel);
             });
 
             // Inicializar Drag and Drop

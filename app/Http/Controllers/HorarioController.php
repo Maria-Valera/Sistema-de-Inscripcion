@@ -7,10 +7,64 @@ use App\Models\Grado;
 use App\Models\AreaFormacion;
 use App\Models\Seccion;
 use App\Models\Docente;
+use App\Models\Horario;
+use App\Models\Aula;
+use App\Models\AnioEscolar;
+use App\Models\BloqueHorario;
+use App\Models\Dias_semana;
 use Illuminate\Support\Facades\DB;
 
 class HorarioController extends Controller
 {
+
+    public function IndexApi(){
+        $horarios = Horario::where('status', true)
+            ->with([
+                'aula',
+                'bloqueHorarios',
+                'diasSemana',
+                'docentesAreaFormacion.docenteAreaGrado.detalleDocenteEstudio.docente.persona',
+                'docentesAreaFormacion.docenteAreaGrado.areaEstudios.areaFormacion',
+                'secciones.grado'
+            ])
+            ->get();
+
+        // Transformar los datos para que coincidan con la estructura esperada por el frontend
+        $resultado = [];
+        foreach ($horarios as $horario) {
+            foreach ($horario->diasSemana as $dia) {
+                foreach ($horario->bloqueHorarios as $bloque) {
+                    foreach ($horario->docentesAreaFormacion as $asignacion) {
+                        $docenteAreaGrado = $asignacion->docenteAreaGrado;
+                        if ($docenteAreaGrado) {
+                            $detalleDocente = $docenteAreaGrado->detalleDocenteEstudio;
+                            $areaEstudios = $docenteAreaGrado->areaEstudios;
+
+                            $resultado[] = [
+                                'id' => $horario->id,
+                                'dias' => $dia,
+                                'bloques' => $bloque,
+                                'docente' => $detalleDocente && $detalleDocente->docente ? [
+                                    'id' => $detalleDocente->docente->id,
+                                    'nombre' => $detalleDocente->docente->nombre_completo
+                                ] : null,
+                                'materia' => $areaEstudios && $areaEstudios->areaFormacion ? [
+                                    'id' => $areaEstudios->areaFormacion->id,
+                                    'nombre' => $areaEstudios->areaFormacion->nombre_area_formacion
+                                ] : null,
+                                'aula' => $horario->aula,
+                                'seccion' => $horario->secciones->first(),
+                                'grado' => $horario->secciones->first() ? $horario->secciones->first()->grado : null
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        return response()->json($resultado);
+    }
+
     public function index(Request $request)
     {
         $grados = Grado::where('status', true)
@@ -32,6 +86,12 @@ class HorarioController extends Controller
 
         return view('admin.horario.index', compact('grados', 'areasFormacion', 'secciones', 'bloquesHorarios'));
     }
+/*
+    public function apiIndex(
+       $resultado=Horario::where('status', true)->get();
+
+       return response()->json($resultado);
+    )*/
 
     public function create()
     {

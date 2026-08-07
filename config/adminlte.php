@@ -365,6 +365,13 @@ return [
                     'active' => ['admin/bloque_horario', 'admin/bloque_horario/*'],
                 ],
 
+                                [
+                    'text' => 'Reposos y permisos',
+                    'url' => 'admin/permisos_reposos',
+                    'icon' => 'fas fa-fw fa-clock',
+                    'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
+                ],
+
                 // Asignaciones
                 [
 

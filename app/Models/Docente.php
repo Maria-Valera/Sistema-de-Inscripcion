@@ -18,6 +18,7 @@ class Docente extends Model
         'anio_escolar_id',
         'codigo',
         'dependencia',
+        'horas_academicas',
         'status',
         'persona_id',
     ];

@@ -82,7 +82,7 @@
                     <p>{{ $areaFormacion->total() }} registros encontrados</p>
                 </div>
             </div>
-            
+
             <button type="button"
                     class="btn-create"
                     data-bs-toggle="modal"
@@ -96,7 +96,7 @@
 
         <div class="card-body-modern">
             <div class="table-wrapper">
-                <table class="table-modern overflow-hidden hidden">
+                <table class="table-modern overflow-hidden ">
                     <thead>
                         <tr style="text-align: center">
                             <th style="text-align: center">#</th>
@@ -228,12 +228,12 @@
              title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Crear nuevo grupo estable' }}">
                 <i class="fas fa-plus"></i>
                 <span>Nuevo Grupo Estable</span>
-            </button>            
+            </button>
         </div>
 
         <div class="card-body-modern">
             <div class="table-wrapper">
-                <table class="table-modern overflow-hidden hidden">
+                <table class="table-modern overflow-hidden ">
                     <thead>
                         <tr style="text-align: center">
                             <th style="text-align: center">#</th>
