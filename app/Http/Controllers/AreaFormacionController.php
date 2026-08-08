@@ -18,6 +18,7 @@ class AreaFormacionController extends Controller
     public function index()
     {
         $areaFormacion = AreaFormacion::where('status', true)
+            ->with('aula')
             ->orderBy('nombre_area_formacion', 'asc')
             ->paginate(5);
 
@@ -25,9 +26,13 @@ class AreaFormacionController extends Controller
             ->orderBy('nombre_grupo_estable', 'asc')
             ->paginate(5);
 
+        $aulas = \App\Models\Aula::where('status', true)
+            ->orderBy('nombre_aula', 'asc')
+            ->get();
+
         $anioEscolarActivo = $this->verificarAnioEscolar();
 
-        return view('admin.area_formacion.index', compact('areaFormacion', 'grupoEstable', 'anioEscolarActivo'));
+        return view('admin.area_formacion.index', compact('areaFormacion', 'grupoEstable', 'aulas', 'anioEscolarActivo'));
     }
 
     public function storeGrupoEstable(Request $request)
@@ -70,6 +75,8 @@ class AreaFormacionController extends Controller
             'nombre_area_formacion' => 'required|string|max:255',
             'codigo_area' => 'required|numeric',
             'siglas' => 'required|string|max:255',
+            'horas_semanales' => 'required|integer',
+            'aula_id' => 'required|exists:aulas,id_aula',
         ]);
 
         $existe = AreaFormacion::where('nombre_area_formacion', $validated['nombre_area_formacion'])
@@ -87,6 +94,8 @@ class AreaFormacionController extends Controller
             $areaFormacion->nombre_area_formacion = $validated['nombre_area_formacion'];
             $areaFormacion->codigo_area = $validated['codigo_area'];
             $areaFormacion->siglas = $validated['siglas'];
+            $areaFormacion->horas_semanales = $validated['horas_semanales'];
+            $areaFormacion->aula_id = $validated['aula_id'];
             $areaFormacion->status = true;
             $areaFormacion->save();
 
@@ -140,6 +149,8 @@ class AreaFormacionController extends Controller
             'nombre_area_formacion' => 'required|string|max:255',
             'codigo_area' => 'required|numeric',
             'siglas' => 'required|string|max:255',
+            'horas_semanales' => 'required|integer',
+            'aula_id' => 'required|exists:aulas,id_aula',
         ]);
 
         $existe = AreaFormacion::where('nombre_area_formacion', $validated['nombre_area_formacion'])
@@ -157,6 +168,8 @@ class AreaFormacionController extends Controller
             $areaFormacion->nombre_area_formacion = $validated['nombre_area_formacion'];
             $areaFormacion->codigo_area = $validated['codigo_area'];
             $areaFormacion->siglas = $validated['siglas'];
+            $areaFormacion->horas_semanales = $validated['horas_semanales'];
+            $areaFormacion->aula_id = $validated['aula_id'];
             $areaFormacion->save();
 
             return redirect()
@@ -247,7 +260,7 @@ class AreaFormacionController extends Controller
     public function destroy($id)
     {
         try {
-            $areaFormacion = AreaFormacion::find($id);
+            $areaFormacion = AreaFormacion::with('aula')->find($id);
 
 
             if ($areaFormacion) {

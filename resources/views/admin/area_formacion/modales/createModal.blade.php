@@ -71,6 +71,25 @@
                                 Este campo es obligatorio.
                             </div>
                         @enderror
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label for="aula_id" class="form-label-modern">
+                            <i class="fas fa-door-open"></i>
+                            Aula Asignada
+                        </label>
+                        <select name="aula_id" id="aula_id" class="form-control-modern" required>
+                            <option value="">Seleccione un aula</option>
+                            @foreach($aulas ?? [] as $aula)
+                                <option value="{{ $aula->id_aula }}">{{ $aula->nombre_aula }} - {{ $aula->tipo_aula }}</option>
+                            @endforeach
+                        </select>
+                        
+                        @error('aula_id')
+                            <div class="error-message">
+                                Este campo es obligatorio.
+                            </div>
+                        @enderror
                     </div> 
 
                     <div class="modal-footer-create">

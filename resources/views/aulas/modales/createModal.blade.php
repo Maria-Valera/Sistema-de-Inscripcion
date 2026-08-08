@@ -47,6 +47,30 @@
                         </div>
                     </div>
 
+                    <div class="form-group-modern">
+                        <label for="tipo_aula_crear" class="form-label-modern">
+                            <i class="fas fa-layer-group"></i> Tipo de Aula
+                        </label>
+                        <select class="form-control-modern"
+                               id="tipo_aula_crear"
+                               name="tipo_aula"
+                               required>
+                            <option value="">Seleccione el tipo de aula</option>
+                            <option value="Aula Regular">Aula Regular</option>
+                            <option value="Laboratorio">Laboratorio</option>
+                            <option value="Sala Especializada">Sala Especializada</option>
+                            <option value="Aula Magna">Aula Magna</option>
+                            <option value="Biblioteca">Biblioteca</option>
+                            <option value="Gimnasio">Gimnasio</option>
+                            <option value="Patio">Patio</option>
+                        </select>
+
+                        <div class="error-message" id="error-tipo-crear-vacio">
+                            <i class="fas fa-exclamation-circle"></i>
+                            El tipo de aula es obligatorio.
+                        </div>
+                    </div>
+
                     <div class="modal-footer-create">
                         <div class="footer-buttons">
                             <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">

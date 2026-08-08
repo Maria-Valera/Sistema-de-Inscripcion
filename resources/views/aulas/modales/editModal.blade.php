@@ -47,6 +47,30 @@
                         </div>
                     </div>
 
+                    <div class="form-group-modern">
+                        <label for="tipo_aula_editar_{{ $aula->id_aula }}" class="form-label-modern">
+                            <i class="fas fa-layer-group"></i> Tipo de Aula
+                        </label>
+                        <select class="form-control-modern"
+                               id="tipo_aula_editar_{{ $aula->id_aula }}"
+                               name="tipo_aula"
+                               required>
+                            <option value="">Seleccione el tipo de aula</option>
+                            <option value="Aula Regular" {{ $aula->tipo_aula == 'Aula Regular' ? 'selected' : '' }}>Aula Regular</option>
+                            <option value="Laboratorio" {{ $aula->tipo_aula == 'Laboratorio' ? 'selected' : '' }}>Laboratorio</option>
+                            <option value="Sala Especializada" {{ $aula->tipo_aula == 'Sala Especializada' ? 'selected' : '' }}>Sala Especializada</option>
+                            <option value="Aula Magna" {{ $aula->tipo_aula == 'Aula Magna' ? 'selected' : '' }}>Aula Magna</option>
+                            <option value="Biblioteca" {{ $aula->tipo_aula == 'Biblioteca' ? 'selected' : '' }}>Biblioteca</option>
+                            <option value="Gimnasio" {{ $aula->tipo_aula == 'Gimnasio' ? 'selected' : '' }}>Gimnasio</option>
+                            <option value="Patio" {{ $aula->tipo_aula == 'Patio' ? 'selected' : '' }}>Patio</option>
+                        </select>
+
+                        <div class="error-message" id="error-tipo-editar-vacio-{{ $aula->id_aula }}">
+                            <i class="fas fa-exclamation-circle"></i>
+                            El tipo de aula es obligatorio.
+                        </div>
+                    </div>
+
                     <div class="modal-footer-edit">
                         <div class="footer-buttons">
                             <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">

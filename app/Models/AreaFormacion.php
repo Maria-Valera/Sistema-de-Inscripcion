@@ -14,6 +14,8 @@ class AreaFormacion extends Model
         'nombre_area_formacion',
         'codigo_area',
         'siglas',
+        'horas_semanales',
+        'aula_id',
         'status',
     ];
 
@@ -22,6 +24,11 @@ class AreaFormacion extends Model
         return $this->belongsToMany(Grado::class, 'grado_area_formacions')
                     ->withPivot('status')
                     ->withTimestamps();
+    }
+
+    public function aula()
+    {
+        return $this->belongsTo(Aula::class, 'aula_id', 'id_aula');
     }
 
 

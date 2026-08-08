@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('nombre_area_formacion');
             $table->integer('codigo_area');
             $table->string('siglas');
+            $table->integer('horas_semanales');
+            $table->foreignId('aula_id')->constrained('aulas', 'id_aula')->onDelete('restrict');
             $table->boolean('status')->default(true);
             $table->timestamps();
         });

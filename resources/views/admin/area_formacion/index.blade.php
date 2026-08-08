@@ -103,6 +103,7 @@
                             <th style="text-align: center">Área de formación</th>
                             <th style="text-align: center">Código</th>
                             <th style="text-align: center">Siglas</th>
+                            <th style="text-align: center">Aula</th>
                             <th style="text-align: center">Estado</th>
                             <th style="text-align: center">Acciones</th>
                         </tr>
@@ -110,7 +111,7 @@
                     <tbody style="text-align: center">
                         @if($areaFormacion->isEmpty())
                             <tr>
-                                <td colspan="4">
+                                <td colspan="6">
                                     <div class="empty-state">
                                         <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                                         <h4>No hay áreas de formación registradas</h4>
@@ -126,6 +127,13 @@
                                         <td class="title-main">{{ $datos->nombre_area_formacion }}</td>
                                         <td>{{ $datos->codigo_area }}</td>
                                         <td>{{ $datos->siglas }}</td>
+                                        <td>
+                                            @if($datos->aula)
+                                                {{ $datos->aula->nombre_aula }}
+                                            @else
+                                                <span class="text-muted">Sin asignar</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span class="status-badge status-active">
                                                 <span class="status-dot"></span>
