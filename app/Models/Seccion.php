@@ -44,4 +44,8 @@ class Seccion extends Model
     {
         return $this->hasMany(EntradasPercentil::class, 'seccion_id');
     }
+
+    public function seccion(){
+        return $this->belongsTo(seccion_aulas::class, "id_seccion", "id");
+    }
 }

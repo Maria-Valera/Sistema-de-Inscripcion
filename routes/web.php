@@ -38,6 +38,7 @@ use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\InasistenciaController;
 use App\Http\Controllers\Permisos_RepososController;
 use App\Http\Controllers\ActaEntrevistaController;
+use App\Http\Controllers\Seccion_AulaController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -453,6 +454,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
             ->name('permisos_reposos.modales.update');
         Route::delete('permisos_reposos/{id}', [Permisos_RepososController::class, 'destroy'])
             ->name('permisos_reposos.destroy');
+    });
+    // ================== SECCION_AULA ==================
+    Route::get('seccion_aula', [Seccion_AulaController::class, 'index'])
+        ->name('seccion_aula.index');
+    Route::get('seccion_aula/verificar', [Seccion_AulaController::class, 'verificarExistencia'])->name('seccion_aula.verificar');
+    Route::get('seccion_aula/secciones-por-grado/{grado}', [Seccion_AulaController::class, 'seccionesPorGrado'])
+        ->name('seccion_aula.secciones-por-grado');
+
+    Route::middleware(['verificar.anio.escolar'])->group(function () {
+        Route::post('seccion_aula/modales/store', [Seccion_AulaController::class, 'store'])->name('seccion_aula.modales.store');
+        Route::put('seccion_aula/{id}', [Seccion_AulaController::class, 'update'])->name('seccion_aula.modales.update');
+        Route::delete('seccion_aula/{id}', [Seccion_AulaController::class, 'destroy'])->name('seccion_aula.destroy');
     });
 
     // ================== INASISTENCIA ==================

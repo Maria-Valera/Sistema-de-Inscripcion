@@ -305,6 +305,13 @@ return [
             'active' => ['aulas', 'aulas/*'],
         ],
 
+        [
+            'text' => 'Asignar Aulas a Seccion',
+            'url' => 'admin/seccion_aula',
+            'icon' => 'fas fa-fw fa-door-open',
+            'active' => ['admin/seccion_aula', 'admin/seccion_aula/*'],
+        ],
+
         // ============================================================
         //  GESTIÓN DOCENTES
         // ============================================================

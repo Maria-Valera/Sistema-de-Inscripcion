@@ -23,4 +23,8 @@ class Aula extends Model
     {
         return $query->where('status', true);
     }
+
+     public function aula(){
+        return $this->hasMany(seccion_aula::class, "id_aula", "id_aula");
+    }
 }
