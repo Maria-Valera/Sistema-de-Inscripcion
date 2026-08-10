@@ -116,6 +116,14 @@ class Docente extends Model
         return $this->belongsTo(Persona::class, 'persona_id', 'id');
     }
 
+    /**
+     * Relación con DocenteNoDisponibilidad
+     */
+    public function noDisponibilidades()
+    {
+        return $this->hasMany(DocenteNoDisponibilidad::class, 'docente_id');
+    }
+
 
     /**
      * Accessor para obtener el nombre completo

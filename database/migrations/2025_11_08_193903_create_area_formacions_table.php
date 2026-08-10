@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('codigo_area');
             $table->string('siglas');
             $table->integer('horas_semanales');
-            $table->foreignId('aula_id')->constrained('aulas', 'id_aula')->onDelete('restrict');
+            $table->unsignedBigInteger('aula_id');
             $table->boolean('status')->default(true);
             $table->timestamps();
         });

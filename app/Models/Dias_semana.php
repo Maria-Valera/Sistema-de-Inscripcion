@@ -11,4 +11,9 @@ class Dias_semana extends Model
     protected $fillable = [
         'nombre_dia',
     ];
+
+    public function noDisponibilidades()
+    {
+        return $this->hasMany(DocenteNoDisponibilidad::class, 'dias_semana_id');
+    }
 }

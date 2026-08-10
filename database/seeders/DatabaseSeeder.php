@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             PaisSeeder::class,
             AnioEscolarSeeder::class,
             GradoSeeder::class,
+            aulaSeeder::class,
             AreaFormacionSeeder::class,
             EstadoSeeder::class,
             MunicipioSeeder::class,
@@ -66,7 +67,6 @@ class DatabaseSeeder extends Seeder
             RepresentanteLegalSeeder::class,
             InscripcionSeeder::class,
             InscripcionNuevoIngresoSeeder::class,
-            aulaSeeder::class,
             DiasSemanaSeeder::class,
             BloqueHorarioSeeder::class,
 
