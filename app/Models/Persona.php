@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ConvierteAMayusculas;
 use App\Traits\Capitalizar;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Persona extends Model
 {
@@ -133,4 +134,9 @@ class Persona extends Model
             ($this->prefijoDos->prefijo ?? '') . ' ' . $this->telefono_dos
         );
     }
+
+    public function palabrasClaveAgregadas(): HasMany
+{
+    return $this->hasMany(CalendarioPalabraClave::class, 'agregada_por');
+}
 }
