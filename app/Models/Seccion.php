@@ -48,4 +48,11 @@ class Seccion extends Model
     public function seccion(){
         return $this->belongsTo(seccion_aulas::class, "id_seccion", "id");
     }
+
+    public function aulaFija()
+    {
+        return $this->hasOne(seccion_aula::class, 'id_seccion', 'id')
+                    ->where('status', true)
+                    ->with('aula');
+    }
 }

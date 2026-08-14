@@ -227,6 +227,72 @@
             opacity: 0.9;
         }
 
+        .drop-zone .assigned-docente .docente-materia {
+            font-size: 0.6875rem;
+            opacity: 0.9;
+            margin-top: 0.125rem;
+        }
+
+        .drop-zone .assigned-docente .docente-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+        }
+
+        .drop-zone .assigned-docente .aula-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: #ffc107;
+            color: #000;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.625rem;
+            font-weight: 600;
+        }
+
+        .drop-zone .assigned-docente .aula-badge i {
+            font-size: 0.5625rem;
+        }
+
+        .drop-zone .assigned-docente .seccion-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: #6c757d;
+            color: #fff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.625rem;
+            font-weight: 600;
+        }
+
+        .drop-zone .assigned-docente .seccion-badge i {
+            font-size: 0.5625rem;
+        }
+
+        .drop-zone.ocupado-por-otro {
+            background: #2c3e50;
+            border-color: #1a252f;
+            cursor: not-allowed;
+        }
+
+        .drop-zone.ocupado-por-otro .ocupado-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #95a5a6;
+            font-size: 0.75rem;
+            gap: 0.25rem;
+        }
+
+        .drop-zone.ocupado-por-otro .ocupado-indicator i {
+            font-size: 1rem;
+        }
+
         .btn-eliminar-docente {
             position: absolute;
             top: 0.25rem;
@@ -464,6 +530,22 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="form-group-modern">
+                            <label class="form-label-modern">
+                                <i class="fas fa-door-open" style="color: var(--primary);"></i>
+                                Aula
+                            </label>
+                            <select class="form-select form-control-modern" id="aula">
+                                <option value="">Todas las aulas</option>
+                                @foreach($aulas as $aula)
+                                    <option value="{{ is_array($aula) ? $aula['id_aula'] : $aula->id_aula }}"
+                                            data-seccion="{{ is_array($aula) ? $aula['seccion_id'] : null }}"
+                                            data-tipo="{{ is_array($aula) ? $aula['tipo_aula'] : $aula->tipo_aula }}">
+                                        {{ is_array($aula) ? $aula['nombre_aula'] : $aula->nombre_aula }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -534,6 +616,9 @@
             let horarioAsignaciones = {};
             const notificationsContainer = document.getElementById('notificationsContainer');
 
+            // Almacenar información de contexto para las asignaciones
+            let asignacionesContexto = {};
+
             // Variables para almacenar datos de la API
             let diasSemana = [];
             let bloquesHorario = [];
@@ -599,17 +684,50 @@
                     return;
                 }
 
+                // Obtener el área de formación seleccionada para filtrar la visualización
+                const areaFormacionId = document.getElementById('areaFormacion').value;
+                const seccionId = document.getElementById('seccion').value;
+
                 docentesList.innerHTML = docentes.map(docente => {
                     const nombre = docente.nombre_completo || 'Sin nombre';
-                    const area = docente.area || 'Sin área';
                     const horasAcademicas = docente.horas_academicas || 0;
 
+                    // Filtrar áreas de formación según el filtro seleccionado
+                    let areasAMostrar = docente.areas || [];
+                    if (areaFormacionId) {
+                        // Si hay un filtro de área, mostrar solo esa área si el docente la tiene
+                        areasAMostrar = areasAMostrar.filter(area => {
+                            // Necesitamos comparar con el nombre del área seleccionado
+                            const areaSelect = document.getElementById('areaFormacion');
+                            const areaNombre = areaSelect.options[areaSelect.selectedIndex]?.text;
+                            return area === areaNombre;
+                        });
+                    }
+
+                    const areaTexto = areasAMostrar.length > 0 ? areasAMostrar.join(', ') : 'Sin área asignada';
+
+                    // Filtrar secciones según el filtro seleccionado
+                    let seccionesAMostrar = docente.secciones || [];
+                    if (seccionId) {
+                        seccionesAMostrar = seccionesAMostrar.filter(seccion => seccion.id == seccionId);
+                    }
+
+                    const seccionTexto = seccionesAMostrar.length > 0 
+                        ? seccionesAMostrar.map(s => s.nombre).join(', ') 
+                        : (docente.secciones && docente.secciones.length > 0 
+                            ? docente.secciones.map(s => s.nombre).join(', ') 
+                            : 'Sin sección asignada');
+
                     return `
-                        <div class="docente-card" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${area}" data-horas="${horasAcademicas}">
+                        <div class="docente-card" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${areaTexto}" data-horas="${horasAcademicas}">
                             <div class="docente-name">${nombre}</div>
                             <div class="docente-area">
                                 <i class="fas fa-book"></i>
-                                ${area}
+                                ${areaTexto}
+                            </div>
+                            <div class="docente-area">
+                                <i class="fas fa-users"></i>
+                                ${seccionTexto}
                             </div>
                             <div class="docente-horas">
                                 <i class="fas fa-clock"></i>
@@ -624,6 +742,35 @@
             function renderizarCalendario() {
                 const thead = document.querySelector('.horario-matrix thead tr');
                 const tbody = document.querySelector('.horario-matrix tbody');
+
+                // Verificar que los elementos existan
+                if (!thead || !tbody) {
+                    console.error('No se encontraron elementos de la tabla del calendario');
+                    return;
+                }
+
+                // Obtener filtros seleccionados
+                const seccionId = document.getElementById('seccion')?.value || '';
+                const areaFormacionId = document.getElementById('areaFormacion')?.value || '';
+
+                console.log('Renderizando calendario con filtros:', { seccionId, areaFormacionId });
+
+                // Filtrar horarioData por sección y área de formación
+                let horarioFiltrado = horarioData;
+
+                if (seccionId) {
+                    horarioFiltrado = horarioFiltrado.filter(h => {
+                        return h.seccion && h.seccion.id == seccionId;
+                    });
+                }
+
+                if (areaFormacionId) {
+                    horarioFiltrado = horarioFiltrado.filter(h => {
+                        return h.materia && h.materia.id == areaFormacionId;
+                    });
+                }
+
+                console.log('Horarios filtrados:', horarioFiltrado.length);
 
                 // Renderizar columnas (días de la semana)
                 thead.innerHTML = '<th class="time-header">Hora / Bloque</th>';
@@ -656,23 +803,129 @@
                         td.dataset.day = diaNombre.toLowerCase();
                         td.dataset.block = index + 1;
 
-                        // Buscar si hay horario asignado para este día y bloque
-                        const horarioAsignado = horarioData.find(h => {
-                            const apiDiaNombre = h.dias ? (h.dias.nombre_dia || h.dias.nombre) : '';
-                            const apiBloqueId = h.bloques ? h.bloques.id : null;
+                        // Buscar si hay horario asignado para este día y bloque (usando datos filtrados)
+                        const horarioAsignado = horarioFiltrado.find(h => {
+                            const apiDiaNombre = h.dia ? (h.dia.nombre_dia || h.dia.nombre) : '';
+                            const apiBloqueId = h.bloque ? h.bloque.id : null;
                             return apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
                         });
 
-                        if (horarioAsignado) {
+                        // Buscar cualquier horario asignado (sin filtro) para detectar ocupación
+                        const horarioCualquiera = horarioData.find(h => {
+                            const apiDiaNombre = h.dia ? (h.dia.nombre_dia || h.dia.nombre) : '';
+                            const apiBloqueId = h.bloque ? h.bloque.id : null;
+                            return apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
+                        });
+
+                        // Verificar si hay asignación local (drag and drop)
+                        const key = `${diaNombre.toLowerCase()}-${index + 1}`;
+                        const asignacionLocal = horarioAsignaciones[key];
+
+                        // Verificar si la asignación local corresponde al contexto actual
+                        let asignacionLocalValida = false;
+                        let asignacionLocalDeOtroContexto = false;
+
+                        if (asignacionLocal) {
+                            // Convertir a strings para comparación consistente
+                            const asignacionAreaStr = String(asignacionLocal.areaFormacionId || '');
+                            const filtroAreaStr = String(areaFormacionId || '');
+                            const asignacionSeccionStr = String(asignacionLocal.seccionId || '');
+                            const filtroSeccionStr = String(seccionId || '');
+
+                            console.log('Comparando asignación local:', {
+                                key,
+                                asignacionAreaStr,
+                                filtroAreaStr,
+                                asignacionSeccionStr,
+                                filtroSeccionStr
+                            });
+
+                            // Lógica de coincidencia estricta:
+                            // - Si no hay filtro de área, cualquier área coincide
+                            // - Si hay filtro de área, debe coincidir exactamente
+                            // - Si no hay filtro de sección, cualquier sección coincide (incluyendo vacío)
+                            // - Si hay filtro de sección, debe coincidir exactamente (no se aceptan asignaciones genéricas)
+                            const coincideArea = !areaFormacionId || asignacionAreaStr === filtroAreaStr;
+                            const coincideSeccion = !seccionId || asignacionSeccionStr === filtroSeccionStr;
+
+                            console.log('Resultado comparación:', {
+                                coincideArea,
+                                coincideSeccion,
+                                razonSeccion: !seccionId ? 'sin filtro' :
+                                             asignacionSeccionStr === filtroSeccionStr ? 'coincide exacto' : 'no coincide'
+                            });
+
+                            if (coincideArea && coincideSeccion) {
+                                // La asignación corresponde al contexto actual
+                                asignacionLocalValida = true;
+                                console.log('Asignación local válida para:', key);
+                            } else {
+                                // La asignación es de otro contexto (área o sección diferente)
+                                asignacionLocalDeOtroContexto = true;
+                                console.log('Asignación local de otro contexto para:', key);
+                            }
+                        }
+
+                        // Determinar si la celda está ocupada por otra área/sección
+                        let esOcupadoPorOtro = false;
+                        if ((horarioCualquiera && !horarioAsignado && !asignacionLocalValida) || asignacionLocalDeOtroContexto) {
+                            // Hay un horario o asignación local pero no corresponde a los filtros actuales
+                            esOcupadoPorOtro = true;
+                            console.log('Celda marcada como ocupada por otro:', key);
+                        }
+
+                        // Aplicar estilo si está ocupado por otro
+                        if (esOcupadoPorOtro) {
+                            td.classList.add('ocupado-por-otro');
+                        }
+
+                        // Priorizar asignación local sobre datos de API
+                        if (asignacionLocalValida) {
+                            td.innerHTML = `
+                                <div class="assigned-docente">
+                                    <span class="docente-nombre">${asignacionLocal.nombre}</span>
+                                    <span class="docente-materia">${asignacionLocal.area}</span>
+                                    <button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', event)">×</button>
+                                </div>
+                            `;
+                        } else if (horarioAsignado) {
                             const docenteNombre = horarioAsignado.docente ? horarioAsignado.docente.nombre : 'N/A';
                             const materiaNombre = horarioAsignado.materia ? horarioAsignado.materia.nombre : 'N/A';
+                            const tipoAulaRequerida = horarioAsignado.materia ? horarioAsignado.materia.tipo_aula_requerida : 'normal';
+                            const aulaFija = horarioAsignado.aula_fija;
+                            const seccionNombre = horarioAsignado.seccion ? horarioAsignado.seccion.nombre : '';
+
+                            let aulaBadge = '';
+                            if (tipoAulaRequerida !== 'normal' && aulaFija) {
+                                aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaFija.nombre_aula}</span>`;
+                            }
+
+                            let seccionBadge = '';
+                            if (seccionNombre) {
+                                seccionBadge = `<span class="seccion-badge"><i class="fas fa-users"></i> ${seccionNombre}</span>`;
+                            }
 
                             td.innerHTML = `
                                 <div class="assigned-docente">
                                     <span class="docente-nombre">${docenteNombre}</span>
-                                    <span class="docente-area">${materiaNombre}</span>
+                                    <span class="docente-materia">${materiaNombre}</span>
+                                    <div class="docente-badges">
+                                        ${seccionBadge}
+                                        ${aulaBadge}
+                                    </div>
                                 </div>
                             `;
+                        } else if (esOcupadoPorOtro) {
+                            // Mostrar indicador de ocupado por otro
+                            td.innerHTML = `
+                                <div class="ocupado-indicator">
+                                    <i class="fas fa-lock"></i>
+                                    <span>Ocupado</span>
+                                </div>
+                            `;
+                        } else {
+                            // Celda vacía pero visible para permitir drag and drop
+                            td.innerHTML = '';
                         }
 
                         tr.appendChild(td);
@@ -680,6 +933,8 @@
 
                     tbody.appendChild(tr);
                 });
+
+                console.log('Calendario renderizado con', tbody.children.length, 'filas');
 
                 // Re-inicializar drag and drop después de renderizar
                 inicializarDragAndDrop();
@@ -717,11 +972,25 @@
                     return;
                 }
 
-                seccionNivel.style.display = 'none';
-                vistaCalendario.style.display = 'flex';
-
-                cargarDocentesAPI(nivel);
+                // Siempre cargar datos básicos (días y bloques) independientemente del área de formación
                 cargarDatosAPI();
+
+                // Validar que se seleccione un área de formación
+                setTimeout(() => {
+                    const areaFormacion = document.getElementById('areaFormacion').value;
+                    if (!areaFormacion) {
+                        mostrarNotificacion('Por favor, seleccione un área de formación', 'warning');
+                        seccionNivel.style.display = 'none';
+                        vistaCalendario.style.display = 'flex';
+                        // Enfocar el selector de área de formación
+                        document.getElementById('areaFormacion').focus();
+                    } else {
+                        seccionNivel.style.display = 'none';
+                        vistaCalendario.style.display = 'flex';
+                        cargarDocentesAPI(nivel);
+                        filtrarAulasPorSeccion();
+                    }
+                }, 100);
             });
 
             // Cargar docentes según nivel
@@ -753,14 +1022,64 @@
             areaFormacion.addEventListener('change', function() {
                 const nivel = nivelSelect.value;
                 cargarDocentesAPI(nivel);
+                renderizarCalendario(); // Re-renderizar calendario con filtro de área
             });
 
             // Filtrar docentes por sección
             const seccionSelect = document.getElementById('seccion');
             seccionSelect.addEventListener('change', function() {
+                // Validar que se haya seleccionado un área de formación primero
+                const areaFormacionId = areaFormacion.value;
+                if (!areaFormacionId) {
+                    mostrarNotificacion('Por favor, seleccione un área de formación primero', 'warning');
+                    seccionSelect.value = ''; // Resetear selección de sección
+                    return;
+                }
+
                 const nivel = nivelSelect.value;
                 cargarDocentesAPI(nivel);
+                filtrarAulasPorSeccion();
+                renderizarCalendario(); // Re-renderizar calendario con filtro de sección
             });
+
+            // Función para filtrar aulas por sección
+            function filtrarAulasPorSeccion() {
+                const seccionId = seccionSelect.value;
+                const aulaSelect = document.getElementById('aula');
+                const opciones = aulaSelect.querySelectorAll('option');
+
+                opciones.forEach(opcion => {
+                    if (opcion.value === '') {
+                        // Mantener siempre la opción "Todas las aulas"
+                        opcion.style.display = 'block';
+                        return;
+                    }
+
+                    const tipoAula = opcion.dataset.tipo;
+                    const seccionAsignada = opcion.dataset.seccion;
+
+                    if (tipoAula === 'regular') {
+                        // Aulas regulares: solo mostrar si está asignada a la sección seleccionada
+                        if (seccionId && seccionAsignada === seccionId) {
+                            opcion.style.display = 'block';
+                        } else {
+                            // Si no hay sección seleccionada o no coincide, ocultar aulas regulares
+                            opcion.style.display = 'none';
+                        }
+                    } else {
+                        // Aulas no regulares: siempre mostrar
+                        opcion.style.display = 'block';
+                    }
+                });
+
+                // Resetear selección si la opción seleccionada ya no es visible
+                if (aulaSelect.value !== '') {
+                    const opcionSeleccionada = aulaSelect.options[aulaSelect.selectedIndex];
+                    if (opcionSeleccionada.style.display === 'none') {
+                        aulaSelect.value = '';
+                    }
+                }
+            }
 
             // Inicializar Drag and Drop
             function inicializarDragAndDrop() {
@@ -786,7 +1105,7 @@
 
                 // Eventos para las zonas de drop
                 document.addEventListener('dragover', function(e) {
-                    if (e.target.classList.contains('drop-zone')) {
+                    if (e.target.classList.contains('drop-zone') && !e.target.classList.contains('ocupado-por-otro')) {
                         e.preventDefault();
                         e.dataTransfer.dropEffect = 'move';
                         e.target.classList.add('drag-over');
@@ -800,10 +1119,10 @@
                 });
 
                 document.addEventListener('drop', function(e) {
-                    if (e.target.classList.contains('drop-zone') && draggedDocente) {
+                    if (e.target.classList.contains('drop-zone') && draggedDocente && !e.target.classList.contains('ocupado-por-otro')) {
                         e.preventDefault();
                         e.target.classList.remove('drag-over');
-                        
+
                         const day = e.target.dataset.day;
                         const block = e.target.dataset.block;
                         const key = `${day}-${block}`;
@@ -814,19 +1133,43 @@
                             return;
                         }
 
-                        // Asignar docente
-                        horarioAsignaciones[key] = draggedDocente;
-                        
+                        // Obtener el área de formación y sección actuales para guardar contexto
+                        const areaFormacionId = document.getElementById('areaFormacion').value;
+                        const seccionId = document.getElementById('seccion').value;
+
+                        console.log('Guardando asignación con contexto:', {
+                            key,
+                            areaFormacionId,
+                            seccionId,
+                            draggedDocente
+                        });
+
+                        // Validar que se haya seleccionado un área de formación
+                        if (!areaFormacionId) {
+                            mostrarNotificacion('Por favor, seleccione un área de formación antes de asignar', 'warning');
+                            return;
+                        }
+
+                        // Asignar docente con contexto
+                        // Si hay sección seleccionada, guardarla; si no, guardar vacío
+                        horarioAsignaciones[key] = {
+                            ...draggedDocente,
+                            areaFormacionId: String(areaFormacionId),
+                            seccionId: seccionId ? String(seccionId) : ''
+                        };
+
                         // Actualizar visualmente con botón de eliminar
                         e.target.innerHTML = `
                             <div class="assigned-docente">
                                 <span class="docente-nombre">${draggedDocente.nombre}</span>
-                                <span class="docente-area">${draggedDocente.area}</span>
+                                <span class="docente-materia">${draggedDocente.area}</span>
                                 <button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', event)">×</button>
                             </div>
                         `;
 
                         mostrarNotificacion(`Docente ${draggedDocente.nombre} asignado correctamente`, 'success');
+                    } else if (e.target.classList.contains('ocupado-por-otro')) {
+                        mostrarNotificacion('Esta celda está ocupada por otra área o sección', 'warning');
                     }
                 });
             }

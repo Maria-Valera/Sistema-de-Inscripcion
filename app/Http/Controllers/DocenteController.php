@@ -65,7 +65,7 @@ class DocenteController extends Controller
 
         $docentes = $query->get();
 
-        // Transformar los datos para incluir nombre completo y áreas
+        // Transformar los datos para incluir nombre completo, áreas y secciones
         $resultado = $docentes->map(function ($docente) {
             // Obtener áreas de formación del docente
             $areas = DB::table('docentes as d')
@@ -80,11 +80,25 @@ class DocenteController extends Controller
                 ->pluck('af.nombre_area_formacion')
                 ->toArray();
 
+            // Obtener secciones del docente
+            $secciones = DB::table('docentes as d')
+                ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
+                ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
+                ->join('seccions as s', 'dag.seccion_id', '=', 's.id')
+                ->where('d.id', $docente->id)
+                ->where('dde.status', true)
+                ->where('dag.status', true)
+                ->where('s.status', true)
+                ->select('s.id', 's.nombre')
+                ->get()
+                ->toArray();
+
             return [
                 'id' => $docente->id,
                 'nombre_completo' => $docente->nombre_completo,
                 'area' => !empty($areas) ? implode(', ', $areas) : 'Sin área asignada',
                 'areas' => $areas,
+                'secciones' => $secciones,
                 'horas_academicas' => $docente->horas_academicas,
                 'persona_id' => $docente->persona_id,
                 'codigo' => $docente->codigo
@@ -356,7 +370,10 @@ class DocenteController extends Controller
             'detalleEstudios' => function ($q) {
                 $q->where('status', true);
             },
-            'detalleEstudios.estudiosRealizado'
+            'detalleEstudios.estudiosRealizado',
+            'noDisponibilidades.diaSemana',
+            'noDisponibilidades.bloqueHorario',
+            'noDisponibilidades.anioEscolar'
         ])
             ->findOrFail($id);
 
@@ -378,6 +395,30 @@ class DocenteController extends Controller
         $docenteEstudios = DetalleDocenteEstudio::all();
 
         return view('admin.docente.estudios', compact('docentes', 'estudios', 'docenteEstudios'));
+    }
+
+    public function disponibilidad($id)
+    {
+        $docente = Docente::with([
+            'persona',
+            'noDisponibilidades.diaSemana',
+            'noDisponibilidades.bloqueHorario',
+            'noDisponibilidades.anioEscolar'
+        ])->findOrFail($id);
+
+        $diasSemana = \App\Models\Dias_semana::all();
+        $bloquesHorario = \App\Models\BloqueHorario::where('status', true)->get();
+        $aniosEscolares = AnioEscolar::activos()->get();
+
+        $anioEscolarActivo = AnioEscolar::activos()->first();
+
+        return view('admin.docente.disponibilidad', compact(
+            'docente',
+            'diasSemana',
+            'bloquesHorario',
+            'aniosEscolares',
+            'anioEscolarActivo'
+        ));
     }
 
     public function destroy($id)

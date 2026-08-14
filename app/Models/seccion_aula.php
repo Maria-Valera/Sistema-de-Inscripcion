@@ -11,6 +11,7 @@ class seccion_aula extends Model
     protected $fillable = [
         'id_seccion',
         'id_aula',
+        'status',
     ];
 
     public function seccion(){

@@ -17,53 +17,53 @@ use Illuminate\Support\Facades\DB;
 class HorarioController extends Controller
 {
 
-    public function IndexApi(){
-        $horarios = Horario::where('status', true)
-            ->with([
-                'aula',
-                'bloqueHorarios',
-                'diasSemana',
-                'docentesAreaFormacion.docenteAreaGrado.detalleDocenteEstudio.docente.persona',
-                'docentesAreaFormacion.docenteAreaGrado.areaEstudios.areaFormacion',
-                'secciones.grado'
-            ])
-            ->get();
+    public function IndexApi()
+{
+    $horarios = Horario::where('status', true)
+        ->with([
+            'aula',
+            'bloqueHorarios',   // se queda igual, nombre plural, sin tocar el modelo
+            'diasSemana',       // se queda igual
+            'docentesAreaFormacion.docenteAreaGrado.detalleDocenteEstudio.docente.persona',
+            'docentesAreaFormacion.docenteAreaGrado.areaEstudios.areaFormacion',
+            'secciones.aulaFija',
+            'secciones.grado'
+        ])
+        ->get();
 
-        // Transformar los datos para que coincidan con la estructura esperada por el frontend
-        $resultado = [];
-        foreach ($horarios as $horario) {
-            foreach ($horario->diasSemana as $dia) {
-                foreach ($horario->bloqueHorarios as $bloque) {
-                    foreach ($horario->docentesAreaFormacion as $asignacion) {
-                        $docenteAreaGrado = $asignacion->docenteAreaGrado;
-                        if ($docenteAreaGrado) {
-                            $detalleDocente = $docenteAreaGrado->detalleDocenteEstudio;
-                            $areaEstudios = $docenteAreaGrado->areaEstudios;
+    $resultado = $horarios->map(function ($horario) {
+        // Tomamos el PRIMERO de cada relación, ya que en la práctica
+        // cada horario solo debería tener uno de cada
+        $dia = $horario->diasSemana->first();
+        $bloque = $horario->bloqueHorarios->first();
+        $asignacion = $horario->docentesAreaFormacion->first();
 
-                            $resultado[] = [
-                                'id' => $horario->id,
-                                'dias' => $dia,
-                                'bloques' => $bloque,
-                                'docente' => $detalleDocente && $detalleDocente->docente ? [
-                                    'id' => $detalleDocente->docente->id,
-                                    'nombre' => $detalleDocente->docente->nombre_completo
-                                ] : null,
-                                'materia' => $areaEstudios && $areaEstudios->areaFormacion ? [
-                                    'id' => $areaEstudios->areaFormacion->id,
-                                    'nombre' => $areaEstudios->areaFormacion->nombre_area_formacion
-                                ] : null,
-                                'aula' => $horario->aula,
-                                'seccion' => $horario->secciones->first(),
-                                'grado' => $horario->secciones->first() ? $horario->secciones->first()->grado : null
-                            ];
-                        }
-                    }
-                }
-            }
-        }
+        $docenteAreaGrado = $asignacion?->docenteAreaGrado;
+        $detalleDocente = $docenteAreaGrado?->detalleDocenteEstudio;
+        $areaEstudios = $docenteAreaGrado?->areaEstudios;
 
-        return response()->json($resultado);
-    }
+        return [
+            'id' => $horario->id,
+            'dia' => $dia,
+            'bloque' => $bloque,
+            'docente' => $detalleDocente?->docente ? [
+                'id' => $detalleDocente->docente->id,
+                'nombre' => $detalleDocente->docente->nombre_completo
+            ] : null,
+            'materia' => $areaEstudios?->areaFormacion ? [
+                'id' => $areaEstudios->areaFormacion->id,
+                'nombre' => $areaEstudios->areaFormacion->nombre_area_formacion,
+                'tipo_aula_requerida' => $areaEstudios->areaFormacion->tipo_aula_requerida ?? 'normal'
+            ] : null,
+            'aula' => $horario->aula,
+            'seccion' => $horario->secciones->first(),
+            'aula_fija' => $horario->secciones->first()?->aulaFija,
+            'grado' => $horario->secciones->first()?->grado,
+        ];
+    });
+
+    return response()->json($resultado);
+}
 
     public function index(Request $request)
     {
@@ -108,6 +108,33 @@ class HorarioController extends Controller
             ->get()
             ->unique('nombre');
 
+        // Filtrar aulas: mostrar todas las no regulares + las regulares asignadas a secciones
+        $aulasNoRegulares = Aula::where('status', true)
+            ->where('tipo_aula', '!=', 'regular')
+            ->orderBy('nombre_aula', 'asc')
+            ->get();
+
+        // Obtener aulas regulares que están asignadas a alguna sección
+        $aulasRegularesAsignadas = DB::table('aulas as a')
+            ->join('seccion_aula as sa', 'a.id_aula', '=', 'sa.id_aula')
+            ->join('seccions as s', 'sa.id_seccion', '=', 's.id')
+            ->where('a.status', true)
+            ->where('a.tipo_aula', '=', 'regular')
+            ->where('s.status', true)
+            ->select('a.*', 's.id as seccion_id', 's.nombre as seccion_nombre')
+            ->get()
+            ->map(function($aula) {
+                return [
+                    'id_aula' => $aula->id_aula,
+                    'nombre_aula' => $aula->nombre_aula . ' (Sección: ' . $aula->seccion_nombre . ')',
+                    'tipo_aula' => $aula->tipo_aula,
+                    'seccion_id' => $aula->seccion_id
+                ];
+            });
+
+        // Combinar ambas colecciones
+        $aulas = $aulasNoRegulares->concat($aulasRegularesAsignadas);
+
         // Cargar docentes activos con sus áreas de formación
         $docentes = Docente::with(['persona', 'detalleDocenteEstudio.estudiosRealizado'])
             ->where('status', true)
@@ -137,6 +164,6 @@ class HorarioController extends Controller
                 ];
             });
 
-        return view('admin.horario.create', compact('grados', 'areasFormacion', 'secciones', 'docentes'));
+        return view('admin.horario.create', compact('grados', 'areasFormacion', 'secciones', 'docentes', 'aulas'));
     }
 }

@@ -39,6 +39,7 @@ use App\Http\Controllers\InasistenciaController;
 use App\Http\Controllers\Permisos_RepososController;
 use App\Http\Controllers\ActaEntrevistaController;
 use App\Http\Controllers\Seccion_AulaController;
+use App\Http\Controllers\DocenteNoDisponibilidadController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -78,6 +79,15 @@ Route::get("/vidaEstudiantil", function () {
 // ============================================
 // RUTAS PROTEGIDAS POR AUTENTICACIÓN
 // ============================================
+
+Route::middleware(['auth'])->group(function () {
+    // ===== DOCENTE NO DISPONIBILIDAD API =====
+    Route::middleware(['verificar.anio.escolar'])->group(function () {
+        Route::get('api/docente-no-disponibilidad', [DocenteNoDisponibilidadController::class, 'index'])->name('api.docente-no-disponibilidad.index');
+        Route::post('api/docente-no-disponibilidad', [DocenteNoDisponibilidadController::class, 'store'])->name('api.docente-no-disponibilidad.store');
+        Route::delete('api/docente-no-disponibilidad/{id}', [DocenteNoDisponibilidadController::class, 'destroy'])->name('api.docente-no-disponibilidad.destroy');
+    });
+});
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -312,6 +322,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('docente/{id}', [DocenteController::class, 'destroy'])->name('docente.destroy');
         Route::get('docente/{id}/estudios', [DocenteController::class, 'estudios'])->name('docente.estudios');
         Route::post('docente/{id}/estudiosEdit', [DocenteController::class, 'estudiosEdit'])->name('docente.estudiosEdit');
+        Route::get('docente/{id}/disponibilidad', [DocenteController::class, 'disponibilidad'])->name('docente.disponibilidad');
     });
 
     // ===== TRANSACCION DOCENTE ======

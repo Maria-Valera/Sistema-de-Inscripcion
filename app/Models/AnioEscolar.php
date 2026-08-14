@@ -36,6 +36,11 @@ class AnioEscolar extends Model
         return $this->hasMany(Docente::class);
     }
 
+    public function noDisponibilidades()
+    {
+        return $this->hasMany(DocenteNoDisponibilidad::class);
+    }
+
     public function scopeActivos($query)
     {
         return $query->whereIn('status', ['Activo', 'Extendido']);

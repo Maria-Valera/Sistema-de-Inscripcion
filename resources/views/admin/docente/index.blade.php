@@ -190,6 +190,17 @@
                                                         </a>
                                                         </li>
                                                         <li>
+                                                            <a class="dropdown-item d-flex align-items-center text-info"
+                                                                type="button"
+                                                                href="{{ route('admin.docente.disponibilidad', $datos->id) }}"
+                                                                title="Disponibilidad"
+                                                                @if (!$anioEscolarActivo) disabled @endif
+                                                                title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Disponibilidad' }}">
+                                                                <i class="fas fa-calendar-times me-2"></i>
+                                                                Disponibilidad
+                                                            </a>
+                                                        </li>
+                                                        <li>
                                                             <button
                                                                 class="dropdown-item d-flex align-items-center text-danger"
                                                                 data-bs-toggle="modal"
