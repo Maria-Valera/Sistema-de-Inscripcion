@@ -35,7 +35,7 @@ class Horario extends Model
     }
     
     public function diasSemana()
-    {
+    {   
         return $this->belongsToMany(Dias_semana::class, 'horario__dias_semana', 'horario_id', 'dias_semana_id')
                     ->withPivot('status')
                     ->withTimestamps();
