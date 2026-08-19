@@ -204,6 +204,83 @@ Class GeneradorHorarioService
             return $resultado;
         }
 
+        public function buscarHuecoLibre(
+            int $docenteId,
+            int $seccionId,
+            int $aulaId,
+            int $diaActual,
+            int $bloqueActual,
+            array $asignacionesExistentes,
+            int $maxBloquesDocente,
+            int $totalDias,
+            int $totalBloques
+        ): ?array {
+            // Construir matrices de ocupación desde las asignaciones existentes
+            $docenteOcupado = [];
+            $seccionOcupado = [];
+            $bloquesPorDocente = [];
+
+            foreach ($asignacionesExistentes as $asignacion) {
+                // Excluir la asignación actual del conteo
+                if ($asignacion['docente_id'] == $docenteId &&
+                    $asignacion['seccion_id'] == $seccionId &&
+                    $asignacion['dia_id'] == $diaActual &&
+                    $asignacion['bloque_id'] == $bloqueActual) {
+                    continue;
+                }
+
+                $claveDocente = $asignacion['docente_id'] . '_' . $asignacion['dia_id'] . '_' . $asignacion['bloque_id'];
+                $claveSeccion = $asignacion['seccion_id'] . '_' . $asignacion['dia_id'] . '_' . $asignacion['bloque_id'];
+
+                $docenteOcupado[$claveDocente] = true;
+                $seccionOcupado[$claveSeccion] = true;
+
+                // Contar bloques por docente
+                if (!isset($bloquesPorDocente[$asignacion['docente_id']])) {
+                    $bloquesPorDocente[$asignacion['docente_id']] = 0;
+                }
+                $bloquesPorDocente[$asignacion['docente_id']]++;
+            }
+
+            // Obtener disponibilidad actual del docente (no disponibilidad)
+            $noDisponible = DocenteNoDisponibilidad::where('docente_id', $docenteId)->get();
+            foreach ($noDisponible as $nd) {
+                $clave = $nd->docente_id . '_' . $nd->dias_semana_id . '_' . $nd->id_bloque_hora;
+                $docenteOcupado[$clave] = true;
+            }
+
+            // Buscar hueco libre diferente al actual
+            for ($dia = 1; $dia <= $totalDias; $dia++) {
+                for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
+                    // Saltar la posición actual
+                    if ($dia == $diaActual && $bloque == $bloqueActual) {
+                        continue;
+                    }
+
+                    $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
+                    $claveSeccion = $seccionId . '_' . $dia . '_' . $bloque;
+
+                    // Verificar disponibilidad
+                    if (isset($docenteOcupado[$claveDocente])) continue;
+                    if (isset($seccionOcupado[$claveSeccion])) continue;
+
+                    // Verificar que el docente no exceda su máximo de bloques
+                    $bloquesActuales = $bloquesPorDocente[$docenteId] ?? 0;
+                    if ($bloquesActuales >= $maxBloquesDocente) continue;
+
+                    // Hueco libre encontrado
+                    return [
+                        'dia_id' => $dia,
+                        'bloque_id' => $bloque,
+                        'aula_id' => $aulaId,
+                    ];
+                }
+            }
+
+            // No se encontró hueco libre
+            return null;
+        }
+
         public function generar(int $anioEscolar, int $totalDias, int $totalBloques): array
         {
             $clases = $this->PreparasDatos();

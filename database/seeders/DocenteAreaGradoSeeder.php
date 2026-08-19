@@ -20,32 +20,32 @@ class DocenteAreaGradoSeeder extends Seeder
         $detallesDocente = DetalleDocenteEstudio::take(3)->get();
         $areasEstudio = AreaEstudioRealizado::take(2)->get();
         $grados = Grado::take(2)->get();
-        $secciones = Seccion::take(2)->get();
+        $secciones = Seccion::take(3)->get(); // Usar 3 secciones para más variedad
 
         // Crear asignaciones más realistas - cada docente con pocas materias
         $contador = 0;
         foreach ($detallesDocente as $indexDetalle => $detalle) {
-            // Cada docente tiene 2-3 materias diferentes
+            // Cada docente tiene 2 materias diferentes
             $materiasPorDocente = $areasEstudio->slice(0, 2);
-            foreach ($materiasPorDocente as $area) {
-                // Cada materia en 1-2 grados
-                $gradosPorMateria = $grados->slice(0, 1);
+            foreach ($materiasPorDocente as $indexArea => $area) {
+                // Cada materia en 1 grado
+                $gradosPorMateria = $grados->slice($indexArea, 1);
                 foreach ($gradosPorMateria as $grado) {
-                    // Cada grado en 1 sección
-                    $seccionesPorGrado = $secciones->slice(0, 1);
-                    foreach ($seccionesPorGrado as $seccion) {
-                        // Solo crear si el docente tiene relación con el área
-                        if ($detalle->docente_id && $area->area_formacion_id) {
-                            DocenteAreaGrado::create([
-                                'docente_estudio_realizado_id' => $detalle->id,
-                                'area_estudio_realizado_id' => $area->id,
-                                'grado_id' => $grado->id,
-                                'seccion_id' => $seccion->id,
-                                'tipo_asignacion' => 'area',
-                                'status' => true,
-                            ]);
-                            $contador++;
-                        }
+                    // Cada grado en una sección diferente (rotar secciones)
+                    $seccionIndex = ($indexDetalle + $indexArea) % $secciones->count();
+                    $seccion = $secciones[$seccionIndex];
+
+                    // Solo crear si el docente tiene relación con el área
+                    if ($detalle->docente_id && $area->area_formacion_id) {
+                        DocenteAreaGrado::create([
+                            'docente_estudio_realizado_id' => $detalle->id,
+                            'area_estudio_realizado_id' => $area->id,
+                            'grado_id' => $grado->id,
+                            'seccion_id' => $seccion->id,
+                            'tipo_asignacion' => 'area',
+                            'status' => true,
+                        ]);
+                        $contador++;
                     }
                 }
             }
