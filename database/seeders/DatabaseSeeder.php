@@ -69,11 +69,12 @@ class DatabaseSeeder extends Seeder
             InscripcionNuevoIngresoSeeder::class,
             DiasSemanaSeeder::class,
             BloqueHorarioSeeder::class,
+            DocenteAreaGradoSeeder::class,
+            SeccionAulaSeeder::class,
 
 
             /*InscripcionProsecucionSeeder::class,
             ProsecucionAreaSeeder::class,  */
-            /*  DocenteAreaGrado::class, */
         ]);
 
         // Asignar rol al usuario Admin ya existente
