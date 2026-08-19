@@ -281,6 +281,222 @@ Class GeneradorHorarioService
             return null;
         }
 
+        public function intercambiarConOtraClase(
+            int $docenteId,
+            int $seccionId,
+            int $aulaId,
+            int $diaActual,
+            int $bloqueActual,
+            array $asignacionesExistentes,
+            int $maxBloquesDocente,
+            int $totalDias,
+            int $totalBloques
+        ): ?array {
+            // Construir matrices de ocupación desde las asignaciones existentes
+            $docenteOcupado = [];
+            $seccionOcupado = [];
+            $bloquesPorDocente = [];
+
+            foreach ($asignacionesExistentes as $asignacion) {
+                // Excluir la asignación actual del conteo
+                if ($asignacion['docente_id'] == $docenteId &&
+                    $asignacion['seccion_id'] == $seccionId &&
+                    $asignacion['dia_id'] == $diaActual &&
+                    $asignacion['bloque_id'] == $bloqueActual) {
+                    continue;
+                }
+
+                $claveDocente = $asignacion['docente_id'] . '_' . $asignacion['dia_id'] . '_' . $asignacion['bloque_id'];
+                $claveSeccion = $asignacion['seccion_id'] . '_' . $asignacion['dia_id'] . '_' . $asignacion['bloque_id'];
+
+                $docenteOcupado[$claveDocente] = true;
+                $seccionOcupado[$claveSeccion] = true;
+
+                // Contar bloques por docente
+                if (!isset($bloquesPorDocente[$asignacion['docente_id']])) {
+                    $bloquesPorDocente[$asignacion['docente_id']] = 0;
+                }
+                $bloquesPorDocente[$asignacion['docente_id']]++;
+            }
+
+            // Obtener disponibilidad actual del docente (no disponibilidad)
+            $noDisponible = DocenteNoDisponibilidad::where('docente_id', $docenteId)->get();
+            foreach ($noDisponible as $nd) {
+                $clave = $nd->docente_id . '_' . $nd->dias_semana_id . '_' . $nd->id_bloque_hora;
+                $docenteOcupado[$clave] = true;
+            }
+
+            // Buscar otra clase para intercambiar
+            foreach ($asignacionesExistentes as $index => $otraAsignacion) {
+                // No intercambiar consigo mismo
+                if ($otraAsignacion['docente_id'] == $docenteId &&
+                    $otraAsignacion['seccion_id'] == $seccionId &&
+                    $otraAsignacion['dia_id'] == $diaActual &&
+                    $otraAsignacion['bloque_id'] == $bloqueActual) {
+                    continue;
+                }
+
+                // Verificar que la otra clase sea intercambiable
+                // (diferente docente y/o diferente sección)
+                if ($otraAsignacion['docente_id'] == $docenteId &&
+                    $otraAsignacion['seccion_id'] == $seccionId) {
+                    continue; // Mismo docente y misma sección, no tiene sentido intercambiar
+                }
+
+                $otroDocenteId = $otraAsignacion['docente_id'];
+                $otraSeccionId = $otraAsignacion['seccion_id'];
+                $otroDia = $otraAsignacion['dia_id'];
+                $otroBloque = $otraAsignacion['bloque_id'];
+                $otraAula = $otraAsignacion['aula_id'];
+
+                // Verificar disponibilidad del otro docente
+                $otroDocente = Docente::find($otroDocenteId);
+                if (!$otroDocente) continue;
+                $maxBloquesOtroDocente = $this->calcularMaxBloques($otroDocente->horas_academicas ?? 36);
+
+                // Verificar disponibilidad del otro docente en la posición actual
+                $claveDocenteActual = $otroDocenteId . '_' . $diaActual . '_' . $bloqueActual;
+                if (isset($docenteOcupado[$claveDocenteActual])) continue;
+
+                // Verificar disponibilidad de la otra sección en la posición actual
+                $claveSeccionActual = $otraSeccionId . '_' . $diaActual . '_' . $bloqueActual;
+                if (isset($seccionOcupado[$claveSeccionActual])) continue;
+
+                // Verificar disponibilidad del docente actual en la posición de la otra clase
+                $claveDocenteOtro = $docenteId . '_' . $otroDia . '_' . $otroBloque;
+                if (isset($docenteOcupado[$claveDocenteOtro])) continue;
+
+                // Verificar disponibilidad de la sección actual en la posición de la otra clase
+                $claveSeccionOtro = $seccionId . '_' . $otroDia . '_' . $otroBloque;
+                if (isset($seccionOcupado[$claveSeccionOtro])) continue;
+
+                // Verificar que ambos docentes no excedan su máximo de bloques
+                $bloquesDocenteActual = $bloquesPorDocente[$docenteId] ?? 0;
+                $bloquesOtroDocente = $bloquesPorDocente[$otroDocenteId] ?? 0;
+
+                if ($bloquesDocenteActual >= $maxBloquesDocente) continue;
+                if ($bloquesOtroDocente >= $maxBloquesOtroDocente) continue;
+
+                // Intercambio válido encontrado
+                return [
+                    'intercambio_valido' => true,
+                    'clase_original' => [
+                        'docente_id' => $docenteId,
+                        'seccion_id' => $seccionId,
+                        'aula_id' => $aulaId,
+                        'dia_origen' => $diaActual,
+                        'bloque_origen' => $bloqueActual,
+                        'dia_destino' => $otroDia,
+                        'bloque_destino' => $otroBloque,
+                        'aula_destino' => $otraAula,
+                    ],
+                    'clase_intercambio' => [
+                        'docente_id' => $otroDocenteId,
+                        'seccion_id' => $otraSeccionId,
+                        'aula_id' => $otraAula,
+                        'dia_origen' => $otroDia,
+                        'bloque_origen' => $otroBloque,
+                        'dia_destino' => $diaActual,
+                        'bloque_destino' => $bloqueActual,
+                        'aula_destino' => $aulaId,
+                    ],
+                ];
+            }
+
+            // No se encontró intercambio válido
+            return null;
+        }
+
+        public function reacomodarClase(
+            int $docenteId,
+            int $seccionId,
+            int $aulaId,
+            int $diaActual,
+            int $bloqueActual,
+            array $asignacionesExistentes,
+            int $anioEscolar,
+            int $totalDias,
+            int $totalBloques
+        ): array {
+            // Obtener el docente para calcular max bloques
+            $docente = Docente::find($docenteId);
+            if (!$docente) {
+                return [
+                    'exito' => false,
+                    'nivel' => 'error',
+                    'mensaje' => 'Docente no encontrado',
+                    'conflicto_manual' => true,
+                ];
+            }
+
+            $maxBloquesDocente = $this->calcularMaxBloques($docente->horas_academicas ?? 36);
+
+            // NIVEL 1: Buscar hueco libre
+            $huecoLibre = $this->buscarHuecoLibre(
+                $docenteId,
+                $seccionId,
+                $aulaId,
+                $diaActual,
+                $bloqueActual,
+                $asignacionesExistentes,
+                $maxBloquesDocente,
+                $totalDias,
+                $totalBloques
+            );
+
+            if ($huecoLibre) {
+                return [
+                    'exito' => true,
+                    'nivel' => 1,
+                    'mensaje' => 'Hueco libre encontrado',
+                    'accion' => 'mover',
+                    'nueva_posicion' => $huecoLibre,
+                    'conflicto_manual' => false,
+                ];
+            }
+
+            // NIVEL 2: Intercambio con otra clase
+            $intercambio = $this->intercambiarConOtraClase(
+                $docenteId,
+                $seccionId,
+                $aulaId,
+                $diaActual,
+                $bloqueActual,
+                $asignacionesExistentes,
+                $maxBloquesDocente,
+                $totalDias,
+                $totalBloques
+            );
+
+            if ($intercambio) {
+                return [
+                    'exito' => true,
+                    'nivel' => 2,
+                    'mensaje' => 'Intercambio con otra clase encontrado',
+                    'accion' => 'intercambiar',
+                    'detalles_intercambio' => $intercambio,
+                    'conflicto_manual' => false,
+                ];
+            }
+
+            // NIVEL 3: Conflicto manual
+            return [
+                'exito' => false,
+                'nivel' => 3,
+                'mensaje' => 'No se encontró solución automática - requiere resolución manual',
+                'accion' => 'conflicto_manual',
+                'conflicto_manual' => true,
+                'informacion_conflicto' => [
+                    'docente_id' => $docenteId,
+                    'seccion_id' => $seccionId,
+                    'aula_id' => $aulaId,
+                    'dia_actual' => $diaActual,
+                    'bloque_actual' => $bloqueActual,
+                    'motivo' => 'No hay huecos libres ni intercambios posibles',
+                ],
+            ];
+        }
+
         public function generar(int $anioEscolar, int $totalDias, int $totalBloques): array
         {
             $clases = $this->PreparasDatos();
