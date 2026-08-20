@@ -7,6 +7,7 @@ use App\Models\DocenteNoDisponibilidad;
 use App\Models\AreaFormacion;
 use App\Models\seccion_aula;
 use App\Models\Docente;
+use App\Models\HorarioAsignacion;
 use Illuminate\Support\Collection;
 
 Class GeneradorHorarioService
@@ -499,6 +500,9 @@ Class GeneradorHorarioService
 
         public function generar(int $anioEscolar, int $totalDias, int $totalBloques): array
         {
+            // Limpiar asignaciones anteriores del mismo año escolar
+            HorarioAsignacion::where('anio_escolar_id', $anioEscolar)->delete();
+
             $clases = $this->PreparasDatos();
             $matrices = $this->InicializarMatrices($anioEscolar);
             $clasesOrdenadas = $this->ordenarClasesPendientes($clases, $matrices['docenteOcupado'], $totalDias, $totalBloques);
@@ -522,6 +526,20 @@ Class GeneradorHorarioService
                 $maxBloques = $this->calcularMaxBloques($docente->horas_academicas ?? 36);
                 $claseArray = $clase;
                 $resultado = $this->asignarClase($claseArray, $matrices, $totalDias, $totalBloques, $maxBloques);
+
+                // Guardar asignaciones en la base de datos
+                foreach ($resultado['asignaciones'] as $asignacion) {
+                    HorarioAsignacion::create([
+                        'anio_escolar_id' => $anioEscolar,
+                        'docente_id' => $asignacion['docente_id'],
+                        'materia_id' => $asignacion['materia_id'],
+                        'seccion_id' => $asignacion['seccion_id'],
+                        'aula_id' => $asignacion['aula_id'],
+                        'dia_id' => $asignacion['dia_id'],
+                        'bloque_id' => $asignacion['bloque_id'],
+                        'conflicto_manual' => false,
+                    ]);
+                }
 
                 $todasLasAsignaciones = array_merge($todasLasAsignaciones, $resultado['asignaciones']);
 

@@ -36,6 +36,7 @@ use App\Http\Controllers\PermisoReposoController;
 use App\Http\Controllers\BloqueHorarioController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\InasistenciaController;
+use App\Http\Controllers\GeneradorHorarioController;
 use App\Http\Controllers\Permisos_RepososController;
 use App\Http\Controllers\ActaEntrevistaController;
 use App\Http\Controllers\Seccion_AulaController;
@@ -81,6 +82,13 @@ Route::get("/vidaEstudiantil", function () {
 // ============================================
 
 Route::middleware(['auth'])->group(function () {
+    // ===== GENERADOR DE HORARIOS API =====
+    Route::middleware(['verificar.anio.escolar'])->group(function () {
+        Route::post('api/horario/generar', [GeneradorHorarioController::class, 'generar'])->name('api.horario.generar');
+        Route::get('api/horario/asignaciones', [GeneradorHorarioController::class, 'obtenerAsignaciones'])->name('api.horario.obtener_asignaciones');
+        Route::post('api/horario/reacomodar', [GeneradorHorarioController::class, 'reacomodar'])->name('api.horario.reacomodar');
+    });
+
     // ===== DOCENTE NO DISPONIBILIDAD API =====
     Route::middleware(['verificar.anio.escolar'])->group(function () {
         Route::get('api/docente-no-disponibilidad', [DocenteNoDisponibilidadController::class, 'index'])->name('api.docente-no-disponibilidad.index');
