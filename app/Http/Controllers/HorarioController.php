@@ -156,14 +156,33 @@ class HorarioController extends Controller
                     ->pluck('af.nombre_area_formacion')
                     ->toArray();
 
+                // Obtener secciones del docente
+                $secciones = DB::table('docente_area_grados as dag')
+                    ->join('seccions as s', 'dag.seccion_id', '=', 's.id')
+                    ->where('dag.docente_estudio_realizado_id', function($query) use ($docente) {
+                        $query->select('dde.id')
+                            ->from('detalle_docente_estudios as dde')
+                            ->where('dde.docente_id', $docente->id)
+                            ->where('dde.status', true);
+                    })
+                    ->where('dag.status', true)
+                    ->where('s.status', true)
+                    ->select('s.id', 's.nombre')
+                    ->get()
+                    ->toArray();
+
                 return [
                     'id' => $docente->id,
                     'nombre' => $docente->nombre_completo,
                     'area' => !empty($areas) ? implode(', ', $areas) : 'Sin área asignada',
-                    'areas' => $areas
+                    'areas' => $areas,
+                    'secciones' => $secciones
                 ];
             });
 
-        return view('admin.horario.create', compact('grados', 'areasFormacion', 'secciones', 'docentes', 'aulas'));
+        // Obtener año escolar activo
+        $anioEscolarActivo = AnioEscolar::activos()->first();
+
+        return view('admin.horario.create', compact('grados', 'areasFormacion', 'secciones', 'docentes', 'aulas', 'anioEscolarActivo'));
     }
 }

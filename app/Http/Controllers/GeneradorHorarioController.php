@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\GeneradorHorarioService;
 use App\Models\HorarioAsignacion;
+use App\Models\AnioEscolar;
 use Illuminate\Http\Request;
 
 class GeneradorHorarioController extends Controller
@@ -15,16 +16,28 @@ class GeneradorHorarioController extends Controller
         $this->generador = $generador;
     }
 
+    private function getAnioEscolarActivo()
+    {
+        return AnioEscolar::activos()->first();
+    }
+
     public function generar(Request $request)
     {
         $validado = $request->validate([
-            'anio_escolar_id' => 'required|integer',
+            'anio_escolar_id' => 'nullable|integer',
             'total_dias' => 'nullable|integer',
             'total_bloques' => 'nullable|integer',
         ]);
 
+        // Si no se proporciona anio_escolar_id, usar el activo
+        $anioEscolarId = $validado['anio_escolar_id'] ?? $this->getAnioEscolarActivo()?->id;
+
+        if (!$anioEscolarId) {
+            return response()->json(['error' => 'No hay año escolar activo'], 400);
+        }
+
         $resultado = $this->generador->generar(
-            $validado['anio_escolar_id'],
+            $anioEscolarId,
             $validado['total_dias'] ?? 5,
             $validado['total_bloques'] ?? 8
         );
@@ -32,30 +45,61 @@ class GeneradorHorarioController extends Controller
         return response()->json($resultado);
     }
 
+    public function getAnioEscolarActivoAPI()
+    {
+        $anioEscolar = $this->getAnioEscolarActivo();
+        if (!$anioEscolar) {
+            return response()->json(['error' => 'No hay año escolar activo'], 404);
+        }
+        return response()->json($anioEscolar);
+    }
+
     public function obtenerAsignaciones(Request $request)
     {
         $validado = $request->validate([
-            'anio_escolar_id' => 'required|integer',
+            'anio_escolar_id' => 'nullable|integer',
+            'grado_id' => 'nullable|integer',
         ]);
 
-        $asignaciones = HorarioAsignacion::with(['docente.persona', 'materia', 'seccion', 'aula', 'dia', 'bloque'])
-            ->where('anio_escolar_id', $validado['anio_escolar_id'])
-            ->where('conflicto_manual', false)
-            ->get()
+        // Si no se proporciona anio_escolar_id, usar el activo
+        $anioEscolarId = $validado['anio_escolar_id'] ?? $this->getAnioEscolarActivo()?->id;
+
+        if (!$anioEscolarId) {
+            return response()->json(['error' => 'No hay año escolar activo'], 400);
+        }
+
+        $query = HorarioAsignacion::with(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque'])
+            ->where('anio_escolar_id', $anioEscolarId)
+            ->where('conflicto_manual', false);
+
+        // Filtrar por grado_id si se proporciona
+        if (isset($validado['grado_id']) && $validado['grado_id']) {
+            $query->whereHas('seccion', function($q) use ($validado) {
+                $q->where('grado_id', $validado['grado_id']);
+            });
+        }
+
+        $asignaciones = $query->get()
             ->map(function ($asignacion) {
                 return [
                     'id' => $asignacion->id,
                     'docente_id' => $asignacion->docente_id,
-                    'docente_nombre' => $asignacion->docente->persona->primer_nombre . ' ' . $asignacion->docente->persona->primer_apellido,
+                    'docente_nombre' => $asignacion->docente && $asignacion->docente->persona 
+                        ? $asignacion->docente->persona->primer_nombre . ' ' . $asignacion->docente->persona->primer_apellido 
+                        : 'N/A',
                     'materia_id' => $asignacion->materia_id,
-                    'materia_nombre' => $asignacion->materia->nombre_area_formacion,
+                    'materia_nombre' => $asignacion->materia ? $asignacion->materia->nombre_area_formacion : 'N/A',
                     'seccion_id' => $asignacion->seccion_id,
-                    'seccion_nombre' => $asignacion->seccion->nombre,
+                    'seccion_nombre' => $asignacion->seccion ? $asignacion->seccion->nombre : 'N/A',
+                    'grado_id' => $asignacion->seccion ? $asignacion->seccion->grado_id : null,
+                    'grado_nombre' => $asignacion->seccion && $asignacion->seccion->grado 
+                        ? $asignacion->seccion->grado->numero_grado . '° Grado' 
+                        : 'N/A',
                     'aula_id' => $asignacion->aula_id,
                     'dia_id' => $asignacion->dia_id,
-                    'dia_nombre' => $asignacion->dia->nombre_dia ?? $asignacion->dia_id,
+                    'dia_nombre' => $asignacion->dia ? $asignacion->dia->nombre_dia : $asignacion->dia_id,
                     'bloque_id' => $asignacion->bloque_id,
-                    'bloque_nombre' => $asignacion->bloque->nombre_bloque ?? $asignacion->bloque_id,
+                    'bloque_nombre' => $asignacion->bloque ? 'Bloque ' . $asignacion->bloque_id : $asignacion->bloque_id,
                 ];
             });
 

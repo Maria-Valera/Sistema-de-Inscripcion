@@ -23,4 +23,7 @@ Route::get('/seccion', [SeccionController::class, 'apiIndex']);
 Route::get('/docente', [DocenteController::class, 'apiIndex']);
 Route::get('/persona', [PersonaController::class, 'apiIndex']);
 Route::get('/horario', [HorarioController::class, 'IndexApi']);
+Route::get('/horario/asignaciones', [GeneradorHorarioController::class, 'obtenerAsignaciones']);
+Route::post('/horario/generar', [GeneradorHorarioController::class, 'generar']);
+Route::get('/anio-escolar/activo', [GeneradorHorarioController::class, 'getAnioEscolarActivoAPI']);
 Route::put('/horario/{id}/aula', [GeneradorHorarioController::class, 'actualizarAula']);

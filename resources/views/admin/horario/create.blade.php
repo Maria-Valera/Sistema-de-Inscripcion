@@ -464,6 +464,148 @@
             display: block;
         }
 
+        .btn-generar-horario {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .btn-generar-horario:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-generar-horario:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-generar-horario .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn-generar-horario.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn-generar-horario.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .conflictos-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .conflictos-panel.visible {
+            display: block;
+        }
+
+        .conflictos-header {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .conflictos-header i {
+            font-size: 20px;
+        }
+
+        .conflictos-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .conflictos-body {
+            padding: 20px;
+        }
+
+        .conflicto-item {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .conflicto-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .conflicto-icon {
+            width: 40px;
+            height: 40px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .conflicto-info {
+            flex: 1;
+        }
+
+        .conflicto-info strong {
+            display: block;
+            color: #991b1b;
+            margin-bottom: 4px;
+        }
+
+        .conflicto-info p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .conflicto-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .conflicto-badge {
+            background: #fecaca;
+            color: #991b1b;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
 
     </style>
 @stop
@@ -493,6 +635,13 @@
                 <i class="fas fa-arrow-left"></i>
                 Volver
             </a>
+            <button class="btn-generar-horario" id="btnGenerarHorario">
+                <span class="spinner"></span>
+                <span class="btn-text">
+                    <i class="fas fa-magic"></i>
+                    Generar Horario
+                </span>
+            </button>
             <button class="btn-save" id="btnGuardarHorario">
                 <i class="fas fa-save"></i>
                 Guardar Horario
@@ -611,6 +760,17 @@
 
         <!-- Contenedor de notificaciones -->
         <div class="notifications-container" id="notificationsContainer"></div>
+
+        <!-- Panel de conflictos -->
+        <div class="conflictos-panel" id="conflictosPanel">
+            <div class="conflictos-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h5>Conflictos Detectados</h5>
+            </div>
+            <div class="conflictos-body" id="conflictosBody">
+                <!-- Los conflictos se insertarán aquí dinámicamente -->
+            </div>
+        </div>
     </div>
 
     <script>
@@ -654,23 +814,39 @@
             let diasSemana = [];
             let bloquesHorario = [];
             let horarioData = [];
+            let anioEscolarActivo = null;
 
             // Función para cargar datos de la API
             async function cargarDatosAPI() {
                 try {
-                    const [diasResponse, bloquesResponse, horarioResponse] = await Promise.all([
+                    const nivelSeleccionado = nivelSelect.value;
+                    const params = new URLSearchParams();
+                    if (nivelSeleccionado) {
+                        params.append('grado_id', nivelSeleccionado);
+                    }
+
+                    const [diasResponse, bloquesResponse, horarioResponse, anioResponse] = await Promise.all([
                         fetch('/api/dias-semana'),
                         fetch('/api/bloques-horario'),
-                        fetch('/api/horario')
+                        fetch(`/api/horario/asignaciones?${params.toString()}`),
+                        fetch('/api/anio-escolar/activo')
                     ]);
 
                     diasSemana = await diasResponse.json();
                     bloquesHorario = await bloquesResponse.json();
                     horarioData = await horarioResponse.json();
+                    
+                    if (anioResponse.ok) {
+                        anioEscolarActivo = await anioResponse.json();
+                        console.log('Año escolar activo:', anioEscolarActivo);
+                    } else {
+                        console.warn('No hay año escolar activo');
+                    }
 
                     console.log('Días de semana:', diasSemana);
                     console.log('Bloques horario:', bloquesHorario);
                     console.log('Horario data:', horarioData);
+                    console.log('Nivel seleccionado:', nivelSeleccionado);
 
                     renderizarCalendario();
                 } catch (error) {
@@ -836,15 +1012,15 @@
 
                         // Buscar si hay horario asignado para este día y bloque (usando datos filtrados)
                         const horarioAsignado = horarioFiltrado.find(h => {
-                            const apiDiaNombre = h.dia ? (h.dia.nombre_dia || h.dia.nombre) : '';
-                            const apiBloqueId = h.bloque ? h.bloque.id : null;
+                            const apiDiaNombre = h.dia_nombre || h.dia;
+                            const apiBloqueId = h.bloque_id;
                             return apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
                         });
 
                         // Buscar cualquier horario asignado (sin filtro) para detectar ocupación
                         const horarioCualquiera = horarioData.find(h => {
-                            const apiDiaNombre = h.dia ? (h.dia.nombre_dia || h.dia.nombre) : '';
-                            const apiBloqueId = h.bloque ? h.bloque.id : null;
+                            const apiDiaNombre = h.dia_nombre || h.dia;
+                            const apiBloqueId = h.bloque_id;
                             return apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
                         });
 
@@ -920,27 +1096,44 @@
                                 </div>
                             `;
                         } else if (horarioAsignado) {
-                            const docenteNombre = horarioAsignado.docente ? horarioAsignado.docente.nombre : 'N/A';
-                            const materiaNombre = horarioAsignado.materia ? horarioAsignado.materia.nombre : 'N/A';
-                            const tipoAulaRequerida = horarioAsignado.materia ? horarioAsignado.materia.tipo_aula_requerida : 'normal';
-                            const aulaFija = horarioAsignado.aula_fija;
-                            const seccionNombre = horarioAsignado.seccion ? horarioAsignado.seccion.nombre : '';
+                            const docenteNombre = horarioAsignado.docente_nombre || 'N/A';
+                            const materiaNombre = horarioAsignado.materia_nombre || 'N/A';
+                            const seccionNombre = horarioAsignado.seccion_nombre || '';
                             const asignacionId = horarioAsignado.id;
+                            const aulaId = horarioAsignado.aula_id;
 
                             let aulaBadge = '';
                             let aulaSelector = '';
                             
-                            if (tipoAulaRequerida !== 'normal' && aulaFija) {
+                            // Verificar si es aula especializada (no regular)
+                            const aulaSelect = document.getElementById('aula');
+                            let esAulaEspecial = false;
+                            let aulaNombre = '';
+                            
+                            if (aulaId && aulaSelect) {
+                                for (let i = 0; i < aulaSelect.options.length; i++) {
+                                    if (aulaSelect.options[i].value == aulaId) {
+                                        const tipoAula = aulaSelect.options[i].dataset.tipo || '';
+                                        if (tipoAula.toLowerCase() !== 'regular') {
+                                            esAulaEspecial = true;
+                                            aulaNombre = aulaSelect.options[i].text;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (esAulaEspecial) {
                                 // Aula especializada: mostrar selector editable
                                 aulaSelector = `
                                     <div class="aula-selector-container">
-                                        <select class="aula-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaFija.id_aula}" onchange="actualizarAula(this)">
+                                        <select class="aula-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)">
                                             <option value="">Seleccione aula</option>
                                         </select>
                                         <div class="aula-error-message"></div>
                                     </div>
                                 `;
-                                aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaFija.nombre_aula}</span>`;
+                                aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaNombre}</span>`;
                             }
 
                             let seccionBadge = '';
@@ -1056,6 +1249,16 @@
                 }, 100);
             });
 
+            // Cambiar nivel académico y recargar grilla
+            nivelSelect.addEventListener('change', function() {
+                if (vistaCalendario.style.display !== 'none') {
+                    // Limpiar asignaciones locales
+                    horarioAsignaciones = {};
+                    // Recargar datos con el nuevo filtro
+                    cargarDatosAPI();
+                }
+            });
+
             // Cargar docentes según nivel
             function cargarDocentes(nivel) {
                 const docentes = docentesPorNivel[nivel] || [];
@@ -1085,7 +1288,8 @@
             areaFormacion.addEventListener('change', function() {
                 const nivel = nivelSelect.value;
                 cargarDocentesAPI(nivel);
-                renderizarCalendario(); // Re-renderizar calendario con filtro de área
+                // Recargar datos de asignaciones con el nuevo filtro
+                cargarDatosAPI();
             });
 
             // Filtrar docentes por sección
@@ -1311,6 +1515,89 @@
                     mostrarNotificacion('Error de conexión al servidor', 'error');
                 }
             };
+
+            // Función para generar horario automáticamente
+            document.getElementById('btnGenerarHorario').addEventListener('click', async function() {
+                const btn = this;
+                
+                if (!anioEscolarActivo) {
+                    mostrarNotificacion('No hay año escolar activo. Configure uno antes de generar horarios.', 'error');
+                    return;
+                }
+
+                // Mostrar indicador de carga
+                btn.classList.add('loading');
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch('/api/horario/generar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            anio_escolar_id: anioEscolarActivo.id,
+                            total_dias: 5,
+                            total_bloques: 8
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        mostrarNotificacion(data.error || 'Error al generar horario', 'error');
+                        return;
+                    }
+
+                    // Recargar datos del horario para mostrar las asignaciones generadas
+                    await cargarDatosAPI();
+                    
+                    mostrarNotificacion(`Horario generado con ${data.asignaciones.length} asignaciones`, 'success');
+
+                    // Mostrar conflictos si existen
+                    if (data.conflictos && data.conflictos.length > 0) {
+                        mostrarConflictos(data.conflictos);
+                        mostrarNotificacion(`Se detectaron ${data.conflictos.length} conflictos que requieren atención manual`, 'warning');
+                    } else {
+                        ocultarConflictos();
+                    }
+
+                } catch (error) {
+                    console.error('Error al generar horario:', error);
+                    mostrarNotificacion('Error de conexión al servidor', 'error');
+                } finally {
+                    // Restaurar botón
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
+            });
+
+            // Función para mostrar conflictos
+            function mostrarConflictos(conflictos) {
+                const panel = document.getElementById('conflictosPanel');
+                const body = document.getElementById('conflictosBody');
+                
+                body.innerHTML = conflictos.map(conflicto => `
+                    <div class="conflicto-item">
+                        <div class="conflicto-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="conflicto-info">
+                            <strong>Docente ID: ${conflicto.docente_id} - Materia ID: ${conflicto.materia_id}</strong>
+                            <p>Sección ID: ${conflicto.seccion_id} | Bloques pendientes: ${conflicto.bloques_pendientes || 'No especificado'}</p>
+                            <div class="conflicto-badges">
+                                <span class="conflicto-badge">Requiere resolución manual</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                panel.classList.add('visible');
+            }
+
+            // Función para ocultar conflictos
+            function ocultarConflictos() {
+                const panel = document.getElementById('conflictosPanel');
+                panel.classList.remove('visible');
+            }
         });
     </script>
 @endsection

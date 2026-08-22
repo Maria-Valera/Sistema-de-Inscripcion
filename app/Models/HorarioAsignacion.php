@@ -51,7 +51,7 @@ class HorarioAsignacion extends Model
 
     public function dia()
     {
-        return $this->belongsTo(DiasSemana::class, 'dia_id');
+        return $this->belongsTo(Dias_semana::class, 'dia_id');
     }
 
     public function bloque()
