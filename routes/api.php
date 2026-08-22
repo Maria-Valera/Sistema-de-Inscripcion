@@ -9,6 +9,7 @@ use App\Http\Controllers\SeccionController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\HorarioController;
+use App\Http\Controllers\GeneradorHorarioController;
 
 
 Route::get('/user', function (Request $request) {
@@ -22,3 +23,4 @@ Route::get('/seccion', [SeccionController::class, 'apiIndex']);
 Route::get('/docente', [DocenteController::class, 'apiIndex']);
 Route::get('/persona', [PersonaController::class, 'apiIndex']);
 Route::get('/horario', [HorarioController::class, 'IndexApi']);
+Route::put('/horario/{id}/aula', [GeneradorHorarioController::class, 'actualizarAula']);

@@ -8,6 +8,8 @@ use App\Models\AreaFormacion;
 use App\Models\seccion_aula;
 use App\Models\Docente;
 use App\Models\HorarioAsignacion;
+use App\Models\Aula;
+use App\Models\Seccion;
 use Illuminate\Support\Collection;
 
 Class GeneradorHorarioService
@@ -124,6 +126,22 @@ Class GeneradorHorarioService
         return !isset($aulaEspecialOcupada[$clave]);
     }
 
+    public function buscarAulaEspecialLibre(string $tipoAula, int $diaId, int $bloqueId, array $aulaEspecialOcupada): ?int
+    {
+        $aulas = Aula::where('tipo_aula', $tipoAula)
+            ->where('status', true)
+            ->get();
+
+        foreach ($aulas as $aula) {
+            $clave = $aula->id_aula . '_' . $diaId . '_' . $bloqueId;
+            if (!isset($aulaEspecialOcupada[$clave])) {
+                return $aula->id_aula;
+            }
+        }
+
+        return null;
+    }
+
     public function asignarClase(array &$clase, array &$matrices, int $totalDias, int $totalBloques, int $maxBloquesDocente): array
         {
             $resultado = ['asignaciones' => [], 'conflicto' => null];
@@ -137,7 +155,8 @@ Class GeneradorHorarioService
 
             // Determinar si esta materia necesita aula especializada
             $areaFormacion = AreaFormacion::find($clase['area_id']);
-            $esEspecializada = false;
+            $aulaFijaMateria = $areaFormacion?->aula;
+            $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
 
             while ($bloquesAsignados < $clase['area_bloque']) {
                 $espacioEncontrado = false;
@@ -159,7 +178,7 @@ Class GeneradorHorarioService
 
                         if ($esEspecializada) {
                             $aulaLibre = $this->buscarAulaEspecialLibre(
-                                '', $dia, $bloque, $matrices['aulaEspecialOcupada']
+                                $aulaFijaMateria->tipo_aula, $dia, $bloque, $matrices['aulaEspecialOcupada']
                             );
                             if ($aulaLibre === null) continue;
                             $aulaAsignada = $aulaLibre;
@@ -552,5 +571,21 @@ Class GeneradorHorarioService
                 'asignaciones' => $todasLasAsignaciones,
                 'conflictos' => $todosLosConflictos,
             ];
+        }
+
+        public function validarCapacidadAula(int $aulaId, int $seccionId): bool
+        {
+            $aula = Aula::find($aulaId);
+            $seccion = Seccion::find($seccionId);
+
+            if (!$aula || !$seccion) {
+                return false;
+            }
+
+            if ($aula->capacidad_maxima === null) {
+                return true;
+            }
+
+            return $seccion->cantidad_actual <= $aula->capacidad_maxima;
         }
 }

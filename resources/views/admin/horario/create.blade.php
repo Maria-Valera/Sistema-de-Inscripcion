@@ -433,6 +433,37 @@
             color: var(--warning);
         }
 
+        .aula-selector-container {
+            margin-top: 0.5rem;
+        }
+
+        .aula-selector {
+            width: 100%;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6875rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px;
+            background: white;
+            color: var(--gray-700);
+        }
+
+        .aula-selector:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .aula-error-message {
+            font-size: 0.625rem;
+            color: var(--danger);
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .aula-error-message.visible {
+            display: block;
+        }
+
 
     </style>
 @stop
@@ -894,9 +925,21 @@
                             const tipoAulaRequerida = horarioAsignado.materia ? horarioAsignado.materia.tipo_aula_requerida : 'normal';
                             const aulaFija = horarioAsignado.aula_fija;
                             const seccionNombre = horarioAsignado.seccion ? horarioAsignado.seccion.nombre : '';
+                            const asignacionId = horarioAsignado.id;
 
                             let aulaBadge = '';
+                            let aulaSelector = '';
+                            
                             if (tipoAulaRequerida !== 'normal' && aulaFija) {
+                                // Aula especializada: mostrar selector editable
+                                aulaSelector = `
+                                    <div class="aula-selector-container">
+                                        <select class="aula-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaFija.id_aula}" onchange="actualizarAula(this)">
+                                            <option value="">Seleccione aula</option>
+                                        </select>
+                                        <div class="aula-error-message"></div>
+                                    </div>
+                                `;
                                 aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaFija.nombre_aula}</span>`;
                             }
 
@@ -913,6 +956,7 @@
                                         ${seccionBadge}
                                         ${aulaBadge}
                                     </div>
+                                    ${aulaSelector}
                                 </div>
                             `;
                         } else if (esOcupadoPorOtro) {
@@ -935,6 +979,25 @@
                 });
 
                 console.log('Calendario renderizado con', tbody.children.length, 'filas');
+
+                // Poblar selectores de aulas especializadas con opciones disponibles
+                document.querySelectorAll('.aula-selector').forEach(select => {
+                    const aulaActual = select.dataset.aulaActual;
+                    const aulaSelect = document.getElementById('aula');
+                    
+                    // Poblar con todas las aulas disponibles
+                    for (let i = 0; i < aulaSelect.options.length; i++) {
+                        const option = aulaSelect.options[i];
+                        if (option.value !== '') {
+                            const selected = option.value == aulaActual ? 'selected' : '';
+                            const newOption = document.createElement('option');
+                            newOption.value = option.value;
+                            newOption.textContent = option.text;
+                            newOption.selected = selected;
+                            select.appendChild(newOption);
+                        }
+                    }
+                });
 
                 // Re-inicializar drag and drop después de renderizar
                 inicializarDragAndDrop();
@@ -1201,6 +1264,53 @@
                 console.log('Guardando horario...', horarioAsignaciones);
                 mostrarNotificacion(`Horario guardado exitosamente con ${asignaciones} asignaciones`, 'success');
             });
+
+            // Función para actualizar aula de una asignación
+            window.actualizarAula = async function(selectElement) {
+                const asignacionId = selectElement.dataset.asignacionId;
+                const nuevaAulaId = selectElement.value;
+                const errorContainer = selectElement.parentElement.querySelector('.aula-error-message');
+
+                if (!nuevaAulaId) {
+                    errorContainer.textContent = 'Seleccione un aula';
+                    errorContainer.classList.add('visible');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/horario/${asignacionId}/aula`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ aula_id: nuevaAulaId })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        errorContainer.textContent = data.error || 'Error al actualizar el aula';
+                        errorContainer.classList.add('visible');
+                        mostrarNotificacion(data.error || 'Error al actualizar el aula', 'error');
+                        return;
+                    }
+
+                    // Success: actualizar visualmente
+                    errorContainer.classList.remove('visible');
+                    mostrarNotificacion('Aula actualizada correctamente', 'success');
+
+                    // Actualizar el badge del aula en la celda
+                    const aulaBadge = selectElement.closest('.assigned-docente').querySelector('.aula-badge');
+                    if (aulaBadge) {
+                        const aulaOption = selectElement.options[selectElement.selectedIndex];
+                        aulaBadge.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${aulaOption.text}`;
+                    }
+
+                } catch (error) {
+                    console.error('Error al actualizar aula:', error);
+                    errorContainer.textContent = 'Error de conexión al servidor';
+                    errorContainer.classList.add('visible');
+                    mostrarNotificacion('Error de conexión al servidor', 'error');
+                }
+            };
         });
     </script>
 @endsection

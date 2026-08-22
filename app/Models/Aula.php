@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Aula extends Model
 {
+    protected $table = 'aulas';
     protected $primaryKey = 'id_aula';
 
     protected $fillable = [
         'nombre_aula',
         'tipo_aula',
         'status',
+        'capacidad_maxima',
     ];
 
     protected $casts = [

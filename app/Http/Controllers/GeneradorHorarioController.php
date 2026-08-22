@@ -147,4 +147,40 @@ class GeneradorHorarioController extends Controller
 
         return response()->json($resultado);
     }
+
+    public function actualizarAula(Request $request, int $id)
+    {
+        $validado = $request->validate([
+            'aula_id' => 'required|integer',
+        ]);
+
+        $asignacion = HorarioAsignacion::find($id);
+        if (!$asignacion) {
+            return response()->json(['error' => 'Asignación no encontrada'], 404);
+        }
+
+        $aula_id = $validado['aula_id'];
+
+        // Validar capacidad del aula
+        if (!$this->generador->validarCapacidadAula($aula_id, $asignacion->seccion_id)) {
+            return response()->json(['error' => 'El aula no tiene capacidad suficiente para esta sección'], 422);
+        }
+
+        // Verificar que el aula no esté ocupada en el mismo día y bloque
+        $ocupada = HorarioAsignacion::where('aula_id', $aula_id)
+            ->where('dia_id', $asignacion->dia_id)
+            ->where('bloque_id', $asignacion->bloque_id)
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($ocupada) {
+            return response()->json(['error' => 'El aula ya está ocupada en ese día y bloque'], 422);
+        }
+
+        // Actualizar el aula
+        $asignacion->aula_id = $aula_id;
+        $asignacion->save();
+
+        return response()->json(['success' => true, 'asignacion' => $asignacion]);
+    }
 }
