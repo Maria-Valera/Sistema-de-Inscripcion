@@ -606,6 +606,63 @@
             font-weight: 600;
         }
 
+        .context-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .context-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .context-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .context-item i {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .context-separator {
+            opacity: 0.5;
+            font-size: 0.875rem;
+        }
+
+        .btn-back-mini {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+
+        .btn-back-mini:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
 
     </style>
 @stop
@@ -648,11 +705,11 @@
             </button>
         </div>
 
-        <!-- Selección de nivel académico -->
+        <!-- Selección de nivel académico y área de formación -->
         <div class="selection-section" id="seccionNivel">
             <h4 class="mb-3">
                 <i class="fas fa-graduation-cap" style="color: var(--primary);"></i>
-                Paso 1: Seleccionar Nivel Académico
+                Paso 1: Seleccionar Nivel Académico y Área de Formación
             </h4>
             <div class="selection-row">
                 <div class="form-group-modern">
@@ -669,7 +726,16 @@
                         @endforeach
                     </select>
                 </div>
-                <button class="btn-filter" id="btnContinuar">
+                <div class="form-group-modern">
+                    <label class="form-label-modern">
+                        <i class="fas fa-book" style="color: var(--primary);"></i>
+                        Área de Formación
+                    </label>
+                    <select class="form-select form-control-modern" id="areaFormacion" disabled>
+                        <option value="">Seleccione nivel académico primero</option>
+                    </select>
+                </div>
+                <button class="btn-filter" id="btnContinuar" disabled>
                     <i class="fas fa-arrow-right"></i>
                     Continuar
                 </button>
@@ -679,23 +745,28 @@
         <!-- Vista del calendario (oculta inicialmente) -->
         <div class="horario-container" id="vistaCalendario" style="display: none;">
             <div class="main-content">
-                <!-- Selector de área de formación -->
+                <!-- Header de contexto -->
+                <div class="context-header" id="contextHeader">
+                    <div class="context-info">
+                        <span class="context-item">
+                            <i class="fas fa-graduation-cap"></i>
+                            <span id="contextNivel">Nivel Académico: No seleccionado</span>
+                        </span>
+                        <span class="context-separator">|</span>
+                        <span class="context-item">
+                            <i class="fas fa-book"></i>
+                            <span id="contextArea">Área de Formación: No seleccionada</span>
+                        </span>
+                    </div>
+                    <button class="btn-back-mini" id="btnVolverPaso1">
+                        <i class="fas fa-arrow-left"></i>
+                        Cambiar selección
+                    </button>
+                </div>
+
+                <!-- Filtros de refinamiento -->
                 <div class="selection-section">
                     <div class="selection-row">
-                        <div class="form-group-modern">
-                            <label class="form-label-modern">
-                                <i class="fas fa-book" style="color: var(--primary);"></i>
-                                Área de Formación
-                            </label>
-                            <select class="form-select form-control-modern" id="areaFormacion">
-                                <option value="">Todas las áreas</option>
-                                @foreach($areasFormacion as $area)
-                                    <option value="{{ $area->id }}">
-                                        {{ $area->nombre_area_formacion }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
                         <div class="form-group-modern">
                             <label class="form-label-modern">
                                 <i class="fas fa-users" style="color: var(--primary);"></i>
@@ -776,11 +847,15 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const nivelSelect = document.getElementById('nivelAcademico');
+            const areaFormacionSelect = document.getElementById('areaFormacion');
             const btnContinuar = document.getElementById('btnContinuar');
             const seccionNivel = document.getElementById('seccionNivel');
             const vistaCalendario = document.getElementById('vistaCalendario');
-            const areaFormacion = document.getElementById('areaFormacion');
             const docentesList = document.getElementById('docentesList');
+            const contextHeader = document.getElementById('contextHeader');
+            const contextNivel = document.getElementById('contextNivel');
+            const contextArea = document.getElementById('contextArea');
+            const btnVolverPaso1 = document.getElementById('btnVolverPaso1');
 
             // Datos de prueba para docentes
             const docentesPorNivel = {
@@ -806,6 +881,72 @@
             let draggedDocente = null;
             let horarioAsignaciones = {};
             const notificationsContainer = document.getElementById('notificationsContainer');
+
+            // Función para validar ambos campos del Paso 1
+            function validarPaso1() {
+                const nivelSeleccionado = nivelSelect.value;
+                const areaSeleccionada = areaFormacionSelect.value;
+                
+                if (nivelSeleccionado && areaSeleccionada) {
+                    btnContinuar.disabled = false;
+                } else {
+                    btnContinuar.disabled = true;
+                }
+            }
+
+            // Filtrar áreas de formación por nivel académico
+            nivelSelect.addEventListener('change', async function() {
+                const nivelId = this.value;
+                
+                if (nivelId) {
+                    // Habilitar select de área de formación
+                    areaFormacionSelect.disabled = false;
+                    areaFormacionSelect.innerHTML = '<option value="">Cargando áreas...</option>';
+                    
+                    try {
+                        const response = await fetch(`/api/areas-formacion/grado?grado_id=${nivelId}`);
+                        const areas = await response.json();
+                        
+                        areaFormacionSelect.innerHTML = '<option value="">Seleccione un área de formación</option>';
+                        
+                        areas.forEach(area => {
+                            const option = document.createElement('option');
+                            option.value = area.id;
+                            option.textContent = area.nombre;
+                            areaFormacionSelect.appendChild(option);
+                        });
+                    } catch (error) {
+                        console.error('Error al cargar áreas de formación:', error);
+                        areaFormacionSelect.innerHTML = '<option value="">Error al cargar áreas</option>';
+                        mostrarNotificacion('Error al cargar áreas de formación', 'error');
+                    }
+                } else {
+                    // Deshabilitar y resetear
+                    areaFormacionSelect.disabled = true;
+                    areaFormacionSelect.innerHTML = '<option value="">Seleccione nivel académico primero</option>';
+                }
+                
+                validarPaso1();
+            });
+
+            // Validar cuando cambia el área de formación
+            areaFormacionSelect.addEventListener('change', validarPaso1);
+
+            // Función para actualizar header de contexto
+            function actualizarContexto() {
+                const nivelTexto = nivelSelect.options[nivelSelect.selectedIndex]?.text || 'No seleccionado';
+                const areaTexto = areaFormacionSelect.options[areaFormacionSelect.selectedIndex]?.text || 'No seleccionada';
+                
+                contextNivel.textContent = `Nivel Académico: ${nivelTexto}`;
+                contextArea.textContent = `Área de Formación: ${areaTexto}`;
+            }
+
+            // Volver al Paso 1
+            btnVolverPaso1.addEventListener('click', function() {
+                vistaCalendario.style.display = 'none';
+                seccionNivel.style.display = 'block';
+                actualizarContexto();
+            });
 
             // Almacenar información de contexto para las asignaciones
             let asignacionesContexto = {};
@@ -858,7 +999,7 @@
             // Función para cargar docentes desde la API
             async function cargarDocentesAPI(nivel) {
                 try {
-                    const areaFormacionId = areaFormacion.value;
+                    const areaFormacionId = areaFormacionSelect.value;
                     const seccionId = document.getElementById('seccion').value;
 
                     const params = new URLSearchParams();
@@ -892,7 +1033,7 @@
                 }
 
                 // Obtener el área de formación seleccionada para filtrar la visualización
-                const areaFormacionId = document.getElementById('areaFormacion').value;
+                const areaFormacionId = areaFormacionSelect.value;
                 const seccionId = document.getElementById('seccion').value;
 
                 docentesList.innerHTML = docentes.map(docente => {
@@ -905,8 +1046,7 @@
                         // Si hay un filtro de área, mostrar solo esa área si el docente la tiene
                         areasAMostrar = areasAMostrar.filter(area => {
                             // Necesitamos comparar con el nombre del área seleccionado
-                            const areaSelect = document.getElementById('areaFormacion');
-                            const areaNombre = areaSelect.options[areaSelect.selectedIndex]?.text;
+                            const areaNombre = areaFormacionSelect.options[areaFormacionSelect.selectedIndex]?.text;
                             return area === areaNombre;
                         });
                     }
@@ -958,7 +1098,7 @@
 
                 // Obtener filtros seleccionados
                 const seccionId = document.getElementById('seccion')?.value || '';
-                const areaFormacionId = document.getElementById('areaFormacion')?.value || '';
+                const areaFormacionId = areaFormacionSelect?.value || '';
 
                 console.log('Renderizando calendario con filtros:', { seccionId, areaFormacionId });
 
@@ -967,13 +1107,13 @@
 
                 if (seccionId) {
                     horarioFiltrado = horarioFiltrado.filter(h => {
-                        return h.seccion && h.seccion.id == seccionId;
+                        return h.seccion_id == seccionId;
                     });
                 }
 
                 if (areaFormacionId) {
                     horarioFiltrado = horarioFiltrado.filter(h => {
-                        return h.materia && h.materia.id == areaFormacionId;
+                        return h.materia_id == areaFormacionId;
                     });
                 }
 
@@ -1012,82 +1152,17 @@
 
                         // Buscar si hay horario asignado para este día y bloque (usando datos filtrados)
                         const horarioAsignado = horarioFiltrado.find(h => {
-                            const apiDiaNombre = h.dia_nombre || h.dia;
+                            const apiDiaNombre = h.dia_nombre;
                             const apiBloqueId = h.bloque_id;
-                            return apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
-                        });
-
-                        // Buscar cualquier horario asignado (sin filtro) para detectar ocupación
-                        const horarioCualquiera = horarioData.find(h => {
-                            const apiDiaNombre = h.dia_nombre || h.dia;
-                            const apiBloqueId = h.bloque_id;
-                            return apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
+                            return apiDiaNombre && apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
                         });
 
                         // Verificar si hay asignación local (drag and drop)
                         const key = `${diaNombre.toLowerCase()}-${index + 1}`;
                         const asignacionLocal = horarioAsignaciones[key];
 
-                        // Verificar si la asignación local corresponde al contexto actual
-                        let asignacionLocalValida = false;
-                        let asignacionLocalDeOtroContexto = false;
-
-                        if (asignacionLocal) {
-                            // Convertir a strings para comparación consistente
-                            const asignacionAreaStr = String(asignacionLocal.areaFormacionId || '');
-                            const filtroAreaStr = String(areaFormacionId || '');
-                            const asignacionSeccionStr = String(asignacionLocal.seccionId || '');
-                            const filtroSeccionStr = String(seccionId || '');
-
-                            console.log('Comparando asignación local:', {
-                                key,
-                                asignacionAreaStr,
-                                filtroAreaStr,
-                                asignacionSeccionStr,
-                                filtroSeccionStr
-                            });
-
-                            // Lógica de coincidencia estricta:
-                            // - Si no hay filtro de área, cualquier área coincide
-                            // - Si hay filtro de área, debe coincidir exactamente
-                            // - Si no hay filtro de sección, cualquier sección coincide (incluyendo vacío)
-                            // - Si hay filtro de sección, debe coincidir exactamente (no se aceptan asignaciones genéricas)
-                            const coincideArea = !areaFormacionId || asignacionAreaStr === filtroAreaStr;
-                            const coincideSeccion = !seccionId || asignacionSeccionStr === filtroSeccionStr;
-
-                            console.log('Resultado comparación:', {
-                                coincideArea,
-                                coincideSeccion,
-                                razonSeccion: !seccionId ? 'sin filtro' :
-                                             asignacionSeccionStr === filtroSeccionStr ? 'coincide exacto' : 'no coincide'
-                            });
-
-                            if (coincideArea && coincideSeccion) {
-                                // La asignación corresponde al contexto actual
-                                asignacionLocalValida = true;
-                                console.log('Asignación local válida para:', key);
-                            } else {
-                                // La asignación es de otro contexto (área o sección diferente)
-                                asignacionLocalDeOtroContexto = true;
-                                console.log('Asignación local de otro contexto para:', key);
-                            }
-                        }
-
-                        // Determinar si la celda está ocupada por otra área/sección
-                        let esOcupadoPorOtro = false;
-                        if ((horarioCualquiera && !horarioAsignado && !asignacionLocalValida) || asignacionLocalDeOtroContexto) {
-                            // Hay un horario o asignación local pero no corresponde a los filtros actuales
-                            esOcupadoPorOtro = true;
-                            console.log('Celda marcada como ocupada por otro:', key);
-                        }
-
-                        // Aplicar estilo si está ocupado por otro
-                        if (esOcupadoPorOtro) {
-                            td.classList.add('ocupado-por-otro');
-                        }
-
                         // Priorizar asignación local sobre datos de API
-                        if (asignacionLocalValida) {
+                        if (asignacionLocal) {
                             td.innerHTML = `
                                 <div class="assigned-docente">
                                     <span class="docente-nombre">${asignacionLocal.nombre}</span>
@@ -1101,27 +1176,14 @@
                             const seccionNombre = horarioAsignado.seccion_nombre || '';
                             const asignacionId = horarioAsignado.id;
                             const aulaId = horarioAsignado.aula_id;
+                            const aulaNombre = horarioAsignado.aula_nombre || 'N/A';
+                            const aulaTipo = horarioAsignado.aula_tipo || 'Aula Regular';
 
                             let aulaBadge = '';
                             let aulaSelector = '';
                             
-                            // Verificar si es aula especializada (no regular)
-                            const aulaSelect = document.getElementById('aula');
-                            let esAulaEspecial = false;
-                            let aulaNombre = '';
-                            
-                            if (aulaId && aulaSelect) {
-                                for (let i = 0; i < aulaSelect.options.length; i++) {
-                                    if (aulaSelect.options[i].value == aulaId) {
-                                        const tipoAula = aulaSelect.options[i].dataset.tipo || '';
-                                        if (tipoAula.toLowerCase() !== 'regular') {
-                                            esAulaEspecial = true;
-                                            aulaNombre = aulaSelect.options[i].text;
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
+                            // Verificar si es aula especializada (distinto de "Aula Regular")
+                            const esAulaEspecial = aulaTipo.toLowerCase() !== 'aula regular';
                             
                             if (esAulaEspecial) {
                                 // Aula especializada: mostrar selector editable
@@ -1133,6 +1195,9 @@
                                         <div class="aula-error-message"></div>
                                     </div>
                                 `;
+                                aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaNombre}</span>`;
+                            } else {
+                                // Aula regular: solo mostrar badge sin selector
                                 aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaNombre}</span>`;
                             }
 
@@ -1150,14 +1215,6 @@
                                         ${aulaBadge}
                                     </div>
                                     ${aulaSelector}
-                                </div>
-                            `;
-                        } else if (esOcupadoPorOtro) {
-                            // Mostrar indicador de ocupado por otro
-                            td.innerHTML = `
-                                <div class="ocupado-indicator">
-                                    <i class="fas fa-lock"></i>
-                                    <span>Ocupado</span>
                                 </div>
                             `;
                         } else {
@@ -1223,30 +1280,23 @@
             // Continuar a la vista del calendario
             btnContinuar.addEventListener('click', function() {
                 const nivel = nivelSelect.value;
-                if (!nivel) {
-                    mostrarNotificacion('Por favor, seleccione un nivel académico', 'warning');
+                const area = areaFormacionSelect.value;
+                
+                if (!nivel || !area) {
+                    mostrarNotificacion('Por favor, seleccione tanto el nivel académico como el área de formación', 'warning');
                     return;
                 }
 
-                // Siempre cargar datos básicos (días y bloques) independientemente del área de formación
+                // Actualizar header de contexto
+                actualizarContexto();
+
+                // Siempre cargar datos básicos (días y bloques)
                 cargarDatosAPI();
 
-                // Validar que se seleccione un área de formación
-                setTimeout(() => {
-                    const areaFormacion = document.getElementById('areaFormacion').value;
-                    if (!areaFormacion) {
-                        mostrarNotificacion('Por favor, seleccione un área de formación', 'warning');
-                        seccionNivel.style.display = 'none';
-                        vistaCalendario.style.display = 'flex';
-                        // Enfocar el selector de área de formación
-                        document.getElementById('areaFormacion').focus();
-                    } else {
-                        seccionNivel.style.display = 'none';
-                        vistaCalendario.style.display = 'flex';
-                        cargarDocentesAPI(nivel);
-                        filtrarAulasPorSeccion();
-                    }
-                }, 100);
+                seccionNivel.style.display = 'none';
+                vistaCalendario.style.display = 'flex';
+                cargarDocentesAPI(nivel);
+                filtrarAulasPorSeccion();
             });
 
             // Cambiar nivel académico y recargar grilla
@@ -1284,29 +1334,14 @@
                 `).join('');
             }
 
-            // Filtrar docentes por área de formación
-            areaFormacion.addEventListener('change', function() {
-                const nivel = nivelSelect.value;
-                cargarDocentesAPI(nivel);
-                // Recargar datos de asignaciones con el nuevo filtro
-                cargarDatosAPI();
-            });
-
             // Filtrar docentes por sección
             const seccionSelect = document.getElementById('seccion');
             seccionSelect.addEventListener('change', function() {
-                // Validar que se haya seleccionado un área de formación primero
-                const areaFormacionId = areaFormacion.value;
-                if (!areaFormacionId) {
-                    mostrarNotificacion('Por favor, seleccione un área de formación primero', 'warning');
-                    seccionSelect.value = ''; // Resetear selección de sección
-                    return;
-                }
-
                 const nivel = nivelSelect.value;
                 cargarDocentesAPI(nivel);
                 filtrarAulasPorSeccion();
-                renderizarCalendario(); // Re-renderizar calendario con filtro de sección
+                // Recargar datos de asignaciones con el nuevo filtro
+                cargarDatosAPI();
             });
 
             // Función para filtrar aulas por sección
@@ -1457,16 +1492,76 @@
             };
 
             // Guardar horario
-            document.getElementById('btnGuardarHorario').addEventListener('click', function() {
-                const asignaciones = Object.keys(horarioAsignaciones).length;
-                if (asignaciones === 0) {
+            document.getElementById('btnGuardarHorario').addEventListener('click', async function() {
+                const asignaciones = Object.keys(horarioAsignaciones);
+                if (asignaciones.length === 0) {
                     mostrarNotificacion('No hay asignaciones en el horario', 'warning');
                     return;
                 }
 
-                // Aquí se enviarían los datos al servidor
-                console.log('Guardando horario...', horarioAsignaciones);
-                mostrarNotificacion(`Horario guardado exitosamente con ${asignaciones} asignaciones`, 'success');
+                // Convertir asignaciones locales al formato que espera el backend
+                const asignacionesParaGuardar = asignaciones.map(key => {
+                    const asignacion = horarioAsignaciones[key];
+                    const [diaNombre, bloqueId] = key.split('-');
+                    
+                    // Encontrar el ID del día correspondiente al nombre
+                    const dia = diasSemana.find(d => 
+                        (d.nombre_dia || d.nombre).toLowerCase() === diaNombre.toLowerCase()
+                    );
+                    
+                    return {
+                        docente_id: parseInt(asignacion.id),
+                        materia_id: parseInt(asignacion.areaFormacionId),
+                        seccion_id: parseInt(asignacion.seccionId),
+                        aula_id: parseInt(asignacion.aulaId || 0), // Se asignará más tarde si no está disponible
+                        dia_id: dia ? dia.id : 1,
+                        bloque_id: parseInt(bloqueId)
+                    };
+                });
+
+                // Mostrar indicador de carga
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch('/api/horario/guardar-asignaciones', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify({ 
+                            asignaciones: asignacionesParaGuardar,
+                            anio_escolar_id: anioEscolarActivo ? anioEscolarActivo.id : null
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        mostrarNotificacion(data.error || 'Error al guardar horario', 'error');
+                        return;
+                    }
+
+                    if (data.success) {
+                        mostrarNotificacion(data.mensaje, 'success');
+                        // Recargar datos para mostrar las asignaciones guardadas
+                        await cargarDatosAPI();
+                    } else {
+                        mostrarNotificacion(data.mensaje, 'warning');
+                        console.error('Errores al guardar:', data.errores);
+                    }
+
+                } catch (error) {
+                    console.error('Error al guardar horario:', error);
+                    mostrarNotificacion('Error de conexión al servidor', 'error');
+                } finally {
+                    // Restaurar botón
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
             });
 
             // Función para actualizar aula de una asignación
@@ -1532,7 +1627,10 @@
                 try {
                     const response = await fetch('/api/horario/generar', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
                         body: JSON.stringify({ 
                             anio_escolar_id: anioEscolarActivo.id,
                             total_dias: 5,

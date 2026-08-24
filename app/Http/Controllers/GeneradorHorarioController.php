@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\GeneradorHorarioService;
 use App\Models\HorarioAsignacion;
 use App\Models\AnioEscolar;
+use App\Models\AreaFormacion;
 use Illuminate\Http\Request;
 
 class GeneradorHorarioController extends Controller
@@ -96,6 +97,8 @@ class GeneradorHorarioController extends Controller
                         ? $asignacion->seccion->grado->numero_grado . '° Grado' 
                         : 'N/A',
                     'aula_id' => $asignacion->aula_id,
+                    'aula_nombre' => $asignacion->aula ? $asignacion->aula->nombre_aula : 'N/A',
+                    'aula_tipo' => $asignacion->aula ? $asignacion->aula->tipo_aula : 'N/A',
                     'dia_id' => $asignacion->dia_id,
                     'dia_nombre' => $asignacion->dia ? $asignacion->dia->nombre_dia : $asignacion->dia_id,
                     'bloque_id' => $asignacion->bloque_id,
@@ -226,5 +229,84 @@ class GeneradorHorarioController extends Controller
         $asignacion->save();
 
         return response()->json(['success' => true, 'asignacion' => $asignacion]);
+    }
+
+    public function obtenerAreasPorGrado(Request $request)
+    {
+        $validado = $request->validate([
+            'grado_id' => 'required|integer',
+        ]);
+
+        $areas = AreaFormacion::where('status', true)
+            ->whereHas('grados', function($query) use ($validado) {
+                $query->where('grado_id', $validado['grado_id'])
+                    ->where('grado_area_formacions.status', true);
+            })
+            ->get()
+            ->map(function($area) {
+                return [
+                    'id' => $area->id,
+                    'nombre' => $area->nombre_area_formacion,
+                ];
+            });
+
+        return response()->json($areas);
+    }
+
+    public function guardarAsignaciones(Request $request)
+    {
+        $validado = $request->validate([
+            'asignaciones' => 'required|array',
+            'anio_escolar_id' => 'nullable|integer',
+        ]);
+
+        // Si no se proporciona anio_escolar_id, usar el activo
+        $anioEscolarId = $validado['anio_escolar_id'] ?? $this->getAnioEscolarActivo()?->id;
+
+        if (!$anioEscolarId) {
+            return response()->json(['error' => 'No hay año escolar activo'], 400);
+        }
+
+        // Limpiar asignaciones anteriores del mismo año escolar
+        HorarioAsignacion::where('anio_escolar_id', $anioEscolarId)->delete();
+
+        $asignacionesGuardadas = 0;
+        $errores = [];
+
+        foreach ($validado['asignaciones'] as $asignacion) {
+            try {
+                HorarioAsignacion::create([
+                    'anio_escolar_id' => $anioEscolarId,
+                    'docente_id' => $asignacion['docente_id'],
+                    'materia_id' => $asignacion['materia_id'],
+                    'seccion_id' => $asignacion['seccion_id'],
+                    'aula_id' => $asignacion['aula_id'],
+                    'dia_id' => $asignacion['dia_id'],
+                    'bloque_id' => $asignacion['bloque_id'],
+                    'conflicto_manual' => false,
+                ]);
+                $asignacionesGuardadas++;
+            } catch (\Exception $e) {
+                $errores[] = [
+                    'asignacion' => $asignacion,
+                    'error' => $e->getMessage()
+                ];
+            }
+        }
+
+        if (count($errores) > 0) {
+            return response()->json([
+                'success' => false,
+                'guardadas' => $asignacionesGuardadas,
+                'errores' => $errores,
+                'mensaje' => "Se guardaron {$asignacionesGuardadas} asignaciones con " . count($errores) . " errores"
+            ], 207); // 207 Multi-Status
+        }
+
+        return response()->json([
+            'success' => true,
+            'guardadas' => $asignacionesGuardadas,
+            'mensaje' => "Se guardaron {$asignacionesGuardadas} asignaciones exitosamente"
+        ]);
     }
 }
