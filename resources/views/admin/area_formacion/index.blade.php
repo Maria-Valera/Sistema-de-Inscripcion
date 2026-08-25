@@ -103,6 +103,8 @@
                             <th style="text-align: center">Área de formación</th>
                             <th style="text-align: center">Código</th>
                             <th style="text-align: center">Siglas</th>
+                            <th style="text-align: center">Horas Semanales</th>
+                            <th style="text-align: center">Bloques/Día</th>
                             <th style="text-align: center">Aula</th>
                             <th style="text-align: center">Estado</th>
                             <th style="text-align: center">Acciones</th>
@@ -111,7 +113,7 @@
                     <tbody style="text-align: center">
                         @if($areaFormacion->isEmpty())
                             <tr>
-                                <td colspan="6">
+                                <td colspan="9">
                                     <div class="empty-state">
                                         <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                                         <h4>No hay áreas de formación registradas</h4>
@@ -127,6 +129,16 @@
                                         <td class="title-main">{{ $datos->nombre_area_formacion }}</td>
                                         <td>{{ $datos->codigo_area }}</td>
                                         <td>{{ $datos->siglas }}</td>
+                                        <td>
+                                            <span class="badge badge-info">
+                                                <i class="fas fa-clock"></i> {{ $datos->horas_semanales }} hrs
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-primary">
+                                                <i class="fas fa-calendar-day"></i> {{ $datos->bloques_maximos_por_dia ?? 2 }} bloques
+                                            </span>
+                                        </td>
                                         <td>
                                             @if($datos->aula)
                                                 {{ $datos->aula->nombre_aula }}

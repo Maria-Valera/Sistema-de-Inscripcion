@@ -929,6 +929,11 @@
                 validarPaso1();
             });
 
+            // Recargar datos cuando cambia el área de formación
+            areaFormacionSelect.addEventListener('change', function() {
+                cargarDatosAPI();
+            });
+
             // Validar cuando cambia el área de formación
             areaFormacionSelect.addEventListener('change', validarPaso1);
 
@@ -961,9 +966,14 @@
             async function cargarDatosAPI() {
                 try {
                     const nivelSeleccionado = nivelSelect.value;
+                    const areaFormacionSeleccionado = areaFormacionSelect?.value || null;
+                    
                     const params = new URLSearchParams();
                     if (nivelSeleccionado) {
                         params.append('grado_id', nivelSeleccionado);
+                    }
+                    if (areaFormacionSeleccionado) {
+                        params.append('area_formacion_id', areaFormacionSeleccionado);
                     }
 
                     const [diasResponse, bloquesResponse, horarioResponse, anioResponse] = await Promise.all([
@@ -988,6 +998,7 @@
                     console.log('Bloques horario:', bloquesHorario);
                     console.log('Horario data:', horarioData);
                     console.log('Nivel seleccionado:', nivelSeleccionado);
+                    console.log('Área de formación seleccionada:', areaFormacionSeleccionado);
 
                     renderizarCalendario();
                 } catch (error) {
@@ -1549,6 +1560,10 @@
                         mostrarNotificacion(data.mensaje, 'success');
                         // Recargar datos para mostrar las asignaciones guardadas
                         await cargarDatosAPI();
+                        // Redirigir al inicio del módulo
+                        setTimeout(() => {
+                            window.location.href = "{{ route('admin.horario.index') }}";
+                        }, 1500);
                     } else {
                         mostrarNotificacion(data.mensaje, 'warning');
                         console.error('Errores al guardar:', data.errores);
@@ -1625,6 +1640,13 @@
                 btn.disabled = true;
 
                 try {
+                    // Obtener filtros seleccionados del Paso 1
+                    const nivelSelect = document.getElementById('nivelAcademico');
+                    const areaFormacionSelect = document.getElementById('areaFormacion');
+                    
+                    const gradoId = nivelSelect?.value || null;
+                    const areaFormacionId = areaFormacionSelect?.value || null;
+
                     const response = await fetch('/api/horario/generar', {
                         method: 'POST',
                         headers: { 
@@ -1634,7 +1656,9 @@
                         body: JSON.stringify({ 
                             anio_escolar_id: anioEscolarActivo.id,
                             total_dias: 5,
-                            total_bloques: 8
+                            total_bloques: 8,
+                            grado_id: gradoId,
+                            area_formacion_id: areaFormacionId
                         })
                     });
 
@@ -1679,8 +1703,8 @@
                             <i class="fas fa-exclamation-circle"></i>
                         </div>
                         <div class="conflicto-info">
-                            <strong>Docente ID: ${conflicto.docente_id} - Materia ID: ${conflicto.materia_id}</strong>
-                            <p>Sección ID: ${conflicto.seccion_id} | Bloques pendientes: ${conflicto.bloques_pendientes || 'No especificado'}</p>
+                            <strong>${conflicto.docente_nombre || 'Docente desconocido'} - ${conflicto.materia_nombre || 'Materia desconocida'}</strong>
+                            <p>Sección: ${conflicto.seccion_nombre || 'Sección desconocida'} | Bloques pendientes: ${conflicto.bloques_pendientes || 'No especificado'}</p>
                             <div class="conflicto-badges">
                                 <span class="conflicto-badge">Requiere resolución manual</span>
                             </div>

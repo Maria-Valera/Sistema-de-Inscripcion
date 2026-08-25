@@ -28,6 +28,8 @@ class GeneradorHorarioController extends Controller
             'anio_escolar_id' => 'nullable|integer',
             'total_dias' => 'nullable|integer',
             'total_bloques' => 'nullable|integer',
+            'grado_id' => 'nullable|integer',
+            'area_formacion_id' => 'nullable|integer',
         ]);
 
         // Si no se proporciona anio_escolar_id, usar el activo
@@ -40,7 +42,9 @@ class GeneradorHorarioController extends Controller
         $resultado = $this->generador->generar(
             $anioEscolarId,
             $validado['total_dias'] ?? 5,
-            $validado['total_bloques'] ?? 8
+            $validado['total_bloques'] ?? 8,
+            $validado['grado_id'] ?? null,
+            $validado['area_formacion_id'] ?? null
         );
 
         return response()->json($resultado);
@@ -60,6 +64,7 @@ class GeneradorHorarioController extends Controller
         $validado = $request->validate([
             'anio_escolar_id' => 'nullable|integer',
             'grado_id' => 'nullable|integer',
+            'area_formacion_id' => 'nullable|integer',
         ]);
 
         // Si no se proporciona anio_escolar_id, usar el activo
@@ -78,6 +83,11 @@ class GeneradorHorarioController extends Controller
             $query->whereHas('seccion', function($q) use ($validado) {
                 $q->where('grado_id', $validado['grado_id']);
             });
+        }
+
+        // Filtrar por area_formacion_id si se proporciona
+        if (isset($validado['area_formacion_id']) && $validado['area_formacion_id']) {
+            $query->where('materia_id', $validado['area_formacion_id']);
         }
 
         $asignaciones = $query->get()

@@ -60,6 +60,37 @@
                     </div>
 
                     <div class="form-group-modern">
+                        <label for="horas_semanales_{{ $datos->id }}" class="form-label-modern">
+                            <i class="fas fa-clock"></i>
+                            Horas Semanales
+                        </label>
+                        <input type="number" class="form-control-modern" id="horas_semanales_{{ $datos->id }}"
+                            name="horas_semanales" value="{{ $datos->horas_semanales }}" required
+                            min="1" max="40">
+                        @error('horas_semanales')
+                            <div class="error-message">
+                                Este campo es obligatorio.
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label for="bloques_maximos_por_dia_{{ $datos->id }}" class="form-label-modern">
+                            <i class="fas fa-calendar-day"></i>
+                            Bloques Máximos por Día
+                        </label>
+                        <input type="number" class="form-control-modern" id="bloques_maximos_por_dia_{{ $datos->id }}"
+                            name="bloques_maximos_por_dia" value="{{ $datos->bloques_maximos_por_dia ?? 2 }}" required
+                            min="1" max="8">
+                        <small class="text-muted">Cantidad máxima de bloques de esta materia que se pueden asignar en un mismo día.</small>
+                        @error('bloques_maximos_por_dia')
+                            <div class="error-message">
+                                Este campo es obligatorio (mínimo 1, máximo 8).
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group-modern">
                         <label for="aula_id_{{ $datos->id }}" class="form-label-modern">
                             <i class="fas fa-door-open"></i>
                             Aula Asignada

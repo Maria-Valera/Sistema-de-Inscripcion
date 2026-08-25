@@ -76,6 +76,7 @@ class AreaFormacionController extends Controller
             'codigo_area' => 'required|numeric',
             'siglas' => 'required|string|max:255',
             'horas_semanales' => 'required|integer',
+            'bloques_maximos_por_dia' => 'required|integer|min:1|max:8',
             'aula_id' => 'required|exists:aulas,id_aula',
         ]);
 
@@ -95,6 +96,7 @@ class AreaFormacionController extends Controller
             $areaFormacion->codigo_area = $validated['codigo_area'];
             $areaFormacion->siglas = $validated['siglas'];
             $areaFormacion->horas_semanales = $validated['horas_semanales'];
+            $areaFormacion->bloques_maximos_por_dia = $validated['bloques_maximos_por_dia'];
             $areaFormacion->aula_id = $validated['aula_id'];
             $areaFormacion->status = true;
             $areaFormacion->save();
@@ -150,6 +152,7 @@ class AreaFormacionController extends Controller
             'codigo_area' => 'required|numeric',
             'siglas' => 'required|string|max:255',
             'horas_semanales' => 'required|integer',
+            'bloques_maximos_por_dia' => 'required|integer|min:1|max:8',
             'aula_id' => 'required|exists:aulas,id_aula',
         ]);
 
@@ -169,6 +172,7 @@ class AreaFormacionController extends Controller
             $areaFormacion->codigo_area = $validated['codigo_area'];
             $areaFormacion->siglas = $validated['siglas'];
             $areaFormacion->horas_semanales = $validated['horas_semanales'];
+            $areaFormacion->bloques_maximos_por_dia = $validated['bloques_maximos_por_dia'];
             $areaFormacion->aula_id = $validated['aula_id'];
             $areaFormacion->save();
 

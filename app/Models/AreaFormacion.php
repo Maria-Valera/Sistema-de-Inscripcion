@@ -15,6 +15,7 @@ class AreaFormacion extends Model
         'codigo_area',
         'siglas',
         'horas_semanales',
+        'bloques_maximos_por_dia',
         'aula_id',
         'status',
     ];

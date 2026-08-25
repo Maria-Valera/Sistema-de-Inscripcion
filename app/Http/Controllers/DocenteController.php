@@ -49,9 +49,7 @@ class DocenteController extends Controller
         // Filtrar por área de formación si se proporciona
         if ($areaFormacionId) {
             $query->whereHas('detalleDocenteEstudio.docenteAreaGrados.areaEstudios', function ($query) use ($areaFormacionId) {
-                $query->whereHas('areaFormacion', function ($q) use ($areaFormacionId) {
-                    $q->where('id', $areaFormacionId);
-                });
+                $query->where('area_formacion_id', $areaFormacionId);
             });
         }
 

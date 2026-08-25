@@ -74,6 +74,50 @@
                     </div>
 
                     <div class="form-group-modern">
+                        <label for="horas_semanales" class="form-label-modern">
+                            <i class="fas fa-clock"></i>
+                            Horas Semanales
+                        </label>
+                        <input type="number" 
+                            name="horas_semanales" 
+                            id="horas_semanales" 
+                            class="form-control-modern" 
+                            placeholder="Ingrese las horas semanales"
+                            required
+                            min="1"
+                            max="40">
+                        
+                        @error('horas_semanales')
+                            <div class="error-message">
+                                Este campo es obligatorio.
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label for="bloques_maximos_por_dia" class="form-label-modern">
+                            <i class="fas fa-calendar-day"></i>
+                            Bloques Máximos por Día
+                        </label>
+                        <input type="number" 
+                            name="bloques_maximos_por_dia" 
+                            id="bloques_maximos_por_dia" 
+                            class="form-control-modern" 
+                            placeholder="Máximo de bloques por día (1-8)"
+                            required
+                            min="1"
+                            max="8"
+                            value="2">
+                        <small class="text-muted">Cantidad máxima de bloques de esta materia que se pueden asignar en un mismo día.</small>
+                        
+                        @error('bloques_maximos_por_dia')
+                            <div class="error-message">
+                                Este campo es obligatorio (mínimo 1, máximo 8).
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group-modern">
                         <label for="aula_id" class="form-label-modern">
                             <i class="fas fa-door-open"></i>
                             Aula Asignada
