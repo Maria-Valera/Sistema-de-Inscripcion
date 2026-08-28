@@ -241,6 +241,64 @@ class GeneradorHorarioController extends Controller
         return response()->json(['success' => true, 'asignacion' => $asignacion]);
     }
 
+    public function actualizarPosicion(Request $request, int $id)
+    {
+        $validado = $request->validate([
+            'dia_id' => 'required|integer',
+            'bloque_id' => 'required|integer',
+        ]);
+
+        $asignacion = HorarioAsignacion::find($id);
+        if (!$asignacion) {
+            return response()->json(['error' => 'Asignación no encontrada'], 404);
+        }
+
+        // Validar conflicto de docente
+        $conflictoDocente = HorarioAsignacion::where('docente_id', $asignacion->docente_id)
+            ->where('dia_id', $validado['dia_id'])
+            ->where('bloque_id', $validado['bloque_id'])
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($conflictoDocente) {
+            return response()->json(['error' => 'El docente ya tiene una asignación en ese día y bloque'], 422);
+        }
+
+        // Validar conflicto de sección
+        $conflictoSeccion = HorarioAsignacion::where('seccion_id', $asignacion->seccion_id)
+            ->where('dia_id', $validado['dia_id'])
+            ->where('bloque_id', $validado['bloque_id'])
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($conflictoSeccion) {
+            return response()->json(['error' => 'La sección ya tiene una asignación en ese día y bloque'], 422);
+        }
+
+        // Validar conflicto de aula si tiene aula asignada
+        if ($asignacion->aula_id) {
+            $conflictoAula = HorarioAsignacion::where('aula_id', $asignacion->aula_id)
+                ->where('dia_id', $validado['dia_id'])
+                ->where('bloque_id', $validado['bloque_id'])
+                ->where('id', '!=', $id)
+                ->exists();
+
+            if ($conflictoAula) {
+                return response()->json(['error' => 'El aula ya está ocupada en ese día y bloque'], 422);
+            }
+        }
+
+        // Actualizar posición
+        $asignacion->dia_id = $validado['dia_id'];
+        $asignacion->bloque_id = $validado['bloque_id'];
+        $asignacion->save();
+
+        // Recargar con relaciones para devolver datos completos
+        $asignacion->load(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque']);
+
+        return response()->json(['success' => true, 'asignacion' => $asignacion]);
+    }
+
     public function obtenerAreasPorGrado(Request $request)
     {
         $validado = $request->validate([
