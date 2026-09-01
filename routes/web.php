@@ -38,6 +38,7 @@ use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\InasistenciaController;
 use App\Http\Controllers\Permisos_RepososController;
 use App\Http\Controllers\ActaEntrevistaController;
+use App\Http\Controllers\CalendarioAcademicoController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -106,6 +107,20 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('anio_escolar/modales/store', [AnioEscolarController::class, 'store'])->name('anio_escolar.modales.store');
     Route::post('anio_escolar/{id}/extender', [AnioEscolarController::class, 'extender'])->name('anio_escolar.modales.extender');
     Route::delete('anio_escolar/{id}', [AnioEscolarController::class, 'destroy'])->name('anio_escolar.destroy');
+
+    // -----------------------------------------------
+
+        // ===== Calendario Académico (días no laborables: PDF o registro manual) =====
+    // Igual que anio_escolar, sin middleware verificar.anio.escolar: se puede
+    // cargar el calendario de un año escolar que todavía no esté activo.
+    Route::get('calendario_academico', [CalendarioAcademicoController::class, 'index'])->name('calendario_academico.index');
+    Route::get('calendario_academico/nuevo', [CalendarioAcademicoController::class, 'create'])->name('calendario_academico.create');
+    Route::post('calendario_academico', [CalendarioAcademicoController::class, 'store'])->name('calendario_academico.store');
+    Route::get('calendario_academico/{calendarioAcademico}', [CalendarioAcademicoController::class, 'show'])->name('calendario_academico.show');
+    Route::post('calendario_academico/{calendarioAcademico}/confirmar', [CalendarioAcademicoController::class, 'confirmar'])->name('calendario_academico.confirmar');
+     Route::post('calendario_academico/{calendarioAcademico}/dias/{calendarioDia}/confirmar', [CalendarioAcademicoController::class, 'confirmarDia'])->name('calendario_academico.dias.confirmar');
+    // --------------------------------
+
 
     // ===== BANCOS =====
     Route::get('banco', [BancoController::class, 'index'])->name('banco.index');
@@ -471,12 +486,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 // ====== PORTAL DEL REPRESENTANTE ======
 Route::middleware(['auth'])->prefix('portal-representante')->name('portal-representante.')->group(function () {
     Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'index'])->name('index');
-    
+
     Route::prefix('prosecucion')->name('prosecucion.')->group(function () {
         Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'prosecucionIndex'])->name('index');
         Route::get('/registrar', [\App\Http\Controllers\PortalRepresentanteController::class, 'prosecucionCreate'])->name('create');
     });
-    
+
     Route::prefix('carnet')->name('carnet.')->group(function () {
         Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'carnetIndex'])->name('index');
         Route::get('/imprimir', [\App\Http\Controllers\PortalRepresentanteController::class, 'carnetImprimir'])->name('imprimir');

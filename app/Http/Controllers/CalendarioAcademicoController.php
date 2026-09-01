@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Enums\ConfianzaDia;
 use App\Models\AnioEscolar;
 use App\Models\CalendarioAcademico;
+use App\Models\CalendarioDia;
 use App\Services\CalendarioPdfExtractorService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,7 +29,7 @@ class CalendarioAcademicoController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('calendario-academico.index', compact('calendarios'));
+        return view('calendario_academico.index', compact('calendarios'));
     }
 
     /**
@@ -39,7 +41,7 @@ class CalendarioAcademicoController extends Controller
         // porque la relación es de uno a uno (ver el ERD: ANIO_ESCOLARS ||--o| CALENDARIOS_ACADEMICOS).
         $aniosEscolaresDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->get();
 
-        return view('calendario-academico.create', compact('aniosEscolaresDisponibles'));
+        return view('calendario_academico.create', compact('aniosEscolaresDisponibles'));
     }
 
     /**
@@ -69,20 +71,59 @@ class CalendarioAcademicoController extends Controller
      * Pantalla de revisión humana: muestra los candidatos agrupados por mes,
      * con los de confianza "alta" pre-marcados y los "dudosos" sin marcar.
      */
-    public function show(CalendarioAcademico $calendarioAcademico): View
-    {
+    // public function show(CalendarioAcademico $calendarioAcademico): View
+    // {
+    //     $calendarioAcademico->load('anioEscolar');
+
+    //     $candidatos = $calendarioAcademico->dias()
+    //         ->orderBy('mes_pagina')
+    //         ->orderBy('fecha')
+    //         ->get()
+    //         ->groupBy('mes_pagina');
+
+    //     return view('calendario_academico.show', [
+    //         'calendario' => $calendarioAcademico,
+    //         'candidatosPorMes' => $candidatos,
+    //     ]);
+    // }
+
+    public function show(CalendarioAcademico $calendarioAcademico):View{
+
         $calendarioAcademico->load('anioEscolar');
 
-        $candidatos = $calendarioAcademico->dias()
-            ->orderBy('mes_pagina')
-            ->orderBy('fecha')
-            ->get()
-            ->groupBy('mes_pagina');
+        $dias = $calendarioAcademico->dias()
+        ->orderBy('mes_pagina')
+        ->orderBy('fecha')
+        ->get();
 
-        return view('calendario-academico.show', [
-            'calendario' => $calendarioAcademico,
-            'candidatosPorMes' => $candidatos,
+        $candidatosPorMes = $dias->groupBy('mes_pagina');
+
+        // solo los que tienen una fecha real se excluye en este caso por el momento "mes completo"
+        // ya que no tiene un dia puntual y no puede ubicarse en una celda sola del calendario
+
+        $diasParaCalendario = $dias
+        ->whereNotNull('fecha')
+        ->map(fn (CalendarioDia $dia) => [
+            'id' => $dia->id,
+            'fecha' => $dia->fecha->toDateString(),
+            'texto' => $dia->texto_extraido,
+            'categoria' => $dia->categoria->value,
+            'categoriaLabel' => $dia->categoria->label(),
+            'confianza' => $dia->confianza->value,
+            'confianzaLabel' => $dia->confianza->label(),
+            'confirmado' => $dia->confirmado,
+        ])
+        ->values();
+
+        return view('calendario_academico.show',[
+            'calendario' =>$calendarioAcademico,
+            'candidatosPorMes' => $candidatosPorMes,
+            'diasParaCalendarioJson' => $diasParaCalendario->toJson(),
+            'inicioAnioEscolar' => $calendarioAcademico->anioEscolar->inicio_anio_escolar,
+            'cierreAnioEscolar' => $calendarioAcademico->anioEscolar->cierre_anio_escolar,
         ]);
+
+
     }
 
     /**
@@ -105,4 +146,26 @@ class CalendarioAcademicoController extends Controller
             ->route('admin.calendario_academico.index')
             ->with('exito', 'Calendario confirmado correctamente.');
     }
+
+
+    //  se confirma ( o se revierte ) Un solo dia ( no mas ) desde la vista del calendario, lo hacemos por via AJAX
+    // esta funcion en especifico no usa la funcion confirmar por completo,por que ese cierra todo el calendario a la vez ; esto como tal
+    // es solo una confirmacion puntual nada mas, mucho mas rapida para cuando el usuario este revisando visualmente dia por dia
+    public function confirmarDia(Request $request,CalendarioAcademico $calendarioAcademico, CalendarioDia $calendarioDia): JsonResponse{
+
+
+        abort_if($calendarioDia->calendario_id !==  $calendarioAcademico->id,404);
+
+        $validado = $request->validate([
+            'confirmado' => ['required', 'boolean'],
+        ]);
+
+        $calendarioDia->update(['confirmado' => $validado['confirmado']]);
+
+        return response()->json([
+            'id' => $calendarioDia->id,
+            'confirmado' => $calendarioDia->confirmado,
+        ]);
+    }
+
 }

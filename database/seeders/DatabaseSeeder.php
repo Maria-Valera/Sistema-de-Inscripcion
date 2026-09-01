@@ -69,6 +69,7 @@ class DatabaseSeeder extends Seeder
             aulaSeeder::class,
             DiasSemanaSeeder::class,
             BloqueHorarioSeeder::class,
+            CalendarioPalabraClaveSeeder::class,
 
 
             /*InscripcionProsecucionSeeder::class,

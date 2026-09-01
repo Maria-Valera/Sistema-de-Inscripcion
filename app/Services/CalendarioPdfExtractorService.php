@@ -20,33 +20,35 @@ use Smalot\PdfParser\Parser;
 
 class CalendarioPdfExtractorService
 {
-    /*
-    aqui se tiene los meses validos y su respectivo numero, para reconstruir lo que seria la fecha completa
-    debe de coincidir con como aparecen en mayusculas en el encabezado de cada pagina del pdf (ej : "SEPTIEMBRE", "OCTUBRE", etc)
+    /**
+     * Mes "activo" mientras se recorren las líneas del documento en orden.
+     * Se actualiza cada vez que aparece una línea que es, ella sola, el
+     * nombre de un mes — no se resetea por página, porque una misma página
+     * física puede contener el final de un mes y el inicio del siguiente.
+     */
+    private ?string $mesActual = null;
+
+    /**
+     * Meses válidos y su número, para reconstruir la fecha completa (algoritmo 5).
+     * Deben coincidir con cómo aparecen en mayúsculas en el encabezado de cada
+     * página del PDF (ej. "SEPTIEMBRE", "OCTUBRE").
      */
     private const MESES = [
-        'ENERO' => 1,
-        'FEBRERO' => 2,
-        'MARZO' => 3,
-        'ABRIL' => 4,
-        'MAYO' => 5,
-        'JUNIO' => 6,
-        'JULIO' => 7,
-        'AGOSTO' => 8,
-        'SEPTIEMBRE' => 9,
-        'OCTUBRE' => 10,
-        'NOVIEMBRE' => 11,
-        'DICIEMBRE' => 12
+        'ENERO' => 1, 'FEBRERO' => 2, 'MARZO' => 3, 'ABRIL' => 4,
+        'MAYO' => 5, 'JUNIO' => 6, 'JULIO' => 7, 'AGOSTO' => 8,
+        'SEPTIEMBRE' => 9, 'OCTUBRE' => 10, 'NOVIEMBRE' => 11, 'DICIEMBRE' => 12,
     ];
 
-    /*
-    punto de entrada del servicio : se procesa un pdf completo para un año escolar y deja los candidatos guardados, listos solo ya de revision humana
-    aqui se ejecuta en orden los procesos del 1 al 6
-    */
-
+    /**
+     * Punto de entrada del servicio: procesa un PDF completo para un año
+     * escolar y deja los candidatos guardados, listos para revisión humana.
+     * Ejecuta, en orden, los algoritmos 1 al 6.
+     */
     public function procesarPdf(UploadedFile $archivo, AnioEscolar $anioEscolar): CalendarioAcademico
     {
         return DB::transaction(function () use ($archivo, $anioEscolar) {
+            $this->mesActual = null; // por si el servicio se reutiliza entre peticiones
+
             $rutaRelativa = $archivo->store('calendarios', 'local');
 
             $calendario = CalendarioAcademico::create([
@@ -74,275 +76,287 @@ class CalendarioPdfExtractorService
         });
     }
 
-    /*
-    procesa una sola pagina : detectando el mes y se clasifica cada linea dentro de ella
-    */
-
+    /**
+     * Procesa una sola página, línea por línea, actualizando el mes activo
+     * (this->mesActual) cada vez que encuentra un encabezado de mes.
+     * Esto reemplaza al algoritmo 2 original ("un mes por página"): el PDF
+     * real puede tener el final de un mes y el inicio del siguiente en la
+     * misma página física, así que el mes se seguimiento por línea, no por página.
+     */
     private function procesarPagina(
         CalendarioAcademico $calendario,
         AnioEscolar $anioEscolar,
         array $pagina,
         array $palabrasNoLaborable,
         array $palabrasEfemeride,
-    ):void {
-        $mes = $this->detectarMes($pagina['texto']);
-
-        // si no se pudo detectar el mes, no hay forma de construir fechas en esta pagina;
-        // por lo tanto se omite en vez de arriesgar fechas mal calculadas.
-        if($mes === null){
-            Log::info("no se detecto el mes en la pagina {$pagina['numero']} del calendario {$calendario->id} ");
-            return;
-        }
-
+    ): void {
         $lineas = preg_split('/\r\n|\r|\n/', $pagina['texto']) ?: [];
 
-        foreach($lineas as $lineaOriginal){
+        foreach ($lineas as $lineaOriginal) {
             $linea = trim($lineaOriginal);
 
-            if ($linea === ''){
+            if ($linea === '') {
+                continue;
+            }
+
+            // ¿Es esta línea, ella sola, el nombre de un mes? (encabezado de
+            // la cuadrícula, ej. "SEPTIEMBRE"). Si sí, actualiza el mes activo
+            // y no se procesa como evento.
+            $mesDetectado = $this->esEncabezadoDeMes($linea);
+            if ($mesDetectado !== null) {
+                $this->mesActual = $mesDetectado;
+                continue;
+            }
+
+            // Sin un mes activo todavía (ej. la portada, antes del primer
+            // encabezado), no hay contexto confiable para construir fechas.
+            if ($this->mesActual === null) {
+                continue;
+            }
+
+            // Filas de la cuadrícula del mini-calendario (ej. "1 2 3 4 5 6 7"),
+            // no son eventos: solo números y espacios, sin ningún texto real.
+            if (preg_match('/^[\d\s]+$/u', $linea)) {
                 continue;
             }
 
             $categoria = $this->clasificarLinea($linea, $palabrasNoLaborable, $palabrasEfemeride);
 
-            //las efemerides se descartan aqui mismo, nunca llega a guardarse.
-            if ($categoria === 'efemeride'){
-                    continue;
+            // Las efemérides se descartan aquí mismo, nunca llegan a guardarse.
+            if ($categoria === 'efemeride') {
+                continue;
             }
 
-            $this->procesarLinea($calendario, $anioEscolar, $linea, $mes , $categoria);
-
+            $this->procesarLinea($calendario, $anioEscolar, $linea, $this->mesActual, $categoria);
         }
-
     }
 
-    /*
-    extra el o los dias de una linea que ya fue clasificada, construye su fecha y la guarda como candidato.
-    cubre el caso especial de "mes completo".
-    */
-
+    /**
+     * Extrae él o los días de una línea ya clasificada, construye su fecha
+     * y la guarda como candidato. Cubre el caso especial de "mes completo".
+     */
     private function procesarLinea(
         CalendarioAcademico $calendario,
         AnioEscolar $anioEscolar,
         string $linea,
         string $mes,
         string $categoria,
-    ) : void {
+    ): void {
         $extraccion = $this->extraerDias($linea);
 
-        //caso especial : "todo el mes de agosto : escuelas abiertas".
-        //no tiene un dia puntual , se guarda sin fecha pero marcado
-
-        if ($extraccion['es_mes_completo']){
+        // Caso especial: "Todo el mes de agosto: Escuelas Abiertas".
+        // No tiene un día puntual, se guarda sin fecha pero marcado.
+        if ($extraccion['es_mes_completo']) {
             $this->guardarCandidato(
-                calendario : $calendario,
-                texto : $linea,
-                fecha : null,
-                categoria : $categoria,
-                confianza : ConfianzaDia::Alta->value,
-                mesPagina : $mes,
-                diaExtraidoTexto : null,
-                esMesCompleto : true,
-
+                calendario: $calendario,
+                texto: $linea,
+                fecha: null,
+                categoria: $categoria,
+                confianza: ConfianzaDia::Alta->value,
+                mesPagina: $mes,
+                diaExtraidoTexto: null,
+                esMesCompleto: true,
             );
             return;
         }
 
-        $confianza = $categoria === CategoriaDia::NoLaborable->value?ConfianzaDia::Alta->value:ConfianzaDia::Dudosa->value;
+        $confianza = $categoria === CategoriaDia::NoLaborable->value
+            ? ConfianzaDia::Alta->value
+            : ConfianzaDia::Dudosa->value;
 
-        foreach($extraccion['dias'] as $dia){
-                if($dia < 1 || $dia > 31){
-                    continue; // ruido de extraccion , no es un dia valido
+        foreach ($extraccion['dias'] as $dia) {
+            if ($dia < 1 || $dia > 31) {
+                continue; // ruido de extracción, no es un día válido
+            }
 
-                }
+            $fecha = $this->construirFecha($anioEscolar, $mes, $dia);
 
-                $fecha = $this->construirFecha($anioEscolar, $mes, $dia);
+            $this->guardarCandidato(
+                calendario: $calendario,
+                texto: $linea,
+                fecha: $fecha,
+                categoria: $categoria,
+                confianza: $confianza,
+                mesPagina: $mes,
+                diaExtraidoTexto: implode(' y ', $extraccion['dias']),
+                esMesCompleto: false,
+            );
+        }
+    }
 
-                $this->guardarCandidato(
-                    calendario : $calendario,
-                    texto : $linea,
-                    fecha : $fecha,
-                    categoria : $categoria,
-                    confianza : $confianza,
-                    mesPagina : $mes,
-                    diaExtraidoTexto : implode('y', $extraccion['dias']),
-                    esMesCompleto : false,
+    /**
+     * ALGORITMO 1: extraerPaginasDeTexto
+     * Convierte el PDF en una colección de páginas de texto plano.
+     */
+    private function extraerPaginasDeTexto(string $rutaAbsoluta): array
+    {
+        $parser = new Parser();
+        $documento = $parser->parseFile($rutaAbsoluta);
 
-                );
+        $paginas = [];
 
+        foreach ($documento->getPages() as $indice => $pagina) {
+            try {
+                $texto = $pagina->getText();
+            } catch (\Throwable $e) {
+                // Página sin texto extraíble (ej. es una imagen dentro del PDF).
+                // Se registra vacía en vez de detener todo el proceso.
+                Log::warning("Página {$indice} sin texto extraíble", ['error' => $e->getMessage()]);
+                $texto = '';
+            }
+
+            $paginas[] = ['numero' => $indice + 1, 'texto' => $texto];
         }
 
+        return $paginas;
     }
 
+    /**
+     * ALGORITMO 2 (rediseñado): esEncabezadoDeMes
+     * Antes buscaba el mes en cualquier parte del texto de una página
+     * completa. Ahora compara si la LÍNEA, ella sola, es exactamente el
+     * nombre de un mes — así se detecta el cambio de mes exacto dentro
+     * de una página, en vez de asumir un solo mes por página.
+     */
+    private function esEncabezadoDeMes(string $linea): ?string
+    {
+        $lineaNormalizada = mb_strtoupper(trim($linea));
 
-// convierte el pdf en una coleccion de paginas de texto plano
-private function extraerPaginasDeTexto(string $rutaAbsoluta) : array
-{
-$parser = new Parser();
-$documento = $parser->parseFile($rutaAbsoluta);
-
-$paginas = [];
-
-foreach ($documento->getPages() as $indice => $pagina){
-    try{
-        $texto = $pagina->getText();
-    } catch (\Throwable $e){
-        // pagina sin texto extraible (ejemplo , es una imagen dentro del pdf)
-        // se registra vacia en vez de detener todo el proceso
-
-        Log::warning("pagina {$indice} sin texto extraible ", ['error' =>$e->getMessage()]);
-        $texto = '';
-
+        return array_key_exists($lineaNormalizada, self::MESES) ? $lineaNormalizada : null;
     }
 
-    $paginas[] = ['numero' => $indice + 1, 'texto' => $texto];
+    /**
+     * ALGORITMO 3: clasificarLinea
+     * Decide si una línea es no laborable, efeméride, o dudosa,
+     * usando el diccionario compartido de calendario_palabras_clave.
+     */
+    private function clasificarLinea(string $linea, array $palabrasNoLaborable, array $palabrasEfemeride): string
+    {
+        $lineaMinusculas = mb_strtolower($linea);
 
-}
+        foreach ($palabrasNoLaborable as $palabra) {
+            if (str_contains($lineaMinusculas, mb_strtolower($palabra))) {
+                return CategoriaDia::NoLaborable->value;
+            }
+        }
 
-return $paginas;
-
-}
-// busca el nombre del mes en mayusculas dentro del texto de una pagina
-// tal como aparece en el encabezado  de la cuadricula del calendario
-
-private function detectarMes(string $texto) : ?string
-{
-
-foreach(array_keys(self::MESES) as $mes){
-    if (str_contains($texto, $mes)){
-        return $mes;
-    }
-}
-
-return null;
-
-}
-
-private function clasificarLinea(string $linea, array $palabrasNoLaborable, array $palabrasEfemeride): string
-{
-
-$lineaMinusculas = mb_strtolower($linea);
-
-foreach ($palabrasNoLaborable as $palabra){
-    if(str_contains($lineaMinusculas, mb_strtolower($palabra))){
-        return CategoriaDia::NoLaborable->value;
-    }
-}
-
-foreach ($palabrasEfemeride as $palabra) {
+        foreach ($palabrasEfemeride as $palabra) {
             if (str_contains($lineaMinusculas, mb_strtolower($palabra))) {
                 return 'efemeride';
             }
         }
 
         return CategoriaDia::Dudoso->value;
-
-}
-
-// reconoce varios formatos : osea un solo dia , "N" y "M", o un rango "N-M" / "N y M".
-// tambien detecta el caso especial de "todo el mes"
-
-private function extraerDias(string $linea): array
-{
-    // el caso especial : ejemplo "todo el mes de agosto : escuelas abiertas"
-    if (preg_match('/^todo\s+el\s+mes/iu',$linea)){
-        return['dias'=> [], 'es_mes_completo' => true];
     }
 
-    // 16 y 17 asuesto de carnaval <- ejemplo
-    if(preg_match('/^(\d{1,2})\s+y\s+(\d{1,2})\b/iu', $linea , $coincidencias)){
-        return [
-            'dias' => [(int) $coincidencias[1], (int) $coincidencias[2]],
-            'es_mes_completo' => false,
-        ];
-    }
-
-    // rango : "23-27" o "23 al 27"
-    if(preg_match('/^(\d{1,2})\s*(?:-|al)\s*(\d{1,2})\b/iu', $linea, $coincidencias)){
-        $inicio = (int) $coincidencias[1];
-        $fin = (int) $coincidencias[2];
-
-        if ($inicio <= $fin && ($fin - $inicio) < 31){
-                return ['dias' => range($inicio, $fin), 'es_mes_completo' => false];
+    /**
+     * ALGORITMO 4: extraerDias
+     * Reconoce varios formatos: un solo día, "N y M", o un rango "N-M" / "N al M".
+     * También detecta el caso especial de "todo el mes".
+     */
+    private function extraerDias(string $linea): array
+    {
+        // Caso especial: "Todo el mes de agosto: Escuelas Abiertas"
+        if (preg_match('/^todo\s+el\s+mes/iu', $linea)) {
+            return ['dias' => [], 'es_mes_completo' => true];
         }
 
-    }
+        // "16 y 17 Asueto de Carnaval"
+        if (preg_match('/^(\d{1,2})\s+y\s+(\d{1,2})\b/iu', $linea, $coincidencias)) {
+            return [
+                'dias' => [(int) $coincidencias[1], (int) $coincidencias[2]],
+                'es_mes_completo' => false,
+            ];
+        }
 
-    // un solo numero al inicio de la linea
-    if (preg_match('/^(\d{1,2})\b/u', $linea, $coincidencias)){
-        return ['dias' => [(int) $coincidencias[1]], 'es_mes_completo' => false];
-    }
+        // Rango: "23-27" o "23 al 27"
+        if (preg_match('/^(\d{1,2})\s*(?:-|al)\s*(\d{1,2})\b/iu', $linea, $coincidencias)) {
+            $inicio = (int) $coincidencias[1];
+            $fin = (int) $coincidencias[2];
 
-    // La línea no empieza con ningún número reconocible
+            if ($inicio <= $fin && ($fin - $inicio) < 31) {
+                return ['dias' => range($inicio, $fin), 'es_mes_completo' => false];
+            }
+        }
+
+        // Un solo número al inicio de la línea
+        if (preg_match('/^(\d{1,2})\b/u', $linea, $coincidencias)) {
+            return ['dias' => [(int) $coincidencias[1]], 'es_mes_completo' => false];
+        }
+
+        // La línea no empieza con ningún número reconocible
         return ['dias' => [], 'es_mes_completo' => false];
-
-}
-
-// aqui combina el año escolar (usando las fechas reales de este caso anio_escolars), el mes de la pagina y el dia de la linea
-
-private function construirFecha(AnioEscolar $anioEscolar, string $mesTexto, int $dia): ?Carbon
-{
-
-$numeroMes = self::MESES[$mesTexto] ?? null;
-
-if ($numeroMes === null){
-    return null;
-}
-
-$inicio = Carbon::parse($anioEscolar->inicio_anio_escolar);
-$cierre = Carbon::parse($anioEscolar->cierre_anio_escolar);
-
-// si el mes es igual o posterior al mes de inicio del año escolar
-// pertenece al año calendario de inicio ; si no, al de cierre
-// Esto generaliza el caso septiembre-agosto sin fijarlo en el codigo.
-
-$anioUsar = $numeroMes >= $inicio->month ? $inicio->year : $cierre->year;
-
-try{
-    return Carbon::create($anioUsar, $numeroMes, $dia)->startOfDay();
-}catch (\Throwable $e) {
-        // fecha invalida (ejemplo "31 de febrero" se descarta xd)
-        return null;
     }
 
-}
+    /**
+     * ALGORITMO 5: construirFecha
+     * Combina el año escolar (usando las fechas reales de anio_escolars,
+     * no un string parseado), el mes de la página y el día de la línea.
+     */
+    private function construirFecha(AnioEscolar $anioEscolar, string $mesTexto, int $dia): ?Carbon
+    {
+        $numeroMes = self::MESES[$mesTexto] ?? null;
 
-// guardarCandidato
-// persiste el resultado como candidato sin confirmar , evitando duplicados.
+        if ($numeroMes === null) {
+            return null;
+        }
 
-private function guardarCandidato(
-    CalendarioAcademico $calendario,
-    string $texto,
-    ? Carbon $fecha,
-    string $categoria,
-    string $confianza,
-    ? string $mesPagina,
-    ? string $diaExtraidoTexto,
-    bool $esMesCompleto,
-): ?CalendarioDia{
-    // Sin fecha valida y sin ser "mes completo" no hay nada que guardar
-    if($fecha === null && ! $esMesCompleto){
-        return null;
+        $inicio = Carbon::parse($anioEscolar->inicio_anio_escolar);
+        $cierre = Carbon::parse($anioEscolar->cierre_anio_escolar);
+
+        // Si el mes es igual o posterior al mes de inicio del año escolar,
+        // pertenece al año calendario de inicio; si no, al de cierre.
+        // Esto generaliza el caso septiembre-agosto sin fijarlo en el código.
+        $anioUsar = $numeroMes >= $inicio->month ? $inicio->year : $cierre->year;
+
+        // checkdate() valida ANTES de construir. Sin esto, Carbon::create()
+        // no rechaza un día inválido (ej. 31 de noviembre): lo "desborda"
+        // silenciosamente al 1 de diciembre, generando una fecha incorrecta
+        // en vez de descartar el candidato.
+        if (! checkdate($numeroMes, $dia, $anioUsar)) {
+            return null;
+        }
+
+        return Carbon::create($anioUsar, $numeroMes, $dia)->startOfDay();
     }
 
-    $fechaTexto = $fecha?->toDateString();
+    /**
+     * ALGORITMO 6: guardarCandidato
+     * Persiste el resultado como candidato sin confirmar, evitando duplicados.
+     */
+    private function guardarCandidato(
+        CalendarioAcademico $calendario,
+        string $texto,
+        ?Carbon $fecha,
+        string $categoria,
+        string $confianza,
+        ?string $mesPagina,
+        ?string $diaExtraidoTexto,
+        bool $esMesCompleto,
+    ): ?CalendarioDia {
+        // Sin fecha válida y sin ser "mes completo" no hay nada que guardar.
+        if ($fecha === null && ! $esMesCompleto) {
+            return null;
+        }
 
-    $yaExiste = CalendarioDia::query()
-    ->where('calendario_id', $calendario->id)
-    ->where('texto_extraido', $texto)
-    ->when(
-        $fechaTexto === null,
-        fn ($query) => $query->whereNull('fecha'),
-        fn ($query) => $query->where('fecha', $fechaTexto),
-    )
-    ->exist();
+        $fechaTexto = $fecha?->toDateString();
 
-    if($yaExiste){
-        return null;
-    }
+        $yaExiste = CalendarioDia::query()
+            ->where('calendario_id', $calendario->id)
+            ->where('texto_extraido', $texto)
+            ->when(
+                $fechaTexto === null,
+                fn ($query) => $query->whereNull('fecha'),
+                fn ($query) => $query->where('fecha', $fechaTexto),
+            )
+            ->exists();
 
-    return CalendarioDia::create([
-        'calendario_id' => $calendario->id,
+        if ($yaExiste) {
+            return null;
+        }
+
+        return CalendarioDia::create([
+            'calendario_id' => $calendario->id,
             'texto_extraido' => $texto,
             'mes_pagina' => $mesPagina,
             'dia_extraido' => $diaExtraidoTexto,
@@ -353,15 +367,15 @@ private function guardarCandidato(
             'confirmado' => false,
             'aplica_personal' => true,
             'aplica_estudiantes' => true,
-    ]);
+        ]);
+    }
 
-}
-
-// confirmarCalendario
-// Convierte los candidatos aprobados por la subdirectora en el
-// calendario definitivo. Este es el único paso que depende de una
-//
-
+    /**
+     * ALGORITMO 7: confirmarCalendario
+     * Convierte los candidatos aprobados por la subdirectora en el
+     * calendario definitivo. Este es el único paso que depende de una
+     * decisión humana, no de lógica automática.
+     */
     public function confirmar(CalendarioAcademico $calendario, array $idsAprobados, array $ajustesManuales = []): CalendarioAcademico
     {
         return DB::transaction(function () use ($calendario, $idsAprobados, $ajustesManuales) {
@@ -395,6 +409,7 @@ private function guardarCandidato(
         });
     }
 }
+
 
 
 

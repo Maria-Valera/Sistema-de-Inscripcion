@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
-namespace App\Enums;
-
 use App\Enums\CategoriaPalabraClave;
-use App\Models\Persona;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
+
+
 class CalendarioPalabraClave extends Model
 {
     //
+
+    protected $table = 'calendario_palabras_clave';
+
     protected $fillable = [
         'palabra',
         'categoria',

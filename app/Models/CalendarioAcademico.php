@@ -12,6 +12,8 @@ class CalendarioAcademico extends Model
 {
     //
 
+    protected $table = 'calendario_academico';
+
     protected $fillable = [
         'anio_escolar_id',
         'origen',
