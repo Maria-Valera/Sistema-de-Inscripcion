@@ -299,6 +299,157 @@ class GeneradorHorarioController extends Controller
         return response()->json(['success' => true, 'asignacion' => $asignacion]);
     }
 
+    public function intercambiar(Request $request)
+    {
+        $validado = $request->validate([
+            'horario_id_1' => 'required|integer',
+            'horario_id_2' => 'required|integer',
+        ]);
+
+        // Cargar ambos registros con relaciones
+        $asignacion1 = HorarioAsignacion::with(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque'])
+            ->find($validado['horario_id_1']);
+        $asignacion2 = HorarioAsignacion::with(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque'])
+            ->find($validado['horario_id_2']);
+
+        if (!$asignacion1 || !$asignacion2) {
+            return response()->json(['error' => 'Una o ambas asignaciones no encontradas'], 404);
+        }
+
+        // Posiciones actuales
+        $dia1 = $asignacion1->dia_id;
+        $bloque1 = $asignacion1->bloque_id;
+        $dia2 = $asignacion2->dia_id;
+        $bloque2 = $asignacion2->bloque_id;
+
+        $detallesConflicto = [];
+
+        // Validar: sección del registro1 no tenga otra clase en (dia2, bloque2), excluyendo registro2
+        $conflictoSeccion1 = HorarioAsignacion::where('seccion_id', $asignacion1->seccion_id)
+            ->where('dia_id', $dia2)
+            ->where('bloque_id', $bloque2)
+            ->where('id', '!=', $asignacion1->id)
+            ->where('id', '!=', $asignacion2->id)
+            ->exists();
+
+        if ($conflictoSeccion1) {
+            $detallesConflicto[] = [
+                'tipo' => 'seccion',
+                'mensaje' => 'La sección de la primera asignación ya tiene otra clase en el horario destino'
+            ];
+        }
+
+        // Validar: aula del registro1 no esté ocupada en (dia2, bloque2), excluyendo registro2
+        if ($asignacion1->aula_id) {
+            $conflictoAula1 = HorarioAsignacion::where('aula_id', $asignacion1->aula_id)
+                ->where('dia_id', $dia2)
+                ->where('bloque_id', $bloque2)
+                ->where('id', '!=', $asignacion1->id)
+                ->where('id', '!=', $asignacion2->id)
+                ->exists();
+
+            if ($conflictoAula1) {
+                $detallesConflicto[] = [
+                    'tipo' => 'aula',
+                    'mensaje' => 'El aula de la primera asignación ya está ocupada en el horario destino'
+                ];
+            }
+        }
+
+        // Validar: sección del registro2 no tenga otra clase en (dia1, bloque1), excluyendo registro1
+        $conflictoSeccion2 = HorarioAsignacion::where('seccion_id', $asignacion2->seccion_id)
+            ->where('dia_id', $dia1)
+            ->where('bloque_id', $bloque1)
+            ->where('id', '!=', $asignacion1->id)
+            ->where('id', '!=', $asignacion2->id)
+            ->exists();
+
+        if ($conflictoSeccion2) {
+            $detallesConflicto[] = [
+                'tipo' => 'seccion',
+                'mensaje' => 'La sección de la segunda asignación ya tiene otra clase en el horario destino'
+            ];
+        }
+
+        // Validar: aula del registro2 no esté ocupada en (dia1, bloque1), excluyendo registro1
+        if ($asignacion2->aula_id) {
+            $conflictoAula2 = HorarioAsignacion::where('aula_id', $asignacion2->aula_id)
+                ->where('dia_id', $dia1)
+                ->where('bloque_id', $bloque1)
+                ->where('id', '!=', $asignacion1->id)
+                ->where('id', '!=', $asignacion2->id)
+                ->exists();
+
+            if ($conflictoAula2) {
+                $detallesConflicto[] = [
+                    'tipo' => 'aula',
+                    'mensaje' => 'El aula de la segunda asignación ya está ocupada en el horario destino'
+                ];
+            }
+        }
+
+        // Validar opcional: docentes no tengan otra clase en horario destino (en otra sección)
+        $conflictoDocente1 = HorarioAsignacion::where('docente_id', $asignacion1->docente_id)
+            ->where('dia_id', $dia2)
+            ->where('bloque_id', $bloque2)
+            ->where('seccion_id', '!=', $asignacion2->seccion_id)
+            ->where('id', '!=', $asignacion1->id)
+            ->exists();
+
+        if ($conflictoDocente1) {
+            $detallesConflicto[] = [
+                'tipo' => 'docente',
+                'mensaje' => 'El docente de la primera asignación ya tiene otra clase en ese horario'
+            ];
+        }
+
+        $conflictoDocente2 = HorarioAsignacion::where('docente_id', $asignacion2->docente_id)
+            ->where('dia_id', $dia1)
+            ->where('bloque_id', $bloque1)
+            ->where('seccion_id', '!=', $asignacion1->seccion_id)
+            ->where('id', '!=', $asignacion2->id)
+            ->exists();
+
+        if ($conflictoDocente2) {
+            $detallesConflicto[] = [
+                'tipo' => 'docente',
+                'mensaje' => 'El docente de la segunda asignación ya tiene otra clase en ese horario'
+            ];
+        }
+
+        if (!empty($detallesConflicto)) {
+            return response()->json([
+                'error' => 'conflicto',
+                'detalles' => $detallesConflicto
+            ], 422);
+        }
+
+        // Realizar intercambio en transacción
+        \DB::transaction(function() use ($asignacion1, $asignacion2, $dia1, $bloque1, $dia2, $bloque2) {
+            // Intercambiar posiciones
+            $tempDia = $asignacion1->dia_id;
+            $tempBloque = $asignacion1->bloque_id;
+            
+            $asignacion1->dia_id = $asignacion2->dia_id;
+            $asignacion1->bloque_id = $asignacion2->bloque_id;
+            $asignacion1->save();
+            
+            $asignacion2->dia_id = $tempDia;
+            $asignacion2->bloque_id = $tempBloque;
+            $asignacion2->save();
+        });
+
+        // Recargar relaciones para devolver datos completos
+        $asignacion1->load(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque']);
+        $asignacion2->load(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque']);
+
+        return response()->json([
+            'success' => true,
+            'asignacion1' => $asignacion1,
+            'asignacion2' => $asignacion2
+        ]);
+    }
+
     public function obtenerAreasPorGrado(Request $request)
     {
         $validado = $request->validate([

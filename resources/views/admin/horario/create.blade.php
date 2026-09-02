@@ -1196,11 +1196,12 @@
                             let aulaBadge = '';
                             let aulaSelector = '';
                             
-                            // Verificar si es aula especializada (distinto de "Aula Regular")
-                            const esAulaEspecial = aulaTipo.toLowerCase() !== 'aula regular';
+                            // Usar obtenerAulaRegularDeSeccion para determinar si mostrar selector o badge fijo
+                            const aulaRegular = obtenerAulaRegularDeSeccion(horarioAsignado.seccion_id);
+                            const esAulaEspecial = aulaTipo.toLowerCase() !== 'aula regular' || !aulaRegular;
                             
                             if (esAulaEspecial) {
-                                // Aula especializada: mostrar selector editable
+                                // Aula especializada o sin aula regular fija: mostrar selector editable
                                 aulaSelector = `
                                     <div class="aula-selector-container">
                                         <select class="aula-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)">
@@ -1211,8 +1212,8 @@
                                 `;
                                 aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaNombre}</span>`;
                             } else {
-                                // Aula regular: solo mostrar badge sin selector
-                                aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaNombre}</span>`;
+                                // Aula regular fija: solo mostrar badge sin selector
+                                aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaNombre} (fija)</span>`;
                             }
 
                             let seccionBadge = '';
@@ -1292,21 +1293,35 @@
                     }
                 }
 
-                // Generar selector de aula
-                const aulaSelect = document.getElementById('aula');
-                let aulaOptions = '<option value="">Seleccione aula</option>';
-                for (let i = 0; i < aulaSelect.options.length; i++) {
-                    const option = aulaSelect.options[i];
-                    if (option.value !== '') {
-                        const selected = asignacion.aulaId == option.value ? 'selected' : '';
-                        aulaOptions += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+                // Verificar si la sección tiene aula regular fija
+                const seccionParaAula = asignacion.seccionId || seccionId;
+                const aulaRegular = obtenerAulaRegularDeSeccion(seccionParaAula);
+                let aulaHtml = '';
+
+                if (aulaRegular) {
+                    // Asignar automáticamente el aula regular y mostrar badge fijo
+                    if (asignacion.aulaId != aulaRegular.id) {
+                        asignacion.aulaId = aulaRegular.id;
+                        horarioAsignaciones[key].aulaId = aulaRegular.id;
                     }
+                    aulaHtml = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaRegular.nombre} (fija)</span>`;
+                } else {
+                    // Generar selector de aula editable
+                    const aulaSelect = document.getElementById('aula');
+                    let aulaOptions = '<option value="">Seleccione aula</option>';
+                    for (let i = 0; i < aulaSelect.options.length; i++) {
+                        const option = aulaSelect.options[i];
+                        if (option.value !== '') {
+                            const selected = asignacion.aulaId == option.value ? 'selected' : '';
+                            aulaOptions += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+                        }
+                    }
+                    aulaHtml = `
+                        <select class="aula-selector" id="aula-local-${key}" data-key="${key}" onchange="asignarAulaLocal(this)">
+                            ${aulaOptions}
+                        </select>
+                    `;
                 }
-                const aulaHtml = `
-                    <select class="aula-selector" id="aula-local-${key}" data-key="${key}" onchange="asignarAulaLocal(this)">
-                        ${aulaOptions}
-                    </select>
-                `;
 
                 return `
                     <div class="assigned-docente" draggable="true">
@@ -1322,6 +1337,94 @@
                         <button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', event)">×</button>
                     </div>
                 `;
+            }
+
+            // Función para mostrar modal de confirmación
+            function mostrarModalConfirmacion(mensajeHtml, onConfirmar) {
+                // Crear overlay
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                `;
+
+                // Crear modal
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    background: white;
+                    border-radius: 12px;
+                    padding: 24px;
+                    max-width: 500px;
+                    width: 90%;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+                `;
+
+                modal.innerHTML = `
+                    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: var(--gray-900);">Confirmar intercambio</h3>
+                    <div style="margin-bottom: 20px; color: var(--gray-700); line-height: 1.5;">${mensajeHtml}</div>
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button id="btnCancelar" style="
+                            padding: 10px 20px;
+                            border: 1px solid var(--gray-300);
+                            background: white;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            color: var(--gray-700);
+                        ">Cancelar</button>
+                        <button id="btnConfirmar" style="
+                            padding: 10px 20px;
+                            border: none;
+                            background: var(--primary);
+                            color: white;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            font-weight: 600;
+                        ">Confirmar intercambio</button>
+                    </div>
+                `;
+
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+
+                // Event listeners
+                document.getElementById('btnCancelar').addEventListener('click', () => {
+                    document.body.removeChild(overlay);
+                });
+
+                document.getElementById('btnConfirmar').addEventListener('click', () => {
+                    document.body.removeChild(overlay);
+                    onConfirmar();
+                });
+
+                // Cerrar al hacer clic fuera del modal
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        document.body.removeChild(overlay);
+                    }
+                });
+            }
+
+            // Función auxiliar para obtener aula regular de una sección
+            function obtenerAulaRegularDeSeccion(seccionId) {
+                if (!seccionId) return null;
+                const aulaSelect = document.getElementById('aula');
+                for (let i = 0; i < aulaSelect.options.length; i++) {
+                    const option = aulaSelect.options[i];
+                    if (option.dataset.tipo === 'regular' && option.dataset.seccion == seccionId) {
+                        return { id: option.value, nombre: option.text };
+                    }
+                }
+                return null;
             }
 
             // Función para mostrar notificaciones
@@ -1608,8 +1711,142 @@
                     return;
                 }
 
-                // Verificar que la celda destino esté vacía
-                if (horarioAsignaciones[destKey] || dropZoneDestino.querySelector('.assigned-docente')) {
+                // Verificar si la celda destino está ocupada
+                const destinoOcupado = horarioAsignaciones[destKey] || dropZoneDestino.querySelector('.assigned-docente');
+                
+                if (destinoOcupado) {
+                    // Obtener información de la asignación destino
+                    const destinoAsignacion = dropZoneDestino.querySelector('.assigned-docente');
+                    const destinoAsignacionId = destinoAsignacion?.dataset.asignacionId;
+                    
+                    // Si ambas son asignaciones persistidas, ofrecer intercambio
+                    if (origen.asignacionId && destinoAsignacionId) {
+                        // Obtener información de ambas asignaciones desde horarioData
+                        const origenData = horarioData.find(h => h.id == origen.asignacionId);
+                        const destinoData = horarioData.find(h => h.id == destinoAsignacionId);
+                        
+                        if (origenData && destinoData) {
+                            const origenDia = diasSemana.find(d => d.id == origenData.dia_id);
+                            const destinoDia = diasSemana.find(d => d.id == destinoData.dia_id);
+                            
+                            const mensaje = `
+                                <strong>[${origenDia?.nombre_dia || origenData.dia_nombre} - Bloque ${origenData.bloque_id}]:</strong><br>
+                                Docente: ${origenData.docente_nombre}<br>
+                                Sección: ${origenData.seccion_nombre}<br>
+                                Aula: ${origenData.aula_nombre}<br><br>
+                                <strong>⇄</strong><br><br>
+                                <strong>[${destinoDia?.nombre_dia || destinoData.dia_nombre} - Bloque ${destinoData.bloque_id}]:</strong><br>
+                                Docente: ${destinoData.docente_nombre}<br>
+                                Sección: ${destinoData.seccion_nombre}<br>
+                                Aula: ${destinoData.aula_nombre}
+                            `;
+                            
+                            mostrarModalConfirmacion(mensaje, async () => {
+                                try {
+                                    const response = await fetch('/api/horario/intercambiar', {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                                        },
+                                        body: JSON.stringify({
+                                            horario_id_1: origen.asignacionId,
+                                            horario_id_2: destinoAsignacionId
+                                        })
+                                    });
+                                    
+                                    const data = await response.json();
+                                    
+                                    if (!response.ok) {
+                                        if (data.error === 'conflicto' && data.detalles) {
+                                            const mensajes = data.detalles.map(d => d.mensaje).join('<br>');
+                                            mostrarNotificacion('Conflicto al intercambiar:<br>' + mensajes, 'error');
+                                        } else {
+                                            mostrarNotificacion(data.error || 'Error al intercambiar asignaciones', 'error');
+                                        }
+                                        return;
+                                    }
+                                    
+                                    // Actualizar horarioData en memoria con los datos actualizados
+                                    const idx1 = horarioData.findIndex(h => h.id == data.asignacion1.id);
+                                    const idx2 = horarioData.findIndex(h => h.id == data.asignacion2.id);
+                                    
+                                    if (idx1 !== -1) {
+                                        horarioData[idx1] = {
+                                            id: data.asignacion1.id,
+                                            docente_id: data.asignacion1.docente_id,
+                                            docente_nombre: data.asignacion1.docente?.persona 
+                                                ? data.asignacion1.docente.persona.primer_nombre + ' ' + data.asignacion1.docente.persona.primer_apellido 
+                                                : 'N/A',
+                                            materia_id: data.asignacion1.materia_id,
+                                            materia_nombre: data.asignacion1.materia?.nombre_area_formacion || 'N/A',
+                                            seccion_id: data.asignacion1.seccion_id,
+                                            seccion_nombre: data.asignacion1.seccion?.nombre || 'N/A',
+                                            grado_id: data.asignacion1.seccion?.grado_id || null,
+                                            grado_nombre: data.asignacion1.seccion?.grado 
+                                                ? data.asignacion1.seccion.grado.numero_grado + '° Grado' 
+                                                : 'N/A',
+                                            aula_id: data.asignacion1.aula_id,
+                                            aula_nombre: data.asignacion1.aula?.nombre_aula || 'N/A',
+                                            aula_tipo: data.asignacion1.aula?.tipo_aula || 'N/A',
+                                            dia_id: data.asignacion1.dia_id,
+                                            dia_nombre: data.asignacion1.dia?.nombre_dia || data.asignacion1.dia_id,
+                                            bloque_id: data.asignacion1.bloque_id,
+                                            bloque_nombre: 'Bloque ' + data.asignacion1.bloque_id
+                                        };
+                                    }
+                                    
+                                    if (idx2 !== -1) {
+                                        horarioData[idx2] = {
+                                            id: data.asignacion2.id,
+                                            docente_id: data.asignacion2.docente_id,
+                                            docente_nombre: data.asignacion2.docente?.persona 
+                                                ? data.asignacion2.docente.persona.primer_nombre + ' ' + data.asignacion2.docente.persona.primer_apellido 
+                                                : 'N/A',
+                                            materia_id: data.asignacion2.materia_id,
+                                            materia_nombre: data.asignacion2.materia?.nombre_area_formacion || 'N/A',
+                                            seccion_id: data.asignacion2.seccion_id,
+                                            seccion_nombre: data.asignacion2.seccion?.nombre || 'N/A',
+                                            grado_id: data.asignacion2.seccion?.grado_id || null,
+                                            grado_nombre: data.asignacion2.seccion?.grado 
+                                                ? data.asignacion2.seccion.grado.numero_grado + '° Grado' 
+                                                : 'N/A',
+                                            aula_id: data.asignacion2.aula_id,
+                                            aula_nombre: data.asignacion2.aula?.nombre_aula || 'N/A',
+                                            aula_tipo: data.asignacion2.aula?.tipo_aula || 'N/A',
+                                            dia_id: data.asignacion2.dia_id,
+                                            dia_nombre: data.asignacion2.dia?.nombre_dia || data.asignacion2.dia_id,
+                                            bloque_id: data.asignacion2.bloque_id,
+                                            bloque_nombre: 'Bloque ' + data.asignacion2.bloque_id
+                                        };
+                                    }
+                                    
+                                    mostrarNotificacion('Asignaciones intercambiadas exitosamente', 'success');
+                                    renderizarCalendario();
+                                } catch (error) {
+                                    console.error('Error al intercambiar asignaciones:', error);
+                                    mostrarNotificacion('Error de conexión al servidor', 'error');
+                                }
+                            });
+                            return;
+                        }
+                    }
+                    
+                    // Si una es local y la otra persistida, no permitir intercambio
+                    if ((origen.asignacionId && !destinoAsignacionId) || (!origen.asignacionId && destinoAsignacionId)) {
+                        mostrarNotificacion('No se puede intercambiar una asignación guardada con una que aún no se ha guardado', 'warning');
+                        return;
+                    }
+                    
+                    // Si ambas son locales, intercambiar en memoria sin confirmación
+                    if (!origen.asignacionId && !destinoAsignacionId) {
+                        horarioAsignaciones[destKey] = horarioAsignaciones[origen.localKey];
+                        delete horarioAsignaciones[origen.localKey];
+                        renderizarCalendario();
+                        mostrarNotificacion('Asignaciones intercambiadas localmente', 'success');
+                        return;
+                    }
+                    
                     mostrarNotificacion('La celda destino ya está ocupada', 'error');
                     return;
                 }
@@ -1691,6 +1928,11 @@
                 const key = selectElement.dataset.key;
                 if (horarioAsignaciones[key]) {
                     horarioAsignaciones[key].seccionId = selectElement.value;
+                    // Re-renderizar la celda inmediatamente para aplicar bloqueo de aula si corresponde
+                    const dropZone = selectElement.closest('.drop-zone');
+                    if (dropZone) {
+                        dropZone.innerHTML = renderizarAsignacionLocalHTML(key, horarioAsignaciones[key]);
+                    }
                     mostrarNotificacion('Sección asignada correctamente', 'success');
                 }
             };
@@ -1728,11 +1970,20 @@
                         (d.nombre_dia || d.nombre).toLowerCase() === diaNombre.toLowerCase()
                     );
                     
+                    // Si no hay aulaId asignada, usar el aula regular fija de la sección si existe
+                    let aulaIdFinal = asignacion.aulaId;
+                    if (!aulaIdFinal && asignacion.seccionId) {
+                        const aulaRegular = obtenerAulaRegularDeSeccion(asignacion.seccionId);
+                        if (aulaRegular) {
+                            aulaIdFinal = aulaRegular.id;
+                        }
+                    }
+                    
                     return {
                         docente_id: parseInt(asignacion.id),
                         materia_id: parseInt(asignacion.areaFormacionId),
                         seccion_id: parseInt(asignacion.seccionId),
-                        aula_id: parseInt(asignacion.aulaId || 0), // Se asignará más tarde si no está disponible
+                        aula_id: parseInt(aulaIdFinal || 0),
                         dia_id: dia ? dia.id : 1,
                         bloque_id: parseInt(bloqueId)
                     };

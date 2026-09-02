@@ -30,3 +30,4 @@ Route::post('/horario/generar', [GeneradorHorarioController::class, 'generar']);
 Route::get('/anio-escolar/activo', [GeneradorHorarioController::class, 'getAnioEscolarActivoAPI']);
 Route::put('/horario/{id}/aula', [GeneradorHorarioController::class, 'actualizarAula']);
 Route::put('/horario/{id}/posicion', [GeneradorHorarioController::class, 'actualizarPosicion']);
+Route::put('/horario/intercambiar', [GeneradorHorarioController::class, 'intercambiar']);
