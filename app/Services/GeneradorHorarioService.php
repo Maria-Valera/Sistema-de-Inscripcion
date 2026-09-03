@@ -19,7 +19,7 @@ Class GeneradorHorarioService
         //TRAEMOS TODOS LAS RELACIONES DE DOCENTES, AREAS, GRADOS Y SECCIONES
         $query = DocenteAreaGrado::with([
             'detalleDocenteEstudio.docente.persona',
-            'areaEstudios.areaFormacion', 
+            'areaEstudios.areaFormacion.aula', 
             'grado',    
             'seccion'
         ]);
@@ -49,10 +49,12 @@ Class GeneradorHorarioService
             return [
                 'docente_id' => $docente?->id,
                 'docente_nombre' => trim($docente?->persona?->primer_nombre . ' ' . $docente?->persona?->primer_apellido),
+                'docente_horas_academicas' => $docente?->horas_academicas ?? 36,
                  'area_id' => $area?->areaFormacion?->id, 
                 'area_nombre' => $area?->areaFormacion?->nombre_area_formacion,
                 'area_bloque' => $area?->areaFormacion?->horas_semanales,
                 'bloques_max_dia' => $area?->areaFormacion?->bloques_maximos_por_dia ?? 2,
+                'area_aula' => $area?->areaFormacion?->aula,
                 'grado_id' => $grado?->id,
                 'grado_nombre' => $grado?->numero_grado,
                 'seccion_id' => $seccion?->id,
@@ -86,9 +88,23 @@ Class GeneradorHorarioService
         ];
     }
 
-    public function calcularMaxBloques(int $horasAcademicasSemanales): int
+    /**
+     * Calcula el máximo de bloques horarios que un docente puede tener
+     * 
+     * Fórmula: (horas_academicas * minutos_por_hora_academica) / minutos_por_bloque
+     * 
+     * Valores actuales:
+     * - Hora académica: 45 minutos
+     * - Bloque horario: 80 minutos
+     * 
+     * @param int $horasAcademicasSemanales Total de horas académicas semanales del docente
+     * @param int $minutosPorHoraAcademica Minutos por hora académica (default: 45)
+     * @param int $minutosPorBloque Minutos por bloque horario (default: 80)
+     * @return int Número máximo de bloques
+     */
+    public function calcularMaxBloques(int $horasAcademicasSemanales, int $minutosPorHoraAcademica = 45, int $minutosPorBloque = 80): int
     {
-        return (int) floor(($horasAcademicasSemanales * 45) / 80);
+        return (int) floor(($horasAcademicasSemanales * $minutosPorHoraAcademica) / $minutosPorBloque);
     }
 
     public function calcularDisponibilidad(int $docenteId, array $docenteOcupado, int $totalDias, int $totalBloques): int
@@ -137,7 +153,17 @@ Class GeneradorHorarioService
                 $aulaRegular = Aula::where('tipo_aula', 'Aula Regular')
                     ->where('status', true)
                     ->first();
+                
+                if ($aulaRegular && !$this->validarCapacidadAula($aulaRegular->id_aula, $seccionId)) {
+                    return null;
+                }
+                
                 return $aulaRegular?->id_aula;
+            }
+
+            // Validar capacidad del aula asignada a la sección
+            if ($seccionAula && !$this->validarCapacidadAula($seccionAula->id_aula, $seccionId)) {
+                return null;
             }
 
             return $seccionAula?->id_aula;
@@ -149,7 +175,7 @@ Class GeneradorHorarioService
         return !isset($aulaEspecialOcupada[$clave]);
     }
 
-    public function buscarAulaEspecialLibre(string $tipoAula, int $diaId, int $bloqueId, array $aulaEspecialOcupada): ?int
+    public function buscarAulaEspecialLibre(string $tipoAula, int $diaId, int $bloqueId, array $aulaEspecialOcupada, int $seccionId): ?int
     {
         $aulas = Aula::where('tipo_aula', $tipoAula)
             ->where('status', true)
@@ -158,7 +184,10 @@ Class GeneradorHorarioService
         foreach ($aulas as $aula) {
             $clave = $aula->id_aula . '_' . $diaId . '_' . $bloqueId;
             if (!isset($aulaEspecialOcupada[$clave])) {
-                return $aula->id_aula;
+                // Validar capacidad del aula
+                if ($this->validarCapacidadAula($aula->id_aula, $seccionId)) {
+                    return $aula->id_aula;
+                }
             }
         }
 
@@ -171,16 +200,14 @@ Class GeneradorHorarioService
             $bloquesAsignados = 0;
             $docenteId = $clase['docente_id'];
             $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
-            $bloquesPorDiaClase = [];
 
             // Inicializar contador de bloques para este docente si no existe
             if (!isset($matrices['bloquesPorDocente'][$docenteId])) {
                 $matrices['bloquesPorDocente'][$docenteId] = 0;
             }
 
-            // Determinar si esta materia necesita aula especializada
-            $areaFormacion = AreaFormacion::find($clase['area_id']);
-            $aulaFijaMateria = $areaFormacion?->aula;
+            // Determinar si esta materia necesita aula especializada (usando datos precargados)
+            $aulaFijaMateria = $clase['area_aula'] ?? null;
             $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
 
             while ($bloquesAsignados < $clase['area_bloque']) {
@@ -208,7 +235,7 @@ Class GeneradorHorarioService
 
                         if ($esEspecializada) {
                             $aulaLibre = $this->buscarAulaEspecialLibre(
-                                $aulaFijaMateria->tipo_aula, $dia, $bloque, $matrices['aulaEspecialOcupada']
+                                $aulaFijaMateria->tipo_aula, $dia, $bloque, $matrices['aulaEspecialOcupada'], $clase['seccion_id']
                             );
                             if ($aulaLibre === null) continue;
                             $aulaAsignada = $aulaLibre;
@@ -269,7 +296,8 @@ Class GeneradorHorarioService
             array $asignacionesExistentes,
             int $maxBloquesDocente,
             int $totalDias,
-            int $totalBloques
+            int $totalBloques,
+            int $anioEscolar
         ): ?array {
             // Construir matrices de ocupación desde las asignaciones existentes
             $docenteOcupado = [];
@@ -298,8 +326,10 @@ Class GeneradorHorarioService
                 $bloquesPorDocente[$asignacion['docente_id']]++;
             }
 
-            // Obtener disponibilidad actual del docente (no disponibilidad)
-            $noDisponible = DocenteNoDisponibilidad::where('docente_id', $docenteId)->get();
+            // Obtener disponibilidad actual del docente (no disponibilidad) filtrando por año escolar
+            $noDisponible = DocenteNoDisponibilidad::where('docente_id', $docenteId)
+                ->where('anio_escolar_id', $anioEscolar)
+                ->get();
             foreach ($noDisponible as $nd) {
                 $clave = $nd->docente_id . '_' . $nd->dias_semana_id . '_' . $nd->id_bloque_hora;
                 $docenteOcupado[$clave] = true;
@@ -346,7 +376,8 @@ Class GeneradorHorarioService
             array $asignacionesExistentes,
             int $maxBloquesDocente,
             int $totalDias,
-            int $totalBloques
+            int $totalBloques,
+            int $anioEscolar
         ): ?array {
             // Construir matrices de ocupación desde las asignaciones existentes
             $docenteOcupado = [];
@@ -375,8 +406,10 @@ Class GeneradorHorarioService
                 $bloquesPorDocente[$asignacion['docente_id']]++;
             }
 
-            // Obtener disponibilidad actual del docente (no disponibilidad)
-            $noDisponible = DocenteNoDisponibilidad::where('docente_id', $docenteId)->get();
+            // Obtener disponibilidad actual del docente (no disponibilidad) filtrando por año escolar
+            $noDisponible = DocenteNoDisponibilidad::where('docente_id', $docenteId)
+                ->where('anio_escolar_id', $anioEscolar)
+                ->get();
             foreach ($noDisponible as $nd) {
                 $clave = $nd->docente_id . '_' . $nd->dias_semana_id . '_' . $nd->id_bloque_hora;
                 $docenteOcupado[$clave] = true;
@@ -405,10 +438,8 @@ Class GeneradorHorarioService
                 $otroBloque = $otraAsignacion['bloque_id'];
                 $otraAula = $otraAsignacion['aula_id'];
 
-                // Verificar disponibilidad del otro docente
-                $otroDocente = Docente::find($otroDocenteId);
-                if (!$otroDocente) continue;
-                $maxBloquesOtroDocente = $this->calcularMaxBloques($otroDocente->horas_academicas ?? 36);
+                // Usar default para max bloques del otro docente (se podría mejorar pasando datos precargados)
+                $maxBloquesOtroDocente = $this->calcularMaxBloques(36);
 
                 // Verificar disponibilidad del otro docente en la posición actual
                 $claveDocenteActual = $otroDocenteId . '_' . $diaActual . '_' . $bloqueActual;
@@ -427,8 +458,26 @@ Class GeneradorHorarioService
                 if (isset($seccionOcupado[$claveSeccionOtro])) continue;
 
                 // Verificar que ambos docentes no excedan su máximo de bloques
-                $bloquesDocenteActual = $bloquesPorDocente[$docenteId] ?? 0;
-                $bloquesOtroDocente = $bloquesPorDocente[$otroDocenteId] ?? 0;
+                // Contar bloques actuales excluyendo las asignaciones que se van a intercambiar
+                $bloquesDocenteActual = 0;
+                $bloquesOtroDocente = 0;
+                
+                foreach ($asignacionesExistentes as $asignacion) {
+                    if ($asignacion['docente_id'] == $docenteId &&
+                        !($asignacion['docente_id'] == $docenteId &&
+                          $asignacion['seccion_id'] == $seccionId &&
+                          $asignacion['dia_id'] == $diaActual &&
+                          $asignacion['bloque_id'] == $bloqueActual)) {
+                        $bloquesDocenteActual++;
+                    }
+                    if ($asignacion['docente_id'] == $otroDocenteId &&
+                        !($asignacion['docente_id'] == $otroDocenteId &&
+                          $asignacion['seccion_id'] == $otraSeccionId &&
+                          $asignacion['dia_id'] == $otroDia &&
+                          $asignacion['bloque_id'] == $otroBloque)) {
+                        $bloquesOtroDocente++;
+                    }
+                }
 
                 if ($bloquesDocenteActual >= $maxBloquesDocente) continue;
                 if ($bloquesOtroDocente >= $maxBloquesOtroDocente) continue;
@@ -474,18 +523,8 @@ Class GeneradorHorarioService
             int $totalDias,
             int $totalBloques
         ): array {
-            // Obtener el docente para calcular max bloques
-            $docente = Docente::find($docenteId);
-            if (!$docente) {
-                return [
-                    'exito' => false,
-                    'nivel' => 'error',
-                    'mensaje' => 'Docente no encontrado',
-                    'conflicto_manual' => true,
-                ];
-            }
-
-            $maxBloquesDocente = $this->calcularMaxBloques($docente->horas_academicas ?? 36);
+            // Usar default para max bloques (se podría mejorar pasando datos precargados)
+            $maxBloquesDocente = $this->calcularMaxBloques(36);
 
             // NIVEL 1: Buscar hueco libre
             $huecoLibre = $this->buscarHuecoLibre(
@@ -497,7 +536,8 @@ Class GeneradorHorarioService
                 $asignacionesExistentes,
                 $maxBloquesDocente,
                 $totalDias,
-                $totalBloques
+                $totalBloques,
+                $anioEscolar
             );
 
             if ($huecoLibre) {
@@ -521,7 +561,8 @@ Class GeneradorHorarioService
                 $asignacionesExistentes,
                 $maxBloquesDocente,
                 $totalDias,
-                $totalBloques
+                $totalBloques,
+                $anioEscolar
             );
 
             if ($intercambio) {
@@ -555,61 +596,55 @@ Class GeneradorHorarioService
 
         public function generar(int $anioEscolar, int $totalDias, int $totalBloques, ?int $gradoId = null, ?int $areaFormacionId = null): array
         {
-            // Limpiar asignaciones anteriores del mismo año escolar
-            HorarioAsignacion::where('anio_escolar_id', $anioEscolar)->delete();
+            return \DB::transaction(function() use ($anioEscolar, $totalDias, $totalBloques, $gradoId, $areaFormacionId) {
+                // Limpiar asignaciones anteriores del mismo año escolar
+                HorarioAsignacion::where('anio_escolar_id', $anioEscolar)->delete();
 
-            $clases = $this->PreparasDatos($gradoId, $areaFormacionId);
-            $matrices = $this->InicializarMatrices($anioEscolar);
-            $clasesOrdenadas = $this->ordenarClasesPendientes($clases, $matrices['docenteOcupado'], $totalDias, $totalBloques);
+                $clases = $this->PreparasDatos($gradoId, $areaFormacionId);
+                $matrices = $this->InicializarMatrices($anioEscolar);
+                $clasesOrdenadas = $this->ordenarClasesPendientes($clases, $matrices['docenteOcupado'], $totalDias, $totalBloques);
 
-            $todasLasAsignaciones = [];
-            $todosLosConflictos = [];
-            
-            // Contador global de bloques por día para cada materia
-            $bloquesPorDiaGlobal = [];
+                $todasLasAsignaciones = [];
+                $todosLosConflictos = [];
+                
+                // Contador global de bloques por día para cada materia
+                $bloquesPorDiaGlobal = [];
 
-            foreach ($clasesOrdenadas as $clase) {
-                $docente = Docente::find($clase['docente_id']);
+                foreach ($clasesOrdenadas as $clase) {
+                    // Usar datos precargados del docente
+                    $maxBloques = $this->calcularMaxBloques($clase['docente_horas_academicas'] ?? 36);
+                    $claseArray = $clase;
+                    $resultado = $this->asignarClase($claseArray, $matrices, $totalDias, $totalBloques, $maxBloques, $bloquesPorDiaGlobal);
 
-                if (!$docente) {
-                    $todosLosConflictos[] = [
-                        'docente_id' => $clase['docente_id'],
-                        'materia_id' => $clase['area_id'],
-                        'seccion_id' => $clase['seccion_id'],
-                        'error' => 'Docente no encontrado',
-                    ];
-                    continue;
+                    // Guardar asignaciones en la base de datos
+                    foreach ($resultado['asignaciones'] as $asignacion) {
+                        // Validar que aula_id no sea 0
+                        $aulaId = $asignacion['aula_id'] > 0 ? $asignacion['aula_id'] : null;
+                        
+                        HorarioAsignacion::create([
+                            'anio_escolar_id' => $anioEscolar,
+                            'docente_id' => $asignacion['docente_id'],
+                            'materia_id' => $asignacion['materia_id'],
+                            'seccion_id' => $asignacion['seccion_id'],
+                            'aula_id' => $aulaId,
+                            'dia_id' => $asignacion['dia_id'],
+                            'bloque_id' => $asignacion['bloque_id'],
+                            'conflicto_manual' => false,
+                        ]);
+                    }
+
+                    $todasLasAsignaciones = array_merge($todasLasAsignaciones, $resultado['asignaciones']);
+
+                    if ($resultado['conflicto']) {
+                        $todosLosConflictos[] = $resultado['conflicto'];
+                    }
                 }
 
-                $maxBloques = $this->calcularMaxBloques($docente->horas_academicas ?? 36);
-                $claseArray = $clase;
-                $resultado = $this->asignarClase($claseArray, $matrices, $totalDias, $totalBloques, $maxBloques, $bloquesPorDiaGlobal);
-
-                // Guardar asignaciones en la base de datos
-                foreach ($resultado['asignaciones'] as $asignacion) {
-                    HorarioAsignacion::create([
-                        'anio_escolar_id' => $anioEscolar,
-                        'docente_id' => $asignacion['docente_id'],
-                        'materia_id' => $asignacion['materia_id'],
-                        'seccion_id' => $asignacion['seccion_id'],
-                        'aula_id' => $asignacion['aula_id'],
-                        'dia_id' => $asignacion['dia_id'],
-                        'bloque_id' => $asignacion['bloque_id'],
-                        'conflicto_manual' => false,
-                    ]);
-                }
-
-                $todasLasAsignaciones = array_merge($todasLasAsignaciones, $resultado['asignaciones']);
-
-                if ($resultado['conflicto']) {
-                    $todosLosConflictos[] = $resultado['conflicto'];
-                }
-            }
-
-            return [
-                'asignaciones' => $todasLasAsignaciones,
-                'conflictos' => $todosLosConflictos,
-            ];
+                return [
+                    'asignaciones' => $todasLasAsignaciones,
+                    'conflictos' => $todosLosConflictos,
+                ];
+            });
         }
 
         public function validarCapacidadAula(int $aulaId, int $seccionId): bool

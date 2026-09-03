@@ -20,6 +20,8 @@ class AreaFormacion extends Model
         'status',
     ];
 
+    protected $appends = ['es_especializada'];
+
     public function grados()
     {
         return $this->belongsToMany(Grado::class, 'grado_area_formacions')
@@ -30,6 +32,17 @@ class AreaFormacion extends Model
     public function aula()
     {
         return $this->belongsTo(Aula::class, 'aula_id', 'id_aula');
+    }
+
+    public function getEsEspecializadaAttribute(): bool
+    {
+        if (!$this->aula_id) {
+            return false;
+        }
+        $tipoAula = $this->relationLoaded('aula')
+            ? $this->aula?->tipo_aula
+            : $this->aula()->value('tipo_aula');
+        return $tipoAula !== 'Aula Regular';
     }
 
 

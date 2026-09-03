@@ -22,6 +22,23 @@ class GeneradorHorarioController extends Controller
         return AnioEscolar::activos()->first();
     }
 
+    private function obtenerAulaRegularDeSeccion($seccionId)
+    {
+        $seccionAula = \App\Models\seccion_aula::where('id_seccion', $seccionId)
+            ->where('status', true)
+            ->with('aula')
+            ->first();
+
+        if ($seccionAula && $seccionAula->aula) {
+            return [
+                'id_aula' => $seccionAula->aula->id_aula,
+                'nombre_aula' => $seccionAula->aula->nombre_aula
+            ];
+        }
+
+        return null;
+    }
+
     public function generar(Request $request)
     {
         $validado = $request->validate([
@@ -74,7 +91,7 @@ class GeneradorHorarioController extends Controller
             return response()->json(['error' => 'No hay año escolar activo'], 400);
         }
 
-        $query = HorarioAsignacion::with(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque'])
+        $query = HorarioAsignacion::with(['docente.persona', 'materia.aula', 'seccion.grado', 'aula', 'dia', 'bloque'])
             ->where('anio_escolar_id', $anioEscolarId)
             ->where('conflicto_manual', false);
 
@@ -92,16 +109,39 @@ class GeneradorHorarioController extends Controller
 
         $asignaciones = $query->get()
             ->map(function ($asignacion) {
+                // Obtener información de la materia con su aula y es_especializada
+                $materia = $asignacion->materia;
+                $materiaData = [
+                    'id' => $materia ? $materia->id : null,
+                    'nombre' => $materia ? $materia->nombre_area_formacion : 'N/A',
+                    'aula_id' => $materia ? $materia->aula_id : null,
+                    'aula' => $materia && $materia->aula ? [
+                        'id_aula' => $materia->aula->id_aula,
+                        'nombre_aula' => $materia->aula->nombre_aula,
+                        'tipo_aula' => $materia->aula->tipo_aula
+                    ] : null,
+                    'es_especializada' => $materia ? $materia->es_especializada : false
+                ];
+
+                // Obtener aula regular de la sección
+                $aulaRegular = $asignacion->seccion_id ? $this->obtenerAulaRegularDeSeccion($asignacion->seccion_id) : null;
+
                 return [
                     'id' => $asignacion->id,
                     'docente_id' => $asignacion->docente_id,
                     'docente_nombre' => $asignacion->docente && $asignacion->docente->persona 
                         ? $asignacion->docente->persona->primer_nombre . ' ' . $asignacion->docente->persona->primer_apellido 
                         : 'N/A',
+                    'materia' => $materiaData,
                     'materia_id' => $asignacion->materia_id,
-                    'materia_nombre' => $asignacion->materia ? $asignacion->materia->nombre_area_formacion : 'N/A',
+                    'materia_nombre' => $materiaData['nombre'],
                     'seccion_id' => $asignacion->seccion_id,
                     'seccion_nombre' => $asignacion->seccion ? $asignacion->seccion->nombre : 'N/A',
+                    'seccion' => $asignacion->seccion ? [
+                        'id' => $asignacion->seccion->id,
+                        'nombre' => $asignacion->seccion->nombre,
+                        'aula_regular' => $aulaRegular
+                    ] : null,
                     'grado_id' => $asignacion->seccion ? $asignacion->seccion->grado_id : null,
                     'grado_nombre' => $asignacion->seccion && $asignacion->seccion->grado 
                         ? $asignacion->seccion->grado->numero_grado . '° Grado' 
@@ -486,46 +526,77 @@ class GeneradorHorarioController extends Controller
             return response()->json(['error' => 'No hay año escolar activo'], 400);
         }
 
-        // Limpiar asignaciones anteriores del mismo año escolar
-        HorarioAsignacion::where('anio_escolar_id', $anioEscolarId)->delete();
+        return \DB::transaction(function() use ($validado, $anioEscolarId) {
+            // Limpiar asignaciones anteriores del mismo año escolar
+            HorarioAsignacion::where('anio_escolar_id', $anioEscolarId)->delete();
 
-        $asignacionesGuardadas = 0;
-        $errores = [];
+            $asignacionesGuardadas = 0;
+            $errores = [];
 
-        foreach ($validado['asignaciones'] as $asignacion) {
-            try {
-                HorarioAsignacion::create([
-                    'anio_escolar_id' => $anioEscolarId,
-                    'docente_id' => $asignacion['docente_id'],
-                    'materia_id' => $asignacion['materia_id'],
-                    'seccion_id' => $asignacion['seccion_id'],
-                    'aula_id' => $asignacion['aula_id'],
-                    'dia_id' => $asignacion['dia_id'],
-                    'bloque_id' => $asignacion['bloque_id'],
-                    'conflicto_manual' => false,
-                ]);
-                $asignacionesGuardadas++;
-            } catch (\Exception $e) {
-                $errores[] = [
-                    'asignacion' => $asignacion,
-                    'error' => $e->getMessage()
-                ];
+            foreach ($validado['asignaciones'] as $asignacion) {
+                try {
+                    // Validar que aula_id no sea 0
+                    $aulaId = isset($asignacion['aula_id']) && $asignacion['aula_id'] > 0 ? $asignacion['aula_id'] : null;
+                    
+                    // Validar IDs obligatorios
+                    if (!$asignacion['docente_id'] || !$asignacion['materia_id'] || 
+                        !$asignacion['seccion_id'] || !$asignacion['dia_id'] || !$asignacion['bloque_id']) {
+                        $errores[] = [
+                            'asignacion' => $asignacion,
+                            'error' => 'IDs obligatorios faltantes (docente, materia, sección, día o bloque)'
+                        ];
+                        continue;
+                    }
+
+                    // Validar capacidad del aula si se asigna
+                    if ($aulaId) {
+                        $aula = \App\Models\Aula::find($aulaId);
+                        $seccion = \App\Models\Seccion::find($asignacion['seccion_id']);
+                        
+                        if ($aula && $seccion && $aula->capacidad_maxima !== null) {
+                            if ($seccion->cantidad_actual > $aula->capacidad_maxima) {
+                                $errores[] = [
+                                    'asignacion' => $asignacion,
+                                    'error' => 'La sección excede la capacidad máxima del aula'
+                                ];
+                                continue;
+                            }
+                        }
+                    }
+
+                    HorarioAsignacion::create([
+                        'anio_escolar_id' => $anioEscolarId,
+                        'docente_id' => $asignacion['docente_id'],
+                        'materia_id' => $asignacion['materia_id'],
+                        'seccion_id' => $asignacion['seccion_id'],
+                        'aula_id' => $aulaId,
+                        'dia_id' => $asignacion['dia_id'],
+                        'bloque_id' => $asignacion['bloque_id'],
+                        'conflicto_manual' => false,
+                    ]);
+                    $asignacionesGuardadas++;
+                } catch (\Exception $e) {
+                    $errores[] = [
+                        'asignacion' => $asignacion,
+                        'error' => $e->getMessage()
+                    ];
+                }
             }
-        }
 
-        if (count($errores) > 0) {
+            if (count($errores) > 0) {
+                return response()->json([
+                    'success' => false,
+                    'guardadas' => $asignacionesGuardadas,
+                    'errores' => $errores,
+                    'mensaje' => "Se guardaron {$asignacionesGuardadas} asignaciones con " . count($errores) . " errores"
+                ], 207); // 207 Multi-Status
+            }
+
             return response()->json([
-                'success' => false,
+                'success' => true,
                 'guardadas' => $asignacionesGuardadas,
-                'errores' => $errores,
-                'mensaje' => "Se guardaron {$asignacionesGuardadas} asignaciones con " . count($errores) . " errores"
-            ], 207); // 207 Multi-Status
-        }
-
-        return response()->json([
-            'success' => true,
-            'guardadas' => $asignacionesGuardadas,
-            'mensaje' => "Se guardaron {$asignacionesGuardadas} asignaciones exitosamente"
-        ]);
+                'mensaje' => "Se guardaron {$asignacionesGuardadas} asignaciones exitosamente"
+            ]);
+        });
     }
 }

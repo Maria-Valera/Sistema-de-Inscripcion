@@ -77,7 +77,7 @@ class AreaFormacionController extends Controller
             'siglas' => 'required|string|max:255',
             'horas_semanales' => 'required|integer',
             'bloques_maximos_por_dia' => 'required|integer|min:1|max:8',
-            'aula_id' => 'required|exists:aulas,id_aula',
+            'aula_id' => 'nullable|exists:aulas,id_aula',
         ]);
 
         $existe = AreaFormacion::where('nombre_area_formacion', $validated['nombre_area_formacion'])
@@ -153,7 +153,7 @@ class AreaFormacionController extends Controller
             'siglas' => 'required|string|max:255',
             'horas_semanales' => 'required|integer',
             'bloques_maximos_por_dia' => 'required|integer|min:1|max:8',
-            'aula_id' => 'required|exists:aulas,id_aula',
+            'aula_id' => 'nullable|exists:aulas,id_aula',
         ]);
 
         $existe = AreaFormacion::where('nombre_area_formacion', $validated['nombre_area_formacion'])

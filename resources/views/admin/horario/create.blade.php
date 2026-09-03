@@ -597,6 +597,121 @@
             flex-wrap: wrap;
         }
 
+        /* Overlay de carga */
+        .overlay-carga {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .overlay-carga.oculto {
+            display: none;
+        }
+
+        .overlay-carga .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .overlay-carga p {
+            color: white;
+            font-size: 16px;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        /* Estilos para aula texto */
+        .aula-texto {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .aula-texto.aula-sin-asignar {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .aula-container {
+            margin-top: 8px;
+        }
+
+        /* Notificaciones de conflictos persistente */
+        .notificaciones-conflictos {
+            position: sticky;
+            top: 20px;
+            z-index: 9990;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notificacion-conflicto {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .notificacion-conflicto-mensaje {
+            flex: 1;
+            color: #991b1b;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notificacion-conflicto-mensaje::before {
+            content: '⚠️';
+            font-size: 16px;
+        }
+
+        .notificacion-conflicto-cerrar {
+            background: none;
+            border: none;
+            color: #991b1b;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .notificacion-conflicto-cerrar:hover {
+            background: #fee2e2;
+        }
+
         .conflicto-badge {
             background: #fecaca;
             color: #991b1b;
@@ -832,6 +947,9 @@
         <!-- Contenedor de notificaciones -->
         <div class="notifications-container" id="notificationsContainer"></div>
 
+        <!-- Contenedor de notificaciones de conflictos persistente -->
+        <div id="notificaciones-conflictos" class="notificaciones-conflictos"></div>
+
         <!-- Panel de conflictos -->
         <div class="conflictos-panel" id="conflictosPanel">
             <div class="conflictos-header">
@@ -842,6 +960,12 @@
                 <!-- Los conflictos se insertarán aquí dinámicamente -->
             </div>
         </div>
+    </div>
+
+    <!-- Overlay de carga reutilizable -->
+    <div id="overlay-carga" class="overlay-carga oculto">
+        <div class="spinner"></div>
+        <p id="overlay-carga-mensaje">Cargando...</p>
     </div>
 
     <script>
@@ -883,6 +1007,41 @@
             let docentesCache = {};
             let dragAndDropInicializado = false;
             const notificationsContainer = document.getElementById('notificationsContainer');
+
+            // Funciones reutilizables para el overlay de carga
+            function mostrarPantallaCarga(mensaje = 'Cargando...') {
+                document.getElementById('overlay-carga-mensaje').textContent = mensaje;
+                document.getElementById('overlay-carga').classList.remove('oculto');
+            }
+
+            function ocultarPantallaCarga() {
+                document.getElementById('overlay-carga').classList.add('oculto');
+            }
+
+            // Funciones para notificaciones de conflictos persistente
+            function mostrarNotificacionConflicto(mensaje, idUnico) {
+                const contenedor = document.getElementById('notificaciones-conflictos');
+
+                // evitar duplicados si ya existe una notificación con el mismo idUnico
+                if (document.getElementById('conflicto-' + idUnico)) return;
+
+                const div = document.createElement('div');
+                div.id = 'conflicto-' + idUnico;
+                div.className = 'notificacion-conflicto';
+                div.innerHTML = `
+                    <span class="notificacion-conflicto-mensaje">${mensaje}</span>
+                    <button class="notificacion-conflicto-cerrar" aria-label="Cerrar">×</button>
+                `;
+                div.querySelector('.notificacion-conflicto-cerrar').addEventListener('click', () => {
+                    div.remove();
+                });
+                contenedor.appendChild(div);
+            }
+
+            function resolverNotificacionConflicto(idUnico) {
+                const el = document.getElementById('conflicto-' + idUnico);
+                if (el) el.remove();
+            }
 
             // Inicializar drag and drop una sola vez
             inicializarDragAndDrop();
@@ -934,11 +1093,6 @@
                 validarPaso1();
             });
 
-            // Recargar datos cuando cambia el área de formación
-            areaFormacionSelect.addEventListener('change', function() {
-                cargarDatosAPI();
-            });
-
             // Validar cuando cambia el área de formación
             areaFormacionSelect.addEventListener('change', validarPaso1);
 
@@ -971,6 +1125,8 @@
             // Función para cargar datos de la API
             async function cargarDatosAPI() {
                 try {
+                    mostrarPantallaCarga('Cargando horario...');
+                    
                     const nivelSeleccionado = nivelSelect.value;
                     const areaFormacionSeleccionado = areaFormacionSelect?.value || null;
                     
@@ -1010,6 +1166,8 @@
                 } catch (error) {
                     console.error('Error al cargar datos de la API:', error);
                     mostrarNotificacion('Error al cargar datos del horario', 'error');
+                } finally {
+                    ocultarPantallaCarga();
                 }
             }
 
@@ -1269,45 +1427,27 @@
 
             // Función para renderizar HTML de asignación local (unificada)
             function renderizarAsignacionLocalHTML(key, asignacion) {
-                const seccionId = document.getElementById('seccion')?.value || '';
+                // Crear selector de sección usando solo las secciones del docente
                 let seccionHtml = '';
-                
-                if (seccionId) {
-                    seccionHtml = `<span class="seccion-badge"><i class="fas fa-users"></i> ${document.getElementById('seccion').selectedOptions[0].text}</span>`;
+                if (asignacion.secciones && asignacion.secciones.length > 0) {
+                    let seccionOptions = '<option value="">Seleccione sección</option>';
+                    asignacion.secciones.forEach(seccion => {
+                        const selected = asignacion.seccionId == seccion.id ? 'selected' : '';
+                        seccionOptions += `<option value="${seccion.id}" ${selected}>${seccion.nombre}</option>`;
+                    });
+                    seccionHtml = `
+                        <select class="select-seccion" id="seccion-local-${key}" data-key="${key}" onchange="cambiarSeccionAsignacion(this)">
+                            ${seccionOptions}
+                        </select>
+                    `;
                 } else {
-                    // Crear selector de sección usando solo las secciones del docente
-                    let seccionOptions = '';
-                    if (asignacion.secciones && asignacion.secciones.length > 0) {
-                        seccionOptions = '<option value="">Seleccione sección</option>';
-                        asignacion.secciones.forEach(seccion => {
-                            const selected = asignacion.seccionId == seccion.id ? 'selected' : '';
-                            seccionOptions += `<option value="${seccion.id}" ${selected}>${seccion.nombre}</option>`;
-                        });
-                        seccionHtml = `
-                            <select class="seccion-selector" id="seccion-local-${key}" data-key="${key}" onchange="asignarSeccionLocal(this)">
-                                ${seccionOptions}
-                            </select>
-                        `;
-                    } else {
-                        seccionHtml = `<span class="seccion-badge"><i class="fas fa-users"></i> El docente no tiene secciones asignadas</span>`;
-                    }
+                    seccionHtml = `<span class="seccion-badge"><i class="fas fa-users"></i> El docente no tiene secciones asignadas</span>`;
                 }
 
-                // Verificar si la sección tiene aula regular fija
-                const seccionParaAula = asignacion.seccionId || seccionId;
-                const aulaRegular = obtenerAulaRegularDeSeccion(seccionParaAula);
+                // Por ahora, mantener el selector de aula original hasta que podamos obtener la info de especialización
                 let aulaHtml = '';
-
-                if (aulaRegular) {
-                    // Asignar automáticamente el aula regular y mostrar badge fijo
-                    if (asignacion.aulaId != aulaRegular.id) {
-                        asignacion.aulaId = aulaRegular.id;
-                        horarioAsignaciones[key].aulaId = aulaRegular.id;
-                    }
-                    aulaHtml = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaRegular.nombre} (fija)</span>`;
-                } else {
-                    // Generar selector de aula editable
-                    const aulaSelect = document.getElementById('aula');
+                const aulaSelect = document.getElementById('aula');
+                if (aulaSelect) {
                     let aulaOptions = '<option value="">Seleccione aula</option>';
                     for (let i = 0; i < aulaSelect.options.length; i++) {
                         const option = aulaSelect.options[i];
@@ -1337,6 +1477,21 @@
                         <button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', event)">×</button>
                     </div>
                 `;
+            }
+
+            // Función para manejar el cambio de sección en una asignación (desactivada temporalmente)
+            function cambiarSeccionAsignacion(selectElement) {
+                const key = selectElement.dataset.key;
+                const nuevaSeccionId = selectElement.value;
+                const asignacion = horarioAsignaciones[key];
+                
+                if (!asignacion) return;
+
+                // Actualizar el seccion_id en memoria
+                asignacion.seccionId = nuevaSeccionId;
+                
+                // Por ahora, no hacer nada más con el aula
+                // La lógica de aula especializada se implementará cuando tengamos los datos correctos
             }
 
             // Función para mostrar modal de confirmación
@@ -1589,6 +1744,7 @@
                             id: docenteCard.dataset.id,
                             nombre: docenteCard.dataset.nombre,
                             area: docenteCard.dataset.area,
+                            areas: docentesCache[docenteCard.dataset.id]?.areas || [],
                             secciones: docentesCache[docenteCard.dataset.id]?.secciones || []
                         };
                         draggedAsignacion = null;
@@ -1760,7 +1916,7 @@
                                     if (!response.ok) {
                                         if (data.error === 'conflicto' && data.detalles) {
                                             const mensajes = data.detalles.map(d => d.mensaje).join('<br>');
-                                            mostrarNotificacion('Conflicto al intercambiar:<br>' + mensajes, 'error');
+                                            mostrarNotificacionConflicto('Conflicto al intercambiar: ' + mensajes, 'swap-' + Date.now());
                                         } else {
                                             mostrarNotificacion(data.error || 'Error al intercambiar asignaciones', 'error');
                                         }
@@ -1994,6 +2150,7 @@
                 const originalText = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
                 btn.disabled = true;
+                mostrarPantallaCarga('Guardando...');
 
                 try {
                     const response = await fetch('/api/horario/guardar-asignaciones', {
@@ -2035,6 +2192,7 @@
                     // Restaurar botón
                     btn.innerHTML = originalText;
                     btn.disabled = false;
+                    ocultarPantallaCarga();
                 }
             });
 
@@ -2049,6 +2207,8 @@
                     errorContainer.classList.add('visible');
                     return;
                 }
+
+                mostrarPantallaCarga('Guardando...');
 
                 try {
                     const response = await fetch(`/api/horario/${asignacionId}/aula`, {
@@ -2082,6 +2242,8 @@
                     errorContainer.textContent = 'Error de conexión al servidor';
                     errorContainer.classList.add('visible');
                     mostrarNotificacion('Error de conexión al servidor', 'error');
+                } finally {
+                    ocultarPantallaCarga();
                 }
             };
 
@@ -2097,6 +2259,7 @@
                 // Mostrar indicador de carga
                 btn.classList.add('loading');
                 btn.disabled = true;
+                mostrarPantallaCarga('Generando horario, esto puede tardar unos segundos...');
 
                 try {
                     // Obtener filtros seleccionados del Paso 1
@@ -2148,6 +2311,7 @@
                     // Restaurar botón
                     btn.classList.remove('loading');
                     btn.disabled = false;
+                    ocultarPantallaCarga();
                 }
             });
 
