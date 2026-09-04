@@ -148,28 +148,31 @@
         .horario-matrix thead th {
             background: var(--primary);
             color: white;
-            padding: 1rem;
+            padding: 0.5rem;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             text-align: center;
             border: 1px solid var(--primary-dark);
+            min-width: 80px;
         }
 
         .horario-matrix .time-header {
             background: var(--gray-700);
-            min-width: 120px;
+            min-width: 80px;
         }
 
         .horario-matrix tbody td {
             border: 1px solid var(--gray-200);
             vertical-align: middle;
+            padding: 0.25rem;
+            height: 60px;
         }
 
         .time-cell {
             background: var(--gray-50);
-            padding: 0.75rem 1rem;
+            padding: 0.25rem 0.5rem;
             text-align: center;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             color: var(--gray-700);
         }
 
@@ -656,12 +659,12 @@
 
         /* Notificaciones de conflictos persistente */
         .notificaciones-conflictos {
-            position: sticky;
-            top: 20px;
+            position: fixed;
+            top: 80px;
+            right: 20px;
             z-index: 9990;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
+            width: 400px;
+            max-width: 90vw;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -1444,7 +1447,11 @@
                     seccionHtml = `<span class="seccion-badge"><i class="fas fa-users"></i> El docente no tiene secciones asignadas</span>`;
                 }
 
-                // Por ahora, mantener el selector de aula original hasta que podamos obtener la info de especialización
+                // Determinar si la materia es especializada (basado en el nombre)
+                const materiasEspecializadas = ['Arte y Patrimonio', 'Ciencias Naturales', 'Biología', 'Física', 'Química'];
+                const esEspecializada = materiasEspecializadas.some(m => asignacion.area.includes(m));
+
+                // Filtrar aulas según si la materia es especializada
                 let aulaHtml = '';
                 const aulaSelect = document.getElementById('aula');
                 if (aulaSelect) {
@@ -1452,8 +1459,18 @@
                     for (let i = 0; i < aulaSelect.options.length; i++) {
                         const option = aulaSelect.options[i];
                         if (option.value !== '') {
-                            const selected = asignacion.aulaId == option.value ? 'selected' : '';
-                            aulaOptions += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+                            const tipoAula = option.dataset.tipo || '';
+                            
+                            // Si es materia especializada, solo mostrar aulas no regulares
+                            // Si es materia regular, solo mostrar aulas regulares
+                            const debeMostrar = esEspecializada 
+                                ? tipoAula !== 'Aula Regular' 
+                                : tipoAula === 'Aula Regular';
+                            
+                            if (debeMostrar) {
+                                const selected = asignacion.aulaId == option.value ? 'selected' : '';
+                                aulaOptions += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+                            }
                         }
                     }
                     aulaHtml = `
@@ -1479,7 +1496,7 @@
                 `;
             }
 
-            // Función para manejar el cambio de sección en una asignación (desactivada temporalmente)
+            // Función para manejar el cambio de sección en una asignación
             function cambiarSeccionAsignacion(selectElement) {
                 const key = selectElement.dataset.key;
                 const nuevaSeccionId = selectElement.value;
@@ -1489,9 +1506,18 @@
 
                 // Actualizar el seccion_id en memoria
                 asignacion.seccionId = nuevaSeccionId;
-                
-                // Por ahora, no hacer nada más con el aula
-                // La lógica de aula especializada se implementará cuando tengamos los datos correctos
+
+                // Buscar y asignar automáticamente el aula regular de la sección
+                const aulaRegular = obtenerAulaRegularDeSeccion(nuevaSeccionId);
+                if (aulaRegular) {
+                    asignacion.aulaId = aulaRegular.id;
+                    
+                    // Actualizar visualmente el selector de aula
+                    const aulaSelect = document.getElementById(`aula-local-${key}`);
+                    if (aulaSelect) {
+                        aulaSelect.value = aulaRegular.id;
+                    }
+                }
             }
 
             // Función para mostrar modal de confirmación
@@ -2296,12 +2322,16 @@
                     
                     mostrarNotificacion(`Horario generado con ${data.asignaciones.length} asignaciones`, 'success');
 
-                    // Mostrar conflictos si existen
+                    // Mostrar conflictos si existen usando notificaciones persistentes
                     if (data.conflictos && data.conflictos.length > 0) {
-                        mostrarConflictos(data.conflictos);
+                        data.conflictos.forEach((conflicto, index) => {
+                            const mensaje = `${conflicto.docente_nombre || 'Docente desconocido'} - ${conflicto.materia_nombre || 'Materia desconocida'}: Sección ${conflicto.seccion_nombre || 'Sección desconocida'}, ${conflicto.bloques_pendientes || 'No especificado'} bloques pendientes`;
+                            mostrarNotificacionConflicto(mensaje, 'generacion-' + index + '-' + Date.now());
+                        });
                         mostrarNotificacion(`Se detectaron ${data.conflictos.length} conflictos que requieren atención manual`, 'warning');
                     } else {
-                        ocultarConflictos();
+                        // Limpiar notificaciones de generación anteriores
+                        document.querySelectorAll('[id^="conflicto-generacion-"]').forEach(el => el.remove());
                     }
 
                 } catch (error) {
@@ -2315,33 +2345,21 @@
                 }
             });
 
-            // Función para mostrar conflictos
+            // Función para mostrar conflictos (usando notificaciones persistentes)
             function mostrarConflictos(conflictos) {
-                const panel = document.getElementById('conflictosPanel');
-                const body = document.getElementById('conflictosBody');
+                // Limpiar conflictos anteriores
+                document.querySelectorAll('[id^="conflicto-"]').forEach(el => el.remove());
                 
-                body.innerHTML = conflictos.map(conflicto => `
-                    <div class="conflicto-item">
-                        <div class="conflicto-icon">
-                            <i class="fas fa-exclamation-circle"></i>
-                        </div>
-                        <div class="conflicto-info">
-                            <strong>${conflicto.docente_nombre || 'Docente desconocido'} - ${conflicto.materia_nombre || 'Materia desconocida'}</strong>
-                            <p>Sección: ${conflicto.seccion_nombre || 'Sección desconocida'} | Bloques pendientes: ${conflicto.bloques_pendientes || 'No especificado'}</p>
-                            <div class="conflicto-badges">
-                                <span class="conflicto-badge">Requiere resolución manual</span>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                
-                panel.classList.add('visible');
+                // Mostrar cada conflicto como notificación persistente
+                conflictos.forEach((conflicto, index) => {
+                    const mensaje = `${conflicto.docente_nombre || 'Docente desconocido'} - ${conflicto.materia_nombre || 'Materia desconocida'}: Sección ${conflicto.seccion_nombre || 'Sección desconocida'}, ${conflicto.bloques_pendientes || 'No especificado'} bloques pendientes`;
+                    mostrarNotificacionConflicto(mensaje, 'conflicto-' + index + '-' + Date.now());
+                });
             }
 
             // Función para ocultar conflictos
             function ocultarConflictos() {
-                const panel = document.getElementById('conflictosPanel');
-                panel.classList.remove('visible');
+                document.querySelectorAll('[id^="conflicto-"]').forEach(el => el.remove());
             }
         });
     </script>
