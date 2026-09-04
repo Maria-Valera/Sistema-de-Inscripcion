@@ -799,29 +799,20 @@
                     <p class="title-subtitle">Asignación de horarios académicos</p>
                 </div>
             </div>
-        </div>
-    </div>
-@stop
-
-@section('content')
-    <div class="main-container">
-        <div class="header-actions">
-            <a href="{{ route('admin.horario.index') }}" class="btn-back">
-                <i class="fas fa-arrow-left"></i>
-                Volver
-            </a>
-            <button class="btn-generar-horario" id="btnGenerarHorario">
+             <button class="btn-generar-horario" id="btnGenerarHorario">
                 <span class="spinner"></span>
                 <span class="btn-text">
                     <i class="fas fa-magic"></i>
                     Generar Horario
                 </span>
             </button>
-            <button class="btn-save" id="btnGuardarHorario">
-                <i class="fas fa-save"></i>
-                Guardar Horario
-            </button>
         </div>
+    </div>
+@stop
+
+@section('content')
+    <div class="main-container">
+        
 
         <!-- Selección de nivel académico y área de formación -->
         <div class="selection-section" id="seccionNivel">
@@ -962,6 +953,16 @@
             <div class="conflictos-body" id="conflictosBody">
                 <!-- Los conflictos se insertarán aquí dinámicamente -->
             </div>
+        </div>
+        <div class="header-actions">
+            <a href="{{ route('admin.horario.index') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                Volver
+            </a>
+            <button class="btn-save" id="btnGuardarHorario">
+                <i class="fas fa-save"></i>
+                Guardar Horario
+            </button>
         </div>
     </div>
 

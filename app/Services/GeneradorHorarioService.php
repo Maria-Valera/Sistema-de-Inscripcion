@@ -217,7 +217,7 @@ Class GeneradorHorarioService
                     for ($bloque = 1; $bloque <= $totalBloques && !$espacioEncontrado; $bloque++) {
 
                         // Validar límite de bloques por día para esta materia (usando contador global)
-                        $claveGlobal = $clase['area_id'] . '_' . $dia;
+                        $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
                         $bloquesHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? 0;
                         if ($bloquesHoy >= $maxBloquesPorDia) continue;
 
