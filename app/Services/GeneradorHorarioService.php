@@ -287,6 +287,81 @@ Class GeneradorHorarioService
             return $resultado;
         }
 
+        public function asignarUnBloque(array &$clase, array &$matrices, int $totalDias, int $totalBloques, int $maxBloquesDocente, array &$bloquesPorDiaGlobal = []): ?array
+        {
+            $docenteId = $clase['docente_id'];
+            $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
+
+            // Inicializar contador de bloques para este docente si no existe
+            if (!isset($matrices['bloquesPorDocente'][$docenteId])) {
+                $matrices['bloquesPorDocente'][$docenteId] = 0;
+            }
+
+            // Determinar si esta materia necesita aula especializada (usando datos precargados)
+            $aulaFijaMateria = $clase['area_aula'] ?? null;
+            $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
+
+            // Buscar UN solo espacio libre
+            for ($dia = 1; $dia <= $totalDias; $dia++) {
+                for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
+
+                    // Validar límite de bloques por día para esta materia (usando contador global)
+                    $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
+                    $bloquesHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? 0;
+                    if ($bloquesHoy >= $maxBloquesPorDia) continue;
+
+                    $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
+                    $claveSeccion = $clase['seccion_id'] . '_' . $dia . '_' . $bloque;
+
+                    // Verificar disponibilidad
+                    if (isset($matrices['docenteOcupado'][$claveDocente])) continue;
+                    if (isset($matrices['seccionOcupado'][$claveSeccion])) continue;
+
+                    // Verificar que el docente no exceda su máximo de bloques totales
+                    if ($matrices['bloquesPorDocente'][$docenteId] >= $maxBloquesDocente) continue;
+
+                    $aulaAsignada = null;
+
+                    if ($esEspecializada) {
+                        $aulaLibre = $this->buscarAulaEspecialLibre(
+                            $aulaFijaMateria->tipo_aula, $dia, $bloque, $matrices['aulaEspecialOcupada'], $clase['seccion_id']
+                        );
+                        if ($aulaLibre === null) continue;
+                        $aulaAsignada = $aulaLibre;
+                    } else {
+                        $aulaAsignada = $this->obtenerAulaNormal($clase['seccion_id']);
+                        if ($aulaAsignada === null) continue;
+                    }
+
+                    // Todas las validaciones pasaron: asignar UN bloque
+                    $asignacion = [
+                        'docente_id' => $docenteId,
+                        'materia_id' => $clase['area_id'],
+                        'seccion_id' => $clase['seccion_id'],
+                        'dia_id' => $dia,
+                        'bloque_id' => $bloque,
+                        'aula_id' => $aulaAsignada,
+                    ];
+
+                    $matrices['docenteOcupado'][$claveDocente] = true;
+                    $matrices['seccionOcupado'][$claveSeccion] = true;
+                    $matrices['bloquesPorDocente'][$docenteId]++;
+
+                    if ($esEspecializada) {
+                        $matrices['aulaEspecialOcupada'][$aulaAsignada . '_' . $dia . '_' . $bloque] = true;
+                    }
+
+                    // Incrementar contador global de bloques por día para esta materia
+                    $bloquesPorDiaGlobal[$claveGlobal] = ($bloquesPorDiaGlobal[$claveGlobal] ?? 0) + 1;
+
+                    return $asignacion;
+                }
+            }
+
+            // No se encontró espacio libre
+            return null;
+        }
+
         public function buscarHuecoLibre(
             int $docenteId,
             int $seccionId,
@@ -610,33 +685,66 @@ Class GeneradorHorarioService
                 // Contador global de bloques por día para cada materia
                 $bloquesPorDiaGlobal = [];
 
+                // Convertir a array mutable y agregar campo 'bloques_restantes'
+                $clasesPendientes = [];
                 foreach ($clasesOrdenadas as $clase) {
-                    // Usar datos precargados del docente
-                    $maxBloques = $this->calcularMaxBloques($clase['docente_horas_academicas'] ?? 36);
                     $claseArray = $clase;
-                    $resultado = $this->asignarClase($claseArray, $matrices, $totalDias, $totalBloques, $maxBloques, $bloquesPorDiaGlobal);
+                    $claseArray['bloques_restantes'] = $clase['area_bloque'];
+                    $clasesPendientes[] = $claseArray;
+                }
 
-                    // Guardar asignaciones en la base de datos
-                    foreach ($resultado['asignaciones'] as $asignacion) {
-                        // Validar que aula_id no sea 0
-                        $aulaId = $asignacion['aula_id'] > 0 ? $asignacion['aula_id'] : null;
-                        
-                        HorarioAsignacion::create([
-                            'anio_escolar_id' => $anioEscolar,
-                            'docente_id' => $asignacion['docente_id'],
-                            'materia_id' => $asignacion['materia_id'],
-                            'seccion_id' => $asignacion['seccion_id'],
-                            'aula_id' => $aulaId,
-                            'dia_id' => $asignacion['dia_id'],
-                            'bloque_id' => $asignacion['bloque_id'],
-                            'conflicto_manual' => false,
-                        ]);
+                // Bucle round-robin: asignar un bloque por clase en cada ronda
+                do {
+                    $huboAvanceEnRonda = false;
+
+                    foreach ($clasesPendientes as &$clase) {
+                        // Solo procesar clases que aún necesitan bloques
+                        if ($clase['bloques_restantes'] <= 0) {
+                            continue;
+                        }
+
+                        // Usar datos precargados del docente
+                        $maxBloques = $this->calcularMaxBloques($clase['docente_horas_academicas'] ?? 36);
+
+                        // Intentar asignar UN bloque
+                        $asignacion = $this->asignarUnBloque($clase, $matrices, $totalDias, $totalBloques, $maxBloques, $bloquesPorDiaGlobal);
+
+                        if ($asignacion !== null) {
+                            // Guardar asignación en la base de datos
+                            $aulaId = $asignacion['aula_id'] > 0 ? $asignacion['aula_id'] : null;
+                            
+                            HorarioAsignacion::create([
+                                'anio_escolar_id' => $anioEscolar,
+                                'docente_id' => $asignacion['docente_id'],
+                                'materia_id' => $asignacion['materia_id'],
+                                'seccion_id' => $asignacion['seccion_id'],
+                                'aula_id' => $aulaId,
+                                'dia_id' => $asignacion['dia_id'],
+                                'bloque_id' => $asignacion['bloque_id'],
+                                'conflicto_manual' => false,
+                            ]);
+
+                            $todasLasAsignaciones[] = $asignacion;
+                            $clase['bloques_restantes']--;
+                            $huboAvanceEnRonda = true;
+                        }
                     }
+                    unset($clase); // Romper la referencia
 
-                    $todasLasAsignaciones = array_merge($todasLasAsignaciones, $resultado['asignaciones']);
+                } while ($huboAvanceEnRonda && $this->hayClasesPendientes($clasesPendientes));
 
-                    if ($resultado['conflicto']) {
-                        $todosLosConflictos[] = $resultado['conflicto'];
+                // Generar conflictos para clases con bloques restantes
+                foreach ($clasesPendientes as $clase) {
+                    if ($clase['bloques_restantes'] > 0) {
+                        $todosLosConflictos[] = [
+                            'docente_id' => $clase['docente_id'],
+                            'docente_nombre' => $clase['docente_nombre'],
+                            'materia_id' => $clase['area_id'],
+                            'materia_nombre' => $clase['area_nombre'],
+                            'seccion_id' => $clase['seccion_id'],
+                            'seccion_nombre' => $clase['seccion_nombre'],
+                            'bloques_pendientes' => $clase['bloques_restantes'],
+                        ];
                     }
                 }
 
@@ -645,6 +753,16 @@ Class GeneradorHorarioService
                     'conflictos' => $todosLosConflictos,
                 ];
             });
+        }
+
+        private function hayClasesPendientes(array $clasesPendientes): bool
+        {
+            foreach ($clasesPendientes as $clase) {
+                if ($clase['bloques_restantes'] > 0) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public function validarCapacidadAula(int $aulaId, int $seccionId): bool
