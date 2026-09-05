@@ -28,6 +28,17 @@ class CalendarioPdfExtractorService
      */
     private ?string $mesActual = null;
 
+
+    /*
+    aqui la libreria de smalot/pdfparser puede extraer el mismo bloque de texto al inicio de dos paginas consecutivas
+    (esto es una particularidad del layout del pdf como tal) - lo que se hace esto es permitir detectar y saltar ese bloque repetido
+
+
+    */
+
+    private array $lineasPaginaAnterior = [];
+
+
     /**
      * Meses válidos y su número, para reconstruir la fecha completa (algoritmo 5).
      * Deben coincidir con cómo aparecen en mayúsculas en el encabezado de cada
@@ -48,6 +59,9 @@ class CalendarioPdfExtractorService
     {
         return DB::transaction(function () use ($archivo, $anioEscolar) {
             $this->mesActual = null; // por si el servicio se reutiliza entre peticiones
+
+            $this->lineasPaginaAnterior = [];
+
 
             $rutaRelativa = $archivo->store('calendarios', 'local');
 
@@ -83,21 +97,84 @@ class CalendarioPdfExtractorService
      * real puede tener el final de un mes y el inicio del siguiente en la
      * misma página física, así que el mes se seguimiento por línea, no por página.
      */
-    private function procesarPagina(
+    // private function procesarPagina(
+    //     CalendarioAcademico $calendario,
+    //     AnioEscolar $anioEscolar,
+    //     array $pagina,
+    //     array $palabrasNoLaborable,
+    //     array $palabrasEfemeride,
+    // ): void {
+    //     $lineas = preg_split('/\r\n|\r|\n/', $pagina['texto']) ?: [];
+
+    //     foreach ($lineas as $lineaOriginal) {
+    //         $linea = trim($lineaOriginal);
+
+    //         if ($linea === '') {
+    //             continue;
+    //         }
+
+    //         // ¿Es esta línea, ella sola, el nombre de un mes? (encabezado de
+    //         // la cuadrícula, ej. "SEPTIEMBRE"). Si sí, actualiza el mes activo
+    //         // y no se procesa como evento.
+    //         $mesDetectado = $this->esEncabezadoDeMes($linea);
+    //         if ($mesDetectado !== null) {
+    //             $this->mesActual = $mesDetectado;
+    //             continue;
+    //         }
+
+    //         // Sin un mes activo todavía (ej. la portada, antes del primer
+    //         // encabezado), no hay contexto confiable para construir fechas.
+    //         if ($this->mesActual === null) {
+    //             continue;
+    //         }
+
+    //         // Filas de la cuadrícula del mini-calendario (ej. "1 2 3 4 5 6 7"),
+    //         // no son eventos: solo números y espacios, sin ningún texto real.
+    //         if (preg_match('/^[\d\s]+$/u', $linea)) {
+    //             continue;
+    //         }
+
+    //         $categoria = $this->clasificarLinea($linea, $palabrasNoLaborable, $palabrasEfemeride);
+
+    //         // Las efemérides se descartan aquí mismo, nunca llegan a guardarse.
+    //         if ($categoria === 'efemeride') {
+    //             continue;
+    //         }
+
+    //         $this->procesarLinea($calendario, $anioEscolar, $linea, $this->mesActual, $categoria);
+    //     }
+    // }
+
+
+        private function procesarPagina(
         CalendarioAcademico $calendario,
         AnioEscolar $anioEscolar,
         array $pagina,
         array $palabrasNoLaborable,
         array $palabrasEfemeride,
     ): void {
-        $lineas = preg_split('/\r\n|\r|\n/', $pagina['texto']) ?: [];
+        $lineasCrudas = preg_split('/\r\n|\r|\n/', $pagina['texto']) ?: [];
 
-        foreach ($lineas as $lineaOriginal) {
-            $linea = trim($lineaOriginal);
+        $lineasLimpias = array_values(array_filter(array_map('trim',$lineasCrudas), fn(string $l) => $l !== ''));
 
-            if ($linea === '') {
-                continue;
-            }
+        // smalot/pdfparser puede repetir el mismo bloque de lineas al inicio de dos paginas consecutivas . Entonces si el principio de esta
+        // pagina coincide exactamente con el principio de la anterior , es ese bloque  duplicado - se descarta entonces antes de procesar cualquier linea
+        $solapamiento = $this->contarLineasSolapadasAlInicio($lineasLimpias, $this->lineasPaginaAnterior);
+
+        if($solapamiento > 0){
+            Log::info("la pagina {$pagina['numero']} : se detectaron {$solapamiento} lineas duplicadas de la pagina anterior por lo tanto se van a omitir");
+        }
+        // justo aqui lo que hacemos es que se guarde ANTES de recortar, para que se compare la proxima pagina con el contenido completo
+        $this->lineasPaginaAnterior = $lineasLimpias;
+
+        $lineas = array_slice($lineasLimpias, $solapamiento);
+
+        foreach ($lineas as $linea) {
+            // $linea = trim($lineaOriginal);
+
+            // if ($linea === '') {
+            //     continue;
+            // }
 
             // ¿Es esta línea, ella sola, el nombre de un mes? (encabezado de
             // la cuadrícula, ej. "SEPTIEMBRE"). Si sí, actualiza el mes activo
@@ -130,6 +207,30 @@ class CalendarioPdfExtractorService
             $this->procesarLinea($calendario, $anioEscolar, $linea, $this->mesActual, $categoria);
         }
     }
+
+
+    // nueva funcion contarLineasSolapadasAlInicio
+    /*cuenta cuantas lineas , desde el inicio , son identicas entre la pagina y la anterior. esta se detiene a la primera diferencia que cuente
+    -solo detecta el caso de bloque repetido "pegado" al inicio de la pagina  */
+
+    private function contarLineasSolapadasAlInicio(array $lineasActual, array $lineasAnterior) : int
+    {
+        $maximo = min(count($lineasActual), count($lineasAnterior));
+        // aqui contamos el numero de coincidencias
+        $coincidencias = 0;
+
+        for($i = 0; $i < $maximo; $i++){
+            if($lineasActual[$i] === $lineasAnterior[$i]){
+                break; // se detiene al primer bloque diferente
+            }
+
+            $coincidencias++;
+        }
+
+        return $coincidencias;
+
+    }
+
 
     /**
      * Extrae él o los días de una línea ya clasificada, construye su fecha
@@ -185,7 +286,7 @@ class CalendarioPdfExtractorService
     }
 
     /**
-     * ALGORITMO 1: extraerPaginasDeTexto
+     * funcion 1 extraerPaginasDeTexto
      * Convierte el PDF en una colección de páginas de texto plano.
      */
     private function extraerPaginasDeTexto(string $rutaAbsoluta): array
@@ -212,7 +313,7 @@ class CalendarioPdfExtractorService
     }
 
     /**
-     * ALGORITMO 2 (rediseñado): esEncabezadoDeMes
+     * esEncabezadoDeMes
      * Antes buscaba el mes en cualquier parte del texto de una página
      * completa. Ahora compara si la LÍNEA, ella sola, es exactamente el
      * nombre de un mes — así se detecta el cambio de mes exacto dentro
@@ -226,7 +327,7 @@ class CalendarioPdfExtractorService
     }
 
     /**
-     * ALGORITMO 3: clasificarLinea
+     *  clasificarLinea
      * Decide si una línea es no laborable, efeméride, o dudosa,
      * usando el diccionario compartido de calendario_palabras_clave.
      */
@@ -250,7 +351,7 @@ class CalendarioPdfExtractorService
     }
 
     /**
-     * ALGORITMO 4: extraerDias
+     *  extraerDias
      * Reconoce varios formatos: un solo día, "N y M", o un rango "N-M" / "N al M".
      * También detecta el caso especial de "todo el mes".
      */
@@ -321,7 +422,7 @@ class CalendarioPdfExtractorService
     }
 
     /**
-     * ALGORITMO 6: guardarCandidato
+     * funcion 6  guardarCandidato
      * Persiste el resultado como candidato sin confirmar, evitando duplicados.
      */
     private function guardarCandidato(
@@ -371,7 +472,7 @@ class CalendarioPdfExtractorService
     }
 
     /**
-     * ALGORITMO 7: confirmarCalendario
+     * funcion 7 confirmarCalendario
      * Convierte los candidatos aprobados por la subdirectora en el
      * calendario definitivo. Este es el único paso que depende de una
      * decisión humana, no de lógica automática.
