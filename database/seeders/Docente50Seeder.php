@@ -79,6 +79,19 @@ class Docente50Seeder extends Seeder
 
         $contadorDocentes = 0;
         $contadorAsignaciones = 0;
+        $combinacionesUsadas = []; // clave: area_formacion_id . '_' . grado_id . '_' . seccion_id
+
+        // Cargar combinaciones existentes de la base de datos para evitar duplicados
+        $combinacionesExistentes = DocenteAreaGrado::with(['areaEstudios'])
+            ->get()
+            ->map(function ($item) {
+                return $item->areaEstudios?->area_formacion_id . '_' . $item->grado_id . '_' . $item->seccion_id;
+            })
+            ->filter()
+            ->flip()
+            ->toArray();
+
+        $combinacionesUsadas = $combinacionesExistentes;
 
         DB::beginTransaction();
 
@@ -144,29 +157,58 @@ class Docente50Seeder extends Seeder
 
                     // Asignar 1-2 grados por área
                     $numGrados = rand(1, 2);
-                    for ($k = 0; $k < $numGrados; $k++) {
-                        $gradoIndex = ($i + $j + $k) % $grados->count();
-                        $grado = $grados[$gradoIndex];
+                    $numSecciones = rand(1, 2);
+                    $totalCombinacionesBuscadas = $numGrados * $numSecciones;
 
-                        // Asignar 1-2 secciones por grado
-                        $numSecciones = rand(1, 2);
-                        for ($l = 0; $l < $numSecciones; $l++) {
-                            $seccionIndex = ($i + $j + $k + $l) % $secciones->count();
-                            $seccion = $secciones[$seccionIndex];
-
-                            // Verificar que la sección pertenezca al grado
+                    // Generar todas las combinaciones válidas (grado, seccion) donde seccion pertenezca al grado
+                    $todasLasCombinaciones = [];
+                    foreach ($grados as $grado) {
+                        foreach ($secciones as $seccion) {
                             if ($seccion->grado_id == $grado->id) {
-                                DocenteAreaGrado::create([
-                                    'docente_estudio_realizado_id' => $detalleDocente->id,
-                                    'area_estudio_realizado_id' => $areaEstudioRealizado->id,
-                                    'grado_id' => $grado->id,
-                                    'seccion_id' => $seccion->id,
-                                    'tipo_asignacion' => 'area',
-                                    'status' => true,
-                                ]);
-                                $contadorAsignaciones++;
+                                $todasLasCombinaciones[] = [
+                                    'grado' => $grado,
+                                    'seccion' => $seccion
+                                ];
                             }
                         }
+                    }
+
+                    // Mezclar aleatoriamente las combinaciones
+                    shuffle($todasLasCombinaciones);
+
+                    // Buscar combinaciones libres para esta área
+                    $combinacionesAsignadas = 0;
+                    $combinacionesNoAsignadas = 0;
+
+                    foreach ($todasLasCombinaciones as $combinacion) {
+                        if ($combinacionesAsignadas >= $totalCombinacionesBuscadas) {
+                            break;
+                        }
+
+                        $grado = $combinacion['grado'];
+                        $seccion = $combinacion['seccion'];
+                        $claveCombinacion = $areaAsignar->id . '_' . $grado->id . '_' . $seccion->id;
+
+                        // Verificar si esta combinación ya está usada
+                        if (!isset($combinacionesUsadas[$claveCombinacion])) {
+                            DocenteAreaGrado::create([
+                                'docente_estudio_realizado_id' => $detalleDocente->id,
+                                'area_estudio_realizado_id' => $areaEstudioRealizado->id,
+                                'grado_id' => $grado->id,
+                                'seccion_id' => $seccion->id,
+                                'tipo_asignacion' => 'area',
+                                'status' => true,
+                            ]);
+                            $combinacionesUsadas[$claveCombinacion] = true;
+                            $contadorAsignaciones++;
+                            $combinacionesAsignadas++;
+                        }
+                    }
+
+                    // Registrar si no se pudieron asignar todas las combinaciones deseadas
+                    $combinacionesNoAsignadas = $totalCombinacionesBuscadas - $combinacionesAsignadas;
+                    if ($combinacionesNoAsignadas > 0) {
+                        $this->command->warn("Docente $codigo - Área '{$areaAsignar->nombre_area_formacion}': No se pudieron asignar $combinacionesNoAsignadas de $totalCombinacionesBuscadas combinaciones por falta de disponibilidad.");
                     }
                 }
 
