@@ -138,7 +138,12 @@ npm install swiper
 npm install alpinejs
 ```
 
-### 17. Compilar assets
+### 18 . comando para instalar la libreria de smalot/pdfparser
+```bash
+composer require smalot/pdfparser
+```
+
+### 19. Compilar assets
 
 ```bash
 npm run build
