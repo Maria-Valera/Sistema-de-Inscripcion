@@ -599,4 +599,34 @@ class GeneradorHorarioController extends Controller
             ]);
         });
     }
+
+    public function eliminarAsignacion($id)
+    {
+        $asignacion = HorarioAsignacion::find($id);
+        
+        if (!$asignacion) {
+            return response()->json(['error' => 'Asignación no encontrada'], 404);
+        }
+        
+        $asignacion->delete();
+        
+        return response()->json(['success' => true, 'mensaje' => 'Asignación eliminada correctamente']);
+    }
+
+    public function eliminarAsignacionesMultiples(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['error' => 'Debe proporcionar un array de ids'], 422);
+        }
+        
+        $eliminados = HorarioAsignacion::whereIn('id', $ids)->delete();
+        
+        return response()->json([
+            'success' => true, 
+            'mensaje' => "$eliminados asignación(es) eliminada(s) correctamente",
+            'cantidad_eliminada' => $eliminados
+        ]);
+    }
 }

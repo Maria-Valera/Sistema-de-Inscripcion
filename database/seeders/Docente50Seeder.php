@@ -80,6 +80,7 @@ class Docente50Seeder extends Seeder
         $contadorDocentes = 0;
         $contadorAsignaciones = 0;
         $combinacionesUsadas = []; // clave: area_formacion_id . '_' . grado_id . '_' . seccion_id
+        $combinacionesOmitidasPorCapacidad = 0; // contador para combinaciones omitidas por falta de capacidad
 
         // Cargar combinaciones existentes de la base de datos para evitar duplicados
         $combinacionesExistentes = DocenteAreaGrado::with(['areaEstudios'])
@@ -126,6 +127,12 @@ class Docente50Seeder extends Seeder
                     'anio_escolar_id' => $anioEscolar->id,
                     'status' => true,
                 ]);
+
+                // Calcular la capacidad máxima de bloques del docente
+                $minutosPorHoraAcademica = 45;
+                $minutosPorBloque = 80;
+                $maxBloquesDocente = (int) floor(($horas * $minutosPorHoraAcademica) / $minutosPorBloque);
+                $bloquesUsadosDocente = 0;
 
                 // Crear detalle de docente estudio
                 // Primero crear estudios realizados
@@ -178,10 +185,16 @@ class Docente50Seeder extends Seeder
 
                     // Buscar combinaciones libres para esta área
                     $combinacionesAsignadas = 0;
-                    $combinacionesNoAsignadas = 0;
+                    $combinacionesNoAsignadasPorDisponibilidad = 0;
+                    $combinacionesNoAsignadasPorCapacidad = 0;
 
                     foreach ($todasLasCombinaciones as $combinacion) {
                         if ($combinacionesAsignadas >= $totalCombinacionesBuscadas) {
+                            break;
+                        }
+
+                        // Si ya se alcanzó la capacidad del docente, detener asignaciones para este área
+                        if ($bloquesUsadosDocente >= $maxBloquesDocente) {
                             break;
                         }
 
@@ -191,6 +204,18 @@ class Docente50Seeder extends Seeder
 
                         // Verificar si esta combinación ya está usada
                         if (!isset($combinacionesUsadas[$claveCombinacion])) {
+                            // Obtener las horas semanales del área actual
+                            $horasSemanalesArea = $areaAsignar->horas_semanales ?? 0;
+
+                            // Verificar si cabe en la capacidad del docente
+                            if ($bloquesUsadosDocente + $horasSemanalesArea > $maxBloquesDocente) {
+                                // No cabe, omitir esta combinación y contar como omitida por capacidad
+                                $combinacionesOmitidasPorCapacidad++;
+                                $combinacionesNoAsignadasPorCapacidad++;
+                                continue;
+                            }
+
+                            // Si cabe, crear la asignación
                             DocenteAreaGrado::create([
                                 'docente_estudio_realizado_id' => $detalleDocente->id,
                                 'area_estudio_realizado_id' => $areaEstudioRealizado->id,
@@ -202,13 +227,27 @@ class Docente50Seeder extends Seeder
                             $combinacionesUsadas[$claveCombinacion] = true;
                             $contadorAsignaciones++;
                             $combinacionesAsignadas++;
+                            $bloquesUsadosDocente += $horasSemanalesArea;
+                        } else {
+                            // Combinación ya usada por otro docente
+                            $combinacionesNoAsignadasPorDisponibilidad++;
                         }
                     }
 
                     // Registrar si no se pudieron asignar todas las combinaciones deseadas
                     $combinacionesNoAsignadas = $totalCombinacionesBuscadas - $combinacionesAsignadas;
                     if ($combinacionesNoAsignadas > 0) {
-                        $this->command->warn("Docente $codigo - Área '{$areaAsignar->nombre_area_formacion}': No se pudieron asignar $combinacionesNoAsignadas de $totalCombinacionesBuscadas combinaciones por falta de disponibilidad.");
+                        if ($combinacionesNoAsignadasPorCapacidad > 0) {
+                            $this->command->warn("Docente $codigo - Área '{$areaAsignar->nombre_area_formacion}': No se pudieron asignar $combinacionesNoAsignadasPorCapacidad combinaciones por falta de capacidad del docente (max: $maxBloquesDocente bloques, usados: $bloquesUsadosDocente).");
+                        }
+                        if ($combinacionesNoAsignadasPorDisponibilidad > 0) {
+                            $this->command->warn("Docente $codigo - Área '{$areaAsignar->nombre_area_formacion}': No se pudieron asignar $combinacionesNoAsignadasPorDisponibilidad combinaciones por falta de disponibilidad (ya asignadas a otros docentes).");
+                        }
+                    }
+
+                    // Si ya se alcanzó la capacidad del docente, detener asignaciones de áreas adicionales
+                    if ($bloquesUsadosDocente >= $maxBloquesDocente) {
+                        break;
                     }
                 }
 
@@ -221,6 +260,7 @@ class Docente50Seeder extends Seeder
             $this->command->info("✓ Se crearon $contadorAsignaciones asignaciones docente-área-grado.");
             $this->command->info("✓ Horas académicas variadas: " . implode(', ', $horasAcademicas) . " horas.");
             $this->command->info("✓ Docentes asignados a áreas: " . implode(', ', array_slice($areasFormacionNombres, 0, min(5, count($areasFormacionNombres)))) . "...");
+            $this->command->info("✓ Combinaciones omitidas por falta de capacidad: $combinacionesOmitidasPorCapacidad (docentes respetan su carga horaria máxima)");
 
         } catch (\Exception $e) {
             DB::rollBack();

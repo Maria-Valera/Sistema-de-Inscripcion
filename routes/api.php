@@ -31,3 +31,5 @@ Route::get('/anio-escolar/activo', [GeneradorHorarioController::class, 'getAnioE
 Route::put('/horario/{id}/aula', [GeneradorHorarioController::class, 'actualizarAula']);
 Route::put('/horario/{id}/posicion', [GeneradorHorarioController::class, 'actualizarPosicion']);
 Route::put('/horario/intercambiar', [GeneradorHorarioController::class, 'intercambiar']);
+Route::delete('/horario/{id}', [GeneradorHorarioController::class, 'eliminarAsignacion']);
+Route::post('/horario/eliminar-multiples', [GeneradorHorarioController::class, 'eliminarAsignacionesMultiples']);

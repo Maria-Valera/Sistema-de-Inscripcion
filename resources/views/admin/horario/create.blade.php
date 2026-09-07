@@ -781,6 +781,77 @@
             transform: translateY(-1px);
         }
 
+        .docente-card.tiene-conflicto {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .docente-card.tiene-conflicto .docente-name {
+            color: #991b1b;
+        }
+
+        .drop-zone.modo-seleccion {
+            cursor: pointer;
+        }
+
+        .drop-zone.seleccionado {
+            outline: 3px solid #007bff;
+            outline-offset: -3px;
+        }
+
+        .btn-modo-seleccion {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modo-seleccion.activo {
+            background: #007bff;
+        }
+
+        .barra-seleccion-flotante {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            padding: 12px 20px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            z-index: 9995;
+        }
+
+        .barra-seleccion-flotante.visible {
+            display: flex;
+        }
+
+        .btn-eliminar-seleccionados {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-cancelar-seleccion {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
 
     </style>
 @stop
@@ -963,6 +1034,10 @@
                 <i class="fas fa-save"></i>
                 Guardar Horario
             </button>
+            <button class="btn-modo-seleccion" id="btnModoSeleccion">
+                <i class="fas fa-check-square"></i>
+                Seleccionar múltiples
+            </button>
         </div>
     </div>
 
@@ -970,6 +1045,15 @@
     <div id="overlay-carga" class="overlay-carga oculto">
         <div class="spinner"></div>
         <p id="overlay-carga-mensaje">Cargando...</p>
+    </div>
+
+    <!-- Barra de selección flotante -->
+    <div class="barra-seleccion-flotante" id="barraSeleccionFlotante">
+        <span id="contadorSeleccionados">0 seleccionados</span>
+        <button class="btn-eliminar-seleccionados" id="btnEliminarSeleccionados">
+            <i class="fas fa-trash"></i> Eliminar seleccionados
+        </button>
+        <button class="btn-cancelar-seleccion" id="btnCancelarSeleccion">Cancelar</button>
     </div>
 
     <script>
@@ -1045,6 +1129,32 @@
             function resolverNotificacionConflicto(idUnico) {
                 const el = document.getElementById('conflicto-' + idUnico);
                 if (el) el.remove();
+            }
+
+            // Función para marcar docentes con conflicto
+            function marcarDocentesConConflicto(conflictos) {
+                // Primero quitar la clase 'tiene-conflicto' de todas las tarjetas
+                document.querySelectorAll('.docente-card').forEach(card => {
+                    card.classList.remove('tiene-conflicto');
+                });
+
+                // Extraer los docente_id únicos del array de conflictos
+                const docentesConConflicto = new Set();
+                if (conflictos && conflictos.length > 0) {
+                    conflictos.forEach(conflicto => {
+                        if (conflicto.docente_id) {
+                            docentesConConflicto.add(conflicto.docente_id);
+                        }
+                    });
+                }
+
+                // Para cada docente_id, buscar la tarjeta correspondiente y agregar la clase
+                docentesConConflicto.forEach(docenteId => {
+                    const tarjeta = document.querySelector(`.docente-card[data-id="${docenteId}"]`);
+                    if (tarjeta) {
+                        tarjeta.classList.add('tiene-conflicto');
+                    }
+                });
             }
 
             // Inicializar drag and drop una sola vez
@@ -1392,6 +1502,7 @@
                                         ${aulaBadge}
                                     </div>
                                     ${aulaSelector}
+                                    <button class="btn-eliminar-docente" onclick="eliminarAsignacionPersistida(${asignacionId}, event)">×</button>
                                 </div>
                             `;
                         } else {
@@ -2323,6 +2434,9 @@
                     
                     mostrarNotificacion(`Horario generado con ${data.asignaciones.length} asignaciones`, 'success');
 
+                    // Marcar docentes con conflicto en la sidebar
+                    marcarDocentesConConflicto(data.conflictos);
+
                     // Mostrar conflictos si existen usando notificaciones persistentes
                     if (data.conflictos && data.conflictos.length > 0) {
                         data.conflictos.forEach((conflicto, index) => {
@@ -2362,6 +2476,136 @@
             function ocultarConflictos() {
                 document.querySelectorAll('[id^="conflicto-"]').forEach(el => el.remove());
             }
+
+            // Variables para modo de selección
+            let modoSeleccionActivo = false;
+            let asignacionesSeleccionadas = new Set();
+
+            const btnModoSeleccion = document.getElementById('btnModoSeleccion');
+            const barraSeleccionFlotante = document.getElementById('barraSeleccionFlotante');
+            const contadorSeleccionados = document.getElementById('contadorSeleccionados');
+            const btnEliminarSeleccionados = document.getElementById('btnEliminarSeleccionados');
+            const btnCancelarSeleccion = document.getElementById('btnCancelarSeleccion');
+
+            // Eliminar una asignación persistida individualmente
+            window.eliminarAsignacionPersistida = async function(asignacionId, event) {
+                if (event) event.stopPropagation();
+
+                mostrarPantallaCarga('Eliminando...');
+                try {
+                    const response = await fetch(`/api/horario/${asignacionId}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' }
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        mostrarNotificacion(data.error || 'Error al eliminar asignación', 'error');
+                        return;
+                    }
+
+                    horarioData = horarioData.filter(h => h.id != asignacionId);
+                    renderizarCalendario();
+                    mostrarNotificacion('Asignación eliminada correctamente', 'success');
+                } catch (error) {
+                    console.error('Error al eliminar asignación:', error);
+                    mostrarNotificacion('Error de conexión al servidor', 'error');
+                } finally {
+                    ocultarPantallaCarga();
+                }
+            };
+
+            // Alternar modo selección
+            btnModoSeleccion.addEventListener('click', function() {
+                modoSeleccionActivo = !modoSeleccionActivo;
+                asignacionesSeleccionadas.clear();
+                actualizarBarraFlotante();
+                btnModoSeleccion.classList.toggle('activo', modoSeleccionActivo);
+
+                document.querySelectorAll('.drop-zone').forEach(dz => {
+                    dz.classList.toggle('modo-seleccion', modoSeleccionActivo);
+                    dz.classList.remove('seleccionado');
+                });
+            });
+
+            btnCancelarSeleccion.addEventListener('click', function() {
+                modoSeleccionActivo = false;
+                asignacionesSeleccionadas.clear();
+                actualizarBarraFlotante();
+                btnModoSeleccion.classList.remove('activo');
+                document.querySelectorAll('.drop-zone').forEach(dz => {
+                    dz.classList.remove('modo-seleccion', 'seleccionado');
+                });
+            });
+
+            // Click en celda durante modo selección (delegación de eventos)
+            document.addEventListener('click', function(e) {
+                if (!modoSeleccionActivo) return;
+
+                const dropZone = e.target.closest('.drop-zone');
+                if (!dropZone) return;
+
+                const assignedDocente = dropZone.querySelector('.assigned-docente[data-asignacion-id]');
+                if (!assignedDocente) return; // solo permitir seleccionar celdas con asignación persistida
+
+                const asignacionId = assignedDocente.dataset.asignacionId;
+
+                if (asignacionesSeleccionadas.has(asignacionId)) {
+                    asignacionesSeleccionadas.delete(asignacionId);
+                    dropZone.classList.remove('seleccionado');
+                } else {
+                    asignacionesSeleccionadas.add(asignacionId);
+                    dropZone.classList.add('seleccionado');
+                }
+
+                actualizarBarraFlotante();
+            });
+
+            function actualizarBarraFlotante() {
+                const cantidad = asignacionesSeleccionadas.size;
+                contadorSeleccionados.textContent = `${cantidad} seleccionado${cantidad !== 1 ? 's' : ''}`;
+                barraSeleccionFlotante.classList.toggle('visible', modoSeleccionActivo && cantidad > 0);
+            }
+
+            // Eliminar en lote
+            btnEliminarSeleccionados.addEventListener('click', async function() {
+                if (asignacionesSeleccionadas.size === 0) return;
+
+                const ids = Array.from(asignacionesSeleccionadas);
+
+                mostrarPantallaCarga('Eliminando asignaciones...');
+                try {
+                    const response = await fetch('/api/horario/eliminar-multiples', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify({ ids })
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        mostrarNotificacion(data.error || 'Error al eliminar asignaciones', 'error');
+                        return;
+                    }
+
+                    horarioData = horarioData.filter(h => !ids.includes(String(h.id)));
+                    asignacionesSeleccionadas.clear();
+                    modoSeleccionActivo = false;
+                    btnModoSeleccion.classList.remove('activo');
+                    actualizarBarraFlotante();
+                    renderizarCalendario();
+                    document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('modo-seleccion', 'seleccionado'));
+
+                    mostrarNotificacion(data.mensaje, 'success');
+                } catch (error) {
+                    console.error('Error al eliminar asignaciones:', error);
+                    mostrarNotificacion('Error de conexión al servidor', 'error');
+                } finally {
+                    ocultarPantallaCarga();
+                }
+            });
         });
     </script>
 @endsection
