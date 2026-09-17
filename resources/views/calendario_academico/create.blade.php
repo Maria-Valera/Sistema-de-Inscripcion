@@ -70,7 +70,7 @@
 @endsection --}}
 
 
-@extends('adminlte::page')
+{{-- @extends('adminlte::page')
 
 @section('title', 'Cargar calendario académico')
 
@@ -99,7 +99,7 @@
 @section('content')
     <div class="main-container">
 
-        {{-- Mostrar errores de validación con estilo moderno --}}
+
         @if ($errors->any())
             <div class="alerts-container">
                 <div class="alert-modern alert-error alert alert-dismissible fade show" role="alert">
@@ -132,12 +132,12 @@
                 </div>
             </div>
 
-            {{-- Aumentamos el padding interior y el espaciado entre campos --}}
+
             <div class="card-body p-4 p-lg-5">
                 <form action="{{ route('admin.calendario_academico.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
-                    {{-- Año escolar --}}
+
                     <div class="form-group mb-4">
                         <label for="anio_escolar_id" class="form-label fw-semibold">Año escolar</label>
                         <select name="anio_escolar_id" id="anio_escolar_id" class="form-control form-control-lg" required>
@@ -155,7 +155,7 @@
                         </small>
                     </div>
 
-                    {{-- Archivo PDF --}}
+
                     <div class="form-group mb-4">
                         <label for="archivo_pdf" class="form-label fw-semibold">Archivo PDF del calendario</label>
                         <div class="custom-file">
@@ -167,7 +167,7 @@
                         <small class="form-text text-muted mt-1">Tamaño máximo: 20 MB.</small>
                     </div>
 
-                    {{-- Botones con más separación --}}
+
                     <div class="d-flex flex-wrap gap-3 mt-4 pt-2">
                         <button type="submit" class="btn btn-primary btn-lg px-4">
                             <i class="fas fa-play me-1"></i> Procesar PDF
@@ -184,10 +184,71 @@
 
 @section('js')
     <script>
-        // Muestra el nombre del archivo seleccionado en el input estilizado.
+
         document.getElementById('archivo_pdf').addEventListener('change', function (e) {
             const nombre = e.target.files[0]?.name ?? 'Selecciona el PDF...';
             e.target.nextElementSibling.innerText = nombre;
         });
     </script>
-@stop
+@stop --}}
+
+
+@extends('adminlte::page')
+
+@section('title', 'Nuevo calendario académico')
+
+@section('content_header')
+    <h1>Nuevo calendario académico</h1>
+@endsection
+
+@section('content')
+
+    @unless ($hayAniosDisponibles)
+        <div class="alert alert-warning">
+            No hay años escolares disponibles — todos ya tienen un calendario asociado,
+            o todavía no has creado ninguno en
+            <a href="{{ route('admin.anio_escolar.index') }}">Calendario Escolar</a>.
+        </div>
+    @endunless
+
+    <p class="text-muted mb-4">¿Cómo quieres cargar el calendario de este año escolar?</p>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body d-flex flex-column">
+                    <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                    <h5 class="card-title">Subir un PDF</h5>
+                    <p class="card-text text-muted flex-grow-1">
+                        El sistema extrae automáticamente los días candidatos del calendario
+                        oficial (Ministerio) y los deja listos para tu revisión.
+                    </p>
+                    <a href="{{ route('admin.calendario_academico.create_pdf') }}" class="btn btn-primary">
+                        Subir PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body d-flex flex-column">
+                    <i class="fas fa-calendar-plus fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Crear manualmente</h5>
+                    <p class="card-text text-muted flex-grow-1">
+                        Empieza con un calendario vacío y registra cada evento tú mismo,
+                        directo sobre el calendario visual.
+                    </p>
+                    <a href="{{ route('admin.calendario_academico.create_manual') }}" class="btn btn-outline-primary">
+                        Crear manual
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="{{ route('admin.calendario_academico.index') }}" class="btn btn-default">
+        Volver al listado
+    </a>
+
+@endsection

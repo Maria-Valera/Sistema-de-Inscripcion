@@ -113,12 +113,28 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         // ===== Calendario Académico (días no laborables: PDF o registro manual) =====
     // Igual que anio_escolar, sin middleware verificar.anio.escolar: se puede
     // cargar el calendario de un año escolar que todavía no esté activo.
+    // Route::get('calendario_academico', [CalendarioAcademicoController::class, 'index'])->name('calendario_academico.index');
+    // Route::get('calendario_academico/nuevo', [CalendarioAcademicoController::class, 'create'])->name('calendario_academico.create');
+    // Route::post('calendario_academico', [CalendarioAcademicoController::class, 'store'])->name('calendario_academico.store');
+    // Route::get('calendario_academico/{calendarioAcademico}', [CalendarioAcademicoController::class, 'show'])->name('calendario_academico.show');
+    // Route::post('calendario_academico/{calendarioAcademico}/confirmar', [CalendarioAcademicoController::class, 'confirmar'])->name('calendario_academico.confirmar');
+    // Route::post('calendario_academico/{calendarioAcademico}/dias/{calendarioDia}/confirmar', [CalendarioAcademicoController::class, 'confirmarDia'])->name('calendario_academico.dias.confirmar');
+
     Route::get('calendario_academico', [CalendarioAcademicoController::class, 'index'])->name('calendario_academico.index');
     Route::get('calendario_academico/nuevo', [CalendarioAcademicoController::class, 'create'])->name('calendario_academico.create');
+    Route::get('calendario_academico/nuevo/pdf', [CalendarioAcademicoController::class, 'createPdf'])->name('calendario_academico.create_pdf');
+    Route::get('calendario_academico/nuevo/manual', [CalendarioAcademicoController::class, 'createManual'])->name('calendario_academico.create_manual');
     Route::post('calendario_academico', [CalendarioAcademicoController::class, 'store'])->name('calendario_academico.store');
+    Route::post('calendario_academico/manual', [CalendarioAcademicoController::class, 'storeManual'])->name('calendario_academico.store_manual');
     Route::get('calendario_academico/{calendarioAcademico}', [CalendarioAcademicoController::class, 'show'])->name('calendario_academico.show');
     Route::post('calendario_academico/{calendarioAcademico}/confirmar', [CalendarioAcademicoController::class, 'confirmar'])->name('calendario_academico.confirmar');
-     Route::post('calendario_academico/{calendarioAcademico}/dias/{calendarioDia}/confirmar', [CalendarioAcademicoController::class, 'confirmarDia'])->name('calendario_academico.dias.confirmar');
+    Route::post('calendario_academico/{calendarioAcademico}/dias/{calendarioDia}/confirmar', [CalendarioAcademicoController::class, 'confirmarDia'])->name('calendario_academico.dias.confirmar');
+
+     // ===== CRUD de eventos manuales del modulo de calendario academico =====
+    Route::post('calendario_academico/{calendarioAcademico}/eventos', [CalendarioAcademicoController::class, 'eventoStore'])->name('calendario_academico.eventos.store');
+    Route::put('calendario_academico/{calendarioAcademico}/eventos/{calendarioDia}', [CalendarioAcademicoController::class, 'eventoUpdate'])->name('calendario_academico.eventos.update');
+    Route::delete('calendario_academico/{calendarioAcademico}/eventos/{calendarioDia}', [CalendarioAcademicoController::class, 'eventoDestroy'])->name('calendario_academico.eventos.destroy');
+
     // --------------------------------
 
 
