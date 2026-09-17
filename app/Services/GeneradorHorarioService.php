@@ -736,6 +736,12 @@ Class GeneradorHorarioService
                 // Generar conflictos para clases con bloques restantes
                 foreach ($clasesPendientes as $clase) {
                     if ($clase['bloques_restantes'] > 0) {
+                        // Determinar el tipo de conflicto y detalles
+                        $tipoConflicto = $this->determinarTipoConflicto($clase, $matrices, $totalDias, $totalBloques, $bloquesPorDiaGlobal);
+                        
+                        // Identificar días/bloques específicos donde falló la asignación
+                        $diasBloquesFallidos = $this->identificarEspaciosFallidos($clase, $matrices, $totalDias, $totalBloques, $bloquesPorDiaGlobal);
+                        
                         $todosLosConflictos[] = [
                             'docente_id' => $clase['docente_id'],
                             'docente_nombre' => $clase['docente_nombre'],
@@ -744,6 +750,10 @@ Class GeneradorHorarioService
                             'seccion_id' => $clase['seccion_id'],
                             'seccion_nombre' => $clase['seccion_nombre'],
                             'bloques_pendientes' => $clase['bloques_restantes'],
+                            'tipo_conflicto' => $tipoConflicto['tipo'],
+                            'motivo' => $tipoConflicto['motivo'],
+                            'sugerencias' => $tipoConflicto['sugerencias'],
+                            'dias_bloques_fallidos' => $diasBloquesFallidos,
                         ];
                     }
                 }
@@ -763,6 +773,212 @@ Class GeneradorHorarioService
                 }
             }
             return false;
+        }
+
+        private function determinarTipoConflicto(array $clase, array $matrices, int $totalDias, int $totalBloques, array $bloquesPorDiaGlobal): array
+        {
+            $docenteId = $clase['docente_id'];
+            $seccionId = $clase['seccion_id'];
+            $aulaFijaMateria = $clase['area_aula'] ?? null;
+            $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
+            $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
+            
+            // Contar espacios libres por tipo de restricción
+            $espaciosLibresDocente = 0;
+            $espaciosLibresSeccion = 0;
+            $espaciosLibresAulaEspecial = 0;
+            $espaciosLibresAulaRegular = 0;
+            $espaciosLibresPorLimiteDia = 0;
+            
+            for ($dia = 1; $dia <= $totalDias; $dia++) {
+                $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
+                $bloquesHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? 0;
+                
+                for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
+                    $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
+                    $claveSeccion = $seccionId . '_' . $dia . '_' . $bloque;
+                    
+                    // Verificar si el espacio está libre para el docente
+                    if (!isset($matrices['docenteOcupado'][$claveDocente])) {
+                        $espaciosLibresDocente++;
+                    }
+                    
+                    // Verificar si el espacio está libre para la sección
+                    if (!isset($matrices['seccionOcupado'][$claveSeccion])) {
+                        $espaciosLibresSeccion++;
+                    }
+                    
+                    // Verificar si el espacio respeta el límite por día
+                    if ($bloquesHoy < $maxBloquesPorDia) {
+                        $espaciosLibresPorLimiteDia++;
+                    }
+                    
+                    // Verificar disponibilidad de aulas
+                    if ($esEspecializada) {
+                        $aulaLibre = $this->buscarAulaEspecialLibre(
+                            $aulaFijaMateria->tipo_aula, $dia, $bloque, $matrices['aulaEspecialOcupada'], $seccionId
+                        );
+                        if ($aulaLibre !== null) {
+                            $espaciosLibresAulaEspecial++;
+                        }
+                    } else {
+                        $aulaAsignada = $this->obtenerAulaNormal($seccionId);
+                        if ($aulaAsignada !== null) {
+                            $espaciosLibresAulaRegular++;
+                        }
+                    }
+                }
+            }
+            
+            // Determinar el tipo de conflicto
+            if ($esEspecializada && $espaciosLibresAulaEspecial === 0) {
+                return [
+                    'tipo' => 'aula_especializada',
+                    'motivo' => 'No hay aulas especializadas disponibles para esta materia',
+                    'sugerencias' => [
+                        'Considerar asignar más aulas del tipo ' . $aulaFijaMateria->tipo_aula,
+                        'Reducir la frecuencia de esta materia',
+                        'Programar en horarios donde estas aulas estén disponibles'
+                    ]
+                ];
+            }
+            
+            if (!$esEspecializada && $espaciosLibresAulaRegular === 0) {
+                return [
+                    'tipo' => 'aula_regular',
+                    'motivo' => 'La sección no tiene aula regular asignada',
+                    'sugerencias' => [
+                        'Asignar un aula regular a la sección',
+                        'Verificar la configuración de sección-aula'
+                    ]
+                ];
+            }
+            
+            if ($espaciosLibresPorLimiteDia === 0) {
+                return [
+                    'tipo' => 'limite_dia',
+                    'motivo' => 'La materia excede el límite de bloques por día (' . $maxBloquesPorDia . ' bloques)',
+                    'sugerencias' => [
+                        'Aumentar el límite de bloques por día para esta materia',
+                        'Distribuir la materia en más días diferentes'
+                    ]
+                ];
+            }
+            
+            if ($espaciosLibresDocente === 0) {
+                return [
+                    'tipo' => 'docente_saturado',
+                    'motivo' => 'El docente ya tiene su máximo de bloques asignados',
+                    'sugerencias' => [
+                        'Aumentar el límite de bloques del docente',
+                        'Asignar este curso a otro docente',
+                        'Reducir la carga académica de este docente'
+                    ]
+                ];
+            }
+            
+            if ($espaciosLibresSeccion === 0) {
+                return [
+                    'tipo' => 'seccion_saturada',
+                    'motivo' => 'La sección ya tiene todos sus bloques ocupados',
+                    'sugerencias' => [
+                        'Revisar la distribución de materias de esta sección',
+                        'Considerar reducir bloques de otras materias'
+                    ]
+                ];
+            }
+            
+            if ($espaciosLibresDocente < $clase['bloques_restantes']) {
+                return [
+                    'tipo' => 'combinacion_restricciones',
+                    'motivo' => 'Combinación de restricciones que limitan la disponibilidad',
+                    'sugerencias' => [
+                        'Ajustar la distribución horaria',
+                        'Considerar intercambios con otras asignaciones'
+                    ]
+                ];
+            }
+            
+            return [
+                'tipo' => 'desconocido',
+                'motivo' => 'No se pudo determinar la causa específica',
+                'sugerencias' => [
+                    'Revisar manualmente la disponibilidad',
+                    'Contactar al administrador del sistema'
+                ]
+            ];
+        }
+
+        private function identificarEspaciosFallidos(array $clase, array $matrices, int $totalDias, int $totalBloques, array $bloquesPorDiaGlobal): array
+        {
+            $docenteId = $clase['docente_id'];
+            $seccionId = $clase['seccion_id'];
+            $aulaFijaMateria = $clase['area_aula'] ?? null;
+            $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
+            $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
+            
+            $diasSemana = [
+                1 => 'Lunes',
+                2 => 'Martes',
+                3 => 'Miércoles',
+                4 => 'Jueves',
+                5 => 'Viernes'
+            ];
+            
+            $espaciosFallidos = [];
+            
+            for ($dia = 1; $dia <= $totalDias; $dia++) {
+                $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
+                $bloquesHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? 0;
+                
+                for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
+                    $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
+                    $claveSeccion = $seccionId . '_' . $dia . '_' . $bloque;
+                    
+                    $razones = [];
+                    
+                    // Verificar disponibilidad docente
+                    if (isset($matrices['docenteOcupado'][$claveDocente])) {
+                        $razones[] = 'docente ocupado';
+                    }
+                    
+                    // Verificar disponibilidad sección
+                    if (isset($matrices['seccionOcupado'][$claveSeccion])) {
+                        $razones[] = 'sección ocupada';
+                    }
+                    
+                    // Verificar límite por día
+                    if ($bloquesHoy >= $maxBloquesPorDia) {
+                        $razones[] = 'límite diario alcanzado';
+                    }
+                    
+                    // Verificar disponibilidad de aula
+                    if ($esEspecializada) {
+                        $aulaLibre = $this->buscarAulaEspecialLibre(
+                            $aulaFijaMateria->tipo_aula, $dia, $bloque, $matrices['aulaEspecialOcupada'], $seccionId
+                        );
+                        if ($aulaLibre === null) {
+                            $razones[] = 'aula especializada no disponible';
+                        }
+                    } else {
+                        $aulaAsignada = $this->obtenerAulaNormal($seccionId);
+                        if ($aulaAsignada === null) {
+                            $razones[] = 'aula regular no disponible';
+                        }
+                    }
+                    
+                    // Si hay razones por las que no se pudo asignar, registrar este espacio
+                    if (!empty($razones)) {
+                        $espaciosFallidos[] = [
+                            'dia' => $diasSemana[$dia] ?? "Día $dia",
+                            'bloque' => $bloque,
+                            'razones' => $razones
+                        ];
+                    }
+                }
+            }
+            
+            return $espaciosFallidos;
         }
 
         public function validarCapacidadAula(int $aulaId, int $seccionId): bool

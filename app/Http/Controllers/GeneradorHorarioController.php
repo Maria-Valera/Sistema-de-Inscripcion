@@ -132,6 +132,9 @@ class GeneradorHorarioController extends Controller
                     'docente_nombre' => $asignacion->docente && $asignacion->docente->persona 
                         ? $asignacion->docente->persona->primer_nombre . ' ' . $asignacion->docente->persona->primer_apellido 
                         : 'N/A',
+                    'docente_cedula' => $asignacion->docente && $asignacion->docente->persona 
+                        ? $asignacion->docente->persona->numero_documento 
+                        : 'N/A',
                     'materia' => $materiaData,
                     'materia_id' => $asignacion->materia_id,
                     'materia_nombre' => $materiaData['nombre'],

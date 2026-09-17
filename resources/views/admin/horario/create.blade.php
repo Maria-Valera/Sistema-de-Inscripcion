@@ -208,71 +208,55 @@
         }
 
         .drop-zone .assigned-docente {
-            background: var(--primary);
+            background: #0a1128;
             color: white;
-            padding: 0.5rem;
+            padding: 0.85rem;
             padding-right: 2rem;
-            border-radius: var(--radius);
+            border-radius: 16px;
             font-size: 0.75rem;
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            align-items: center;
+            text-align: center;
+            gap: 0.35rem;
             animation: fadeIn 0.3s ease;
             position: relative;
         }
 
         .drop-zone .assigned-docente .docente-nombre {
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 0.8125rem;
+            line-height: 1.2;
         }
 
-        .drop-zone .assigned-docente .docente-area {
+        .drop-zone .assigned-docente .docente-cedula {
             font-size: 0.6875rem;
-            opacity: 0.9;
+            opacity: 0.75;
         }
 
         .drop-zone .assigned-docente .docente-materia {
-            font-size: 0.6875rem;
+            font-size: 0.7rem;
             opacity: 0.9;
-            margin-top: 0.125rem;
+            margin-bottom: 0.25rem;
         }
 
-        .drop-zone .assigned-docente .docente-badges {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            margin-top: 0.25rem;
+        .drop-zone .assigned-docente .pildora-selector {
+            width: 100%;
+            background: white;
+            color: #1f2937;
+            border: none;
+            border-radius: 999px;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-align: center;
+            text-align-last: center;
+            cursor: pointer;
         }
 
-        .drop-zone .assigned-docente .aula-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            background: #ffc107;
-            color: #000;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.625rem;
-            font-weight: 600;
-        }
-
-        .drop-zone .assigned-docente .aula-badge i {
-            font-size: 0.5625rem;
-        }
-
-        .drop-zone .assigned-docente .seccion-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            background: #6c757d;
-            color: #fff;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.625rem;
-            font-weight: 600;
-        }
-
-        .drop-zone .assigned-docente .seccion-badge i {
-            font-size: 0.5625rem;
+        .drop-zone .assigned-docente .pildora-selector:disabled {
+            opacity: 0.85;
+            cursor: default;
         }
 
         .drop-zone.ocupado-por-otro {
@@ -281,19 +265,77 @@
             cursor: not-allowed;
         }
 
-        .drop-zone.ocupado-por-otro .ocupado-indicator {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #95a5a6;
-            font-size: 0.75rem;
-            gap: 0.25rem;
+        .drop-zone.tiene-conflicto {
+            border: 2px dashed #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+            position: relative;
         }
 
-        .drop-zone.ocupado-por-otro .ocupado-indicator i {
-            font-size: 1rem;
+        .drop-zone.tiene-conflicto::after {
+            content: '⚠️';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.75rem;
+            z-index: 10;
+        }
+
+        .drop-zone.tiene-conflicto:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .drop-zone.hueco-disponible {
+            border: 2px dashed #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .drop-zone.hueco-disponible::after {
+            content: '✓';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.75rem;
+            color: #10b981;
+            z-index: 10;
+        }
+
+        .conflicto-tooltip {
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            max-width: 250px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .conflicto-tooltip.visible {
+            opacity: 1;
+        }
+
+        .conflicto-tooltip .tooltip-titulo {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #fca5a5;
+        }
+
+        .conflicto-tooltip .tooltip-motivo {
+            color: #d1d5db;
+            margin-bottom: 6px;
+        }
+
+        .conflicto-tooltip .tooltip-sugerencias {
+            font-size: 0.6875rem;
+            color: #9ca3af;
+        }
+
+        .conflicto-tooltip .tooltip-sugerencias li {
+            margin-bottom: 2px;
         }
 
         .btn-eliminar-docente {
@@ -513,6 +555,11 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .conflictos-panel {
@@ -853,6 +900,218 @@
             cursor: pointer;
         }
 
+        /* Modal de detalles de conflicto */
+        .modal-conflicto-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .modal-conflicto-overlay.visible {
+            display: flex;
+        }
+
+        .modal-conflicto {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-conflicto-header {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-conflicto-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-conflicto-cerrar {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: background 0.2s ease;
+        }
+
+        .modal-conflicto-cerrar:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-conflicto-body {
+            padding: 20px;
+        }
+
+        .modal-conflicto-info {
+            margin-bottom: 20px;
+        }
+
+        .modal-conflicto-info strong {
+            display: block;
+            color: #374151;
+            margin-bottom: 4px;
+            font-size: 0.875rem;
+        }
+
+        .modal-conflicto-info span {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .modal-conflicto-motivo {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .modal-conflicto-motivo strong {
+            color: #991b1b;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .modal-conflicto-motivo p {
+            color: #6b7280;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        .modal-conflicto-sugerencias {
+            margin-bottom: 20px;
+        }
+
+        .modal-conflicto-sugerencias h4 {
+            color: #374151;
+            margin: 0 0 10px 0;
+            font-size: 0.875rem;
+        }
+
+        .modal-conflicto-sugerencias ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .modal-conflicto-sugerencias li {
+            margin-bottom: 6px;
+        }
+
+        .modal-conflicto-acciones {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn-modal-primario {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .btn-modal-primario:hover {
+            background: #2563eb;
+        }
+
+        .btn-modal-secundario {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .btn-modal-secundario:hover {
+            background: #d1d5db;
+        }
+
+        /* Mejoras al panel de conflictos */
+        .conflicto-item-detalles {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #fecaca;
+        }
+
+        .conflicto-tipo {
+            display: inline-block;
+            background: #fecaca;
+            color: #991b1b;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .conflicto-motivo-texto {
+            color: #6b7280;
+            font-size: 0.8125rem;
+            margin-bottom: 8px;
+        }
+
+        .conflicto-sugerencias-texto {
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+
+        .conflicto-sugerencias-texto ul {
+            margin: 4px 0 0 0;
+            padding-left: 16px;
+        }
+
+        .btn-ver-detalles-conflicto {
+            background: #991b1b;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .btn-ver-detalles-conflicto:hover {
+            background: #7f1d1d;
+        }
+
     </style>
 @stop
 
@@ -1025,6 +1284,19 @@
                 <!-- Los conflictos se insertarán aquí dinámicamente -->
             </div>
         </div>
+
+        <!-- Modal de detalles de conflicto -->
+        <div class="modal-conflicto-overlay" id="modalConflicto">
+            <div class="modal-conflicto">
+                <div class="modal-conflicto-header">
+                    <h3>Detalles del Conflicto</h3>
+                    <button class="modal-conflicto-cerrar" id="btnCerrarModalConflicto">×</button>
+                </div>
+                <div class="modal-conflicto-body" id="modalConflictoBody">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+        </div>
         <div class="header-actions">
             <a href="{{ route('admin.horario.index') }}" class="btn-back">
                 <i class="fas fa-arrow-left"></i>
@@ -1156,6 +1428,288 @@
                     }
                 });
             }
+
+            // Función para poblar el panel de conflictos con información detallada
+            function poblarPanelConflictos(conflictos) {
+                const conflictosBody = document.getElementById('conflictosBody');
+                conflictosBody.innerHTML = '';
+
+                if (!conflictos || conflictos.length === 0) {
+                    conflictosBody.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">No hay conflictos detectados</p>';
+                    // Limpiar marcas de conflicto en la grilla
+                    document.querySelectorAll('.drop-zone.tiene-conflicto').forEach(dz => {
+                        dz.classList.remove('tiene-conflicto');
+                    });
+                    return;
+                }
+
+                conflictos.forEach((conflicto, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'conflicto-item';
+                    div.innerHTML = `
+                        <div class="conflicto-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="conflicto-info">
+                            <strong>${conflicto.docente_nombre || 'Docente desconocido'}</strong>
+                            <p>${conflicto.materia_nombre || 'Materia desconocida'} - Sección ${conflicto.seccion_nombre || 'Sección desconocida'}</p>
+                            <p>${conflicto.bloques_pendientes || 0} bloques pendientes</p>
+                            <div class="conflicto-item-detalles">
+                                <span class="conflicto-tipo">${conflicto.tipo_conflicto || 'Tipo desconocido'}</span>
+                                <p class="conflicto-motivo-texto">${conflicto.motivo || 'Motivo no especificado'}</p>
+                                <div class="conflicto-sugerencias-texto">
+                                    <strong>Sugerencias:</strong>
+                                    <ul>
+                                        ${(conflicto.sugerencias || []).map(s => `<li>${s}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                            <button class="btn-ver-detalles-conflicto" onclick="mostrarDetallesConflicto(${index})">
+                                Ver detalles completos
+                            </button>
+                        </div>
+                    `;
+                    conflictosBody.appendChild(div);
+                });
+
+                // Guardar conflictos en una variable global para acceso desde el modal
+                window.conflictosActuales = conflictos;
+                
+                // Marcar celdas con conflictos en la grilla
+                marcarCeldasConConflictos(conflictos);
+            }
+
+            // Función para marcar celdas con conflictos en la grilla
+            function marcarCeldasConConflictos(conflictos) {
+                // Primero limpiar marcas anteriores
+                document.querySelectorAll('.drop-zone.tiene-conflicto').forEach(dz => {
+                    dz.classList.remove('tiene-conflicto');
+                    dz.removeAttribute('data-conflicto-info');
+                });
+
+                // Mapeo de nombres de días a minúsculas
+                const mapeoDias = {
+                    'Lunes': 'lunes',
+                    'Martes': 'martes',
+                    'Miércoles': 'miércoles',
+                    'Jueves': 'jueves',
+                    'Viernes': 'viernes'
+                };
+
+                conflictos.forEach(conflicto => {
+                    if (conflicto.dias_bloques_fallidos && Array.isArray(conflicto.dias_bloques_fallidos)) {
+                        conflicto.dias_bloques_fallidos.forEach(espacio => {
+                            const diaLower = mapeoDias[espacio.dia] || espacio.dia.toLowerCase();
+                            const bloque = espacio.bloque;
+                            
+                            const dropZone = document.querySelector(`.drop-zone[data-day="${diaLower}"][data-block="${bloque}"]`);
+                            if (dropZone) {
+                                dropZone.classList.add('tiene-conflicto');
+                                // Guardar información del conflicto para tooltip
+                                const conflictoInfo = {
+                                    docente: conflicto.docente_nombre,
+                                    materia: conflicto.materia_nombre,
+                                    seccion: conflicto.seccion_nombre,
+                                    motivo: espacio.razones.join(', ')
+                                };
+                                dropZone.setAttribute('data-conflicto-info', JSON.stringify(conflictoInfo));
+                            }
+                        });
+                    }
+                });
+
+                // Agregar event listeners para tooltips en celdas con conflicto
+                agregarTooltipsConflictos();
+            }
+
+            // Función para agregar tooltips a celdas con conflicto
+            function agregarTooltipsConflictos() {
+                // Eliminar tooltips existentes
+                document.querySelectorAll('.conflicto-tooltip').forEach(t => t.remove());
+
+                document.querySelectorAll('.drop-zone.tiene-conflicto').forEach(dropZone => {
+                    dropZone.addEventListener('mouseenter', function(e) {
+                        const conflictoInfo = JSON.parse(this.getAttribute('data-conflicto-info'));
+                        if (!conflictoInfo) return;
+
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'conflicto-tooltip';
+                        tooltip.innerHTML = `
+                            <div class="tooltip-titulo">⚠️ Conflicto de horario</div>
+                            <div class="tooltip-motivo">${conflictoInfo.motivo}</div>
+                            <div class="tooltip-sugerencias">
+                                <div>Docente: ${conflictoInfo.docente}</div>
+                                <div>Materia: ${conflictoInfo.materia}</div>
+                                <div>Sección: ${conflictoInfo.seccion}</div>
+                            </div>
+                        `;
+                        
+                        document.body.appendChild(tooltip);
+                        
+                        const rect = this.getBoundingClientRect();
+                        tooltip.style.left = rect.left + 'px';
+                        tooltip.style.top = (rect.bottom + 5) + 'px';
+                        
+                        // Ajustar si se sale de la pantalla
+                        const tooltipRect = tooltip.getBoundingClientRect();
+                        if (tooltipRect.right > window.innerWidth) {
+                            tooltip.style.left = (rect.right - tooltipRect.width) + 'px';
+                        }
+                        
+                        requestAnimationFrame(() => {
+                            tooltip.classList.add('visible');
+                        });
+
+                        this._tooltip = tooltip;
+                    });
+
+                    dropZone.addEventListener('mouseleave', function() {
+                        if (this._tooltip) {
+                            this._tooltip.classList.remove('visible');
+                            setTimeout(() => {
+                                if (this._tooltip) {
+                                    this._tooltip.remove();
+                                    this._tooltip = null;
+                                }
+                            }, 200);
+                        }
+                    });
+                });
+            }
+
+            // Función para mostrar detalles de conflicto en modal
+            window.mostrarDetallesConflicto = function(index) {
+                const conflicto = window.conflictosActuales[index];
+                if (!conflicto) return;
+
+                const modalBody = document.getElementById('modalConflictoBody');
+                
+                let diasBloquesHTML = '';
+                if (conflicto.dias_bloques_fallidos && Array.isArray(conflicto.dias_bloques_fallidos)) {
+                    diasBloquesHTML = `
+                        <div class="modal-conflicto-info">
+                            <strong>Espacios fallidos:</strong>
+                            <ul style="margin: 4px 0 0 0; padding-left: 20px; color: #6b7280; font-size: 0.875rem;">
+                                ${conflicto.dias_bloques_fallidos.map(espacio => 
+                                    `<li>${espacio.dia} - Bloque ${espacio.bloque}: ${espacio.razones.join(', ')}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                modalBody.innerHTML = `
+                    <div class="modal-conflicto-info">
+                        <strong>Docente:</strong>
+                        <span>${conflicto.docente_nombre || 'N/A'}</span>
+                    </div>
+                    <div class="modal-conflicto-info">
+                        <strong>Materia:</strong>
+                        <span>${conflicto.materia_nombre || 'N/A'}</span>
+                    </div>
+                    <div class="modal-conflicto-info">
+                        <strong>Sección:</strong>
+                        <span>${conflicto.seccion_nombre || 'N/A'}</span>
+                    </div>
+                    <div class="modal-conflicto-info">
+                        <strong>Bloques pendientes:</strong>
+                        <span>${conflicto.bloques_pendientes || 0}</span>
+                    </div>
+                    ${diasBloquesHTML}
+                    <div class="modal-conflicto-motivo">
+                        <strong>Tipo de conflicto:</strong>
+                        <p>${conflicto.tipo_conflicto || 'Desconocido'}</p>
+                        <strong>Motivo:</strong>
+                        <p>${conflicto.motivo || 'No especificado'}</p>
+                    </div>
+                    <div class="modal-conflicto-sugerencias">
+                        <h4>Sugerencias de solución:</h4>
+                        <ul>
+                            ${(conflicto.sugerencias || []).map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="modal-conflicto-acciones">
+                        <button class="btn-modal-secundario" onclick="cerrarModalConflicto()">Cerrar</button>
+                        <button class="btn-modal-primario" onclick="resaltarDocenteConflicto(${conflicto.docente_id})">
+                            Ver en lista de docentes
+                        </button>
+                        <button class="btn-modal-primario" onclick="resaltarHuecosDisponibles(${conflicto.docente_id})">
+                            Ver huecos disponibles
+                        </button>
+                        <button class="btn-modal-primario" onclick="buscarAlternativasIntercambio(${index})">
+                            Buscar alternativas
+                        </button>
+                    </div>
+                `;
+
+                document.getElementById('modalConflicto').classList.add('visible');
+            };
+
+            // Función para cerrar modal de conflicto
+            window.cerrarModalConflicto = function() {
+                document.getElementById('modalConflicto').classList.remove('visible');
+            };
+
+            // Función para resaltar docente con conflicto en la sidebar
+            window.resaltarDocenteConflicto = function(docenteId) {
+                cerrarModalConflicto();
+                const tarjeta = document.querySelector(`.docente-card[data-id="${docenteId}"]`);
+                if (tarjeta) {
+                    tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    tarjeta.style.animation = 'pulse 0.5s ease 3';
+                    setTimeout(() => {
+                        tarjeta.style.animation = '';
+                    }, 1500);
+                }
+            };
+
+            // Función para resaltar huecos disponibles para un docente
+            window.resaltarHuecosDisponibles = function(docenteId) {
+                // Limpiar resaltados anteriores
+                document.querySelectorAll('.drop-zone.hueco-disponible').forEach(dz => {
+                    dz.classList.remove('hueco-disponible');
+                });
+
+                // Buscar todas las celdas vacías
+                document.querySelectorAll('.drop-zone').forEach(dropZone => {
+                    const assignedDocente = dropZone.querySelector('.assigned-docente');
+                    if (!assignedDocente) {
+                        dropZone.classList.add('hueco-disponible');
+                    }
+                });
+
+                mostrarNotificacion('Los huecos disponibles están resaltados en verde', 'info');
+            };
+
+            // Función para buscar alternativas de intercambio
+            window.buscarAlternativasIntercambio = function(conflictoIndex) {
+                const conflicto = window.conflictosActuales[conflictoIndex];
+                if (!conflicto) return;
+
+                const docenteId = conflicto.docente_id;
+                const materiaId = conflicto.materia_id;
+                const seccionId = conflicto.seccion_id;
+
+                // Buscar asignaciones existentes del mismo docente en otras celdas
+                const asignacionesDocente = horarioData.filter(h => h.docente_id == docenteId);
+                
+                // Buscar asignaciones de otros docentes en la misma materia/sección
+                const asignacionesMismaMateria = horarioData.filter(h => 
+                    h.materia_id == materiaId && h.docente_id != docenteId
+                );
+
+                mostrarNotificacion(`Encontradas ${asignacionesDocente.length} asignaciones del docente y ${asignacionesMismaMateria.length} de la misma materia`, 'info');
+            };
+
+            // Event listener para cerrar modal con botón X
+            document.getElementById('btnCerrarModalConflicto').addEventListener('click', cerrarModalConflicto);
+
+            // Event listener para cerrar modal al hacer clic fuera
+            document.getElementById('modalConflicto').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    cerrarModalConflicto();
+                }
+            });
 
             // Inicializar drag and drop una sola vez
             inicializarDragAndDrop();
@@ -1358,7 +1912,7 @@
                             : 'Sin sección asignada');
 
                     return `
-                        <div class="docente-card" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${areaTexto}" data-horas="${horasAcademicas}">
+                        <div class="docente-card" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${areaTexto}" data-cedula="${docente.cedula || 'N/A'}" data-horas="${horasAcademicas}">
                             <div class="docente-name">${nombre}</div>
                             <div class="docente-area">
                                 <i class="fas fa-book"></i>
@@ -1458,50 +2012,53 @@
                             td.innerHTML = renderizarAsignacionLocalHTML(key, asignacionLocal);
                         } else if (horarioAsignado) {
                             const docenteNombre = horarioAsignado.docente_nombre || 'N/A';
+                            const docenteCedula = horarioAsignado.docente_cedula || 'N/A';
                             const materiaNombre = horarioAsignado.materia_nombre || 'N/A';
-                            const seccionNombre = horarioAsignado.seccion_nombre || '';
+                            const seccionNombre = horarioAsignado.seccion_nombre || 'N/A';
                             const asignacionId = horarioAsignado.id;
                             const aulaId = horarioAsignado.aula_id;
                             const aulaNombre = horarioAsignado.aula_nombre || 'N/A';
                             const aulaTipo = horarioAsignado.aula_tipo || 'Aula Regular';
 
-                            let aulaBadge = '';
-                            let aulaSelector = '';
-                            
-                            // Usar obtenerAulaRegularDeSeccion para determinar si mostrar selector o badge fijo
-                            const aulaRegular = obtenerAulaRegularDeSeccion(horarioAsignado.seccion_id);
-                            const esAulaEspecial = aulaTipo.toLowerCase() !== 'aula regular' || !aulaRegular;
-                            
-                            if (esAulaEspecial) {
-                                // Aula especializada o sin aula regular fija: mostrar selector editable
-                                aulaSelector = `
-                                    <div class="aula-selector-container">
-                                        <select class="aula-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)">
-                                            <option value="">Seleccione aula</option>
-                                        </select>
-                                        <div class="aula-error-message"></div>
-                                    </div>
-                                `;
-                                aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaNombre}</span>`;
-                            } else {
-                                // Aula regular fija: solo mostrar badge sin selector
-                                aulaBadge = `<span class="aula-badge"><i class="fas fa-map-marker-alt"></i> ${aulaNombre} (fija)</span>`;
-                            }
+                            // Determinar si la materia es especializada (basado en el nombre)
+                            const materiasEspecializadas = ['Arte y Patrimonio', 'Ciencias Naturales', 'Biología', 'Física', 'Química'];
+                            const esEspecializada = materiasEspecializadas.some(m => materiaNombre.includes(m));
 
-                            let seccionBadge = '';
-                            if (seccionNombre) {
-                                seccionBadge = `<span class="seccion-badge"><i class="fas fa-users"></i> ${seccionNombre}</span>`;
+                            // Construir opciones de aula filtrando por tipo de aula
+                            const aulaSelectGlobal = document.getElementById('aula');
+                            let aulaOptionsPersistida = '';
+                            if (aulaSelectGlobal) {
+                                if (esEspecializada) {
+                                    for (let i = 0; i < aulaSelectGlobal.options.length; i++) {
+                                        const option = aulaSelectGlobal.options[i];
+                                        if (option.value !== '' && (option.dataset.tipo || '') !== 'Aula Regular') {
+                                            const selected = option.value == aulaId ? 'selected' : '';
+                                            aulaOptionsPersistida += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+                                        }
+                                    }
+                                } else {
+                                    // Materia regular: solo el aula fija de la sección, no todas las regulares
+                                    const aulaFija = obtenerAulaRegularDeSeccion(horarioAsignado.seccion_id);
+                                    if (aulaFija) {
+                                        aulaOptionsPersistida += `<option value="${aulaFija.id}" selected>${aulaFija.nombre}</option>`;
+                                    } else {
+                                        aulaOptionsPersistida += `<option value="">Sin aula regular asignada a esta sección</option>`;
+                                    }
+                                }
                             }
 
                             td.innerHTML = `
                                 <div class="assigned-docente" draggable="true" data-asignacion-id="${asignacionId}">
                                     <span class="docente-nombre">${docenteNombre}</span>
+                                    <span class="docente-cedula">${docenteCedula}</span>
                                     <span class="docente-materia">${materiaNombre}</span>
-                                    <div class="docente-badges">
-                                        ${seccionBadge}
-                                        ${aulaBadge}
-                                    </div>
-                                    ${aulaSelector}
+                                    <select class="pildora-selector" disabled>
+                                        <option>${seccionNombre}</option>
+                                    </select>
+                                    <select class="pildora-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)" ${!esEspecializada ? 'disabled' : ''}>
+                                        ${aulaOptionsPersistida}
+                                    </select>
+                                    <div class="aula-error-message"></div>
                                     <button class="btn-eliminar-docente" onclick="eliminarAsignacionPersistida(${asignacionId}, event)">×</button>
                                 </div>
                             `;
@@ -1519,25 +2076,6 @@
                 console.log('Total drop-zones creadas:', document.querySelectorAll('.drop-zone').length);
 
                 console.log('Calendario renderizado con', tbody.children.length, 'filas');
-
-                // Poblar selectores de aulas especializadas con opciones disponibles
-                document.querySelectorAll('.aula-selector').forEach(select => {
-                    const aulaActual = select.dataset.aulaActual;
-                    const aulaSelect = document.getElementById('aula');
-                    
-                    // Poblar con todas las aulas disponibles
-                    for (let i = 0; i < aulaSelect.options.length; i++) {
-                        const option = aulaSelect.options[i];
-                        if (option.value !== '') {
-                            const selected = option.value == aulaActual ? 'selected' : '';
-                            const newOption = document.createElement('option');
-                            newOption.value = option.value;
-                            newOption.textContent = option.text;
-                            newOption.selected = selected;
-                            select.appendChild(newOption);
-                        }
-                    }
-                });
             }
 
             // Función para renderizar HTML de asignación local (unificada)
@@ -1551,12 +2089,12 @@
                         seccionOptions += `<option value="${seccion.id}" ${selected}>${seccion.nombre}</option>`;
                     });
                     seccionHtml = `
-                        <select class="select-seccion" id="seccion-local-${key}" data-key="${key}" onchange="cambiarSeccionAsignacion(this)">
+                        <select class="pildora-selector" id="seccion-local-${key}" data-key="${key}" onchange="cambiarSeccionAsignacion(this)">
                             ${seccionOptions}
                         </select>
                     `;
                 } else {
-                    seccionHtml = `<span class="seccion-badge"><i class="fas fa-users"></i> El docente no tiene secciones asignadas</span>`;
+                    seccionHtml = `<span class="docente-cedula">El docente no tiene secciones asignadas</span>`;
                 }
 
                 // Determinar si la materia es especializada (basado en el nombre)
@@ -1568,25 +2106,27 @@
                 const aulaSelect = document.getElementById('aula');
                 if (aulaSelect) {
                     let aulaOptions = '<option value="">Seleccione aula</option>';
-                    for (let i = 0; i < aulaSelect.options.length; i++) {
-                        const option = aulaSelect.options[i];
-                        if (option.value !== '') {
-                            const tipoAula = option.dataset.tipo || '';
-                            
-                            // Si es materia especializada, solo mostrar aulas no regulares
-                            // Si es materia regular, solo mostrar aulas regulares
-                            const debeMostrar = esEspecializada 
-                                ? tipoAula !== 'Aula Regular' 
-                                : tipoAula === 'Aula Regular';
-                            
-                            if (debeMostrar) {
+                    if (esEspecializada) {
+                        for (let i = 0; i < aulaSelect.options.length; i++) {
+                            const option = aulaSelect.options[i];
+                            if (option.value !== '' && (option.dataset.tipo || '') !== 'Aula Regular') {
                                 const selected = asignacion.aulaId == option.value ? 'selected' : '';
                                 aulaOptions += `<option value="${option.value}" ${selected}>${option.text}</option>`;
                             }
                         }
+                    } else {
+                        // Materia regular: solo el aula fija de la sección, no todas las regulares
+                        const aulaFija = obtenerAulaRegularDeSeccion(asignacion.seccionId);
+                        if (aulaFija) {
+                            aulaOptions += `<option value="${aulaFija.id}" selected>${aulaFija.nombre}</option>`;
+                            // Auto-asignar de una vez ya que es la única opción válida
+                            asignacion.aulaId = aulaFija.id;
+                        } else {
+                            aulaOptions += `<option value="">Sin aula regular asignada a esta sección</option>`;
+                        }
                     }
                     aulaHtml = `
-                        <select class="aula-selector" id="aula-local-${key}" data-key="${key}" onchange="asignarAulaLocal(this)">
+                        <select class="pildora-selector" id="aula-local-${key}" data-key="${key}" onchange="asignarAulaLocal(this)" ${!esEspecializada ? 'disabled' : ''}>
                             ${aulaOptions}
                         </select>
                     `;
@@ -1595,14 +2135,11 @@
                 return `
                     <div class="assigned-docente" draggable="true">
                         <span class="docente-nombre">${asignacion.nombre}</span>
+                        <span class="docente-cedula">${asignacion.cedula || 'N/A'}</span>
                         <span class="docente-materia">${asignacion.area}</span>
-                        <div class="docente-badges">
-                            ${seccionHtml}
-                        </div>
-                        <div class="aula-selector-container">
-                            ${aulaHtml}
-                            <div class="aula-error-message"></div>
-                        </div>
+                        ${seccionHtml}
+                        ${aulaHtml}
+                        <div class="aula-error-message"></div>
                         <button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', event)">×</button>
                     </div>
                 `;
@@ -1713,7 +2250,7 @@
                 const aulaSelect = document.getElementById('aula');
                 for (let i = 0; i < aulaSelect.options.length; i++) {
                     const option = aulaSelect.options[i];
-                    if (option.dataset.tipo === 'regular' && option.dataset.seccion == seccionId) {
+                    if (option.dataset.tipo === 'Aula Regular' && option.dataset.seccion == seccionId) {
                         return { id: option.value, nombre: option.text };
                     }
                 }
@@ -1882,6 +2419,7 @@
                             id: docenteCard.dataset.id,
                             nombre: docenteCard.dataset.nombre,
                             area: docenteCard.dataset.area,
+                            cedula: docenteCard.dataset.cedula || 'N/A',
                             areas: docentesCache[docenteCard.dataset.id]?.areas || [],
                             secciones: docentesCache[docenteCard.dataset.id]?.secciones || []
                         };
@@ -2368,13 +2906,6 @@
                     errorContainer.classList.remove('visible');
                     mostrarNotificacion('Aula actualizada correctamente', 'success');
 
-                    // Actualizar el badge del aula en la celda
-                    const aulaBadge = selectElement.closest('.assigned-docente').querySelector('.aula-badge');
-                    if (aulaBadge) {
-                        const aulaOption = selectElement.options[selectElement.selectedIndex];
-                        aulaBadge.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${aulaOption.text}`;
-                    }
-
                 } catch (error) {
                     console.error('Error al actualizar aula:', error);
                     errorContainer.textContent = 'Error de conexión al servidor';
@@ -2437,16 +2968,15 @@
                     // Marcar docentes con conflicto en la sidebar
                     marcarDocentesConConflicto(data.conflictos);
 
-                    // Mostrar conflictos si existen usando notificaciones persistentes
+                    // Poblar panel de conflictos con información detallada
+                    poblarPanelConflictos(data.conflictos);
+
+                    // Mostrar panel de conflictos si existen
                     if (data.conflictos && data.conflictos.length > 0) {
-                        data.conflictos.forEach((conflicto, index) => {
-                            const mensaje = `${conflicto.docente_nombre || 'Docente desconocido'} - ${conflicto.materia_nombre || 'Materia desconocida'}: Sección ${conflicto.seccion_nombre || 'Sección desconocida'}, ${conflicto.bloques_pendientes || 'No especificado'} bloques pendientes`;
-                            mostrarNotificacionConflicto(mensaje, 'generacion-' + index + '-' + Date.now());
-                        });
+                        document.getElementById('conflictosPanel').classList.add('visible');
                         mostrarNotificacion(`Se detectaron ${data.conflictos.length} conflictos que requieren atención manual`, 'warning');
                     } else {
-                        // Limpiar notificaciones de generación anteriores
-                        document.querySelectorAll('[id^="conflicto-generacion-"]').forEach(el => el.remove());
+                        document.getElementById('conflictosPanel').classList.remove('visible');
                     }
 
                 } catch (error) {

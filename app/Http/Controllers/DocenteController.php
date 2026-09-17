@@ -38,20 +38,25 @@ class DocenteController extends Controller
                 $query->where('status', true);
             });
 
-        // Filtrar por grado si se proporciona
-        if ($gradoId) {
-            $query->whereHas('detalleDocenteEstudio.docenteAreaGrados', function ($query) use ($gradoId) {
-                $query->where('grado_id', $gradoId)
-                      ->where('status', true);
-            });
-        }
-
-        // Filtrar por área de formación si se proporciona
-        if ($areaFormacionId) {
-            $query->whereHas('detalleDocenteEstudio.docenteAreaGrados.areaEstudios', function ($query) use ($areaFormacionId) {
-                $query->where('area_formacion_id', $areaFormacionId);
-            });
-        }
+    // Filtrar por grado y área de formación (deben coincidir en la MISMA fila)
+    if ($gradoId && $areaFormacionId) {
+        $query->whereHas('detalleDocenteEstudio.docenteAreaGrados', function ($query) use ($gradoId, $areaFormacionId) {
+            $query->where('grado_id', $gradoId)
+                ->where('status', true)
+                ->whereHas('areaEstudios', function ($q) use ($areaFormacionId) {
+                    $q->where('area_formacion_id', $areaFormacionId);
+                });
+        });
+    } elseif ($gradoId) {
+        $query->whereHas('detalleDocenteEstudio.docenteAreaGrados', function ($query) use ($gradoId) {
+            $query->where('grado_id', $gradoId)
+                ->where('status', true);
+        });
+    } elseif ($areaFormacionId) {
+        $query->whereHas('detalleDocenteEstudio.docenteAreaGrados.areaEstudios', function ($query) use ($areaFormacionId) {
+            $query->where('area_formacion_id', $areaFormacionId);
+        });
+    }
 
         // Filtrar por sección si se proporciona
         if ($seccionId) {
@@ -96,6 +101,7 @@ class DocenteController extends Controller
             return [
                 'id' => $docente->id,
                 'nombre_completo' => $docente->nombre_completo,
+                'cedula' => $docente->persona ? $docente->persona->numero_documento : 'N/A',
                 'area' => !empty($areas) ? implode(', ', $areas) : 'Sin área asignada',
                 'areas' => $areas,
                 'secciones' => $secciones,
