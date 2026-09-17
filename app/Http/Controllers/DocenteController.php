@@ -69,7 +69,7 @@ class DocenteController extends Controller
         $docentes = $query->get();
 
         // Transformar los datos para incluir nombre completo, áreas y secciones
-        $resultado = $docentes->map(function ($docente) {
+        $resultado = $docentes->map(function ($docente) use ($gradoId, $areaFormacionId) {
             // Obtener áreas de formación del docente
         $areas = DB::table('docentes as d')
             ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
@@ -82,17 +82,28 @@ class DocenteController extends Controller
             ->where('af.status', true)
             ->distinct()
             ->pluck('af.nombre_area_formacion')
-            ->toArray();    
+            ->toArray();
 
             // Obtener secciones del docente
-        $secciones = DB::table('docentes as d')
+        $seccionesQuery = DB::table('docentes as d')
             ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
             ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
             ->join('seccions as s', 'dag.seccion_id', '=', 's.id')
             ->where('d.id', $docente->id)
             ->where('dde.status', true)
             ->where('dag.status', true)
-            ->where('s.status', true)
+            ->where('s.status', true);
+
+        if ($gradoId) {
+            $seccionesQuery->where('dag.grado_id', $gradoId);
+        }
+
+        if ($areaFormacionId) {
+            $seccionesQuery->join('area_estudio_realizados as aer', 'dag.area_estudio_realizado_id', '=', 'aer.id')
+                ->where('aer.area_formacion_id', $areaFormacionId);
+        }
+
+        $secciones = $seccionesQuery
             ->select('s.id', 's.nombre')
             ->distinct()
             ->get()
