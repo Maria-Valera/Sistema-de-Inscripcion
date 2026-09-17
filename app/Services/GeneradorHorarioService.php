@@ -216,10 +216,19 @@ Class GeneradorHorarioService
                 for ($dia = 1; $dia <= $totalDias && !$espacioEncontrado; $dia++) {
                     for ($bloque = 1; $bloque <= $totalBloques && !$espacioEncontrado; $bloque++) {
 
-                        // Validar límite de bloques por día para esta materia (usando contador global)
+                        // Validar límite de bloques por día para esta materia (usando array de bloques usados)
                         $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
-                        $bloquesHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? 0;
-                        if ($bloquesHoy >= $maxBloquesPorDia) continue;
+                        $bloquesUsadosHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? [];
+                        if (count($bloquesUsadosHoy) >= $maxBloquesPorDia) continue;
+
+                        // Si ya hay bloques asignados ese día, el nuevo bloque debe ser adyacente
+                        if (!empty($bloquesUsadosHoy)) {
+                            $minBloque = min($bloquesUsadosHoy);
+                            $maxBloque = max($bloquesUsadosHoy);
+                            if ($bloque !== $minBloque - 1 && $bloque !== $maxBloque + 1) {
+                                continue; // no es adyacente, no cumple continuidad, saltar
+                            }
+                        }
 
                         $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
                         $claveSeccion = $clase['seccion_id'] . '_' . $dia . '_' . $bloque;
@@ -262,8 +271,8 @@ Class GeneradorHorarioService
                             $matrices['aulaEspecialOcupada'][$aulaAsignada . '_' . $dia . '_' . $bloque] = true;
                         }
 
-                        // Incrementar contador global de bloques por día para esta materia
-                        $bloquesPorDiaGlobal[$claveGlobal] = ($bloquesPorDiaGlobal[$claveGlobal] ?? 0) + 1;
+                        // Agregar bloque al array global de bloques por día para esta materia
+                        $bloquesPorDiaGlobal[$claveGlobal][] = $bloque;
 
                         $bloquesAsignados++;
                         $espacioEncontrado = true;
@@ -305,10 +314,19 @@ Class GeneradorHorarioService
             for ($dia = 1; $dia <= $totalDias; $dia++) {
                 for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
 
-                    // Validar límite de bloques por día para esta materia (usando contador global)
+                    // Validar límite de bloques por día para esta materia (usando array de bloques usados)
                     $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
-                    $bloquesHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? 0;
-                    if ($bloquesHoy >= $maxBloquesPorDia) continue;
+                    $bloquesUsadosHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? [];
+                    if (count($bloquesUsadosHoy) >= $maxBloquesPorDia) continue;
+
+                    // Si ya hay bloques asignados ese día, el nuevo bloque debe ser adyacente
+                    if (!empty($bloquesUsadosHoy)) {
+                        $minBloque = min($bloquesUsadosHoy);
+                        $maxBloque = max($bloquesUsadosHoy);
+                        if ($bloque !== $minBloque - 1 && $bloque !== $maxBloque + 1) {
+                            continue; // no es adyacente, no cumple continuidad, saltar
+                        }
+                    }
 
                     $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
                     $claveSeccion = $clase['seccion_id'] . '_' . $dia . '_' . $bloque;
@@ -351,8 +369,8 @@ Class GeneradorHorarioService
                         $matrices['aulaEspecialOcupada'][$aulaAsignada . '_' . $dia . '_' . $bloque] = true;
                     }
 
-                    // Incrementar contador global de bloques por día para esta materia
-                    $bloquesPorDiaGlobal[$claveGlobal] = ($bloquesPorDiaGlobal[$claveGlobal] ?? 0) + 1;
+                    // Agregar bloque al array global de bloques por día para esta materia
+                    $bloquesPorDiaGlobal[$claveGlobal][] = $bloque;
 
                     return $asignacion;
                 }
@@ -792,22 +810,22 @@ Class GeneradorHorarioService
             
             for ($dia = 1; $dia <= $totalDias; $dia++) {
                 $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
-                $bloquesHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? 0;
-                
+                $bloquesHoy = count($bloquesPorDiaGlobal[$claveGlobal] ?? []);
+
                 for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
                     $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
                     $claveSeccion = $seccionId . '_' . $dia . '_' . $bloque;
-                    
+
                     // Verificar si el espacio está libre para el docente
                     if (!isset($matrices['docenteOcupado'][$claveDocente])) {
                         $espaciosLibresDocente++;
                     }
-                    
+
                     // Verificar si el espacio está libre para la sección
                     if (!isset($matrices['seccionOcupado'][$claveSeccion])) {
                         $espaciosLibresSeccion++;
                     }
-                    
+
                     // Verificar si el espacio respeta el límite por día
                     if ($bloquesHoy < $maxBloquesPorDia) {
                         $espaciosLibresPorLimiteDia++;
@@ -929,29 +947,39 @@ Class GeneradorHorarioService
             
             for ($dia = 1; $dia <= $totalDias; $dia++) {
                 $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
-                $bloquesHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? 0;
-                
+                $bloquesHoy = count($bloquesPorDiaGlobal[$claveGlobal] ?? []);
+
                 for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
                     $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
                     $claveSeccion = $seccionId . '_' . $dia . '_' . $bloque;
-                    
+
                     $razones = [];
-                    
+
                     // Verificar disponibilidad docente
                     if (isset($matrices['docenteOcupado'][$claveDocente])) {
                         $razones[] = 'docente ocupado';
                     }
-                    
+
                     // Verificar disponibilidad sección
                     if (isset($matrices['seccionOcupado'][$claveSeccion])) {
                         $razones[] = 'sección ocupada';
                     }
-                    
+
                     // Verificar límite por día
                     if ($bloquesHoy >= $maxBloquesPorDia) {
                         $razones[] = 'límite diario alcanzado';
                     }
-                    
+
+                    // Verificar continuidad de bloques
+                    $bloquesUsadosHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? [];
+                    if (!empty($bloquesUsadosHoy)) {
+                        $minBloque = min($bloquesUsadosHoy);
+                        $maxBloque = max($bloquesUsadosHoy);
+                        if ($bloque !== $minBloque - 1 && $bloque !== $maxBloque + 1) {
+                            $razones[] = 'no cumple continuidad (no es adyacente)';
+                        }
+                    }
+
                     // Verificar disponibilidad de aula
                     if ($esEspecializada) {
                         $aulaLibre = $this->buscarAulaEspecialLibre(
