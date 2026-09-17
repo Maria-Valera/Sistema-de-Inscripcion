@@ -1775,6 +1775,14 @@
 
             // Volver al Paso 1
             btnVolverPaso1.addEventListener('click', function() {
+                horarioAsignaciones = {};
+                modoSeleccionActivo = false;
+                asignacionesSeleccionadas.clear();
+                actualizarBarraFlotante();
+                btnModoSeleccion.classList.remove('activo');
+                document.querySelectorAll('.drop-zone').forEach(dz => {
+                    dz.classList.remove('modo-seleccion', 'seleccionado');
+                });
                 vistaCalendario.style.display = 'none';
                 seccionNivel.style.display = 'block';
                 actualizarContexto();
@@ -2322,6 +2330,13 @@
                 if (vistaCalendario.style.display !== 'none') {
                     // Limpiar asignaciones locales
                     horarioAsignaciones = {};
+                    modoSeleccionActivo = false;
+                    asignacionesSeleccionadas.clear();
+                    actualizarBarraFlotante();
+                    btnModoSeleccion.classList.remove('activo');
+                    document.querySelectorAll('.drop-zone').forEach(dz => {
+                        dz.classList.remove('modo-seleccion', 'seleccionado');
+                    });
                     // Recargar datos con el nuevo filtro
                     cargarDatosAPI();
                 }
@@ -2355,6 +2370,14 @@
             // Filtrar docentes por sección
             const seccionSelect = document.getElementById('seccion');
             seccionSelect.addEventListener('change', function() {
+                horarioAsignaciones = {};
+                modoSeleccionActivo = false;
+                asignacionesSeleccionadas.clear();
+                actualizarBarraFlotante();
+                btnModoSeleccion.classList.remove('activo');
+                document.querySelectorAll('.drop-zone').forEach(dz => {
+                    dz.classList.remove('modo-seleccion', 'seleccionado');
+                });
                 const nivel = nivelSelect.value;
                 cargarDocentesAPI(nivel);
                 filtrarAulasPorSeccion();
