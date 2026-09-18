@@ -50,10 +50,11 @@ Class GeneradorHorarioService
                 'docente_id' => $docente?->id,
                 'docente_nombre' => trim($docente?->persona?->primer_nombre . ' ' . $docente?->persona?->primer_apellido),
                 'docente_horas_academicas' => $docente?->horas_academicas ?? 36,
-                 'area_id' => $area?->areaFormacion?->id, 
+                 'area_id' => $area?->areaFormacion?->id,
                 'area_nombre' => $area?->areaFormacion?->nombre_area_formacion,
                 'area_bloque' => $area?->areaFormacion?->horas_semanales,
                 'bloques_max_dia' => $area?->areaFormacion?->bloques_maximos_por_dia ?? 2,
+                'dias_max_semana' => $area?->areaFormacion?->dias_max_semana ?? 3,
                 'area_aula' => $area?->areaFormacion?->aula,
                 'grado_id' => $grado?->id,
                 'grado_nombre' => $grado?->numero_grado,
@@ -300,6 +301,16 @@ Class GeneradorHorarioService
         {
             $docenteId = $clase['docente_id'];
             $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
+            $diasMaxSemana = $clase['dias_max_semana'] ?? 3;
+
+            // Contar días ya usados para esta materia+sección
+            $diasUsados = 0;
+            for ($d = 1; $d <= $totalDias; $d++) {
+                $claveDiaCheck = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $d;
+                if (!empty($bloquesPorDiaGlobal[$claveDiaCheck])) {
+                    $diasUsados++;
+                }
+            }
 
             // Inicializar contador de bloques para este docente si no existe
             if (!isset($matrices['bloquesPorDocente'][$docenteId])) {
@@ -317,6 +328,12 @@ Class GeneradorHorarioService
                     // Validar límite de bloques por día para esta materia (usando array de bloques usados)
                     $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
                     $bloquesUsadosHoy = $bloquesPorDiaGlobal[$claveGlobal] ?? [];
+
+                    // Si este día todavía no se usó para esta materia+sección, y ya se alcanzó el máximo de días permitidos, no abrir un día nuevo
+                    if (empty($bloquesUsadosHoy) && $diasUsados >= $diasMaxSemana) {
+                        continue;
+                    }
+
                     if (count($bloquesUsadosHoy) >= $maxBloquesPorDia) continue;
 
                     // Si ya hay bloques asignados ese día, el nuevo bloque debe ser adyacente
@@ -800,17 +817,29 @@ Class GeneradorHorarioService
             $aulaFijaMateria = $clase['area_aula'] ?? null;
             $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
             $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
-            
+            $diasMaxSemana = $clase['dias_max_semana'] ?? 3;
+
+            // Contar días ya usados para esta materia+sección
+            $diasUsados = 0;
+            for ($d = 1; $d <= $totalDias; $d++) {
+                $claveDiaCheck = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $d;
+                if (!empty($bloquesPorDiaGlobal[$claveDiaCheck])) {
+                    $diasUsados++;
+                }
+            }
+
             // Contar espacios libres por tipo de restricción
             $espaciosLibresDocente = 0;
             $espaciosLibresSeccion = 0;
             $espaciosLibresAulaEspecial = 0;
             $espaciosLibresAulaRegular = 0;
             $espaciosLibresPorLimiteDia = 0;
+            $espaciosLibresPorLimiteDiasSemana = 0;
             
             for ($dia = 1; $dia <= $totalDias; $dia++) {
                 $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
                 $bloquesHoy = count($bloquesPorDiaGlobal[$claveGlobal] ?? []);
+                $diaYaUsado = !empty($bloquesPorDiaGlobal[$claveGlobal]);
 
                 for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
                     $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
@@ -829,6 +858,11 @@ Class GeneradorHorarioService
                     // Verificar si el espacio respeta el límite por día
                     if ($bloquesHoy < $maxBloquesPorDia) {
                         $espaciosLibresPorLimiteDia++;
+                    }
+
+                    // Verificar si el espacio respeta el límite de días por semana
+                    if (!$diaYaUsado || $diasUsados < $diasMaxSemana) {
+                        $espaciosLibresPorLimiteDiasSemana++;
                     }
                     
                     // Verificar disponibilidad de aulas
@@ -879,6 +913,18 @@ Class GeneradorHorarioService
                     'sugerencias' => [
                         'Aumentar el límite de bloques por día para esta materia',
                         'Distribuir la materia en más días diferentes'
+                    ]
+                ];
+            }
+
+            if ($espaciosLibresPorLimiteDiasSemana === 0) {
+                return [
+                    'tipo' => 'limite_dias_semana',
+                    'motivo' => 'La materia excede el límite de días por semana (' . $diasMaxSemana . ' días)',
+                    'sugerencias' => [
+                        'Aumentar el límite de días por semana para esta materia',
+                        'Reducir la frecuencia de esta materia',
+                        'Revisar la distribución de bloques en días ya asignados'
                     ]
                 ];
             }
@@ -934,6 +980,16 @@ Class GeneradorHorarioService
             $aulaFijaMateria = $clase['area_aula'] ?? null;
             $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
             $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
+            $diasMaxSemana = $clase['dias_max_semana'] ?? 3;
+
+            // Contar días ya usados para esta materia+sección
+            $diasUsados = 0;
+            for ($d = 1; $d <= $totalDias; $d++) {
+                $claveDiaCheck = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $d;
+                if (!empty($bloquesPorDiaGlobal[$claveDiaCheck])) {
+                    $diasUsados++;
+                }
+            }
             
             $diasSemana = [
                 1 => 'Lunes',
@@ -948,6 +1004,7 @@ Class GeneradorHorarioService
             for ($dia = 1; $dia <= $totalDias; $dia++) {
                 $claveGlobal = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
                 $bloquesHoy = count($bloquesPorDiaGlobal[$claveGlobal] ?? []);
+                $diaYaUsado = !empty($bloquesPorDiaGlobal[$claveGlobal]);
 
                 for ($bloque = 1; $bloque <= $totalBloques; $bloque++) {
                     $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
@@ -968,6 +1025,11 @@ Class GeneradorHorarioService
                     // Verificar límite por día
                     if ($bloquesHoy >= $maxBloquesPorDia) {
                         $razones[] = 'límite diario alcanzado';
+                    }
+
+                    // Verificar límite de días por semana
+                    if (!$diaYaUsado && $diasUsados >= $diasMaxSemana) {
+                        $razones[] = 'límite de días semanales alcanzado';
                     }
 
                     // Verificar continuidad de bloques
