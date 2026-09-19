@@ -109,7 +109,15 @@
             text-shadow: 0 0 2px rgba(0,0,0,0.6);
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
 @stop
+
+
+
+
+
+
 
 @section('content_header')
     <div class="content-header-modern">
@@ -191,6 +199,7 @@
                         <i class="fas fa-calendar-alt mr-1"></i> Calendario
                     </a>
                 </li>
+
             </ul>
 
             <div class="tab-content">
@@ -307,68 +316,138 @@
 
     </div>
 </div>
+
+
+
+
             </div>
         </div>
     </div>
 
-    {{-- Modal de detalle del día: eventos del PDF (confirmar) + eventos manuales (editar/eliminar) --}}
+
+
+{{-- ===================== Modal: detalle del día ===================== --}}
 <div class="modal fade" id="modal-dia" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-capitalize" id="modal-dia-titulo"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
+        <div class="modal-content modal-modern">
+
+            <div class="modal-header-edit">
+                <div class="modal-icon-edit">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <h5 class="modal-title-edit text-capitalize" id="modal-dia-titulo"></h5>
+                <button type="button" class="btn-close-modal" data-dismiss="modal" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body" id="modal-dia-cuerpo"></div>
-            <div class="modal-footer justify-content-between">
-                <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-desde-modal">
-                    <i class="fas fa-plus"></i> Agregar evento este día
-                </button>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+
+            <div class="modal-body-edit" id="modal-dia-cuerpo"></div>
+
+            <div class="modal-footer-edit">
+                <div class="footer-buttons w-100 d-flex justify-content-between">
+                    <button type="button" class="btn-modal-cancel" id="btn-agregar-desde-modal">
+                        <i class="fas fa-plus"></i> Agregar evento este día
+                    </button>
+                    <button type="button" class="btn-modal-cancel" data-dismiss="modal">Cerrar</button>
+                </div>
             </div>
+
         </div>
     </div>
 </div>
 
-{{-- Modal de formulario: crear / editar evento manual --}}
+{{-- ===================== Modal: crear / editar evento manual ===================== --}}
 <div class="modal fade" id="modal-evento-form" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modal-evento-form-titulo">Nuevo evento</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
+        <div class="modal-content modal-modern">
+
+            {{-- El encabezado cambia de "crear" (verde) a "editar" (azul) según el modo,
+                 alternando estas dos clases desde JS — ver nota más abajo. --}}
+            <div class="modal-header-create" id="modal-evento-form-header">
+                <div class="modal-icon-create" id="modal-evento-form-icon">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <h5 class="modal-title-create" id="modal-evento-form-titulo">Nuevo evento</h5>
+                <button type="button" class="btn-close-modal" data-dismiss="modal" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-danger d-none" id="evento-form-error"></div>
 
-                <div class="form-group">
-                    <label>Nombre del evento</label>
-                    <input type="text" class="form-control" id="evento-nombre" maxlength="255">
+            <div class="modal-body-create">
+                <div class="alert-modern alert-danger d-none" id="evento-form-error">
+                    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="alert-content"><p class="mb-0"></p></div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label>Fecha de inicio</label>
-                        <input type="date" class="form-control" id="evento-fecha-inicio">
+                <div class="form-group-modern">
+                    <label for="evento-nombre" class="form-label-modern">
+                        <i class="fas fa-heading"></i> Nombre del evento
+                    </label>
+                    <input type="text" class="form-control-modern" id="evento-nombre" maxlength="255"
+                           placeholder="Ej: Semana Santa (Lu-Do)" autocomplete="off">
+
+                    <div class="error-message" id="error-evento-nombre-vacio">
+                        <i class="fas fa-exclamation-circle"></i>
+                        El nombre del evento es obligatorio.
                     </div>
-                    <div class="form-group col-md-6" id="grupo-fecha-fin">
-                        <label>Fecha de fin</label>
-                        <input type="date" class="form-control" id="evento-fecha-fin">
+                    <div class="error-message" id="error-evento-nombre-formato">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Solo se permiten letras, números, espacios, paréntesis, comas y barras (/).
+                    </div>
+                    <div class="error-message" id="ok-evento-nombre" style="background: var(--soft-success-bg); color: var(--soft-success-text); display:none;">
+                        <i class="fas fa-check-circle"></i>
+                        Nombre válido.
                     </div>
                 </div>
-                <div class="form-group">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label for="evento-fecha-inicio" class="form-label-modern">
+                                <i class="fas fa-calendar"></i> Fecha de inicio
+                            </label>
+                            <input type="date" class="form-control-modern" id="evento-fecha-inicio">
+
+                            <div class="error-message" id="error-evento-fecha-inicio-vacia">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Debes indicar la fecha de inicio.
+                            </div>
+                            <div class="error-message" id="error-evento-fecha-inicio-rango">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Debe estar dentro del año escolar.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group-modern" id="grupo-fecha-fin">
+                            <label for="evento-fecha-fin" class="form-label-modern">
+                                <i class="fas fa-calendar-check"></i> Fecha de fin
+                            </label>
+                            <input type="date" class="form-control-modern" id="evento-fecha-fin">
+
+                            <div class="error-message" id="error-evento-fecha-fin-vacia">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Debes indicar la fecha de fin.
+                            </div>
+                            <div class="error-message" id="error-evento-fecha-fin-rango">
+                                <i class="fas fa-exclamation-circle"></i>
+                                Debe ser igual o posterior a la fecha de inicio, y dentro del año escolar.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-modern">
                     <div class="custom-control custom-checkbox">
                         <input type="checkbox" class="custom-control-input" id="evento-es-rango">
                         <label class="custom-control-label" for="evento-es-rango">Es un rango de varios días</label>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="d-block">¿Es efeméride?</label>
+                <div class="form-group-modern">
+                    <label class="form-label-modern d-block">
+                        <i class="fas fa-landmark"></i> ¿Es efeméride?
+                    </label>
                     <div class="custom-control custom-radio custom-control-inline">
                         <input type="radio" class="custom-control-input" name="evento-efemeride" id="evento-efemeride-si" value="1">
                         <label class="custom-control-label" for="evento-efemeride-si">Sí</label>
@@ -377,11 +456,16 @@
                         <input type="radio" class="custom-control-input" name="evento-efemeride" id="evento-efemeride-no" value="0" checked>
                         <label class="custom-control-label" for="evento-efemeride-no">No</label>
                     </div>
-                    <small class="form-text text-muted">Ej: 24 de junio (Carabobo) es efeméride y no laborable. 17 de diciembre (muerte de Bolívar) es efeméride pero laborable.</small>
+                    <small class="form-text text-muted">
+                        Ej: 24 de junio (Carabobo) es efeméride y no laborable. 17 de diciembre
+                        (muerte de Bolívar) es efeméride pero laborable.
+                    </small>
                 </div>
 
-                <div class="form-group">
-                    <label class="d-block">Tipo de día</label>
+                <div class="form-group-modern">
+                    <label class="form-label-modern d-block">
+                        <i class="fas fa-briefcase"></i> Tipo de día
+                    </label>
                     <div class="custom-control custom-radio custom-control-inline">
                         <input type="radio" class="custom-control-input" name="evento-tipo" id="evento-tipo-laborable" value="0" checked>
                         <label class="custom-control-label" for="evento-tipo-laborable">Laborable</label>
@@ -392,8 +476,10 @@
                     </div>
                 </div>
 
-                <div class="form-group d-none" id="grupo-aplica-a">
-                    <label class="d-block">Aplica a</label>
+                <div class="form-group-modern d-none" id="grupo-aplica-a">
+                    <label class="form-label-modern d-block">
+                        <i class="fas fa-users"></i> Aplica a
+                    </label>
                     <div class="custom-control custom-radio custom-control-inline">
                         <input type="radio" class="custom-control-input" name="evento-aplica-a" id="aplica-ambos" value="ambos" checked>
                         <label class="custom-control-label" for="aplica-ambos">Ambos</label>
@@ -408,16 +494,57 @@
                     </div>
                 </div>
 
-                <div class="form-group" id="grupo-color">
-                    <label class="d-block">Color</label>
+                <div class="form-group-modern" id="grupo-color">
+                    <label class="form-label-modern d-block">
+                        <i class="fas fa-palette"></i> Color
+                    </label>
                     <div id="selector-colores" class="selector-colores"></div>
                     <input type="hidden" id="evento-color" value="gris">
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btn-guardar-evento">Guardar</button>
+
+            <div class="modal-footer-create">
+                <div class="footer-buttons">
+                    <button type="button" class="btn-modal-cancel" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-modal-create" id="btn-guardar-evento">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </div>
             </div>
+
+        </div>
+    </div>
+</div>
+
+{{-- ===================== Modal: confirmar eliminación de evento manual ===================== --}}
+<div class="modal fade" id="modal-eliminar-evento" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-modern">
+
+            <div class="modal-header-delete">
+                <div class="modal-icon-delete">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h5 class="modal-title-delete">Confirmar eliminación</h5>
+                <button type="button" class="btn-close-modal" data-dismiss="modal" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body-delete">
+                <p>¿Deseas eliminar el evento <strong id="eliminar-evento-nombre"></strong>?</p>
+                <p class="delete-warning">Esta acción no se puede deshacer.</p>
+            </div>
+
+            <div class="modal-footer-delete">
+                <div class="footer-buttons">
+                    <button type="button" class="btn-modal-cancel" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-modal-delete" id="btn-confirmar-eliminar-evento">
+                        <i class="fas fa-trash-alt"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -564,20 +691,26 @@
                 accion.className = 'fila-evento-accion';
 
                 if (evento.esManual) {
+                    const acciones = document.createElement('div');
+                    acciones.className = 'action-buttons';
+
                     const btnEditar = document.createElement('button');
                     btnEditar.type = 'button';
-                    btnEditar.className = 'btn btn-sm btn-outline-primary';
-                    btnEditar.textContent = 'Editar';
+                    btnEditar.className = 'action-btn btn-edit';
+                    btnEditar.title = 'Editar';
+                    btnEditar.innerHTML = '<i class="fas fa-pen"></i>';
                     btnEditar.addEventListener('click', () => abrirModalEditarEvento(evento));
 
                     const btnEliminar = document.createElement('button');
                     btnEliminar.type = 'button';
-                    btnEliminar.className = 'btn btn-sm btn-outline-danger';
-                    btnEliminar.textContent = 'Eliminar';
-                    btnEliminar.addEventListener('click', () => eliminarEvento(evento.id));
+                    btnEliminar.className = 'action-btn btn-delete';
+                    btnEliminar.title = 'Eliminar';
+                    btnEliminar.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                    btnEliminar.addEventListener('click', () => abrirModalEliminarEvento(evento));
 
-                    accion.appendChild(btnEditar);
-                    accion.appendChild(btnEliminar);
+                    acciones.appendChild(btnEditar);
+                    acciones.appendChild(btnEliminar);
+                    accion.appendChild(acciones);
                 } else {
                     const boton = document.createElement('button');
                     boton.type = 'button';
@@ -657,6 +790,7 @@
 
         function limpiarFormularioEvento() {
             document.getElementById('evento-form-error').classList.add('d-none');
+            limpiarValidacionEvento();
             document.getElementById('evento-nombre').value = '';
             document.getElementById('evento-fecha-inicio').value = '';
             document.getElementById('evento-fecha-fin').value = '';
@@ -671,14 +805,106 @@
             actualizarVisibilidadFormulario();
 
             // El rango solo tiene sentido al crear, no al editar un día puntual.
-            document.getElementById('evento-es-rango').closest('.form-group').style.display =
+            document.getElementById('evento-es-rango').closest('.form-group-modern').style.display =
                 modoFormulario === 'crear' ? '' : 'none';
+        }
+
+        // ===== Validación en tiempo real =====
+        // Mismas reglas que el servidor (regex de nombre, límites del año
+        // escolar) para que nunca queden desincronizadas. El servidor sigue
+        // siendo la autoridad final — esto es solo retroalimentación inmediata.
+
+        const PATRON_NOMBRE = /^[\p{L}\p{N}\s(),/]+$/u;
+
+        function mostrarError(idError, mostrar) {
+            document.getElementById(idError).style.display = mostrar ? 'flex' : 'none';
+        }
+
+        function validarNombre() {
+            const valor = document.getElementById('evento-nombre').value.trim();
+            const vacio = valor.length === 0;
+            const formatoInvalido = !vacio && !PATRON_NOMBRE.test(valor);
+
+            mostrarError('error-evento-nombre-vacio', vacio);
+            mostrarError('error-evento-nombre-formato', formatoInvalido);
+            mostrarError('ok-evento-nombre', !vacio && !formatoInvalido);
+
+            return !vacio && !formatoInvalido;
+        }
+
+        function validarFechaInicio() {
+            const valor = document.getElementById('evento-fecha-inicio').value;
+            const vacia = valor === '';
+            const fueraDeRango = !vacia && (valor < INICIO_ANIO_ESCOLAR || valor > CIERRE_ANIO_ESCOLAR);
+
+            mostrarError('error-evento-fecha-inicio-vacia', vacia);
+            mostrarError('error-evento-fecha-inicio-rango', fueraDeRango);
+
+            // Si la fecha de inicio cambia, la fecha de fin puede haber
+            // quedado inválida respecto a la nueva fecha de inicio.
+            if (document.getElementById('evento-es-rango').checked) validarFechaFin();
+
+            return !vacia && !fueraDeRango;
+        }
+
+        function validarFechaFin() {
+            const esRango = document.getElementById('evento-es-rango').checked;
+            if (!esRango || modoFormulario === 'editar') {
+                mostrarError('error-evento-fecha-fin-vacia', false);
+                mostrarError('error-evento-fecha-fin-rango', false);
+                return true;
+            }
+
+            const inicio = document.getElementById('evento-fecha-inicio').value;
+            const fin = document.getElementById('evento-fecha-fin').value;
+            const vacia = fin === '';
+            const invalida = !vacia && (fin < inicio || fin > CIERRE_ANIO_ESCOLAR);
+
+            mostrarError('error-evento-fecha-fin-vacia', vacia);
+            mostrarError('error-evento-fecha-fin-rango', invalida);
+
+            return !vacia && !invalida;
+        }
+
+        function validarFormularioEvento() {
+            const nombreOk = validarNombre();
+            const inicioOk = validarFechaInicio();
+            const finOk = validarFechaFin();
+            const esValido = nombreOk && inicioOk && finOk;
+
+            document.getElementById('btn-guardar-evento').disabled = !esValido;
+            return esValido;
+        }
+
+        document.getElementById('evento-nombre').addEventListener('input', validarFormularioEvento);
+        document.getElementById('evento-fecha-inicio').addEventListener('input', validarFormularioEvento);
+        document.getElementById('evento-fecha-fin').addEventListener('input', validarFormularioEvento);
+        document.getElementById('evento-es-rango').addEventListener('change', validarFormularioEvento);
+
+        function limpiarValidacionEvento() {
+            ['error-evento-nombre-vacio', 'error-evento-nombre-formato', 'ok-evento-nombre',
+             'error-evento-fecha-inicio-vacia', 'error-evento-fecha-inicio-rango',
+             'error-evento-fecha-fin-vacia', 'error-evento-fecha-fin-rango'].forEach(id => mostrarError(id, false));
+            document.getElementById('btn-guardar-evento').disabled = false;
+        }
+
+        function aplicarEstiloEncabezadoFormulario(modo) {
+            const header = document.getElementById('modal-evento-form-header');
+            const icono = document.getElementById('modal-evento-form-icon');
+
+            header.classList.remove('modal-header-create', 'modal-header-edit');
+            header.classList.add(modo === 'crear' ? 'modal-header-create' : 'modal-header-edit');
+
+            icono.classList.remove('modal-icon-create', 'modal-icon-edit');
+            icono.classList.add(modo === 'crear' ? 'modal-icon-create' : 'modal-icon-edit');
+            icono.innerHTML = modo === 'crear' ? '<i class="fas fa-calendar-plus"></i>' : '<i class="fas fa-pen"></i>';
         }
 
         function abrirModalNuevoEvento(fechaPreseleccionada) {
             modoFormulario = 'crear';
             idEventoEnEdicion = null;
             limpiarFormularioEvento();
+            aplicarEstiloEncabezadoFormulario('crear');
             document.getElementById('modal-evento-form-titulo').textContent = 'Nuevo evento';
             document.getElementById('evento-fecha-inicio').value = fechaPreseleccionada || HOY;
             $('#modal-dia').modal('hide');
@@ -689,6 +915,7 @@
             modoFormulario = 'editar';
             idEventoEnEdicion = evento.id;
             limpiarFormularioEvento();
+            aplicarEstiloEncabezadoFormulario('editar');
             document.getElementById('modal-evento-form-titulo').textContent = 'Editar evento';
             document.getElementById('evento-nombre').value = evento.texto;
             document.getElementById('evento-fecha-inicio').value = evento.fecha;
@@ -704,6 +931,8 @@
         document.getElementById('btn-agregar-desde-modal').addEventListener('click', () => abrirModalNuevoEvento(fechaDelModalActual));
 
         document.getElementById('btn-guardar-evento').addEventListener('click', function () {
+            if (!validarFormularioEvento()) return;
+
             const boton = this;
             const errorBox = document.getElementById('evento-form-error');
             errorBox.classList.add('d-none');
@@ -750,27 +979,41 @@
                     const mensajes = errores.errors
                         ? Object.values(errores.errors).flat().join(' ')
                         : (errores.message || 'Ocurrió un error al guardar.');
-                    errorBox.textContent = mensajes;
+                    errorBox.querySelector('p').textContent = mensajes;
                     errorBox.classList.remove('d-none');
                 });
         });
 
-        function eliminarEvento(id) {
-            if (!confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')) return;
+        let idEventoAEliminar = null;
 
-            fetch(`${URL_BASE}/eventos/${id}`, {
+        function abrirModalEliminarEvento(evento) {
+            idEventoAEliminar = evento.id;
+            document.getElementById('eliminar-evento-nombre').textContent = evento.texto;
+            $('#modal-dia').modal('hide');
+            $('#modal-eliminar-evento').modal('show');
+        }
+
+        document.getElementById('btn-confirmar-eliminar-evento').addEventListener('click', function () {
+            const boton = this;
+            boton.disabled = true;
+
+            fetch(`${URL_BASE}/eventos/${idEventoAEliminar}`, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
             })
                 .then(r => { if (!r.ok) throw new Error(); return r.json(); })
                 .then(() => {
-                    const indice = DIAS.findIndex(d => d.id === id);
+                    const indice = DIAS.findIndex(d => d.id === idEventoAEliminar);
                     if (indice !== -1) DIAS.splice(indice, 1);
-                    $('#modal-dia').modal('hide');
+                    boton.disabled = false;
+                    $('#modal-eliminar-evento').modal('hide');
                     renderizarCalendario();
                 })
-                .catch(() => alert('No se pudo eliminar el evento.'));
-        }
+                .catch(() => {
+                    boton.disabled = false;
+                    alert('No se pudo eliminar el evento.');
+                });
+        });
 
         // ===== Navegación de mes y cierre de modales =====
 

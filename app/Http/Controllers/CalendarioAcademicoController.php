@@ -291,60 +291,139 @@ class CalendarioAcademicoController extends Controller
 
     // validaciones de crear y editar evento manual
 
-    private function validarDatosEvento(Request $request, CalendarioAcademico $calendarioAcademico, bool $esEdicionDeUnSoloDia = false) : array{
+    // private function validarDatosEvento(Request $request, CalendarioAcademico $calendarioAcademico, bool $esEdicionDeUnSoloDia = false) : array{
+    //     $anioEscolar = $calendarioAcademico->anioEscolar;
+
+    //     $reglas = [
+    //         // letras con tildes, numeros, espacios ,parentesis, comas y barras
+    //         'nombre' => ['required','string','max:255','regex:/^[\p{L}\p{N}\s\(\),\/]+$/u'],
+    //         'fecha_inicio' => [
+    //             'required',
+    //             'date',
+    //             'after_or_equal:' . $anioEscolar->inicio_anio_escolar->toDateString(),
+    //             'before_or_equal:' . $anioEscolar->cierre_anio_escolar->toDateString(),
+    //         ],
+    //         'es_no_laborable' => ['required','boolean'],
+    //         'es_efemeride' => ['required','boolean'],
+    //         'aplica_a' => ['required_if:es_no_laborable,true', 'nullable', 'in:estudiantes,docentes,ambos'],
+    //         'color' => ['nullable', \Illuminate\Validation\Rule::in(
+    //             array_map(fn ($c) => $c->value, \App\Enums\ColorEvento::seleccionables())
+    //         )],
+    //     ];
+
+    //     // el rango de fechas solo aplica a crear; al editar, se edita un unico
+    //     // dia puntual (ver el docblock de eventoUpdate)
+
+    //     if(! $esEdicionDeUnSoloDia){
+    //         $reglas['fecha_fin'] = ['nullable', 'date','after_or_equal:fecha_inicio',
+    //         'before_or_equal:' . $anioEscolar->cierre_anio_escolar->toDateString()];
+
+    //     }
+
+    //     $validado = $request->validate($reglas);
+
+    //     $esNoLaborable =(bool) $validado['es_no_laborable'];
+    //     $esEfemeride = (bool) $validado['es_efemeride'];
+    //     $aplicaA = $validado['aplica_a'] ?? null;
+
+    //     $aplicaPersonal = ! $esNoLaborable || in_array($aplicaA, ['docentes', 'ambos'],true);
+    //     $aplicaEstudiantes = ! $esNoLaborable || in_array($aplicaA,['estudiantes','ambos'],true);
+
+    //     $colorElegido = isset($validado['color'])
+    //     ? \App\Enums\ColorEvento::from($validado['color'])
+    //     :null ;
+
+    //     return [
+    //         'nombre' => $validado['nombre'],
+    //         'fecha_inicio' => $validado['fecha_inicio'],
+    //         'fecha_fin' => $validado['fecha_fin']  ?? $validado['fecha_inicio'],
+    //         'categoria' => $esNoLaborable ? \App\Enums\CategoriaDia::NoLaborable : \App\Enums\CategoriaDia::Laborable,
+    //         'aplica_personal' => $aplicaPersonal,
+    //         'aplica_estudiantes' => $aplicaEstudiantes,
+    //         'es_efemeride' => $esEfemeride,
+    //         'color' => CalendarioDia::determinarColor($esNoLaborable,$aplicaPersonal,$aplicaEstudiantes,$esEfemeride,$colorElegido),
+    //     ];
+
+
+    // }
+
+    private function validarDatosEvento(Request $request, CalendarioAcademico $calendarioAcademico, bool $esEdicionDeUnSoloDia = false): array
+    {
         $anioEscolar = $calendarioAcademico->anioEscolar;
 
         $reglas = [
-            // letras con tildes, numeros, espacios ,parentesis, comas y barras
-            'nombre' => ['required','string','max:255','regex:/^[\p{L}\p{N}\s\(\),\/]+$/u'],
+            // Letras (con tildes), números, espacios, paréntesis, comas y barras.
+            'nombre' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\p{N}\s\(\),\/]+$/u'],
             'fecha_inicio' => [
-                'required',
-                'date',
+                'required', 'date',
                 'after_or_equal:' . $anioEscolar->inicio_anio_escolar->toDateString(),
                 'before_or_equal:' . $anioEscolar->cierre_anio_escolar->toDateString(),
             ],
-            'es_no_laborable' => ['required','boolean'],
-            'es_efemeride' => ['required','boolean'],
+            'es_no_laborable' => ['required', 'boolean'],
+            'es_efemeride' => ['required', 'boolean'],
             'aplica_a' => ['required_if:es_no_laborable,true', 'nullable', 'in:estudiantes,docentes,ambos'],
             'color' => ['nullable', \Illuminate\Validation\Rule::in(
                 array_map(fn ($c) => $c->value, \App\Enums\ColorEvento::seleccionables())
             )],
         ];
 
-        // el rango de fechas solo aplica a crear; al editar, se edita un unico
-        // dia puntual (ver el docblock de eventoUpdate)
-
-        if(! $esEdicionDeUnSoloDia){
-            $reglas['fecha_fin'] = ['nullable', 'date','after_or_equal:fecha_inicio',
-            'before_or_equal:' . $anioEscolar->cierre_anio_escolar->toDateString()];
-
+        // El rango de fechas solo aplica al crear; al editar, se edita un
+        // único día puntual (ver el docblock de eventoUpdate).
+        if (! $esEdicionDeUnSoloDia) {
+            $reglas['fecha_fin'] = ['nullable', 'date', 'after_or_equal:fecha_inicio',
+                'before_or_equal:' . $anioEscolar->cierre_anio_escolar->toDateString()];
         }
 
-        $validado = $request->validate($reglas);
+        $mensajes = [
+            'nombre.required' => 'El nombre del evento es obligatorio.',
+            'nombre.string' => 'El nombre del evento no es válido.',
+            'nombre.max' => 'El nombre del evento no puede tener más de 255 caracteres.',
+            'nombre.regex' => 'El nombre solo puede tener letras, números, espacios, paréntesis, comas y barras (/).',
 
-        $esNoLaborable =(bool) $validado['es_no_laborable'];
+            'fecha_inicio.required' => 'Debes indicar la fecha de inicio del evento.',
+            'fecha_inicio.date' => 'La fecha de inicio no es una fecha válida.',
+            'fecha_inicio.after_or_equal' => 'La fecha de inicio no puede ser anterior al inicio del año escolar (:date).',
+            'fecha_inicio.before_or_equal' => 'La fecha de inicio no puede ser posterior al cierre del año escolar (:date).',
+
+            'fecha_fin.date' => 'La fecha de fin no es una fecha válida.',
+            'fecha_fin.after_or_equal' => 'La fecha de fin no puede ser anterior a la fecha de inicio.',
+            'fecha_fin.before_or_equal' => 'La fecha de fin no puede ser posterior al cierre del año escolar (:date).',
+
+            'es_no_laborable.required' => 'Debes indicar si el día es laborable o no laborable.',
+            'es_no_laborable.boolean' => 'El tipo de día no es válido.',
+
+            'es_efemeride.required' => 'Debes indicar si el evento es una efeméride.',
+            'es_efemeride.boolean' => 'El valor de efeméride no es válido.',
+
+            'aplica_a.required_if' => 'Debes indicar a quién aplica el día no laborable: estudiantes, docentes o ambos.',
+            'aplica_a.in' => 'La opción de "aplica a" seleccionada no es válida.',
+
+            'color.in' => 'El color seleccionado no está disponible en la paleta.',
+        ];
+
+        $validado = $request->validate($reglas, $mensajes);
+
+        $esNoLaborable = (bool) $validado['es_no_laborable'];
         $esEfemeride = (bool) $validado['es_efemeride'];
         $aplicaA = $validado['aplica_a'] ?? null;
 
-        $aplicaPersonal = ! $esNoLaborable || in_array($aplicaA, ['docentes', 'ambos'],true);
-        $aplicaEstudiantes = ! $esNoLaborable || in_array($aplicaA,['estudiantes','ambos'],true);
+        $aplicaPersonal = ! $esNoLaborable || in_array($aplicaA, ['docentes', 'ambos'], true);
+        $aplicaEstudiantes = ! $esNoLaborable || in_array($aplicaA, ['estudiantes', 'ambos'], true);
 
         $colorElegido = isset($validado['color'])
-        ? \App\Enums\ColorEvento::from($validado['color'])
-        :null ;
+            ? \App\Enums\ColorEvento::from($validado['color'])
+            : null;
 
         return [
             'nombre' => $validado['nombre'],
             'fecha_inicio' => $validado['fecha_inicio'],
-            'fecha_fin' => $validado['fecha_fin']  ?? $validado['fecha_inicio'],
+            'fecha_fin' => $validado['fecha_fin'] ?? $validado['fecha_inicio'],
             'categoria' => $esNoLaborable ? \App\Enums\CategoriaDia::NoLaborable : \App\Enums\CategoriaDia::Laborable,
             'aplica_personal' => $aplicaPersonal,
             'aplica_estudiantes' => $aplicaEstudiantes,
             'es_efemeride' => $esEfemeride,
-            'color' => CalendarioDia::determinarColor($esNoLaborable,$aplicaPersonal,$aplicaEstudiantes,$esEfemeride,$colorElegido),
+            'color' => CalendarioDia::determinarColor($esNoLaborable, $aplicaPersonal, $aplicaEstudiantes, $esEfemeride, $colorElegido),
         ];
-
-
     }
 
     // genera la lista de fechas (formato y-m-d)
