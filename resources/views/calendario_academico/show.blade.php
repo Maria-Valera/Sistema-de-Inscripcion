@@ -70,6 +70,21 @@
             border-radius: 2px;
         }
 
+        /* ===== Vista semanal: misma cuadrícula, pero celdas más altas y
+           texto completo (hay más espacio al mostrar solo 7 días) ===== */
+        .semana-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .semana-grid .celda-dia {
+            min-height: 220px;
+        }
+        .semana-grid .evento-chip {
+            white-space: normal;
+            font-size: 0.75rem;
+            padding: 3px 6px;
+        }
+
         /* ===== Modal de detalle del día ===== */
         #modal-dia-cuerpo .fila-evento { padding: 12px 0; }
         #modal-dia-cuerpo .fila-evento:not(:last-child) { border-bottom: 1px solid #e9ecef; }
@@ -199,6 +214,11 @@
                         <i class="fas fa-calendar-alt mr-1"></i> Calendario
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-semana-link" data-toggle="tab" href="#tab-semana" role="tab">
+                        <i class="fas fa-calendar-week mr-1"></i> Semana
+                    </a>
+                </li>
 
             </ul>
 
@@ -313,6 +333,29 @@
             <span class="calendario-leyenda-punto ml-3" style="background:#117A8B"></span> Efeméride
             <span class="text-muted ml-3">— haz clic en un día para revisarlo o agregar un evento</span>
         </div>
+
+    </div>
+</div>
+
+
+{{-- ===================== VISTA SEMANAL ===================== --}}
+<div class="tab-pane fade" id="tab-semana" role="tabpanel">
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button type="button" id="btn-semana-anterior" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-chevron-left"></i> Semana anterior
+            </button>
+            <h4 id="semana-titulo" class="mb-0 text-capitalize"></h4>
+            <button type="button" id="btn-semana-siguiente" class="btn btn-outline-secondary btn-sm">
+                Semana siguiente <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <div class="calendario-cabecera-semana">
+            <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
+        </div>
+        <div id="semana-grid" class="semana-grid"></div>
 
     </div>
 </div>
@@ -656,7 +699,56 @@
                 claveMes(mesActual) >= claveMes(new Date(CIERRE_ANIO_ESCOLAR + 'T00:00:00'));
         }
 
-        // ===== Modal de detalle del día =====
+        // ===== Vista semanal =====
+
+        let semanaActual; // Date: el lunes de la semana que se muestra
+
+        function obtenerLunesDeSemana(fecha) {
+            const copia = new Date(fecha);
+            const diaSemana = copia.getDay(); // 0=domingo
+            const diferencia = diaSemana === 0 ? -6 : 1 - diaSemana; // retrocede hasta el lunes
+            copia.setDate(copia.getDate() + diferencia);
+            return copia;
+        }
+
+        function renderizarSemana() {
+            const contenedor = document.getElementById('semana-grid');
+            contenedor.innerHTML = '';
+
+            const domingo = new Date(semanaActual);
+            domingo.setDate(domingo.getDate() + 6);
+
+            const formatoCorto = { day: 'numeric', month: 'short' };
+            const inicioTexto = semanaActual.toLocaleDateString('es-VE', formatoCorto);
+            const finTexto = domingo.toLocaleDateString('es-VE', { day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById('semana-titulo').textContent = `${inicioTexto} — ${finTexto}`;
+
+            for (let i = 0; i < 7; i++) {
+                const fecha = new Date(semanaActual);
+                fecha.setDate(fecha.getDate() + i);
+                const fechaStr = formatearFecha(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+                const eventosDelDia = DIAS.filter(d => d.fecha === fechaStr);
+                contenedor.appendChild(crearCeldaDia(fecha.getDate(), fechaStr, eventosDelDia));
+            }
+
+            const lunesInicioAnio = obtenerLunesDeSemana(new Date(INICIO_ANIO_ESCOLAR + 'T00:00:00'));
+            const lunesCierreAnio = obtenerLunesDeSemana(new Date(CIERRE_ANIO_ESCOLAR + 'T00:00:00'));
+
+            document.getElementById('btn-semana-anterior').disabled = semanaActual <= lunesInicioAnio;
+            document.getElementById('btn-semana-siguiente').disabled = semanaActual >= lunesCierreAnio;
+        }
+
+        document.getElementById('btn-semana-anterior').addEventListener('click', () => {
+            semanaActual.setDate(semanaActual.getDate() - 7);
+            renderizarSemana();
+        });
+
+        document.getElementById('btn-semana-siguiente').addEventListener('click', () => {
+            semanaActual.setDate(semanaActual.getDate() + 7);
+            renderizarSemana();
+        });
+
+
 
         let fechaDelModalActual = null;
 
@@ -745,6 +837,7 @@
                     boton.className = 'btn btn-sm ' + (datos.confirmado ? 'btn-outline-secondary' : 'btn-success');
                     boton.disabled = false;
                     renderizarCalendario();
+                    renderizarSemana();
                 })
                 .catch(() => { boton.disabled = false; alert('Ocurrió un error al actualizar. Intenta de nuevo.'); });
         }
@@ -972,6 +1065,7 @@
                     }
                     $('#modal-evento-form').modal('hide');
                     renderizarCalendario();
+                    renderizarSemana();
                     boton.disabled = false;
                 })
                 .catch(errores => {
@@ -1008,6 +1102,7 @@
                     boton.disabled = false;
                     $('#modal-eliminar-evento').modal('hide');
                     renderizarCalendario();
+                    renderizarSemana();
                 })
                 .catch(() => {
                     boton.disabled = false;
@@ -1020,11 +1115,13 @@
         document.getElementById('btn-mes-anterior').addEventListener('click', () => {
             mesActual = new Date(mesActual.getFullYear(), mesActual.getMonth() - 1, 1);
             renderizarCalendario();
+            renderizarSemana();
         });
 
         document.getElementById('btn-mes-siguiente').addEventListener('click', () => {
             mesActual = new Date(mesActual.getFullYear(), mesActual.getMonth() + 1, 1);
             renderizarCalendario();
+            renderizarSemana();
         });
 
         document.querySelectorAll('.modal [data-dismiss="modal"]').forEach(boton => {
@@ -1036,5 +1133,12 @@
         renderizarSelectorColores();
         mesActual = new Date(INICIO_ANIO_ESCOLAR + 'T00:00:00');
         renderizarCalendario();
+
+        const hoyComoFecha = new Date(HOY + 'T00:00:00');
+        const inicioAnioComoFecha = new Date(INICIO_ANIO_ESCOLAR + 'T00:00:00');
+        const cierreAnioComoFecha = new Date(CIERRE_ANIO_ESCOLAR + 'T00:00:00');
+        const hoyEstaDentroDelAnio = hoyComoFecha >= inicioAnioComoFecha && hoyComoFecha <= cierreAnioComoFecha;
+        semanaActual = obtenerLunesDeSemana(hoyEstaDentroDelAnio ? hoyComoFecha : inicioAnioComoFecha);
+        renderizarSemana();
     </script>
 @stop
