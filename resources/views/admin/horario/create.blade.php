@@ -2809,14 +2809,24 @@
 
             // Guardar horario
             document.getElementById('btnGuardarHorario').addEventListener('click', async function() {
-                const asignaciones = Object.keys(horarioAsignaciones);
-                if (asignaciones.length === 0) {
+                const asignacionesLocales = Object.keys(horarioAsignaciones);
+                const asignacionesExistentes = horarioData && horarioData.length > 0;
+
+                // Verificar si hay asignaciones locales (drag & drop) o asignaciones existentes (generadas automáticamente)
+                if (asignacionesLocales.length === 0 && !asignacionesExistentes) {
                     mostrarNotificacion('No hay asignaciones en el horario', 'warning');
                     return;
                 }
 
+                // Si solo hay asignaciones existentes (generadas automáticamente), redirigir directamente
+                if (asignacionesLocales.length === 0 && asignacionesExistentes) {
+                    mostrarNotificacion('El horario ya fue generado y guardado automáticamente', 'success');
+                    window.location.href = "{{ route('admin.horario.index') }}";
+                    return;
+                }
+
                 // Convertir asignaciones locales al formato que espera el backend
-                const asignacionesParaGuardar = asignaciones.map(key => {
+                const asignacionesParaGuardar = asignacionesLocales.map(key => {
                     const asignacion = horarioAsignaciones[key];
                     const [diaNombre, bloqueId] = key.split('-');
                     
@@ -2873,12 +2883,8 @@
 
                     if (data.success) {
                         mostrarNotificacion(data.mensaje, 'success');
-                        // Recargar datos para mostrar las asignaciones guardadas
-                        await cargarDatosAPI();
-                        // Redirigir al inicio del módulo
-                        setTimeout(() => {
-                            window.location.href = "{{ route('admin.horario.index') }}";
-                        }, 1500);
+                        // Redirigir inmediatamente al inicio del módulo
+                        window.location.href = "{{ route('admin.horario.index') }}";
                     } else {
                         mostrarNotificacion(data.mensaje, 'warning');
                         console.error('Errores al guardar:', data.errores);
