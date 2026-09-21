@@ -8,6 +8,7 @@ use App\Models\AreaFormacion;
 use App\Models\Seccion;
 use App\Models\Docente;
 use App\Models\Horario;
+use App\Models\HorarioAsignacion;
 use App\Models\Aula;
 use App\Models\AnioEscolar;
 use App\Models\BloqueHorario;
@@ -84,7 +85,40 @@ class HorarioController extends Controller
             ->orderBy('hora_inicio', 'asc')
             ->get();
 
-        return view('admin.horario.index', compact('grados', 'areasFormacion', 'secciones', 'bloquesHorarios'));
+        // Obtener horarios asignados del año escolar activo
+        $anioEscolarActivo = AnioEscolar::activos()->first();
+
+        $horariosAsignados = [];
+        if ($anioEscolarActivo) {
+            $asignaciones = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
+                ->with(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque'])
+                ->get();
+
+            // Agrupar asignaciones por grado y sección
+            $horariosAsignados = $asignaciones->groupBy(function($asignacion) {
+                return $asignacion->seccion->grado->numero_grado . '-' . $asignacion->seccion->nombre;
+            })->map(function($asignacionesGrupo, $key) {
+                $primeraAsignacion = $asignacionesGrupo->first();
+                $grado = $primeraAsignacion->seccion->grado;
+                $seccion = $primeraAsignacion->seccion;
+
+                // Obtener áreas de formación únicas en este horario
+                $areasUnicas = $asignacionesGrupo->pluck('materia.nombre_area_formacion')->unique()->values();
+
+                return [
+                    'id' => $key, // ID compuesto grado-sección
+                    'grado' => $grado->numero_grado,
+                    'grado_id' => $grado->id,
+                    'seccion' => $seccion->nombre,
+                    'seccion_id' => $seccion->id,
+                    'areas' => $areasUnicas->implode(', '),
+                    'total_asignaciones' => $asignacionesGrupo->count(),
+                    'asignaciones' => $asignacionesGrupo
+                ];
+            })->values();
+        }
+
+        return view('admin.horario.index', compact('grados', 'areasFormacion', 'secciones', 'bloquesHorarios', 'horariosAsignados'));
     }
 /*
     public function apiIndex(

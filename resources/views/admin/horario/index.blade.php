@@ -151,53 +151,38 @@
             </div>
             <div class="card-body-modern">
                 <div class="horarios-list" id="horariosList">
-                    <!-- Ejemplo de horario generado -->
-                    <div class="horario-item" data-horario-id="1">
-                        <div class="horario-item-icon">
-                            <i class="fas fa-clock"></i>
+                    @if($horariosAsignados->count() > 0)
+                        @foreach($horariosAsignados as $horario)
+                            <div class="horario-item" data-horario-id="{{ $horario['id'] }}">
+                                <div class="horario-item-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="horario-item-content">
+                                    <h4>{{ $horario['grado'] }}° Año - Sección {{ $horario['seccion'] }}</h4>
+                                    <p>{{ $horario['areas'] }} ({{ $horario['total_asignaciones'] }} asignaciones)</p>
+                                </div>
+                                <div class="horario-item-actions">
+                                    <a href="{{ route('admin.horario.create', ['grado_id' => $horario['grado_id'], 'seccion_id' => $horario['seccion_id']]) }}" class="btn-action btn-view" title="Ver">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('admin.horario.create', ['grado_id' => $horario['grado_id'], 'seccion_id' => $horario['seccion_id']]) }}" class="btn-action btn-edit" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn-action btn-pdf" title="Generar PDF" onclick="generarPDF({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn-action btn-delete" title="Eliminar" onclick="eliminarHorario({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-times"></i>
+                            <p>No hay horarios asignados. Genera uno nuevo para comenzar.</p>
                         </div>
-                        <div class="horario-item-content">
-                            <h4>1° Año - Sección A</h4>
-                            <p>Horario académico - Ciencias</p>
-                        </div>
-                        <div class="horario-item-actions">
-                            <button class="btn-action btn-view" title="Ver">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-action btn-edit" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-action btn-pdf" title="Generar PDF">
-                                <i class="fas fa-file-pdf"></i>
-                            </button>
-                            <button class="btn-action btn-delete" title="Eliminar">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="horario-item" data-horario-id="2">
-                        <div class="horario-item-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="horario-item-content">
-                            <h4>2° Año - Sección B</h4>
-                            <p>Horario académico - Humanidades</p>
-                        </div>
-                        <div class="horario-item-actions">
-                            <button class="btn-action btn-view" title="Ver">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn-action btn-edit" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-action btn-pdf" title="Generar PDF">
-                                <i class="fas fa-file-pdf"></i>
-                            </button>
-                            <button class="btn-action btn-delete" title="Eliminar">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -347,6 +332,37 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin: 0;
+        }
     </style>
+
+    <script>
+        function generarPDF(gradoId, seccionId) {
+            // Aquí implementar la generación de PDF
+            alert('Función de generación de PDF para Grado ID: ' + gradoId + ', Sección ID: ' + seccionId);
+        }
+
+        function eliminarHorario(gradoId, seccionId) {
+            if (confirm('¿Estás seguro de que deseas eliminar este horario?')) {
+                // Aquí implementar la eliminación del horario
+                alert('Función de eliminación para Grado ID: ' + gradoId + ', Sección ID: ' + seccionId);
+            }
+        }
+    </script>
 
 @endsection
