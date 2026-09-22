@@ -498,6 +498,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('horario.index');
     Route::get('horario/create', [HorarioController::class, 'create'])
         ->name('horario.create');
+    Route::delete('horario/{grado_id}/{seccion_id}', [HorarioController::class, 'destroy'])
+        ->name('horario.destroy');
 });
 
 // ====== PORTAL DEL REPRESENTANTE ======

@@ -219,4 +219,36 @@ class HorarioController extends Controller
 
         return view('admin.horario.create', compact('grados', 'areasFormacion', 'secciones', 'docentes', 'aulas', 'anioEscolarActivo'));
     }
+
+    public function destroy(Request $request, $grado_id, $seccion_id)
+    {
+        try {
+            // Obtener año escolar activo
+            $anioEscolarActivo = AnioEscolar::activos()->first();
+
+            if (!$anioEscolarActivo) {
+                return redirect()->back()->with('error', 'No hay año escolar activo. No se puede eliminar el horario.');
+            }
+
+            // Eliminar asignaciones de horario para el grado y sección específicos
+            $asignacionesEliminadas = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
+                ->whereHas('seccion', function($query) use ($grado_id) {
+                    $query->where('grado_id', $grado_id);
+                })
+                ->where('seccion_id', $seccion_id)
+                ->delete();
+
+            if ($asignacionesEliminadas > 0) {
+                return redirect()->route('admin.horario.index')
+                    ->with('success', "Horario eliminado exitosamente. Se eliminaron {$asignacionesEliminadas} asignaciones.");
+            } else {
+                return redirect()->back()
+                    ->with('error', 'No se encontraron asignaciones de horario para eliminar.');
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Error al eliminar el horario: ' . $e->getMessage());
+        }
+    }
 }

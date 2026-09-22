@@ -171,7 +171,7 @@
                                     <button class="btn-action btn-pdf" title="Generar PDF" onclick="generarPDF({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
                                         <i class="fas fa-file-pdf"></i>
                                     </button>
-                                    <button class="btn-action btn-delete" title="Eliminar" onclick="eliminarHorario({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
+                                    <button class="btn-action btn-delete" title="Eliminar" data-bs-toggle="modal" data-bs-target="#confirmarEliminar{{ $horario['id'] }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -187,8 +187,11 @@
             </div>
         </div>
 
-        <!-- Incluir modal de ver horario -->
+        <!-- Incluir modales -->
         @include('admin.horario.modales.showModal')
+        @foreach($horariosAsignados as $horario)
+            @include('admin.horario.modales.inactivarModal', ['horario' => $horario])
+        @endforeach
     </div>
 
     <style>
@@ -694,13 +697,6 @@
         function generarPDF(gradoId, seccionId) {
             // Aquí implementar la generación de PDF
             alert('Función de generación de PDF para Grado ID: ' + gradoId + ', Sección ID: ' + seccionId);
-        }
-
-        function eliminarHorario(gradoId, seccionId) {
-            if (confirm('¿Estás seguro de que deseas eliminar este horario?')) {
-                // Aquí implementar la eliminación del horario
-                alert('Función de eliminación para Grado ID: ' + gradoId + ', Sección ID: ' + seccionId);
-            }
         }
     </script>
 
