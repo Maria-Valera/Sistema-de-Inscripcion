@@ -22,7 +22,4 @@ enum EstadoCalendario : string{
 
 }
 
-// class EstadoCalendario extends Model
-// {
-//     //
-// }
+

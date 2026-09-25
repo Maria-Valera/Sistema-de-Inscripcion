@@ -40,7 +40,7 @@ class CalendarioPdfExtractorService
 
 
     /**
-     * Meses válidos y su número, para reconstruir la fecha completa (algoritmo 5).
+     * Meses válidos y su número, para reconstruir la fecha completa .
      * Deben coincidir con cómo aparecen en mayúsculas en el encabezado de cada
      * página del PDF (ej. "SEPTIEMBRE", "OCTUBRE").
      */
@@ -52,13 +52,13 @@ class CalendarioPdfExtractorService
 
     /**
      * Punto de entrada del servicio: procesa un PDF completo para un año
-     * escolar y deja los candidatos guardados, listos para revisión humana.
-     * Ejecuta, en orden, los algoritmos 1 al 6.
+     * escolar y deja los candidatos guardados, listos para revisión.
+     *
      */
     public function procesarPdf(UploadedFile $archivo, AnioEscolar $anioEscolar): CalendarioAcademico
     {
         return DB::transaction(function () use ($archivo, $anioEscolar) {
-            $this->mesActual = null; // por si el servicio se reutiliza entre peticiones
+            $this->mesActual = null;
 
             $this->lineasPaginaAnterior = [];
 
@@ -93,58 +93,10 @@ class CalendarioPdfExtractorService
     /**
      * Procesa una sola página, línea por línea, actualizando el mes activo
      * (this->mesActual) cada vez que encuentra un encabezado de mes.
-     * Esto reemplaza al algoritmo 2 original ("un mes por página"): el PDF
+     *  : el PDF
      * real puede tener el final de un mes y el inicio del siguiente en la
      * misma página física, así que el mes se seguimiento por línea, no por página.
      */
-    // private function procesarPagina(
-    //     CalendarioAcademico $calendario,
-    //     AnioEscolar $anioEscolar,
-    //     array $pagina,
-    //     array $palabrasNoLaborable,
-    //     array $palabrasEfemeride,
-    // ): void {
-    //     $lineas = preg_split('/\r\n|\r|\n/', $pagina['texto']) ?: [];
-
-    //     foreach ($lineas as $lineaOriginal) {
-    //         $linea = trim($lineaOriginal);
-
-    //         if ($linea === '') {
-    //             continue;
-    //         }
-
-    //         // ¿Es esta línea, ella sola, el nombre de un mes? (encabezado de
-    //         // la cuadrícula, ej. "SEPTIEMBRE"). Si sí, actualiza el mes activo
-    //         // y no se procesa como evento.
-    //         $mesDetectado = $this->esEncabezadoDeMes($linea);
-    //         if ($mesDetectado !== null) {
-    //             $this->mesActual = $mesDetectado;
-    //             continue;
-    //         }
-
-    //         // Sin un mes activo todavía (ej. la portada, antes del primer
-    //         // encabezado), no hay contexto confiable para construir fechas.
-    //         if ($this->mesActual === null) {
-    //             continue;
-    //         }
-
-    //         // Filas de la cuadrícula del mini-calendario (ej. "1 2 3 4 5 6 7"),
-    //         // no son eventos: solo números y espacios, sin ningún texto real.
-    //         if (preg_match('/^[\d\s]+$/u', $linea)) {
-    //             continue;
-    //         }
-
-    //         $categoria = $this->clasificarLinea($linea, $palabrasNoLaborable, $palabrasEfemeride);
-
-    //         // Las efemérides se descartan aquí mismo, nunca llegan a guardarse.
-    //         if ($categoria === 'efemeride') {
-    //             continue;
-    //         }
-
-    //         $this->procesarLinea($calendario, $anioEscolar, $linea, $this->mesActual, $categoria);
-    //     }
-    // }
-
 
         private function procesarPagina(
         CalendarioAcademico $calendario,
@@ -170,11 +122,7 @@ class CalendarioPdfExtractorService
         $lineas = array_slice($lineasLimpias, $solapamiento);
 
         foreach ($lineas as $linea) {
-            // $linea = trim($lineaOriginal);
 
-            // if ($linea === '') {
-            //     continue;
-            // }
 
             // ¿Es esta línea, ella sola, el nombre de un mes? (encabezado de
             // la cuadrícula, ej. "SEPTIEMBRE"). Si sí, actualiza el mes activo
@@ -390,7 +338,8 @@ class CalendarioPdfExtractorService
     }
 
     /**
-     * ALGORITMO 5: construirFecha
+     *
+     * funcion 5: construirFecha
      * Combina el año escolar (usando las fechas reales de anio_escolars,
      * no un string parseado), el mes de la página y el día de la línea.
      */

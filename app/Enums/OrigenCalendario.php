@@ -21,8 +21,4 @@ public function label(): string
 
 }
 
-// class OrigenCalendario extends Model
-// {
-//     //
 
-// }

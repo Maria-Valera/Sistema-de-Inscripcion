@@ -14,13 +14,10 @@ enum CategoriaDia : string{
     public function label(): string{
         return match($this){
             self::NoLaborable => 'No Laborable',
-            self::Dudoso => 'Dudoso (requiere revision humana)',
+            self::Dudoso => 'Dudoso (requiere revision )',
             self::Laborable => 'Laborable',
         };
     }
 }
 
-// class CategoriaDia extends Model
-// {
-//     //
-// }
+

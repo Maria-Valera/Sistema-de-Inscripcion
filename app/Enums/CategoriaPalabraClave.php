@@ -12,7 +12,4 @@ enum CategoriaPalabraClave: string
     case Efemeride = 'efemeride';
 }
 
-// class CategoriaPalabraClave extends Model
-// {
-//     //
-// }
+

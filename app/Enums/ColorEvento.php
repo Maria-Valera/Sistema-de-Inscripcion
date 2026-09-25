@@ -106,7 +106,7 @@ enum ColorEvento : string
     }
 
     public static function seleccionables():array {
-        return array_values(array_filter(self::cases(), fn (self $color) => in_array($color,self::fijos(),true)));
+        return array_values(array_filter(self::cases(), fn (self $color) => ! in_array($color, self::fijos(), true)));
     }
 
 }

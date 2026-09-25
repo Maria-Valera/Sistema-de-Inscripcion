@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
       /**
-     * Tabla "padre" del módulo: representa el proceso de carga del calendario
+     * representa el proceso de carga del calendario
      * para un año escolar específico, sin importar si se hizo por PDF o manual.
      */
     public function up(): void

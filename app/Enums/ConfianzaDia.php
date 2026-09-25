@@ -23,7 +23,4 @@ public function label(): string{
 
 }
 
-// class ConfianzaDia extends Model
-// {
-//     //
-// }
+

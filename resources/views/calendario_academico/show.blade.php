@@ -32,7 +32,7 @@
         .celda-con-eventos { cursor: pointer; transition: background-color 0.15s ease-in-out; }
         .celda-con-eventos:hover { background-color: #f0f7ff; }
 
-        /* Indicador de "hoy": borde de color + número resaltado */
+        /* Indicador de "hoy" */
         .celda-hoy {
             border: 2px solid #007bff;
         }
@@ -70,8 +70,8 @@
             border-radius: 2px;
         }
 
-        /* ===== Vista semanal: misma cuadrícula, pero celdas más altas y
-           texto completo (hay más espacio al mostrar solo 7 días) ===== */
+        /*  Vista semanal: misma cuadrícula, pero celdas más altas y
+           texto completo  */
         .semana-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -85,7 +85,7 @@
             padding: 3px 6px;
         }
 
-        /* ===== Modal de detalle del día ===== */
+        /*  Modal de detalle del día  */
         #modal-dia-cuerpo .fila-evento { padding: 12px 0; }
         #modal-dia-cuerpo .fila-evento:not(:last-child) { border-bottom: 1px solid #e9ecef; }
         #modal-dia-cuerpo .fila-evento-texto { display: block; margin-bottom: 8px; word-break: break-word; font-size: 0.95rem; }
@@ -95,7 +95,7 @@
         #modal-dia-cuerpo .fila-evento-accion { display: flex; justify-content: flex-end; gap: 8px; }
         #modal-dia-cuerpo .fila-evento-accion .btn { min-width: 90px; }
 
-        /* ===== Selector de colores ===== */
+        /*  Selector de colores  */
         .selector-colores {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
@@ -123,6 +123,13 @@
             font-size: 14px;
             text-shadow: 0 0 2px rgba(0,0,0,0.6);
         }
+
+        .error-message {
+    display: none;
+    align-items: center;
+    gap: 6px;
+}
+
     </style>
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
@@ -223,72 +230,15 @@
             </ul>
 
             <div class="tab-content">
-                {{-- ===================== VISTA DE LISTA ===================== --}}
+                {{--  VISTA DE LISTA  --}}
                 <div class="tab-pane fade show active" id="tab-lista" role="tabpanel">
-                    <form action="{{ route('admin.calendario_academico.confirmar', $calendario) }}" method="POST">
-                        @csrf
-                        <div class="card-body-modern">
-                            @forelse ($candidatosPorMes as $mes => $dias)
-                                <h5 class="mt-3">{{ $mes ?? 'Sin mes detectado' }}</h5>
-                                <div class="table-wrapper">
-                                    <table class="table-modern">
-                                        <thead>
-                                            <tr>
-                                                <th style="width: 40px"></th>
-                                                <th>Fecha</th>
-                                                <th>Descripción</th>
-                                                <th>Categoría</th>
-                                                <th>Confianza</th>
-                                                <th>Aplica a</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($dias as $dia)
-                                                <tr>
-                                                    <td>
-                                                        <input type="checkbox" name="ids_aprobados[]" value="{{ $dia->id }}"
-                                                            {{ $dia->confirmado || $dia->confianza === \App\Enums\ConfianzaDia::Alta ? 'checked' : '' }}
-                                                            {{ $calendario->estaConfirmado() ? 'disabled' : '' }}>
-                                                    </td>
-                                                    <td>
-                                                        @if ($dia->es_mes_completo)
-                                                            <span class="text-muted">Mes completo</span>
-                                                        @else
-                                                            {{ $dia->fecha?->format('d/m/Y') ?? '—' }}
-                                                        @endif
-                                                    </td>
-                                                    <td>{{ $dia->texto_extraido }}</td>
-                                                    <td>
-                                                        <span class="badge {{ $dia->categoria === \App\Enums\CategoriaDia::NoLaborable ? 'badge-danger' : 'badge-secondary' }}">
-                                                            {{ $dia->categoria->label() }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge
-                                                            @switch($dia->confianza)
-                                                                @case(\App\Enums\ConfianzaDia::Alta) badge-success @break
-                                                                @case(\App\Enums\ConfianzaDia::Dudosa) badge-warning @break
-                                                                @default badge-info
-                                                            @endswitch
-                                                        ">
-                                                            {{ $dia->confianza->label() }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        @if ($dia->aplica_personal) <span class="badge badge-info">Personal</span> @endif
-                                                        @if ($dia->aplica_estudiantes) <span class="badge badge-info">Estudiantes</span> @endif
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @empty
-                                <p class="text-muted">No se detectaron candidatos en este PDF.</p>
-                            @endforelse
-                        </div>
+                    <form action="{{ route('admin.calendario_academico.confirmar', $calendario) }}" method="POST" id="form-confirmar-calendario">
+    @csrf
+    <div id="lista-dias-contenedor">
+        {{-- aqui no se rellena nada por que el js no rellena --}}
+    </div>
 
-                        <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between m-4 p-2">
+    <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between m-4 p-2">
                             @unless ($calendario->estaConfirmado())
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-check-circle btn-md "></i> Confirmar calendario
@@ -298,11 +248,12 @@
                                 <i class="fas fa-arrow-left"></i> Volver al listado
                             </a>
                         </div>
-                    </form>
+</form>
+
                 </div>
 
 
-                {{-- ===================== VISTA DE CALENDARIO (con soporte manual) ===================== --}}
+                {{--  VISTA DE CALENDARIO   --}}
 <div class="tab-pane fade" id="tab-calendario" role="tabpanel">
     <div class="card-body">
 
@@ -338,7 +289,7 @@
 </div>
 
 
-{{-- ===================== VISTA SEMANAL ===================== --}}
+{{--  VISTA SEMANAL  --}}
 <div class="tab-pane fade" id="tab-semana" role="tabpanel">
     <div class="card-body">
 
@@ -369,7 +320,7 @@
 
 
 
-{{-- ===================== Modal: detalle del día ===================== --}}
+{{--  Modal: detalle del día  --}}
 <div class="modal fade" id="modal-dia" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content modal-modern">
@@ -399,13 +350,12 @@
     </div>
 </div>
 
-{{-- ===================== Modal: crear / editar evento manual ===================== --}}
+{{--  Modal: crear / editar evento manual  --}}
 <div class="modal fade" id="modal-evento-form" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content modal-modern">
 
-            {{-- El encabezado cambia de "crear" (verde) a "editar" (azul) según el modo,
-                 alternando estas dos clases desde JS — ver nota más abajo. --}}
+
             <div class="modal-header-create" id="modal-evento-form-header">
                 <div class="modal-icon-create" id="modal-evento-form-icon">
                     <i class="fas fa-calendar-plus"></i>
@@ -542,7 +492,7 @@
                         <i class="fas fa-palette"></i> Color
                     </label>
                     <div id="selector-colores" class="selector-colores"></div>
-                    <input type="hidden" id="evento-color" value="gris">
+                    <input type="hidden" id="evento-color" value="">
                 </div>
             </div>
 
@@ -559,7 +509,7 @@
     </div>
 </div>
 
-{{-- ===================== Modal: confirmar eliminación de evento manual ===================== --}}
+{{--  Modal: confirmar eliminación de evento manual  --}}
 <div class="modal fade" id="modal-eliminar-evento" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content modal-modern">
@@ -593,7 +543,7 @@
 </div>
 @stop
 
-{{-- ===================== JS  ===================== --}}
+{{--  JS   --}}
 
 @section('js')
     <script>
@@ -602,9 +552,6 @@
         const INICIO_ANIO_ESCOLAR = '{{ \Carbon\Carbon::parse($inicioAnioEscolar)->toDateString() }}';
         const CIERRE_ANIO_ESCOLAR = '{{ \Carbon\Carbon::parse($cierreAnioEscolar)->toDateString() }}';
         const HOY = (() => {
-            // Se calcula en el navegador, no en el servidor, para evitar el
-            // desfase cuando la zona horaria del servidor (a menudo UTC) no
-            // coincide con la del usuario (ej. America/Caracas, UTC-4).
             const ahora = new Date();
             const anio = ahora.getFullYear();
             const mes = String(ahora.getMonth() + 1).padStart(2, '0');
@@ -614,7 +561,7 @@
         const URL_BASE = '{{ url('admin/calendario_academico/'.$calendario->id) }}';
         const CALENDARIO_CONFIRMADO = {{ $calendario->estaConfirmado() ? 'true' : 'false' }};
 
-        // Paleta seleccionable, generada desde el enum ColorEvento (solo los 19, sin los fijos).
+        // Paleta seleccionable, generada desde el enum ColorEvento (solo los 19, sin los colores fijos).
         const COLORES_SELECCIONABLES = [
             @foreach (\App\Enums\ColorEvento::seleccionables() as $color)
                 { valor: '{{ $color->value }}', etiqueta: '{{ $color->label() }}', hex: '{{ $color->hex() }}' },
@@ -699,7 +646,7 @@
                 claveMes(mesActual) >= claveMes(new Date(CIERRE_ANIO_ESCOLAR + 'T00:00:00'));
         }
 
-        // ===== Vista semanal =====
+        //  Vista semanal
 
         let semanaActual; // Date: el lunes de la semana que se muestra
 
@@ -710,6 +657,117 @@
             copia.setDate(copia.getDate() + diferencia);
             return copia;
         }
+
+        // aqui lo que se es Traducir los valores del enum a clases de badge
+function badgeCategoria(categoria) {
+    return categoria === 'no_laborable' ? 'badge-danger' : 'badge-secondary';
+}
+function badgeConfianza(confianza) {
+    if (confianza === 'alta')    return 'badge-success';
+    if (confianza === 'dudosa')  return 'badge-warning';
+    return 'badge-info';
+
+
+}
+
+
+function labelCategoria(v) {
+
+    if (v === 'no_laborable') return 'No laborable';
+    if (v === 'laborable')    return 'Laborable';
+    return v ?? '';
+}
+
+function labelConfianza(v) {
+    if (v === 'alta')   return 'Alta';
+    if (v === 'dudosa') return 'Dudosa';
+    if (v === 'manual') return 'Manual';
+    return v ?? '';
+}
+
+function renderizarLista() {
+    const cont = document.getElementById('lista-dias-contenedor');
+    if (!cont) return;
+
+    if (DIAS.length === 0) {
+        cont.innerHTML = '<p class="text-muted">No se detectaron candidatos en este PDF.</p>';
+        return;
+    }
+
+    // aqui agrupamos los eventos por el mes (mes_pagina)
+    const grupos = {};
+    DIAS.forEach(d => {
+        let mes = d.mesPagina;
+        if (!mes && d.fecha) mes = parseInt(d.fecha.slice(5, 7), 10);
+        if (!mes) mes = 0;
+        if (!grupos[mes]) grupos[mes] = [];
+        grupos[mes].push(d);
+    });
+
+    const nombresMes = ['', 'Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                        'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    cont.innerHTML = Object.keys(grupos)
+        .sort((a, b) => a - b)
+        .map(mes => {
+            const dias = grupos[mes].slice().sort((a, b) =>
+                (a.fecha || '').localeCompare(b.fecha || '')
+            );
+            const titulo = nombresMes[mes] || 'Sin mes';
+
+            const filas = dias.map(d => `
+                <tr data-dia-id="${d.id}">
+                    <td>
+                        <input type="checkbox"
+                               name="ids_aprobados[]"
+                               value="${d.id}"
+                               class="chk-aprobado"
+                               ${d.confirmado ? 'checked' : ''}>
+                    </td>
+                    <td>${d.fecha ?? ''}</td>
+                    <td>${d.texto ?? ''}</td>
+                    <td>
+    <span class="badge ${badgeCategoria(d.categoria)}">
+        ${labelCategoria(d.categoria)}
+    </span>
+</td>
+<td>
+    <span class="badge ${badgeConfianza(d.confianza)}">
+        ${labelConfianza(d.confianza)}
+    </span>
+</td>
+                    <td>
+                        ${d.aplica_personal    ? '<span class="badge badge-info">Personal</span>'    : ''}
+                        ${d.aplica_estudiantes ? '<span class="badge badge-info">Estudiantes</span>' : ''}
+                    </td>
+                </tr>
+            `).join('');
+
+            return `
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>${titulo}</strong>
+                        <span class="text-muted ms-2">(${dias.length})</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width:32px"></th>
+                                    <th>Fecha</th>
+                                    <th>Texto</th>
+                                    <th>Categoría</th>
+                                    <th>Confianza</th>
+                                    <th>Aplica a</th>
+                                </tr>
+                            </thead>
+                            <tbody>${filas}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }).join('');
+}
 
         function renderizarSemana() {
             const contenedor = document.getElementById('semana-grid');
@@ -838,11 +896,12 @@
                     boton.disabled = false;
                     renderizarCalendario();
                     renderizarSemana();
+                    renderizarLista();
                 })
                 .catch(() => { boton.disabled = false; alert('Ocurrió un error al actualizar. Intenta de nuevo.'); });
         }
 
-        // ===== Formulario de evento manual (crear / editar) =====
+        //  Formulario de evento manual (crear  y editar)
 
         function renderizarSelectorColores() {
             const contenedor = document.getElementById('selector-colores');
@@ -897,15 +956,13 @@
             renderizarSelectorColores();
             actualizarVisibilidadFormulario();
 
-            // El rango solo tiene sentido al crear, no al editar un día puntual.
+            // El rango solo tiene sentido al crear, no al editar un día puntual, asi que no se coloca.
             document.getElementById('evento-es-rango').closest('.form-group-modern').style.display =
-                modoFormulario === 'crear' ? '' : 'none';
+            document.getElementById('evento-es-rango').dispatchEvent(new Event('change'));
+                // modoFormulario === 'crear' ? '' : 'none';
         }
 
-        // ===== Validación en tiempo real =====
-        // Mismas reglas que el servidor (regex de nombre, límites del año
-        // escolar) para que nunca queden desincronizadas. El servidor sigue
-        // siendo la autoridad final — esto es solo retroalimentación inmediata.
+        // validaciones en tiempo real
 
         const PATRON_NOMBRE = /^[\p{L}\p{N}\s(),/]+$/u;
 
@@ -974,12 +1031,21 @@
         document.getElementById('evento-fecha-fin').addEventListener('input', validarFormularioEvento);
         document.getElementById('evento-es-rango').addEventListener('change', validarFormularioEvento);
 
+
+
         function limpiarValidacionEvento() {
-            ['error-evento-nombre-vacio', 'error-evento-nombre-formato', 'ok-evento-nombre',
-             'error-evento-fecha-inicio-vacia', 'error-evento-fecha-inicio-rango',
-             'error-evento-fecha-fin-vacia', 'error-evento-fecha-fin-rango'].forEach(id => mostrarError(id, false));
-            document.getElementById('btn-guardar-evento').disabled = false;
-        }
+    [
+        'error-evento-nombre-vacio',
+        'error-evento-nombre-formato',
+        'ok-evento-nombre',
+        'error-evento-fecha-inicio-vacia',
+        'error-evento-fecha-inicio-rango',
+        'error-evento-fecha-fin-vacia',
+        'error-evento-fecha-fin-rango',
+    ].forEach(id => mostrarError(id, false));
+
+    document.getElementById('btn-guardar-evento').disabled = false;
+}
 
         function aplicarEstiloEncabezadoFormulario(modo) {
             const header = document.getElementById('modal-evento-form-header');
@@ -1002,23 +1068,54 @@
             document.getElementById('evento-fecha-inicio').value = fechaPreseleccionada || HOY;
             $('#modal-dia').modal('hide');
             $('#modal-evento-form').modal('show');
+            validarFormularioEvento();
         }
 
+
+
         function abrirModalEditarEvento(evento) {
-            modoFormulario = 'editar';
-            idEventoEnEdicion = evento.id;
-            limpiarFormularioEvento();
-            aplicarEstiloEncabezadoFormulario('editar');
-            document.getElementById('modal-evento-form-titulo').textContent = 'Editar evento';
-            document.getElementById('evento-nombre').value = evento.texto;
-            document.getElementById('evento-fecha-inicio').value = evento.fecha;
-            document.getElementById('grupo-fecha-fin').classList.add('d-none');
-            document.getElementById('evento-efemeride-' + (evento.esEfemeride ? 'si' : 'no')).checked = true;
-            document.getElementById('evento-tipo-' + (evento.categoria === 'no_laborable' ? 'no-laborable' : 'laborable')).checked = true;
-            actualizarVisibilidadFormulario();
-            $('#modal-dia').modal('hide');
-            $('#modal-evento-form').modal('show');
-        }
+    modoFormulario = 'editar';
+    idEventoEnEdicion = evento.id;
+    limpiarFormularioEvento();
+    aplicarEstiloEncabezadoFormulario('editar');
+
+    document.getElementById('modal-evento-form-titulo').textContent = 'Editar evento';
+    document.getElementById('evento-nombre').value       = evento.texto;
+    document.getElementById('evento-fecha-inicio').value = evento.fecha;
+    document.getElementById('grupo-fecha-fin').classList.add('d-none');
+
+    document.getElementById('evento-efemeride-' + (evento.esEfemeride ? 'si' : 'no')).checked = true;
+    document.getElementById('evento-tipo-' +
+        (evento.categoria === 'no_laborable' ? 'no-laborable' : 'laborable')
+    ).checked = true;
+
+    //  Restaurar "aplica a"
+    if (evento.categoria === 'no_laborable') {
+        let aplica = 'ambos';
+        if (evento.aplica_personal && !evento.aplica_estudiantes)      aplica = 'docentes';
+        else if (!evento.aplica_personal && evento.aplica_estudiantes) aplica = 'estudiantes';
+        document.getElementById('aplica-' + aplica).checked = true;
+    }
+
+    //  Restaurar color
+    // Solo tiene sentido marcar el swatch si el color es seleccionable
+
+    const colorEvento = evento.colorValue ?? null;
+    const esSeleccionable = colorEvento
+        && COLORES_SELECCIONABLES.some(c => c.valor === colorEvento);
+
+    colorSeleccionado = esSeleccionable ? colorEvento : (colorEvento || 'gris');
+    document.getElementById('evento-color').value = colorSeleccionado;
+    renderizarSelectorColores();
+
+    actualizarVisibilidadFormulario();
+
+    $('#modal-dia').modal('hide');
+    validarFormularioEvento();
+    $('#modal-evento-form').modal('show');
+
+
+}
 
         document.getElementById('btn-nuevo-evento').addEventListener('click', () => abrirModalNuevoEvento(null));
         document.getElementById('btn-agregar-desde-modal').addEventListener('click', () => abrirModalNuevoEvento(fechaDelModalActual));
@@ -1031,18 +1128,31 @@
             errorBox.classList.add('d-none');
 
             const esRango = document.getElementById('evento-es-rango').checked && modoFormulario === 'crear';
+
+            // el color solo aplica a días laborables que NO son efeméride
+            const esNoLaborable = document.getElementById('evento-tipo-no-laborable').checked;
+            const esEfemeride  = document.getElementById('evento-efemeride-si').checked;
+            const colorAplica  = !esNoLaborable && !esEfemeride;
+
+
+
             const payload = {
-                nombre: document.getElementById('evento-nombre').value,
-                fecha_inicio: document.getElementById('evento-fecha-inicio').value,
-                fecha_fin: esRango ? document.getElementById('evento-fecha-fin').value : null,
-                es_efemeride: document.getElementById('evento-efemeride-si').checked ? 1 : 0,
-                es_no_laborable: document.getElementById('evento-tipo-no-laborable').checked ? 1 : 0,
-                aplica_a: document.querySelector('input[name="evento-aplica-a"]:checked')?.value ?? null,
-                color: document.getElementById('evento-color').value,
+                    nombre:          document.getElementById('evento-nombre').value,
+                    fecha_inicio:    document.getElementById('evento-fecha-inicio').value,
+                    fecha_fin:       esRango ? document.getElementById('evento-fecha-fin').value : null,
+                    es_efemeride:    esEfemeride ? 1 : 0,
+                    es_no_laborable: esNoLaborable ? 1 : 0,
+                    aplica_a:        document.querySelector('input[name="evento-aplica-a"]:checked')?.value ?? null,
+                    // se envia null cuando no aplica entonces el backend asigna el color fijo correcto
+                    color:           colorAplica
+                                        ? (document.getElementById('evento-color').value || null)
+                                        : null,
             };
 
-            const esEdicion = modoFormulario === 'editar';
-            const url = esEdicion ? `${URL_BASE}/eventos/${idEventoEnEdicion}` : `${URL_BASE}/eventos`;
+            const esEdicion = modoFormulario === 'editar'; //
+            const url = esEdicion
+            ? `${URL_BASE}/eventos/${idEventoEnEdicion}`
+            : `${URL_BASE}/eventos`;
 
             boton.disabled = true;
 
@@ -1066,6 +1176,7 @@
                     $('#modal-evento-form').modal('hide');
                     renderizarCalendario();
                     renderizarSemana();
+                    renderizarLista();
                     boton.disabled = false;
                 })
                 .catch(errores => {
@@ -1103,6 +1214,7 @@
                     $('#modal-eliminar-evento').modal('hide');
                     renderizarCalendario();
                     renderizarSemana();
+                    renderizarLista();
                 })
                 .catch(() => {
                     boton.disabled = false;
@@ -1110,7 +1222,7 @@
                 });
         });
 
-        // ===== Navegación de mes y cierre de modales =====
+        //  Navegación de mes y cierre de las  modales
 
         document.getElementById('btn-mes-anterior').addEventListener('click', () => {
             mesActual = new Date(mesActual.getFullYear(), mesActual.getMonth() - 1, 1);
@@ -1133,12 +1245,15 @@
         renderizarSelectorColores();
         mesActual = new Date(INICIO_ANIO_ESCOLAR + 'T00:00:00');
         renderizarCalendario();
-
+        renderizarLista();
         const hoyComoFecha = new Date(HOY + 'T00:00:00');
         const inicioAnioComoFecha = new Date(INICIO_ANIO_ESCOLAR + 'T00:00:00');
         const cierreAnioComoFecha = new Date(CIERRE_ANIO_ESCOLAR + 'T00:00:00');
         const hoyEstaDentroDelAnio = hoyComoFecha >= inicioAnioComoFecha && hoyComoFecha <= cierreAnioComoFecha;
         semanaActual = obtenerLunesDeSemana(hoyEstaDentroDelAnio ? hoyComoFecha : inicioAnioComoFecha);
         renderizarSemana();
+
+
+
     </script>
 @stop

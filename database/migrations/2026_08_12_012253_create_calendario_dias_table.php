@@ -6,10 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-      * Tabla principal del módulo: cada fila es una fecha (o rango) de calendario,
-     * sin importar si llegó por extracción de PDF o por registro manual.
-     */
+
     public function up(): void
     {
         Schema::create('calendario_dias', function (Blueprint $table) {

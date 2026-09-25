@@ -1,74 +1,3 @@
-{{-- @extends('adminlte::page')
-
-@section('title', 'Calendarios académicos')
-
-@section('content_header')
-    <h1>Calendarios académicos</h1>
-@endsection
-
-@section('content')
-
-    @if (session('exito'))
-        <div class="alert alert-success">{{ session('exito') }}</div>
-    @endif
-
-    <div class="mb-3">
-        <a href="{{ route('admin.calendario_academico.create') }}" class="btn btn-primary">
-            Cargar nuevo calendario
-        </a>
-    </div>
-
-    <div class="card">
-        <div class="card-body p-0">
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Año escolar</th>
-                        <th>Origen</th>
-                        <th>Estado</th>
-                        <th>Días detectados</th>
-                        <th>Días confirmados</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($calendarios as $calendario)
-                        <tr>
-                            <td>
-                                {{ \Carbon\Carbon::parse($calendario->anioEscolar->inicio_anio_escolar)->format('Y') }}-{{ \Carbon\Carbon::parse($calendario->anioEscolar->cierre_anio_escolar)->format('Y') }}
-                            </td>
-                            <td>{{ $calendario->origen->label() }}</td>
-                            <td>
-                                @if ($calendario->estaConfirmado())
-                                    <span class="badge badge-success">Confirmado</span>
-                                @else
-                                    <span class="badge badge-warning">Pendiente de revisión</span>
-                                @endif
-                            </td>
-                            <td>{{ $calendario->dias_count }}</td>
-                            <td>{{ $calendario->dias_confirmados_count }}</td>
-                            <td>
-                                <a href="{{ route('admin.calendario_academico.show', $calendario) }}" class="btn btn-sm btn-info">
-                                    Revisar
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
-                                Aún no se ha cargado ningún calendario.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer">
-            {{ $calendarios->links() }}
-        </div>
-    </div>
-
-@endsection --}}
 
 
 @extends('adminlte::page')
@@ -120,7 +49,7 @@
         @endif
 
         <div class="card-modern">
-            {{-- Cabecera de la tarjeta: igual a la de "Calendario escolar" --}}
+            {{-- Cabecera de la tarjeta --}}
             <div class="card-header-modern d-flex align-items-center justify-content-between flex-wrap gap-3">
                 <div class="header-left d-flex align-items-center gap-3">
                     <div class="header-icon">
@@ -131,7 +60,7 @@
                         <p class="mb-0 text-muted">{{ $calendarios->total() }} registros encontrados</p>
                     </div>
                 </div>
-                {{-- No ponemos botón aquí, se coloca al final de la tarjeta --}}
+
             </div>
 
             {{-- Tabla moderna --}}
@@ -187,7 +116,7 @@
                                                             <i class="fas fa-eye me-2"></i> Revisar
                                                         </a>
                                                     </li>
-                                                    {{-- Aquí puedes agregar más acciones si lo deseas --}}
+
                                                 </ul>
                                             </div>
                                         </div>
@@ -211,7 +140,7 @@
                 </div>
             </div>
 
-            {{-- Pie de tarjeta: botón "Nuevo Calendario Académico" + paginación --}}
+            {{-- Pie de tarjeta --}}
             <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between">
 
                 <div>
