@@ -165,7 +165,7 @@
                                     <button class="btn-action btn-view" title="Ver" data-bs-toggle="modal" data-bs-target="#viewModalHorario" onclick="cargarHorarioEnModal({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <a href="{{ route('admin.horario.create', ['grado_id' => $horario['grado_id'], 'seccion_id' => $horario['seccion_id']]) }}" class="btn-action btn-edit" title="Editar">
+                                    <a href="{{ route('admin.horario.edit', ['grado_id' => $horario['grado_id'], 'seccion_id' => $horario['seccion_id']]) }}" class="btn-action btn-edit" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button class="btn-action btn-pdf" title="Generar PDF" onclick="generarPDF({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">

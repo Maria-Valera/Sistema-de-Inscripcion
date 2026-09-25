@@ -498,6 +498,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('horario.index');
     Route::get('horario/create', [HorarioController::class, 'create'])
         ->name('horario.create');
+    Route::get('horario/{grado_id}/{seccion_id}/edit', [HorarioController::class, 'edit'])
+        ->name('horario.edit');
+    Route::put('horario/{grado_id}/{seccion_id}', [HorarioController::class, 'update'])
+        ->name('horario.update');
     Route::delete('horario/{grado_id}/{seccion_id}', [HorarioController::class, 'destroy'])
         ->name('horario.destroy');
 });

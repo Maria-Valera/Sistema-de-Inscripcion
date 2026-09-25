@@ -1115,7 +1115,7 @@
     </style>
 @stop
 
-@section('title', 'Crear Horario')
+@section('title', $modoEdicion ? 'Editar Horario' : 'Crear Horario')
 
 @section('content_header')
     <div class="content-header-modern">
@@ -1125,15 +1125,15 @@
                     <i class="fas fa-calendar-plus"></i>
                 </div>
                 <div>
-                    <h1 class="title-main">Crear Horario</h1>
-                    <p class="title-subtitle">Asignación de horarios académicos</p>
+                    <h1 class="title-main">{{ $modoEdicion ? 'Editar Horario' : 'Crear Horario' }}</h1>
+                    <p class="title-subtitle">{{ $modoEdicion ? 'Modificación de horarios académicos' : 'Asignación de horarios académicos' }}</p>
                 </div>
             </div>
              <button class="btn-generar-horario" id="btnGenerarHorario">
                 <span class="spinner"></span>
                 <span class="btn-text">
                     <i class="fas fa-magic"></i>
-                    Generar Horario
+                    {{ $modoEdicion ? 'Regenerar Horario' : 'Generar Horario' }}
                 </span>
             </button>
         </div>
@@ -1142,7 +1142,11 @@
 
 @section('content')
     <div class="main-container">
-        
+        <!-- Parámetros de edición (ocultos) -->
+        <input type="hidden" id="editGradoId" value="{{ $editGradoId ?? '' }}">
+        <input type="hidden" id="editSeccionId" value="{{ $editSeccionId ?? '' }}">
+        <input type="hidden" id="modoEdicion" value="{{ $modoEdicion ? 'true' : 'false' }}">
+
 
         <!-- Selección de nivel académico y área de formación -->
         <div class="selection-section" id="seccionNivel">
@@ -1159,7 +1163,7 @@
                     <select class="form-select form-control-modern" id="nivelAcademico">
                         <option value="">Seleccione un nivel académico</option>
                         @foreach($grados as $grado)
-                            <option value="{{ $grado->id }}">
+                            <option value="{{ $grado->id }}" {{ $editGradoId == $grado->id ? 'selected' : '' }}>
                                 {{ $grado->numero_grado }}° Grado
                             </option>
                         @endforeach
@@ -1180,6 +1184,18 @@
                 </button>
             </div>
         </div>
+
+        <!-- Ocultar Paso 1 en modo edición -->
+        <style>
+            @if(isset($modo_edicion) && $modo_edicion)
+                #seccionNivel {
+                    display: none !important;
+                }
+                #vistaCalendario {
+                    display: flex !important;
+                }
+            @endif
+        </style>
 
         <!-- Vista del calendario (oculta inicialmente) -->
         <div class="horario-container" id="vistaCalendario" style="display: none;">
@@ -1340,6 +1356,103 @@
             const contextNivel = document.getElementById('contextNivel');
             const contextArea = document.getElementById('contextArea');
             const btnVolverPaso1 = document.getElementById('btnVolverPaso1');
+
+            // Detectar modo de edición
+            const editGradoId = document.getElementById('editGradoId').value;
+            const editSeccionId = document.getElementById('editSeccionId').value;
+            const modoEdicion = document.getElementById('modoEdicion').value === 'true';
+
+            console.log('Modo edición detectado:', { modoEdicion, editGradoId, editSeccionId });
+
+            // Si está en modo edición, ocultar Paso 1 y cargar datos directamente
+            if (modoEdicion && editGradoId) {
+                console.log('Iniciando modo edición...');
+
+                // Ocultar Paso 1 inmediatamente
+                seccionNivel.style.display = 'none';
+
+                // Mostrar Paso 2 inmediatamente
+                vistaCalendario.style.display = 'flex';
+
+                // Pre-cargar el grado
+                nivelSelect.value = editGradoId;
+
+                // Esperar un poco antes de disparar el evento change para cargar áreas
+                setTimeout(() => {
+                    console.log('Disparando evento change para cargar áreas...');
+                    nivelSelect.dispatchEvent(new Event('change'));
+
+                    // Esperar a que se carguen las áreas y analizar asignaciones existentes
+                    setTimeout(() => {
+                        console.log('Cargando áreas...');
+                        console.log('Opciones de área:', areaFormacionSelect.options.length);
+
+                        // Cargar asignaciones existentes para identificar el área correcta
+                        fetch(`/api/horario/asignaciones?grado_id=${editGradoId}&seccion_id=${editSeccionId}`)
+                            .then(response => response.json())
+                            .then(asignaciones => {
+                                console.log('Asignaciones existentes:', asignaciones);
+
+                                if (asignaciones && asignaciones.length > 0) {
+                                    // Obtener áreas únicas de las asignaciones existentes
+                                    const areasExistentes = [...new Set(asignaciones.map(a => a.materia_id))];
+                                    console.log('Áreas existentes en asignaciones:', areasExistentes);
+
+                                    if (areasExistentes.length > 0) {
+                                        // Seleccionar la primera área que tiene asignaciones
+                                        const areaSeleccionar = areasExistentes[0];
+                                        console.log('Área a seleccionar:', areaSeleccionar);
+
+                                        // Buscar y seleccionar el área en el select
+                                        for (let i = 0; i < areaFormacionSelect.options.length; i++) {
+                                            if (areaFormacionSelect.options[i].value == areaSeleccionar) {
+                                                areaFormacionSelect.selectedIndex = i;
+                                                areaFormacionSelect.disabled = false;
+                                                btnContinuar.disabled = false;
+                                                console.log('Área seleccionada en índice:', i);
+                                                break;
+                                            }
+                                        }
+
+                                        // Disparar evento change para aplicar filtro
+                                        areaFormacionSelect.dispatchEvent(new Event('change'));
+                                    } else {
+                                        console.warn('No se encontraron áreas específicas en las asignaciones. Mostrando todas las áreas.');
+                                        // Dejar el select vacío para mostrar todas las áreas
+                                    }
+                                } else {
+                                    console.warn('No hay asignaciones existentes. Mostrando todas las áreas.');
+                                    // Si no hay asignaciones, dejar el select vacío
+                                }
+
+                                // Actualizar contexto
+                                const gradoSeleccionado = nivelSelect.options[nivelSelect.selectedIndex]?.text || '';
+                                const areaSeleccionada = areaFormacionSelect.selectedIndex > 0 
+                                    ? areaFormacionSelect.options[areaFormacionSelect.selectedIndex]?.text 
+                                    : 'Todas las áreas';
+                                contextNivel.textContent = `Grado: ${gradoSeleccionado}`;
+                                contextArea.textContent = `Área: ${areaSeleccionada}`;
+
+                                // Cargar datos existentes del horario con filtros correctos
+                                setTimeout(() => {
+                                    console.log('Cargando datos API con filtros...');
+                                    cargarDatosAPI();
+
+                                    // Cargar docentes filtrados por nivel, sección y área
+                                    setTimeout(() => {
+                                        console.log('Cargando docentes con filtros...');
+                                        cargarDocentesAPI(editGradoId);
+                                    }, 1000);
+                                }, 500);
+                            })
+                            .catch(error => {
+                                console.error('Error al cargar asignaciones existentes:', error);
+                                // En caso de error, proceder con todas las áreas
+                                console.log('Error cargando asignaciones, usando todas las áreas.');
+                            });
+                    }, 1000);
+                }, 300);
+            }
 
             // Datos de prueba para docentes
             const docentesPorNivel = {
