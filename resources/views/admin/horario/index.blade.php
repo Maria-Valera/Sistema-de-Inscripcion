@@ -151,7 +151,7 @@
             </div>
             <div class="card-body-modern">
                 <div class="horarios-list" id="horariosList">
-                    @if($horariosAsignados->count() > 0)
+                    @if(count($horariosAsignados) > 0)
                         @foreach($horariosAsignados as $horario)
                             <div class="horario-item" data-horario-id="{{ $horario['id'] }}">
                                 <div class="horario-item-icon">
