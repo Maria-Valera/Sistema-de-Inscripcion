@@ -3,250 +3,24 @@
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/horario-styles.css') }}">
     <style>
+        /* Estilos específicos adicionales para create.blade.php */
+        /* Los estilos principales están en horario-styles.css */
+
         .horario-container {
             display: flex;
-            gap: 20px;
+            gap: 1.25rem;
             height: auto;
-        }
-
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .sidebar-docentes {
-            width: 280px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .sidebar-header {
-            background: var(--primary);
-            color: white;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sidebar-header i {
-            font-size: 18px;
-        }
-
-        .sidebar-header h5 {
-            margin: 0;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .docentes-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-        }
-
-        .docente-card {
-            background: var(--gray-50);
-            border-radius: var(--radius);
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            cursor: grab;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            user-select: none;
-        }
-
-        .docente-card:hover {
-            background: var(--gray-100);
-            border-color: var(--primary);
-            transform: translateX(3px);
-        }
-
-        .docente-card.dragging {
-            opacity: 0.5;
-            cursor: grabbing;
-        }
-
-        .docente-card.selected {
-            border-color: var(--primary);
-            background: var(--primary-light);
-        }
-
-        .docente-name {
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 0.25rem;
-            font-size: 0.8125rem;
-        }
-
-        .docente-area {
-            font-size: 0.6875rem;
-            color: var(--gray-600);
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-        }
-
-        .docente-area i {
-            color: var(--primary);
-        }
-
-        .docente-horas {
-            font-size: 0.625rem;
-            color: var(--gray-500);
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            margin-top: 0.25rem;
-            padding-top: 0.25rem;
-            border-top: 1px solid var(--gray-200);
-        }
-
-        .docente-horas i {
-            color: var(--warning);
-            font-size: 0.5625rem;
-        }
-
-        .selection-section {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
-
-        .selection-row {
-            display: flex;
-            gap: 20px;
-            align-items: flex-end;
-        }
-
-        .form-group-modern {
-            flex: 1;
-        }
-
-       
-        .horario-matrix-wrapper {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-md);
-            overflow-x: auto;
-        }
-
-        .horario-matrix {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .horario-matrix thead th {
-            background: var(--primary);
-            color: white;
-            padding: 0.5rem;
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-align: center;
-            border: 1px solid var(--primary-dark);
-            min-width: 80px;
-        }
-
-        .horario-matrix .time-header {
-            background: var(--gray-700);
-            min-width: 80px;
-        }
-
-        .horario-matrix tbody td {
-            border: 1px solid var(--gray-200);
-            vertical-align: middle;
-            padding: 0.25rem;
-            height: 60px;
-        }
-
-        .time-cell {
-            background: var(--gray-50);
-            padding: 0.25rem 0.5rem;
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--gray-700);
-        }
-
-        .time-cell strong {
-            display: block;
-            color: var(--gray-900);
-        }
-
-        .time-cell small {
-            color: var(--gray-500);
-            font-size: 0.75rem;
-        }
-
-        .drop-zone {
-            height: 80px;
-            min-width: 140px;
-            background: var(--gray-50);
-            border: 2px dashed var(--gray-300);
-            padding: 0.5rem;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .drop-zone:hover {
-            background: var(--gray-100);
-            border-color: var(--primary);
-        }
-
-        .drop-zone.drag-over {
-            background: var(--primary-light);
-            border-color: var(--primary);
-            border-style: solid;
-        }
-
-        .drop-zone .assigned-docente {
-            background: #0a1128;
-            color: white;
-            padding: 0.85rem;
-            padding-right: 2rem;
-            border-radius: 16px;
-            font-size: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 0.35rem;
-            animation: fadeIn 0.3s ease;
-            position: relative;
-        }
-
-        .drop-zone .assigned-docente .docente-nombre {
-            font-weight: 700;
-            font-size: 0.8125rem;
-            line-height: 1.2;
-        }
-
-        .drop-zone .assigned-docente .docente-cedula {
-            font-size: 0.6875rem;
-            opacity: 0.75;
-        }
-
-        .drop-zone .assigned-docente .docente-materia {
-            font-size: 0.7rem;
-            opacity: 0.9;
-            margin-bottom: 0.25rem;
         }
 
         .drop-zone .assigned-docente .pildora-selector {
             width: 100%;
             background: white;
-            color: #1f2937;
+            color: #212529;
             border: none;
-            border-radius: 999px;
-            padding: 0.4rem 0.9rem;
+            border-radius: 50px;
+            padding: 0.25rem 0.5625rem;
             font-size: 0.7rem;
             font-weight: 500;
             text-align: center;
@@ -259,623 +33,38 @@
             cursor: default;
         }
 
-        .drop-zone.ocupado-por-otro {
-            background: #2c3e50;
-            border-color: #1a252f;
-            cursor: not-allowed;
-        }
-
-        .drop-zone.tiene-conflicto {
-            border: 2px dashed #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-            position: relative;
-        }
-
-        .drop-zone.tiene-conflicto::after {
-            content: '⚠️';
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            font-size: 0.75rem;
-            z-index: 10;
-        }
-
-        .drop-zone.tiene-conflicto:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .drop-zone.hueco-disponible {
-            border: 2px dashed #10b981;
-            background: rgba(16, 185, 129, 0.05);
-        }
-
-        .drop-zone.hueco-disponible::after {
-            content: '✓';
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            font-size: 0.75rem;
-            color: #10b981;
-            z-index: 10;
-        }
-
-        .conflicto-tooltip {
-            position: absolute;
-            background: #1f2937;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            max-width: 250px;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .conflicto-tooltip.visible {
-            opacity: 1;
-        }
-
-        .conflicto-tooltip .tooltip-titulo {
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #fca5a5;
-        }
-
-        .conflicto-tooltip .tooltip-motivo {
-            color: #d1d5db;
-            margin-bottom: 6px;
-        }
-
-        .conflicto-tooltip .tooltip-sugerencias {
-            font-size: 0.6875rem;
-            color: #9ca3af;
-        }
-
-        .conflicto-tooltip .tooltip-sugerencias li {
-            margin-bottom: 2px;
-        }
-
-        .btn-eliminar-docente {
-            position: absolute;
-            top: 0.25rem;
-            right: 0.25rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            transition: all 0.2s ease;
-        }
-
-        .btn-eliminar-docente:hover {
-            background: var(--danger);
-            transform: scale(1.1);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .btn-back {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-back:hover {
-            opacity: 0.9;
-        }
-
-        .btn-save {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-save:hover {
-            opacity: 0.9;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .notifications-container {
-            margin-top: 1.5625rem;
-        }
-
-        .notification {
-            padding: 0.9375rem;
-            border-radius: var(--radius);
-            border-left: 4px solid;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .notification:last-child {
-            margin-bottom: 0;
-        }
-
-        .notification.error {
-            background: var(--danger-light);
-            border-color: var(--danger);
-        }
-
-        .notification.error i {
-            color: var(--danger);
-            font-size: 1.25rem;
-        }
-
-        .notification.error strong {
-            color: var(--danger);
-        }
-
-        .notification.success {
-            background: var(--success-light);
-            border-color: var(--success);
-        }
-
-        .notification.success i {
-            color: var(--success);
-            font-size: 1.25rem;
-        }
-
-        .notification.success strong {
-            color: var(--success);
-        }
-
-        .notification.warning {
-            background: var(--warning-light);
-            border-color: var(--warning);
-        }
-
-        .notification.warning i {
-            color: var(--warning);
-            font-size: 1.25rem;
-        }
-
-        .notification.warning strong {
-            color: var(--warning);
-        }
-
-        .aula-selector-container {
-            margin-top: 0.5rem;
-        }
-
-        .aula-selector {
-            width: 100%;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.6875rem;
-            border: 1px solid var(--gray-300);
-            border-radius: 4px;
-            background: white;
-            color: var(--gray-700);
-        }
-
-        .aula-selector:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
-        }
-
-        .aula-error-message {
-            font-size: 0.625rem;
-            color: var(--danger);
-            margin-top: 0.25rem;
-            display: none;
-        }
-
-        .aula-error-message.visible {
-            display: block;
-        }
-
-        .btn-generar-horario {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .btn-generar-horario:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-generar-horario:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-generar-horario .spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .btn-generar-horario.loading .spinner {
-            display: inline-block;
-        }
-
-        .btn-generar-horario.loading .btn-text {
-            display: none;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .conflictos-panel {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            display: none;
-        }
-
-        .conflictos-panel.visible {
-            display: block;
-        }
-
-        .conflictos-header {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 15px 20px;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .conflictos-header i {
-            font-size: 20px;
-        }
-
-        .conflictos-header h5 {
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .conflictos-body {
-            padding: 20px;
-        }
-
-        .conflicto-item {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .conflicto-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .conflicto-icon {
-            width: 40px;
-            height: 40px;
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .conflicto-info {
-            flex: 1;
-        }
-
-        .conflicto-info strong {
-            display: block;
-            color: #991b1b;
-            margin-bottom: 4px;
-        }
-
-        .conflicto-info p {
-            margin: 0;
-            color: #6b7280;
-            font-size: 0.875rem;
-        }
-
-        .conflicto-badges {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        /* Overlay de carga */
-        .overlay-carga {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .overlay-carga.oculto {
-            display: none;
-        }
-
-        .overlay-carga .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .overlay-carga p {
-            color: white;
-            font-size: 16px;
-            margin: 0;
-            font-weight: 500;
-        }
-
-        /* Estilos para aula texto */
-        .aula-texto {
-            background: #f3f4f6;
-            color: #374151;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .aula-texto.aula-sin-asignar {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .aula-container {
-            margin-top: 8px;
-        }
-
-        /* Notificaciones de conflictos persistente */
-        .notificaciones-conflictos {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            z-index: 9990;
-            width: 400px;
-            max-width: 90vw;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .notificacion-conflicto {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .notificacion-conflicto-mensaje {
-            flex: 1;
-            color: #991b1b;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .notificacion-conflicto-mensaje::before {
-            content: '⚠️';
-            font-size: 16px;
-        }
-
-        .notificacion-conflicto-cerrar {
-            background: none;
-            border: none;
-            color: #991b1b;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .notificacion-conflicto-cerrar:hover {
-            background: #fee2e2;
-        }
-
-        .conflicto-badge {
-            background: #fecaca;
-            color: #991b1b;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .context-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .context-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex: 1;
-        }
-
-        .context-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .context-item i {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .context-separator {
-            opacity: 0.5;
-            font-size: 0.875rem;
-        }
-
-        .btn-back-mini {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.8125rem;
-            font-weight: 500;
-        }
-
-        .btn-back-mini:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .docente-card.tiene-conflicto {
-            border-color: #ef4444;
-            background: #fef2f2;
-        }
-
-        .docente-card.tiene-conflicto .docente-name {
-            color: #991b1b;
-        }
-
-        .drop-zone.modo-seleccion {
-            cursor: pointer;
-        }
-
-        .drop-zone.seleccionado {
-            outline: 3px solid #007bff;
-            outline-offset: -3px;
-        }
-
+        /* Estilos específicos adicionales para modo selección */
         .btn-modo-seleccion {
-            background: #6c757d;
+            background: var(--horario-secondary);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
+            gap: 0.5rem;
+            transition: all 0.15s ease-in-out;
         }
 
         .btn-modo-seleccion.activo {
-            background: #007bff;
+            background: var(--horario-primary);
         }
 
         .barra-seleccion-flotante {
             position: fixed;
-            bottom: 20px;
+            bottom: 1.25rem;
             left: 50%;
             transform: translateX(-50%);
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            padding: 12px 20px;
+            border-radius: 0.375rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            padding: 0.75rem 1.25rem;
             display: none;
             align-items: center;
-            gap: 15px;
+            gap: 0.9375rem;
             z-index: 9995;
+            border: 1px solid var(--gray-200);
         }
 
         .barra-seleccion-flotante.visible {
@@ -883,20 +72,20 @@
         }
 
         .btn-eliminar-seleccionados {
-            background: #ef4444;
+            background: var(--horario-danger);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
             cursor: pointer;
         }
 
         .btn-cancelar-seleccion {
-            background: #e5e7eb;
-            color: #374151;
+            background: var(--gray-200);
+            color: var(--gray-700);
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
             cursor: pointer;
         }
 
@@ -920,19 +109,19 @@
 
         .modal-conflicto {
             background: white;
-            border-radius: 12px;
-            max-width: 500px;
+            border-radius: 0.5rem;
+            max-width: 31.25rem;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
 
         .modal-conflicto-header {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            background: var(--horario-danger);
             color: white;
-            padding: 20px;
-            border-radius: 12px 12px 0 0;
+            padding: 1.25rem;
+            border-radius: 0.5rem 0.5rem 0 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -964,152 +153,152 @@
         }
 
         .modal-conflicto-body {
-            padding: 20px;
+            padding: 1.25rem;
         }
 
         .modal-conflicto-info {
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
         }
 
         .modal-conflicto-info strong {
             display: block;
-            color: #374151;
-            margin-bottom: 4px;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
             font-size: 0.875rem;
         }
 
         .modal-conflicto-info span {
-            color: #6b7280;
+            color: var(--gray-600);
             font-size: 0.875rem;
         }
 
         .modal-conflicto-motivo {
-            background: #fef2f2;
-            border-left: 4px solid #ef4444;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 0 6px 6px 0;
+            background: #f8d7da;
+            border-left: 4px solid var(--horario-danger);
+            padding: 0.75rem;
+            margin-bottom: 1.25rem;
+            border-radius: 0 0.375rem 0.375rem 0;
         }
 
         .modal-conflicto-motivo strong {
-            color: #991b1b;
+            color: #721c24;
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 0.375rem;
         }
 
         .modal-conflicto-motivo p {
-            color: #6b7280;
+            color: var(--gray-600);
             margin: 0;
             font-size: 0.875rem;
         }
 
         .modal-conflicto-sugerencias {
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
         }
 
         .modal-conflicto-sugerencias h4 {
-            color: #374151;
-            margin: 0 0 10px 0;
+            color: var(--gray-900);
+            margin: 0 0 0.625rem 0;
             font-size: 0.875rem;
         }
 
         .modal-conflicto-sugerencias ul {
             margin: 0;
-            padding-left: 20px;
-            color: #6b7280;
+            padding-left: 1.25rem;
+            color: var(--gray-600);
             font-size: 0.875rem;
         }
 
         .modal-conflicto-sugerencias li {
-            margin-bottom: 6px;
+            margin-bottom: 0.375rem;
         }
 
         .modal-conflicto-acciones {
             display: flex;
-            gap: 10px;
+            gap: 0.625rem;
             justify-content: flex-end;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--gray-200);
         }
 
         .btn-modal-primario {
-            background: #3b82f6;
+            background: var(--horario-info);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
             cursor: pointer;
             font-weight: 500;
-            transition: background 0.2s ease;
+            transition: background 0.15s ease-in-out;
         }
 
         .btn-modal-primario:hover {
-            background: #2563eb;
+            background: #0b5ed7;
         }
 
         .btn-modal-secundario {
-            background: #e5e7eb;
-            color: #374151;
+            background: var(--gray-200);
+            color: var(--gray-700);
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
             cursor: pointer;
             font-weight: 500;
-            transition: background 0.2s ease;
+            transition: background 0.15s ease-in-out;
         }
 
         .btn-modal-secundario:hover {
-            background: #d1d5db;
+            background: var(--gray-300);
         }
 
         /* Mejoras al panel de conflictos */
         .conflicto-item-detalles {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #fecaca;
+            margin-top: 0.625rem;
+            padding-top: 0.625rem;
+            border-top: 1px solid #f5c6cb;
         }
 
         .conflicto-tipo {
             display: inline-block;
-            background: #fecaca;
-            color: #991b1b;
-            padding: 2px 8px;
-            border-radius: 4px;
+            background: #f5c6cb;
+            color: #721c24;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
             font-size: 0.6875rem;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 0.375rem;
         }
 
         .conflicto-motivo-texto {
-            color: #6b7280;
+            color: var(--gray-600);
             font-size: 0.8125rem;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
         }
 
         .conflicto-sugerencias-texto {
-            color: #9ca3af;
+            color: var(--gray-500);
             font-size: 0.75rem;
         }
 
         .conflicto-sugerencias-texto ul {
-            margin: 4px 0 0 0;
-            padding-left: 16px;
+            margin: 0.25rem 0 0 0;
+            padding-left: 1rem;
         }
 
         .btn-ver-detalles-conflicto {
-            background: #991b1b;
+            background: #721c24;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
             cursor: pointer;
             font-size: 0.75rem;
             font-weight: 500;
-            transition: background 0.2s ease;
+            transition: background 0.15s ease-in-out;
         }
 
         .btn-ver-detalles-conflicto:hover {
-            background: #7f1d1d;
+            background: #5f141d;
         }
 
     </style>
