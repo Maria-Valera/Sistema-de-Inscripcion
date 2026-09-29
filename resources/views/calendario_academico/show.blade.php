@@ -340,7 +340,14 @@
                             <span class="status-dot"></span> Pendiente de revisión
                         </span>
                     @endif
+
+                    <button class= "btn-create"  onclick="window.location='{{ route('admin.calendario_academico.index') }}'"  class="btn-cancel-modern">
+
+            <i class="fas fa-arrow-left"></i> Volver al listado
+
+        </button>
                 </div>
+
             </div>
 
             {{-- Pestañas --}}
@@ -528,16 +535,7 @@
                 </div>
 
 
-                <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between m-4 p-2">
-                            {{-- @unless ($calendario->estaConfirmado())
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-check-circle btn-md "></i> Confirmar calendario
-                                </button>
-                            @endunless --}}
-                            <a href="{{ route('admin.calendario_academico.index') }}" class="btn btn-secondary btn-md ">
-                                <i class="fas fa-arrow-left"></i> Volver al listado
-                            </a>
-                        </div>
+
 
 
 
