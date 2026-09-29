@@ -124,12 +124,146 @@
             text-shadow: 0 0 2px rgba(0,0,0,0.6);
         }
 
-        .error-message {
-    display: none;
-    align-items: center;
-    gap: 6px;
-}
+        /*  Estilos de Drag & Drop y Paleta de Eventos  */
+        .palette-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            margin-bottom: 20px;
+        }
 
+        .palette-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .palette-items-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .palette-badge-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #ffffff;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+        }
+
+        .palette-badge-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+        }
+
+        .palette-badge-item:active,
+        .palette-badge-item.dragging-palette {
+            cursor: grabbing;
+            opacity: 0.6;
+            transform: scale(0.96);
+        }
+
+        .palette-badge-item .drag-handle {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .palette-badge-item .btn-remove-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            font-size: 10px;
+            cursor: pointer;
+            margin-left: 2px;
+            line-height: 1;
+            transition: background-color 0.15s ease;
+        }
+        .palette-badge-item .btn-remove-badge:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .custom-badge-form {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        /* Target Drop Cell */
+        .celda-dia {
+            transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .celda-dia.drag-over {
+            border: 2px dashed #007bff !important;
+            background-color: #eef6ff !important;
+            box-shadow: inset 0 0 8px rgba(0, 123, 255, 0.18);
+        }
+
+        /* Event Chips inside calendar cells */
+        .evento-chip {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            gap: 4px;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.1s ease, opacity 0.1s ease;
+        }
+
+        .evento-chip:active,
+        .evento-chip.chip-dragging {
+            cursor: grabbing;
+            opacity: 0.4;
+        }
+
+        .evento-chip .chip-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+        }
+
+        .evento-chip .btn-eliminar-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.2);
+            color: #ffffff;
+            font-size: 11px;
+            line-height: 1;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background-color 0.15s ease;
+        }
+
+        .evento-chip .btn-eliminar-chip:hover {
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
@@ -211,11 +345,11 @@
 
             {{-- Pestañas --}}
             <ul class="nav nav-tabs" id="tabs-revision" role="tablist">
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <a class="nav-link active" id="tab-lista-link" data-toggle="tab" href="#tab-lista" role="tab">
                         <i class="fas fa-list mr-1"></i> Lista
                     </a>
-                </li>
+                </li> --}}
                 <li class="nav-item">
                     <a class="nav-link" id="tab-calendario-link" data-toggle="tab" href="#tab-calendario" role="tab">
                         <i class="fas fa-calendar-alt mr-1"></i> Calendario
@@ -230,12 +364,12 @@
             </ul>
 
             <div class="tab-content">
-                {{--  VISTA DE LISTA  --}}
-                <div class="tab-pane fade show active" id="tab-lista" role="tabpanel">
+                {{-- VISTA DE LISTA  --}}
+                {{-- <div class="tab-pane fade show active" id="tab-lista" role="tabpanel">
                     <form action="{{ route('admin.calendario_academico.confirmar', $calendario) }}" method="POST" id="form-confirmar-calendario">
     @csrf
     <div id="lista-dias-contenedor">
-        {{-- aqui no se rellena nada por que el js no rellena --}}
+
     </div>
 
     <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between m-4 p-2">
@@ -250,67 +384,160 @@
                         </div>
 </form>
 
-                </div>
+                </div> --}}
 
 
                 {{--  VISTA DE CALENDARIO   --}}
-<div class="tab-pane fade" id="tab-calendario" role="tabpanel">
-    <div class="card-body">
+                <div class="tab-pane fade show active" id="tab-calendario" role="tabpanel">
+                    <div class="card-body">
+                        <div class="row">
+                            {{-- Panel lateral: Paleta de Eventos --}}
+                            <div class="col-lg-3 col-md-4 mb-3">
+                                <div class="palette-card">
+                                    <div class="palette-title">
+                                        <span><i class="fas fa-grip-vertical text-primary mr-1"></i> Paleta de Eventos</span>
+                                        <span class="badge badge-primary" style="font-size: 0.7rem;">Drag & Drop</span>
+                                    </div>
+                                    <p class="text-muted small mb-2" style="font-size: 0.78rem;">
+                                        Arrastra un evento y suéltalo sobre cualquier día del calendario.
+                                    </p>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <button type="button" id="btn-mes-anterior" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-chevron-left"></i> Mes anterior
-            </button>
-            <h4 id="calendario-titulo" class="mb-0 text-capitalize"></h4>
-            <div>
-                <button type="button" id="btn-nuevo-evento" class="btn btn-primary btn-sm mr-2">
-                    <i class="fas fa-plus"></i> Nuevo evento
-                </button>
-                <button type="button" id="btn-mes-siguiente" class="btn btn-outline-secondary btn-sm">
-                    Mes siguiente <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-        </div>
+                                    <div id="palette-items-mes" class="palette-items-container"></div>
 
-        <div class="calendario-cabecera-semana">
-            <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
-        </div>
-        <div id="calendario-grid" class="calendario-grid"></div>
+                                    <div class="custom-badge-form mt-2">
+                                        <label class="form-label text-muted font-weight-bold mb-1" style="font-size: 0.78rem;">
+                                            <i class="fas fa-plus-circle mr-1"></i> Crear Badge Personalizado
+                                        </label>
+                                        <div class="input-group input-group-sm mb-2">
+                                            <input type="text" id="input-badge-nombre-mes" class="form-control" placeholder="Ej: Entrega de Notas" maxlength="40">
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <select id="select-badge-color-mes" class="form-control form-control-sm" style="font-size: 0.78rem;">
+                                                <option value="" data-hex="#dc3545" data-cat="no_laborable">🔴 Asueto / No laborable</option>
+                                                <option value="eucalipto" data-hex="#6EAE8A" data-cat="laborable">🟢 Examen / Evaluación</option>
+                                                <option value="arandano" data-hex="#4F86C6" data-cat="laborable" selected>🔵 Entrega de Notas / Académico</option>
+                                                <option value="" data-hex="#dc3545" data-cat="no_laborable">🟡 Feriado / Festivo</option>
+                                                <option value="" data-hex="#117A8B" data-cat="laborable" data-efemeride="true">🌐 Efeméride</option>
+                                                <option value="achicoria" data-hex="#6F5A9E" data-cat="laborable">🟣 Reunión Docente</option>
+                                                <option value="calabaza" data-hex="#FF7518" data-cat="laborable">🟠 Taller / Actividad</option>
+                                            </select>
+                                        </div>
+                                        <button type="button" id="btn-crear-badge-mes" class="btn btn-sm btn-outline-primary btn-block" style="font-size: 0.78rem;">
+                                            <i class="fas fa-plus mr-1"></i> Agregar a paleta
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
-        <div class="mt-3">
-            <span class="calendario-leyenda-punto" style="background:#dc3545"></span> No laborable (ambos)
-            <span class="calendario-leyenda-punto ml-3" style="background:#0047AB"></span> No laborable (docentes)
-            <span class="calendario-leyenda-punto ml-3" style="background:#B57EDC"></span> No laborable (estudiantes)
-            <span class="calendario-leyenda-punto ml-3" style="background:#117A8B"></span> Efeméride
-            <span class="text-muted ml-3">— haz clic en un día para revisarlo o agregar un evento</span>
-        </div>
+                            {{-- Matriz del Calendario --}}
+                            <div class="col-lg-9 col-md-8">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <button type="button" id="btn-mes-anterior" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-chevron-left"></i> Mes anterior
+                                    </button>
+                                    <h4 id="calendario-titulo" class="mb-0 text-capitalize"></h4>
+                                    <div>
+                                        <button type="button" id="btn-nuevo-evento" class="btn btn-primary btn-sm mr-2">
+                                            <i class="fas fa-plus"></i> Nuevo evento
+                                        </button>
+                                        <button type="button" id="btn-mes-siguiente" class="btn btn-outline-secondary btn-sm">
+                                            Mes siguiente <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
 
-    </div>
-</div>
+                                <div class="calendario-cabecera-semana">
+                                    <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
+                                </div>
+                                <div id="calendario-grid" class="calendario-grid"></div>
+
+                                <div class="mt-3">
+                                    <span class="calendario-leyenda-punto" style="background:#dc3545"></span> No laborable (ambos)
+                                    <span class="calendario-leyenda-punto ml-3" style="background:#0047AB"></span> No laborable (docentes)
+                                    <span class="calendario-leyenda-punto ml-3" style="background:#B57EDC"></span> No laborable (estudiantes)
+                                    <span class="calendario-leyenda-punto ml-3" style="background:#117A8B"></span> Efeméride
+                                    <span class="text-muted ml-3">— Arrastra eventos de la paleta o haz clic en un día para gestionarlo</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{--  VISTA SEMANAL  --}}
+                <div class="tab-pane fade" id="tab-semana" role="tabpanel">
+                    <div class="card-body">
+                        <div class="row">
+                            {{-- Panel lateral: Paleta de Eventos para Semana --}}
+                            <div class="col-lg-3 col-md-4 mb-3">
+                                <div class="palette-card">
+                                    <div class="palette-title">
+                                        <span><i class="fas fa-grip-vertical text-primary mr-1"></i> Paleta de Eventos</span>
+                                        <span class="badge badge-primary" style="font-size: 0.7rem;">Drag & Drop</span>
+                                    </div>
+                                    <p class="text-muted small mb-2" style="font-size: 0.78rem;">
+                                        Arrastra un evento y suéltalo sobre cualquier día de la semana.
+                                    </p>
+
+                                    <div id="palette-items-semana" class="palette-items-container"></div>
+
+                                    <div class="custom-badge-form mt-2">
+                                        <label class="form-label text-muted font-weight-bold mb-1" style="font-size: 0.78rem;">
+                                            <i class="fas fa-plus-circle mr-1"></i> Crear Badge Personalizado
+                                        </label>
+                                        <div class="input-group input-group-sm mb-2">
+                                            <input type="text" id="input-badge-nombre-semana" class="form-control" placeholder="Ej: Entrega de Notas" maxlength="40">
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <select id="select-badge-color-semana" class="form-control form-control-sm" style="font-size: 0.78rem;">
+                                                <option value="" data-hex="#dc3545" data-cat="no_laborable">🔴 Asueto / No laborable</option>
+                                                <option value="eucalipto" data-hex="#6EAE8A" data-cat="laborable">🟢 Examen / Evaluación</option>
+                                                <option value="arandano" data-hex="#4F86C6" data-cat="laborable" selected>🔵 Entrega de Notas / Académico</option>
+                                                <option value="" data-hex="#dc3545" data-cat="no_laborable">🟡 Feriado / Festivo</option>
+                                                <option value="" data-hex="#117A8B" data-cat="laborable" data-efemeride="true">🌐 Efeméride</option>
+                                                <option value="achicoria" data-hex="#6F5A9E" data-cat="laborable">🟣 Reunión Docente</option>
+                                                <option value="calabaza" data-hex="#FF7518" data-cat="laborable">🟠 Taller / Actividad</option>
+                                            </select>
+                                        </div>
+                                        <button type="button" id="btn-crear-badge-semana" class="btn btn-sm btn-outline-primary btn-block" style="font-size: 0.78rem;">
+                                            <i class="fas fa-plus mr-1"></i> Agregar a paleta
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Matriz Semanal --}}
+                            <div class="col-lg-9 col-md-8">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <button type="button" id="btn-semana-anterior" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-chevron-left"></i> Semana anterior
+                                    </button>
+                                    <h4 id="semana-titulo" class="mb-0 text-capitalize"></h4>
+                                    <button type="button" id="btn-semana-siguiente" class="btn btn-outline-secondary btn-sm">
+                                        Semana siguiente <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+
+                                <div class="calendario-cabecera-semana">
+                                    <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
+                                </div>
+                                <div id="semana-grid" class="semana-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
 
 
-{{--  VISTA SEMANAL  --}}
-<div class="tab-pane fade" id="tab-semana" role="tabpanel">
-    <div class="card-body">
-
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <button type="button" id="btn-semana-anterior" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-chevron-left"></i> Semana anterior
-            </button>
-            <h4 id="semana-titulo" class="mb-0 text-capitalize"></h4>
-            <button type="button" id="btn-semana-siguiente" class="btn btn-outline-secondary btn-sm">
-                Semana siguiente <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-
-        <div class="calendario-cabecera-semana">
-            <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
-        </div>
-        <div id="semana-grid" class="semana-grid"></div>
-
-    </div>
-</div>
-
+                <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between m-4 p-2">
+                            {{-- @unless ($calendario->estaConfirmado())
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check-circle btn-md "></i> Confirmar calendario
+                                </button>
+                            @endunless --}}
+                            <a href="{{ route('admin.calendario_academico.index') }}" class="btn btn-secondary btn-md ">
+                                <i class="fas fa-arrow-left"></i> Volver al listado
+                            </a>
+                        </div>
 
 
 
@@ -549,8 +776,9 @@
     <script>
         const CSRF_TOKEN = '{{ csrf_token() }}';
         const DIAS = {!! $diasParaCalendarioJson !!};
-        const INICIO_ANIO_ESCOLAR = '{{ \Carbon\Carbon::parse($inicioAnioEscolar)->toDateString() }}';
-        const CIERRE_ANIO_ESCOLAR = '{{ \Carbon\Carbon::parse($cierreAnioEscolar)->toDateString() }}';
+        const INICIO_ANIO_ESCOLAR = '{{ \Carbon\Carbon::parse($inicioAnioEscolar)->startOfMonth()->toDateString() }}';
+        const CIERRE_ANIO_ESCOLAR = '{{ \Carbon\Carbon::parse($cierreAnioEscolar)->endOfMonth()->toDateString() }}';
+        let draggedEventPayload = null;
         const HOY = (() => {
             const ahora = new Date();
             const anio = ahora.getFullYear();
@@ -578,6 +806,419 @@
             return `${anio}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
         }
 
+        //  Funciones de Drag & Drop y Paleta de Eventos  --}}
+
+        //  Funciones de Drag & Drop y Paleta de Eventos  --}}
+
+        const BADGES_PREDEFINIDOS = [
+            { texto: 'Asueto', colorHex: '#E53935', colorValue: null, categoria: 'no_laborable', esEfemeride: false },
+            { texto: 'Examen / Evaluación', colorHex: '#6EAE8A', colorValue: 'eucalipto', categoria: 'laborable', esEfemeride: false },
+            { texto: 'Feriado Nacional', colorHex: '#E53935', colorValue: null, categoria: 'no_laborable', esEfemeride: false },
+            { texto: 'Entrega de Notas', colorHex: '#4F86C6', colorValue: 'arandano', categoria: 'laborable', esEfemeride: false },
+            { texto: 'Reunión Docente', colorHex: '#6F5A9E', colorValue: 'achicoria', categoria: 'laborable', esEfemeride: false },
+            { texto: 'Efeméride', colorHex: '#117A8B', colorValue: null, categoria: 'laborable', esEfemeride: true },
+            { texto: 'Taller / Actividad', colorHex: '#FF7518', colorValue: 'calabaza', categoria: 'laborable', esEfemeride: false }
+        ];
+
+        function obtenerCustomBadges() {
+            try {
+                const raw = localStorage.getItem('calendario_custom_badges');
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function guardarCustomBadges(badges) {
+            try {
+                localStorage.setItem('calendario_custom_badges', JSON.stringify(badges));
+            } catch (e) {}
+        }
+
+        function crearBadgeElemento(texto, colorHex, colorValue, categoria, esEfemeride, esRemovible, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const item = document.createElement('div');
+            item.className = 'palette-badge-item';
+            item.setAttribute('draggable', 'true');
+            item.style.backgroundColor = colorHex;
+            item.dataset.texto = texto;
+            item.dataset.colorHex = colorHex;
+            item.dataset.colorValue = colorValue || '';
+            item.dataset.categoria = categoria;
+            item.dataset.esEfemeride = esEfemeride ? 'true' : 'false';
+
+            const handle = document.createElement('i');
+            handle.className = 'fas fa-grip-vertical drag-handle';
+            item.appendChild(handle);
+
+            const span = document.createElement('span');
+            span.textContent = texto;
+            item.appendChild(span);
+
+            if (esRemovible) {
+                const btnRemove = document.createElement('span');
+                btnRemove.className = 'btn-remove-badge';
+                btnRemove.innerHTML = '&times;';
+                btnRemove.title = 'Quitar de la paleta';
+                btnRemove.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let customBadges = obtenerCustomBadges();
+                    customBadges = customBadges.filter(b => !(b.texto === texto && b.colorHex === colorHex));
+                    guardarCustomBadges(customBadges);
+                    inicializarPaletas();
+                });
+                item.appendChild(btnRemove);
+            }
+
+            item.addEventListener('dragstart', (e) => {
+                draggedEventPayload = {
+                    tipo: 'nuevo_paleta',
+                    texto: item.dataset.texto,
+                    colorHex: item.dataset.colorHex,
+                    colorValue: item.dataset.colorValue || null,
+                    categoria: item.dataset.categoria,
+                    esEfemeride: item.dataset.esEfemeride === 'true'
+                };
+                const jsonStr = JSON.stringify(draggedEventPayload);
+                try {
+                    e.dataTransfer.setData('text/plain', jsonStr);
+                    e.dataTransfer.setData('text', jsonStr);
+                } catch (err) {}
+                e.dataTransfer.effectAllowed = 'copy';
+                item.classList.add('dragging-palette');
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging-palette');
+                setTimeout(() => { draggedEventPayload = null; }, 200);
+            });
+
+            container.appendChild(item);
+        }
+
+        function inicializarPaletas() {
+            ['palette-items-mes', 'palette-items-semana'].forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                BADGES_PREDEFINIDOS.forEach(b => {
+                    crearBadgeElemento(b.texto, b.colorHex, b.colorValue, b.categoria, b.esEfemeride, false, containerId);
+                });
+                const customBadges = obtenerCustomBadges();
+                customBadges.forEach(b => {
+                    crearBadgeElemento(b.texto, b.colorHex, b.colorValue, b.categoria, b.esEfemeride, true, containerId);
+                });
+            });
+        }
+
+        function setupPaletaHandlers(suffix) {
+            const input = document.getElementById('input-badge-nombre-' + suffix);
+            const select = document.getElementById('select-badge-color-' + suffix);
+            const btn = document.getElementById('btn-crear-badge-' + suffix);
+
+            if (!btn || !input) return;
+
+            const handler = () => {
+                const texto = input.value.trim();
+                if (!texto) return;
+
+                const opt = select.options[select.selectedIndex];
+                const colorVal = opt.value || null;
+                const colorHex = opt.dataset.hex || '#4F86C6';
+                const categoria = opt.dataset.cat || 'laborable';
+                const esEfemeride = opt.dataset.efemeride === 'true';
+
+                const nuevoBadge = { texto, colorHex, colorValue: colorVal, categoria, esEfemeride };
+                const customBadges = obtenerCustomBadges();
+                if (!customBadges.some(b => b.texto.toLowerCase() === texto.toLowerCase())) {
+                    customBadges.push(nuevoBadge);
+                    guardarCustomBadges(customBadges);
+                }
+
+                inicializarPaletas();
+
+                const inputMes = document.getElementById('input-badge-nombre-mes');
+                const inputSemana = document.getElementById('input-badge-nombre-semana');
+                if (inputMes) inputMes.value = '';
+                if (inputSemana) inputSemana.value = '';
+            };
+
+            btn.addEventListener('click', handler);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handler();
+                }
+            });
+        }
+
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            let container = document.getElementById('toast-notification-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-notification-container';
+                container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 360px;';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            const bgStyle = tipo === 'exito' ? 'background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;'
+                : (tipo === 'error' ? 'background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;'
+                : 'background: #eef2ff; color: #1e40af; border: 1px solid #c7d2fe;');
+            const iconClass = tipo === 'exito' ? 'fa-check-circle' : (tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+
+            toast.style.cssText = `padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); ${bgStyle}`;
+            toast.innerHTML = `
+                <div style="font-size: 1.1rem;"><i class="fas ${iconClass}"></i></div>
+                <div style="flex-grow: 1;">
+                    <p style="margin: 0; font-weight: 500;">${mensaje}</p>
+                </div>
+                <span style="cursor: pointer; opacity: 0.6; font-size: 0.9rem;" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 3500);
+        }
+
+        function obtenerColorValueDeHex(hex) {
+            if (!hex) return null;
+            const match = COLORES_SELECCIONABLES.find(c => c.hex.toLowerCase() === hex.toLowerCase());
+            return match ? match.valor : null;
+        }
+
+        function procesarDropEnFecha(data, fechaDestino) {
+            if (fechaDestino < INICIO_ANIO_ESCOLAR || fechaDestino > CIERRE_ANIO_ESCOLAR) {
+                mostrarNotificacion(`La fecha (${fechaDestino}) está fuera del año escolar (${INICIO_ANIO_ESCOLAR} a ${CIERRE_ANIO_ESCOLAR}).`, 'error');
+                return;
+            }
+
+            if (data.tipo === 'nuevo_paleta') {
+                const existeDuplicadoLocal = DIAS.some(d => d.fecha === fechaDestino && String(d.texto).trim().toLowerCase() === String(data.texto).trim().toLowerCase());
+                if (existeDuplicadoLocal) {
+                    mostrarNotificacion(`El evento "${data.texto}" ya está asignado para la fecha ${fechaDestino}.`, 'error');
+                    return;
+                }
+
+                const esNoLaborable = data.categoria === 'no_laborable';
+                const esEfemeride = !!data.esEfemeride;
+                const colorAplica = !esNoLaborable && !esEfemeride;
+
+                let colorVal = null;
+                if (colorAplica) {
+                    const cVal = data.colorValue || obtenerColorValueDeHex(data.colorHex);
+                    colorVal = COLORES_SELECCIONABLES.some(c => c.valor === cVal) ? cVal : null;
+                }
+
+                const tempId = 'temp_drop_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+
+                const eventoTemp = {
+                    id: tempId,
+                    fecha: fechaDestino,
+                    texto: data.texto,
+                    categoria: data.categoria || 'laborable',
+                    categoriaLabel: esNoLaborable ? 'No laborable' : 'Laborable',
+                    confianza: 'manual',
+                    confianzaLabel: 'Manual',
+                    confirmado: true,
+                    esManual: true,
+                    esEfemeride: esEfemeride,
+                    colorHex: data.colorHex || '#4F86C6',
+                    colorValue: colorVal,
+                    aplica_personal: true,
+                    aplica_estudiantes: true
+                };
+
+                DIAS.push(eventoTemp);
+                renderizarCalendario();
+                renderizarSemana();
+                renderizarLista();
+
+                const payload = {
+                    nombre: data.texto,
+                    fecha_inicio: fechaDestino,
+                    fecha_fin: fechaDestino,
+                    es_no_laborable: esNoLaborable ? 1 : 0,
+                    es_efemeride: esEfemeride ? 1 : 0,
+                    aplica_a: esNoLaborable ? 'ambos' : null,
+                    color: colorVal
+                };
+
+                fetch(`${URL_BASE}/eventos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(async r => {
+                    const resData = await r.json();
+                    if (!r.ok) throw resData;
+                    return resData;
+                })
+                .then(resData => {
+                    const tempIdx = DIAS.findIndex(d => d.id === tempId);
+                    if (tempIdx !== -1) DIAS.splice(tempIdx, 1);
+
+                    if (resData.creados && resData.creados.length > 0) {
+                        resData.creados.forEach(nuevoDia => {
+                            DIAS.push(nuevoDia);
+                        });
+                    }
+                    renderizarCalendario();
+                    renderizarSemana();
+                    renderizarLista();
+                    mostrarNotificacion('Evento asignado correctamente.', 'exito');
+                })
+                .catch(err => {
+                    const tempIdx = DIAS.findIndex(d => d.id === tempId);
+                    if (tempIdx !== -1) DIAS.splice(tempIdx, 1);
+                    renderizarCalendario();
+                    renderizarSemana();
+                    renderizarLista();
+
+                    const msg = err.errors
+                        ? Object.values(err.errors).flat().join(' ')
+                        : (err.message || 'No se pudo guardar el evento.');
+                    mostrarNotificacion(msg, 'error');
+                });
+
+            } else if (data.tipo === 'relocalizar') {
+                const idx = DIAS.findIndex(d =>
+                    (d.id && String(d.id) === String(data.eventId)) ||
+                    (d.fecha === data.fechaOrig && d.texto === data.texto)
+                );
+
+                if (idx === -1) return;
+
+                const evento = DIAS[idx];
+                const fechaOriginal = evento.fecha;
+
+                if (fechaOriginal === fechaDestino) return;
+
+                const existeDuplicadoDestino = DIAS.some(d => d.fecha === fechaDestino && String(d.texto).trim().toLowerCase() === String(evento.texto).trim().toLowerCase() && String(d.id) !== String(evento.id));
+                if (existeDuplicadoDestino) {
+                    mostrarNotificacion(`El evento "${evento.texto}" ya existe en la fecha ${fechaDestino}.`, 'error');
+                    return;
+                }
+
+                evento.fecha = fechaDestino;
+                renderizarCalendario();
+                renderizarSemana();
+                renderizarLista();
+
+                let aplicaA = null;
+                if (evento.categoria === 'no_laborable') {
+                    if (evento.aplica_personal && !evento.aplica_estudiantes) aplicaA = 'docentes';
+                    else if (!evento.aplica_personal && evento.aplica_estudiantes) aplicaA = 'estudiantes';
+                    else aplicaA = 'ambos';
+                }
+
+                const esNoLaborable = evento.categoria === 'no_laborable';
+                const esEfemeride = !!evento.esEfemeride;
+                const colorAplica = !esNoLaborable && !esEfemeride;
+                const colorVal = colorAplica ? (evento.colorValue || obtenerColorValueDeHex(evento.colorHex)) : null;
+
+                const payload = {
+                    nombre: evento.texto,
+                    fecha_inicio: fechaDestino,
+                    es_no_laborable: esNoLaborable ? 1 : 0,
+                    es_efemeride: esEfemeride ? 1 : 0,
+                    aplica_a: aplicaA,
+                    color: colorVal
+                };
+
+                if (evento.id && !String(evento.id).startsWith('temp_') && !String(evento.id).startsWith('local_')) {
+                    fetch(`${URL_BASE}/eventos/${evento.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': CSRF_TOKEN,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(async r => {
+                        const updatedData = await r.json();
+                        if (!r.ok) throw updatedData;
+                        return updatedData;
+                    })
+                    .then(updatedData => {
+                        DIAS[idx] = updatedData;
+                        renderizarCalendario();
+                        renderizarSemana();
+                        renderizarLista();
+                        mostrarNotificacion(`Evento movido al ${fechaDestino}.`, 'exito');
+                    })
+                    .catch(err => {
+                        evento.fecha = fechaOriginal;
+                        renderizarCalendario();
+                        renderizarSemana();
+                        renderizarLista();
+                        const msg = err.errors
+                            ? Object.values(err.errors).flat().join(' ')
+                            : (err.message || 'No se pudo mover el evento.');
+                        mostrarNotificacion(msg, 'error');
+                    });
+                }
+            }
+        }
+
+        function eliminarEventoLocal(evento) {
+            const idx = DIAS.findIndex(d =>
+                (d.id && String(d.id) === String(evento.id)) ||
+                (d.fecha === evento.fecha && d.texto === evento.texto)
+            );
+
+            if (idx === -1) return;
+
+            if (!evento.id || String(evento.id).startsWith('temp_') || String(evento.id).startsWith('local_')) {
+                DIAS.splice(idx, 1);
+                renderizarCalendario();
+                renderizarSemana();
+                renderizarLista();
+                return;
+            }
+
+            mostrarNotificacion('Eliminando evento...', 'info');
+
+            fetch(`${URL_BASE}/eventos/${evento.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': CSRF_TOKEN,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(async r => {
+                const res = await r.json();
+                if (!r.ok) throw res;
+                return res;
+            })
+            .then(() => {
+                DIAS.splice(idx, 1);
+                renderizarCalendario();
+                renderizarSemana();
+                renderizarLista();
+                mostrarNotificacion('Evento eliminado correctamente.', 'exito');
+            })
+            .catch(err => {
+                const msg = err.message || 'No se pudo eliminar el evento del servidor.';
+                mostrarNotificacion(msg, 'error');
+            });
+        }
+
         function crearCeldaVacia() {
             const div = document.createElement('div');
             div.className = 'celda-dia celda-vacia';
@@ -587,6 +1228,7 @@
         function crearCeldaDia(numeroDia, fechaStr, eventos) {
             const div = document.createElement('div');
             div.className = 'celda-dia';
+            div.dataset.fecha = fechaStr;
             if (fechaStr === HOY) div.classList.add('celda-hoy');
 
             const numero = document.createElement('div');
@@ -594,24 +1236,118 @@
             numero.textContent = numeroDia;
             div.appendChild(numero);
 
-            eventos.forEach(evento => {
+            eventos.forEach((evento, index) => {
                 const chip = document.createElement('div');
                 chip.className = 'evento-chip';
+                chip.setAttribute('draggable', 'true');
+                chip.dataset.eventId = evento.id || (`temp_${fechaStr}_${index}`);
+                chip.dataset.fechaOrig = fechaStr;
+
                 if (evento.colorHex) {
-                    // Evento manual: usa su color propio, sin importar confirmado/categoría.
                     chip.style.backgroundColor = evento.colorHex;
                 } else {
                     chip.classList.add(evento.confirmado
                         ? 'evento-confirmado'
                         : (evento.categoria === 'no_laborable' ? 'evento-no-laborable' : 'evento-dudoso'));
                 }
-                chip.textContent = evento.texto;
-                chip.title = evento.texto;
+
+                const spanTexto = document.createElement('span');
+                spanTexto.className = 'chip-text';
+                spanTexto.textContent = evento.texto;
+                spanTexto.title = evento.texto;
+                chip.appendChild(spanTexto);
+
+                const closeBtn = document.createElement('span');
+                closeBtn.className = 'btn-eliminar-chip';
+                closeBtn.innerHTML = '&times;';
+                closeBtn.title = 'Eliminar evento del calendario';
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    eliminarEventoLocal(evento);
+                });
+                chip.appendChild(closeBtn);
+
+                chip.addEventListener('dragstart', (e) => {
+                    e.stopPropagation();
+                    draggedEventPayload = {
+                        tipo: 'relocalizar',
+                        eventId: evento.id || chip.dataset.eventId,
+                        fechaOrig: fechaStr,
+                        texto: evento.texto
+                    };
+                    const jsonStr = JSON.stringify(draggedEventPayload);
+                    try {
+                        e.dataTransfer.setData('text/plain', jsonStr);
+                        e.dataTransfer.setData('text', jsonStr);
+                    } catch (err) {}
+                    e.dataTransfer.effectAllowed = 'move';
+                    chip.classList.add('chip-dragging');
+                });
+
+                chip.addEventListener('dragend', () => {
+                    chip.classList.remove('chip-dragging');
+                    setTimeout(() => { draggedEventPayload = null; }, 200);
+                });
+
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!e.target.classList.contains('btn-eliminar-chip')) {
+                        if (evento.esManual) {
+                            abrirModalEditarEvento(evento);
+                        } else {
+                            abrirModalDia(fechaStr, eventos);
+                        }
+                    }
+                });
+
                 div.appendChild(chip);
             });
 
             div.classList.add('celda-con-eventos');
-            div.addEventListener('click', () => abrirModalDia(fechaStr, eventos));
+            div.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('btn-eliminar-chip')) {
+                    abrirModalDia(fechaStr, eventos);
+                }
+            });
+
+            // Area de destino: event listeners Drag & Drop
+            div.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                div.classList.add('drag-over');
+            });
+
+            div.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                div.classList.add('drag-over');
+            });
+
+            div.addEventListener('dragleave', (e) => {
+                if (!div.contains(e.relatedTarget)) {
+                    div.classList.remove('drag-over');
+                }
+            });
+
+            div.addEventListener('drop', (e) => {
+                e.preventDefault();
+                div.classList.remove('drag-over');
+
+                let data = draggedEventPayload;
+                if (!data) {
+                    const rawData = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
+                    if (rawData) {
+                        try { data = JSON.parse(rawData); } catch (err) {}
+                    }
+                }
+
+                if (!data) {
+                    console.warn('No hay datos para procesar el soltado del evento.');
+                    return;
+                }
+
+                procesarDropEnFecha(data, fechaStr);
+                draggedEventPayload = null;
+            });
 
             return div;
         }
@@ -1243,6 +1979,9 @@ function renderizarLista() {
         });
 
         renderizarSelectorColores();
+        inicializarPaletas();
+        setupPaletaHandlers('mes');
+        setupPaletaHandlers('semana');
         mesActual = new Date(INICIO_ANIO_ESCOLAR + 'T00:00:00');
         renderizarCalendario();
         renderizarLista();

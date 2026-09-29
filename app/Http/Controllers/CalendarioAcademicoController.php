@@ -206,9 +206,28 @@ class CalendarioAcademicoController extends Controller
         $calendarioAcademico->load('anioEscolar');
         $datos = $this->validarDatosEvento($request,$calendarioAcademico);
 
+        $fechas = $this->expandirRangoDeFechas($datos['fecha_inicio'],$datos['fecha_fin']);
+
+        // Validar si ya existe un evento con el mismo texto en alguna de las fechas del rango
+        foreach ($fechas as $fecha) {
+            $existeDuplicado = $calendarioAcademico->dias()
+                ->where('fecha', $fecha)
+                ->where('texto_extraido', $datos['nombre'])
+                ->exists();
+
+            if ($existeDuplicado) {
+                return response()->json([
+                    'message' => "El evento \"{$datos['nombre']}\" ya está asignado para la fecha {$fecha}.",
+                    'errors' => [
+                        'nombre' => ["El evento \"{$datos['nombre']}\" ya está asignado para la fecha {$fecha}."]
+                    ]
+                ], 422);
+            }
+        }
+
         $creados = [];
 
-        foreach($this->expandirRangoDeFechas($datos['fecha_inicio'],$datos['fecha_fin']) as $fecha){
+        foreach($fechas as $fecha){
             $creados[] = CalendarioDia::create([
                 'calendario_id' => $calendarioAcademico->id,
                 'fecha' => $fecha,
@@ -216,8 +235,6 @@ class CalendarioAcademicoController extends Controller
                 'categoria' => $datos['categoria']->value,
                 'confianza' => \App\Enums\ConfianzaDia::Manual->value,
                 'confirmado' => true,
-
-
                 'aplica_personal' => $datos['aplica_personal'],
                 'aplica_estudiantes' => $datos['aplica_estudiantes'],
                 'es_efemeride' => $datos['es_efemeride'],
@@ -226,11 +243,6 @@ class CalendarioAcademicoController extends Controller
             ]);
 
         }
-
-
-
-        // si el calendario todavia esta pendiente de revision (ejemplo. venia de un pdf y esto es un ajuste suelto) no se toca -
-        // el estado general como tal del calendario lo decide la funcion 7, no un evento individual
 
         return response()->json([
             'creados' => collect($creados)->map(fn(CalendarioDia $d) => $this->serializarDia($d)),
@@ -247,15 +259,31 @@ class CalendarioAcademicoController extends Controller
     public function eventoUpdate(Request $request, CalendarioAcademico $calendarioAcademico, CalendarioDia $calendarioDia) : JsonResponse{
 
         abort_if($calendarioDia->calendario_id !== $calendarioAcademico->id,404);
-        abort_if($calendarioDia->confianza !== \App\Enums\ConfianzaDia::Manual,403,'Solo se pueden editar eventos creados manualmente');
 
         $calendarioAcademico->load('anioEscolar');
         $datos = $this->validarDatosEvento($request,$calendarioAcademico, esEdicionDeUnSoloDia : true);
+
+        // Validar si ya existe otro evento con la misma fecha y descripción
+        $existeDuplicado = $calendarioAcademico->dias()
+            ->where('id', '!=', $calendarioDia->id)
+            ->where('fecha', $datos['fecha_inicio'])
+            ->where('texto_extraido', $datos['nombre'])
+            ->exists();
+
+        if ($existeDuplicado) {
+            return response()->json([
+                'message' => "El evento \"{$datos['nombre']}\" ya está asignado para la fecha {$datos['fecha_inicio']}.",
+                'errors' => [
+                    'nombre' => ["El evento \"{$datos['nombre']}\" ya está asignado para la fecha {$datos['fecha_inicio']}."]
+                ]
+            ], 422);
+        }
 
         $calendarioDia->update([
             'texto_extraido' => $datos['nombre'],
             'fecha' => $datos['fecha_inicio'],
             'categoria' => $datos['categoria']->value,
+            'confianza' => \App\Enums\ConfianzaDia::Manual->value,
             'aplica_personal' => $datos['aplica_personal'],
             'aplica_estudiantes' => $datos['aplica_estudiantes'],
             'es_efemeride' => $datos['es_efemeride'],
@@ -268,14 +296,11 @@ class CalendarioAcademicoController extends Controller
     }
 
     /*
-    elimina un dia puntual registrado manualmente. No se pueden registrar candidatos que vinieron del pdf desde aqui -
-    esos se descartan desmarcando el checkbox en la vista de revision  , no borrandolos
-
-     */
+    elimina un dia puntual registrado.
+    */
 
     public function eventoDestroy(CalendarioAcademico $calendarioAcademico, CalendarioDia $calendarioDia) : JsonResponse{
         abort_if($calendarioDia->calendario_id !== $calendarioAcademico->id,404);
-        abort_if($calendarioDia->confianza !== \App\Enums\ConfianzaDia::Manual,403,'Solo se pueden eliminar eventos creados manualmente');
 
         $calendarioDia->delete();
 
@@ -290,16 +315,16 @@ class CalendarioAcademicoController extends Controller
         $anioEscolar = $calendarioAcademico->anioEscolar;
 
         $reglas = [
-            // en el campo de nombre se aceptan Letras, números, espacios, paréntesis, comas y barras.
-            'nombre' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\p{N}\s\(\),\/]+$/u'],
+            // en el campo de nombre se aceptan Letras, números, espacios, paréntesis, comas, guiones, dos puntos, puntos y barras.
+            'nombre' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\p{N}\s\(\),\/:\.\-]+$/u'],
             'fecha_inicio' => [
                 'required', 'date',
-                'after_or_equal:' . $anioEscolar->inicio_anio_escolar->toDateString(),
-                'before_or_equal:' . $anioEscolar->cierre_anio_escolar->toDateString(),
+                'after_or_equal:' . $anioEscolar->inicio_anio_escolar->copy()->startOfMonth()->toDateString(),
+                'before_or_equal:' . $anioEscolar->cierre_anio_escolar->copy()->endOfMonth()->toDateString(),
             ],
             'es_no_laborable' => ['required', 'boolean'],
             'es_efemeride' => ['required', 'boolean'],
-            'aplica_a' => ['required_if:es_no_laborable,true', 'nullable', 'in:estudiantes,docentes,ambos'],
+            'aplica_a' => ['required_if:es_no_laborable,1,true', 'nullable', 'in:estudiantes,docentes,ambos'],
             'color' => ['nullable', \Illuminate\Validation\Rule::in(
                 array_map(fn ($c) => $c->value, \App\Enums\ColorEvento::seleccionables())
             )],
@@ -309,7 +334,7 @@ class CalendarioAcademicoController extends Controller
         // único día puntual .
         if (! $esEdicionDeUnSoloDia) {
             $reglas['fecha_fin'] = ['nullable', 'date', 'after_or_equal:fecha_inicio',
-                'before_or_equal:' . $anioEscolar->cierre_anio_escolar->toDateString()];
+                'before_or_equal:' . $anioEscolar->cierre_anio_escolar->copy()->endOfMonth()->toDateString()];
         }
 
         $mensajes = [
