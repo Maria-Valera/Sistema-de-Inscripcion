@@ -1306,8 +1306,8 @@
                         td.dataset.day = diaNombre.toLowerCase();
                         td.dataset.block = index + 1;
 
-                        // Buscar si hay horario asignado para este día y bloque (usando datos filtrados)
-                        const horarioAsignado = horarioFiltrado.find(h => {
+                        // Buscar todas las asignaciones para este día y bloque (usando datos filtrados)
+                        const asignacionesDeCelda = horarioFiltrado.filter(h => {
                             const apiDiaNombre = h.dia_nombre;
                             const apiBloqueId = h.bloque_id;
                             return apiDiaNombre && apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
@@ -1320,58 +1320,9 @@
                         // Priorizar asignación local sobre datos de API
                         if (asignacionLocal) {
                             td.innerHTML = renderizarAsignacionLocalHTML(key, asignacionLocal);
-                        } else if (horarioAsignado) {
-                            const docenteNombre = horarioAsignado.docente_nombre || 'N/A';
-                            const docenteCedula = horarioAsignado.docente_cedula || 'N/A';
-                            const materiaNombre = horarioAsignado.materia_nombre || 'N/A';
-                            const seccionNombre = horarioAsignado.seccion_nombre || 'N/A';
-                            const asignacionId = horarioAsignado.id;
-                            const aulaId = horarioAsignado.aula_id;
-                            const aulaNombre = horarioAsignado.aula_nombre || 'N/A';
-                            const aulaTipo = horarioAsignado.aula_tipo || 'Aula Regular';
-
-                            // Determinar si la materia es especializada (basado en el nombre)
-                            const materiasEspecializadas = ['Arte y Patrimonio', 'Ciencias Naturales', 'Biología', 'Física', 'Química'];
-                            const esEspecializada = materiasEspecializadas.some(m => materiaNombre.includes(m));
-
-                            // Construir opciones de aula filtrando por tipo de aula
-                            const aulaSelectGlobal = document.getElementById('aula');
-                            let aulaOptionsPersistida = '';
-                            if (aulaSelectGlobal) {
-                                if (esEspecializada) {
-                                    for (let i = 0; i < aulaSelectGlobal.options.length; i++) {
-                                        const option = aulaSelectGlobal.options[i];
-                                        if (option.value !== '' && (option.dataset.tipo || '') !== 'Aula Regular') {
-                                            const selected = option.value == aulaId ? 'selected' : '';
-                                            aulaOptionsPersistida += `<option value="${option.value}" ${selected}>${option.text}</option>`;
-                                        }
-                                    }
-                                } else {
-                                    // Materia regular: solo el aula fija de la sección, no todas las regulares
-                                    const aulaFija = obtenerAulaRegularDeSeccion(horarioAsignado.seccion_id);
-                                    if (aulaFija) {
-                                        aulaOptionsPersistida += `<option value="${aulaFija.id}" selected>${aulaFija.nombre}</option>`;
-                                    } else {
-                                        aulaOptionsPersistida += `<option value="">Sin aula regular asignada a esta sección</option>`;
-                                    }
-                                }
-                            }
-
-                            td.innerHTML = `
-                                <div class="assigned-docente" draggable="true" data-asignacion-id="${asignacionId}">
-                                    <span class="docente-nombre">${docenteNombre}</span>
-                                    <span class="docente-cedula">${docenteCedula}</span>
-                                    <span class="docente-materia">${materiaNombre}</span>
-                                    <select class="pildora-selector" disabled>
-                                        <option>${seccionNombre}</option>
-                                    </select>
-                                    <select class="pildora-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)" ${!esEspecializada ? 'disabled' : ''}>
-                                        ${aulaOptionsPersistida}
-                                    </select>
-                                    <div class="aula-error-message"></div>
-                                    <button class="btn-eliminar-docente" onclick="eliminarAsignacionPersistida(${asignacionId}, event)">×</button>
-                                </div>
-                            `;
+                        } else if (asignacionesDeCelda.length > 0) {
+                            // Mostrar todas las asignaciones como tarjetas apiladas
+                            td.innerHTML = asignacionesDeCelda.map(horarioAsignado => renderizarTarjetaPersistida(horarioAsignado)).join('');
                         } else {
                             // Celda vacía pero visible para permitir drag and drop
                             td.innerHTML = '';
@@ -1444,13 +1395,80 @@
 
                 return `
                     <div class="assigned-docente" draggable="true">
-                        <span class="docente-nombre">${asignacion.nombre}</span>
-                        <span class="docente-cedula">${asignacion.cedula || 'N/A'}</span>
-                        <span class="docente-materia">${asignacion.area}</span>
-                        ${seccionHtml}
-                        ${aulaHtml}
-                        <div class="aula-error-message"></div>
-                        <button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', event)">×</button>
+                        <div class="adm-mini">
+                            <span class="adm-mini-nombre">${asignacion.nombre}</span>
+                            <span class="adm-mini-seccion">${asignacion.secciones?.find(s => s.id == asignacion.seccionId)?.nombre || '?'}</span>
+                        </div>
+                        <div class="adm-full">
+                            <span class="docente-nombre">${asignacion.nombre}</span>
+                            <span class="docente-cedula">${asignacion.cedula || 'N/A'}</span>
+                            <span class="docente-materia">${asignacion.area}</span>
+                            ${seccionHtml}
+                            ${aulaHtml}
+                            <div class="aula-error-message"></div>
+                            <button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', event)">×</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Función para renderizar una tarjeta de asignación persistida
+            function renderizarTarjetaPersistida(horarioAsignado) {
+                const docenteNombre = horarioAsignado.docente_nombre || 'N/A';
+                const docenteCedula = horarioAsignado.docente_cedula || 'N/A';
+                const materiaNombre = horarioAsignado.materia_nombre || 'N/A';
+                const seccionNombre = horarioAsignado.seccion_nombre || 'N/A';
+                const asignacionId = horarioAsignado.id;
+                const aulaId = horarioAsignado.aula_id;
+                const aulaNombre = horarioAsignado.aula_nombre || 'N/A';
+                const aulaTipo = horarioAsignado.aula_tipo || 'Aula Regular';
+
+                // Determinar si la materia es especializada (basado en el nombre)
+                const materiasEspecializadas = ['Arte y Patrimonio', 'Ciencias Naturales', 'Biología', 'Física', 'Química'];
+                const esEspecializada = materiasEspecializadas.some(m => materiaNombre.includes(m));
+
+                // Construir opciones de aula filtrando por tipo de aula
+                const aulaSelectGlobal = document.getElementById('aula');
+                let aulaOptionsPersistida = '';
+                if (aulaSelectGlobal) {
+                    if (esEspecializada) {
+                        for (let i = 0; i < aulaSelectGlobal.options.length; i++) {
+                            const option = aulaSelectGlobal.options[i];
+                            if (option.value !== '' && (option.dataset.tipo || '') !== 'Aula Regular') {
+                                const selected = option.value == aulaId ? 'selected' : '';
+                                aulaOptionsPersistida += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+                            }
+                        }
+                    } else {
+                        // Materia regular: solo el aula fija de la sección, no todas las regulares
+                        const aulaFija = obtenerAulaRegularDeSeccion(horarioAsignado.seccion_id);
+                        if (aulaFija) {
+                            aulaOptionsPersistida += `<option value="${aulaFija.id}" selected>${aulaFija.nombre}</option>`;
+                        } else {
+                            aulaOptionsPersistida += `<option value="">Sin aula regular asignada a esta sección</option>`;
+                        }
+                    }
+                }
+
+                return `
+                    <div class="assigned-docente" draggable="true" data-asignacion-id="${asignacionId}">
+                        <div class="adm-mini">
+                            <span class="adm-mini-nombre">${docenteNombre}</span>
+                            <span class="adm-mini-seccion">${seccionNombre}</span>
+                        </div>
+                        <div class="adm-full">
+                            <span class="docente-nombre">${docenteNombre}</span>
+                            <span class="docente-cedula">${docenteCedula}</span>
+                            <span class="docente-materia">${materiaNombre}</span>
+                            <select class="pildora-selector" disabled>
+                                <option>${seccionNombre}</option>
+                            </select>
+                            <select class="pildora-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)" ${!esEspecializada ? 'disabled' : ''}>
+                                ${aulaOptionsPersistida}
+                            </select>
+                            <div class="aula-error-message"></div>
+                            <button class="btn-eliminar-docente" onclick="eliminarAsignacionPersistida(${asignacionId}, event)">×</button>
+                        </div>
                     </div>
                 `;
             }

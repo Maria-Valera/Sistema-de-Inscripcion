@@ -87,11 +87,29 @@ class HorarioController extends Controller
 
         $anioEscolarActivo = AnioEscolar::activos()->first();
 
-        $horariosAsignados = [];
+        $horariosAsignados = collect();
         if ($anioEscolarActivo) {
-            $asignaciones = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
-                ->with(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque'])
-                ->get();
+            $query = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
+                ->with(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque']);
+
+            // Aplicar filtros
+            if ($request->filled('grado_id')) {
+                $query->whereHas('seccion', function($q) use ($request) {
+                    $q->where('grado_id', $request->grado_id);
+                });
+            }
+
+            if ($request->filled('seccion_id')) {
+                $query->where('seccion_id', $request->seccion_id);
+            }
+
+            if ($request->filled('area_formacion_id')) {
+                $query->whereHas('materia', function($q) use ($request) {
+                    $q->where('area_formacion_id', $request->area_formacion_id);
+                });
+            }
+
+            $asignaciones = $query->get();
 
             //agrupa asignaciones por grado y sección
             $horariosAsignados = $asignaciones->groupBy(function($asignacion) {
@@ -115,7 +133,26 @@ class HorarioController extends Controller
             })->values();
         }
 
-        return view('admin.horario.index', compact('grados', 'areasFormacion', 'secciones', 'bloquesHorarios', 'horariosAsignados'));
+        // Paginar los resultados
+        $horariosPaginados = $this->paginateCollection($horariosAsignados, 10);
+
+        return view('admin.horario.index', compact('grados', 'areasFormacion', 'secciones', 'bloquesHorarios', 'horariosPaginados'));
+    }
+
+    // Método auxiliar para paginar colecciones
+    private function paginateCollection($collection, $perPage)
+    {
+        $page = request()->get('page', 1);
+        $offset = ($page - 1) * $perPage;
+        $items = $collection->slice($offset, $perPage)->values();
+
+        return new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $collection->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
     }
 
     //muestra la vista para crear horario con docentes, aulas y datos

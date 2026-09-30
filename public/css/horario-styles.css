@@ -471,6 +471,15 @@
     padding: 0.5rem;
     transition: all 0.15s ease-in-out;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow-y: auto;
+    max-height: 220px;
+}
+
+.drop-zone .assigned-docente {
+    flex-shrink: 0;
 }
 
 .drop-zone:hover {
@@ -498,6 +507,54 @@
     gap: 0.25rem;
     animation: fadeIn 0.3s ease;
     position: relative;
+    cursor: default;
+}
+
+.drop-zone .assigned-docente .adm-mini {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.drop-zone .assigned-docente .adm-mini .adm-mini-nombre {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+
+.drop-zone .assigned-docente .adm-mini .adm-mini-seccion {
+    opacity: 0.75;
+    flex-shrink: 0;
+}
+
+.drop-zone .assigned-docente .adm-full {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    z-index: 40;
+    background: #0a1128;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.375rem 1rem rgba(0, 0, 0, 0.4);
+    padding: 0.75rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.35rem;
+}
+
+.drop-zone .assigned-docente:hover .adm-full {
+    display: flex;
+}
+
+.drop-zone .assigned-docente:hover .adm-mini {
+    visibility: hidden;
 }
 
 .drop-zone .assigned-docente .docente-nombre {
