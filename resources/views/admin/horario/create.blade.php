@@ -1015,7 +1015,101 @@
 
             // Inicializar drag and drop una sola vez
             inicializarDragAndDrop();
+            
+            // ============================================================
+            // Popup flotante para tarjetas de docente (hover)
+            // ============================================================
+            let tarjetaConPopup = null;
+            let timeoutCerrarPopup = null;
 
+            function posicionarPopup(tarjeta) {
+                const popup = tarjeta.querySelector('.adm-full');
+                if (!popup) return;
+
+                const rectTarjeta = tarjeta.getBoundingClientRect();
+                const rectPopup = popup.getBoundingClientRect();
+
+                // Por defecto: a la derecha de la tarjeta
+                let left = rectTarjeta.right + 8;
+                let top = rectTarjeta.top;
+
+                // Si se sale por la derecha, ponerlo a la izquierda
+                if (left + rectPopup.width > window.innerWidth - 10) {
+                    left = rectTarjeta.left - rectPopup.width - 8;
+                }
+                // Si tampoco cabe por la izquierda, pegarlo al borde
+                if (left < 10) left = 10;
+
+                // Si se sale por abajo, subirlo
+                if (top + rectPopup.height > window.innerHeight - 10) {
+                    top = window.innerHeight - rectPopup.height - 10;
+                }
+                if (top < 10) top = 10;
+
+                popup.style.left = left + 'px';
+                popup.style.top = top + 'px';
+            }
+
+            function abrirPopup(tarjeta) {
+                if (tarjetaConPopup === tarjeta) return;
+
+                // Cerrar el anterior
+                if (tarjetaConPopup) {
+                    tarjetaConPopup.classList.remove('popup-activo');
+                }
+
+                clearTimeout(timeoutCerrarPopup);
+                tarjetaConPopup = tarjeta;
+                tarjeta.classList.add('popup-activo');
+
+                // Forzar reflow para que el popup ya tenga tamaño real
+                void tarjeta.offsetHeight;
+                posicionarPopup(tarjeta);
+            }
+
+            function cerrarPopup() {
+                clearTimeout(timeoutCerrarPopup);
+                timeoutCerrarPopup = setTimeout(() => {
+                    if (tarjetaConPopup) {
+                        tarjetaConPopup.classList.remove('popup-activo');
+                        tarjetaConPopup = null;
+                    }
+                }, 180); // margen para que el mouse pueda llegar al popup
+            }
+
+            // Mostrar al entrar a la tarjeta
+            document.addEventListener('mouseover', function(e) {
+                const tarjeta = e.target.closest('.assigned-docente');
+                if (!tarjeta) return;
+
+                // Si entramos a un hijo del popup, no reabrir
+                if (e.target.closest('.adm-full')) {
+                    clearTimeout(timeoutCerrarPopup);
+                    return;
+                }
+
+                abrirPopup(tarjeta);
+            });
+
+            // Cerrar al salir (con retardo, para permitir moverse al popup)
+            document.addEventListener('mouseout', function(e) {
+                const tarjeta = e.target.closest('.assigned-docente');
+                if (!tarjeta || tarjeta !== tarjetaConPopup) return;
+
+                // Si el mouse se va al popup mismo, no cerrar
+                const related = e.relatedTarget;
+                if (related && related.closest('.adm-full')) return;
+
+                // Si todavía está dentro de la tarjeta, no cerrar
+                if (related && tarjeta.contains(related)) return;
+
+                cerrarPopup();
+            });
+
+            // Reposicionar si el usuario hace scroll con el popup abierto
+            window.addEventListener('scroll', () => {
+                if (tarjetaConPopup) posicionarPopup(tarjetaConPopup);
+            }, true);
             // Función para validar ambos campos del Paso 1
             function validarPaso1() {
                 const nivelSeleccionado = nivelSelect.value;
