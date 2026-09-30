@@ -1321,9 +1321,11 @@
                         const asignacionLocal = horarioAsignaciones[key];
 
                         // Priorizar asignación local sobre datos de API
-                        if (asignacionLocal) {
-                            inner.innerHTML = renderizarAsignacionLocalHTML(key, asignacionLocal);
-                        } else if (asignacionesDeCelda.length > 0) {
+                            if (Array.isArray(asignacionLocal) && asignacionLocal.length > 0) {
+                                inner.innerHTML = asignacionLocal
+                                    .map((a, idx) => renderizarAsignacionLocalHTML(key, a, idx))
+                                    .join('');
+                            } else if (asignacionesDeCelda.length > 0) {
                             // Mostrar todas las asignaciones como tarjetas apiladas
                             inner.innerHTML = asignacionesDeCelda.map(horarioAsignado => renderizarTarjetaPersistida(horarioAsignado)).join('');
                         } else {
@@ -1343,58 +1345,56 @@
                 console.log('Calendario renderizado con', tbody.children.length, 'filas');
             }
 
-            // Función para renderizar HTML de asignación local (unificada)
-            function renderizarAsignacionLocalHTML(key, asignacion) {
-                // Crear selector de sección usando solo las secciones del docente
+            function renderizarAsignacionLocalHTML(key, asignacion, index) {
+                const uid = `${key}-${index}`;
+
                 let seccionHtml = '';
                 if (asignacion.secciones && asignacion.secciones.length > 0) {
-                    let seccionOptions = '<option value="">Seleccione sección</option>';
-                    asignacion.secciones.forEach(seccion => {
-                        const selected = asignacion.seccionId == seccion.id ? 'selected' : '';
-                        seccionOptions += `<option value="${seccion.id}" ${selected}>${seccion.nombre}</option>`;
+                    let opciones = '<option value="">Seleccione sección</option>';
+                    asignacion.secciones.forEach(s => {
+                        const selected = asignacion.seccionId == s.id ? 'selected' : '';
+                        opciones += `<option value="${s.id}" ${selected}>${s.nombre}</option>`;
                     });
                     seccionHtml = `
-                        <select class="pildora-selector" id="seccion-local-${key}" data-key="${key}" onchange="cambiarSeccionAsignacion(this)">
-                            ${seccionOptions}
-                        </select>
-                    `;
+                        <select class="pildora-selector" id="seccion-local-${uid}"
+                                data-key="${key}" data-index="${index}"
+                                onchange="cambiarSeccionAsignacion(this)">
+                            ${opciones}
+                        </select>`;
                 } else {
                     seccionHtml = `<span class="docente-cedula">El docente no tiene secciones asignadas</span>`;
                 }
 
-                // Determinar si la materia es especializada (basado en el nombre)
-                const materiasEspecializadas = ['Arte y Patrimonio', 'Ciencias Naturales', 'Biología', 'Física', 'Química'];
-                const esEspecializada = materiasEspecializadas.some(m => asignacion.area.includes(m));
+                const materiasEspecializadas = ['Arte y Patrimonio','Ciencias Naturales','Biología','Física','Química'];
+                const esEspecializada = materiasEspecializadas.some(m => (asignacion.area || '').includes(m));
 
-                // Filtrar aulas según si la materia es especializada
                 let aulaHtml = '';
                 const aulaSelect = document.getElementById('aula');
                 if (aulaSelect) {
-                    let aulaOptions = '<option value="">Seleccione aula</option>';
+                    let opciones = '<option value="">Seleccione aula</option>';
                     if (esEspecializada) {
                         for (let i = 0; i < aulaSelect.options.length; i++) {
-                            const option = aulaSelect.options[i];
-                            if (option.value !== '' && (option.dataset.tipo || '') !== 'Aula Regular') {
-                                const selected = asignacion.aulaId == option.value ? 'selected' : '';
-                                aulaOptions += `<option value="${option.value}" ${selected}>${option.text}</option>`;
+                            const o = aulaSelect.options[i];
+                            if (o.value !== '' && (o.dataset.tipo || '') !== 'Aula Regular') {
+                                const sel = asignacion.aulaId == o.value ? 'selected' : '';
+                                opciones += `<option value="${o.value}" ${sel}>${o.text}</option>`;
                             }
                         }
                     } else {
-                        // Materia regular: solo el aula fija de la sección, no todas las regulares
-                        const aulaFija = obtenerAulaRegularDeSeccion(asignacion.seccionId);
-                        if (aulaFija) {
-                            aulaOptions += `<option value="${aulaFija.id}" selected>${aulaFija.nombre}</option>`;
-                            // Auto-asignar de una vez ya que es la única opción válida
-                            asignacion.aulaId = aulaFija.id;
+                        const fija = obtenerAulaRegularDeSeccion(asignacion.seccionId);
+                        if (fija) {
+                            opciones += `<option value="${fija.id}" selected>${fija.nombre}</option>`;
+                            asignacion.aulaId = fija.id;
                         } else {
-                            aulaOptions += `<option value="">Sin aula regular asignada a esta sección</option>`;
+                            opciones += `<option value="">Sin aula regular asignada</option>`;
                         }
                     }
                     aulaHtml = `
-                        <select class="pildora-selector" id="aula-local-${key}" data-key="${key}" onchange="asignarAulaLocal(this)" ${!esEspecializada ? 'disabled' : ''}>
-                            ${aulaOptions}
-                        </select>
-                    `;
+                        <select class="pildora-selector" id="aula-local-${uid}"
+                                data-key="${key}" data-index="${index}"
+                                onchange="asignarAulaLocal(this)" ${!esEspecializada ? 'disabled' : ''}>
+                            ${opciones}
+                        </select>`;
                 }
 
                 return `
@@ -1410,10 +1410,10 @@
                             ${seccionHtml}
                             ${aulaHtml}
                             <div class="aula-error-message"></div>
-                            <button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', event)">×</button>
+                            <button class="btn-eliminar-docente"
+                                    onclick="eliminarAsignacion('${key}', ${index}, event)">×</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
 
             // Función para renderizar una tarjeta de asignación persistida
@@ -1480,25 +1480,16 @@
             // Función para manejar el cambio de sección en una asignación
             function cambiarSeccionAsignacion(selectElement) {
                 const key = selectElement.dataset.key;
-                const nuevaSeccionId = selectElement.value;
-                const asignacion = horarioAsignaciones[key];
-                
-                if (!asignacion) return;
+                const index = parseInt(selectElement.dataset.index, 10);
+                const arr = horarioAsignaciones[key];
+                if (!Array.isArray(arr) || !arr[index]) return;
 
-                // Actualizar el seccion_id en memoria
-                asignacion.seccionId = nuevaSeccionId;
+                arr[index].seccionId = selectElement.value;
 
-                // Buscar y asignar automáticamente el aula regular de la sección
-                const aulaRegular = obtenerAulaRegularDeSeccion(nuevaSeccionId);
-                if (aulaRegular) {
-                    asignacion.aulaId = aulaRegular.id;
-                    
-                    // Actualizar visualmente el selector de aula
-                    const aulaSelect = document.getElementById(`aula-local-${key}`);
-                    if (aulaSelect) {
-                        aulaSelect.value = aulaRegular.id;
-                    }
-                }
+                const aulaRegular = obtenerAulaRegularDeSeccion(selectElement.value);
+                if (aulaRegular) arr[index].aulaId = aulaRegular.id;
+
+                renderizarCalendario();
             }
 
             // Función para mostrar modal de confirmación
@@ -1840,42 +1831,38 @@
                     const block = dropZone.dataset.block;
                     const key = `${day}-${block}`;
 
-                    // Verificar si ya hay un docente asignado
-                    if (horarioAsignaciones[key]) {
-                        mostrarNotificacion('Esta celda ya tiene un docente asignado. Elimine la asignación actual antes de agregar otra.', 'error');
-                        return;
-                    }
-
-                    // Obtener el área de formación y sección actuales para guardar contexto
                     const areaFormacionId = document.getElementById('areaFormacion').value;
                     const seccionId = document.getElementById('seccion').value;
 
-                    console.log('Guardando asignación con contexto:', {
-                        key,
-                        areaFormacionId,
-                        seccionId,
-                        draggedDocente
-                    });
-
-                    // Validar que se haya seleccionado un área de formación
                     if (!areaFormacionId) {
                         mostrarNotificacion('Por favor, seleccione un área de formación antes de asignar', 'warning');
                         return;
                     }
 
-                    // Asignar docente con contexto
-                    horarioAsignaciones[key] = {
+                    // Inicializar array si no existe
+                    if (!Array.isArray(horarioAsignaciones[key])) {
+                        horarioAsignaciones[key] = [];
+                    }
+
+                    // Evitar duplicar el mismo docente en la misma celda
+                    const yaExiste = horarioAsignaciones[key]
+                        .some(a => String(a.id) === String(draggedDocente.id));
+                    if (yaExiste) {
+                        mostrarNotificacion('Este docente ya está asignado en esta celda', 'warning');
+                        return;
+                    }
+
+                    horarioAsignaciones[key].push({
                         ...draggedDocente,
                         areaFormacionId: String(areaFormacionId),
                         seccionId: seccionId ? String(seccionId) : '',
                         aulaId: ''
-                    };
+                    });
 
-                    // Actualizar visualmente con selectores usando función unificada
-                    dropZone.innerHTML = renderizarAsignacionLocalHTML(key, horarioAsignaciones[key]);
-
-                    mostrarNotificacion(`Docente ${draggedDocente.nombre} asignado correctamente. Seleccione sección y aula.`, 'success');
-                });
+                    renderizarCalendario();
+                    mostrarNotificacion(`Docente ${draggedDocente.nombre} asignado. Seleccione sección y aula.`, 'success');        
+                                        mostrarNotificacion(`Docente ${draggedDocente.nombre} asignado correctamente. Seleccione sección y aula.`, 'success');
+                                    });
 
                 // Marcar como inicializado
                 dragAndDropInicializado = true;
@@ -1884,30 +1871,37 @@
             // Función para mover asignación existente
             async function moverAsignacion(origen, dropZoneDestino) {
                 const destKey = `${dropZoneDestino.dataset.day}-${dropZoneDestino.dataset.block}`;
-                
+
                 // Si se soltó en el mismo lugar, no hacer nada
                 if (destKey === origen.localKey) {
                     return;
                 }
 
-                // Verificar si la celda destino está ocupada
-                const destinoOcupado = horarioAsignaciones[destKey] || dropZoneDestino.querySelector('.assigned-docente');
-                
+                // ⬅️ CAMBIO: ahora origen.localKey apunta a un ARRAY de asignaciones
+                const origenArr = Array.isArray(horarioAsignaciones[origen.localKey])
+                    ? horarioAsignaciones[origen.localKey]
+                    : (horarioAsignaciones[origen.localKey] ? [horarioAsignaciones[origen.localKey]] : []);
+
+                // Verificar si la celda destino está ocupada (local o persistida)
+                const destinoLocalArr = Array.isArray(horarioAsignaciones[destKey])
+                    ? horarioAsignaciones[destKey]
+                    : (horarioAsignaciones[destKey] ? [horarioAsignaciones[destKey]] : []);
+                const destinoAsignacionDOM = dropZoneDestino.querySelector('.assigned-docente');
+                const destinoOcupado = destinoLocalArr.length > 0 || !!destinoAsignacionDOM;
+
                 if (destinoOcupado) {
-                    // Obtener información de la asignación destino
-                    const destinoAsignacion = dropZoneDestino.querySelector('.assigned-docente');
-                    const destinoAsignacionId = destinoAsignacion?.dataset.asignacionId;
-                    
-                    // Si ambas son asignaciones persistidas, ofrecer intercambio
+                    // Obtener información de la asignación destino (persistida)
+                    const destinoAsignacionId = destinoAsignacionDOM?.dataset.asignacionId;
+
+                    // CASO A: ambas son persistidas → ofrecer intercambio
                     if (origen.asignacionId && destinoAsignacionId) {
-                        // Obtener información de ambas asignaciones desde horarioData
                         const origenData = horarioData.find(h => h.id == origen.asignacionId);
                         const destinoData = horarioData.find(h => h.id == destinoAsignacionId);
-                        
+
                         if (origenData && destinoData) {
                             const origenDia = diasSemana.find(d => d.id == origenData.dia_id);
                             const destinoDia = diasSemana.find(d => d.id == destinoData.dia_id);
-                            
+
                             const mensaje = `
                                 <strong>[${origenDia?.nombre_dia || origenData.dia_nombre} - Bloque ${origenData.bloque_id}]:</strong><br>
                                 Docente: ${origenData.docente_nombre}<br>
@@ -1919,7 +1913,7 @@
                                 Sección: ${destinoData.seccion_nombre}<br>
                                 Aula: ${destinoData.aula_nombre}
                             `;
-                            
+
                             mostrarModalConfirmacion(mensaje, async () => {
                                 try {
                                     const response = await fetch('/api/horario/intercambiar', {
@@ -1933,9 +1927,9 @@
                                             horario_id_2: destinoAsignacionId
                                         })
                                     });
-                                    
+
                                     const data = await response.json();
-                                    
+
                                     if (!response.ok) {
                                         if (data.error === 'conflicto' && data.detalles) {
                                             const mensajes = data.detalles.map(d => d.mensaje).join('<br>');
@@ -1945,25 +1939,25 @@
                                         }
                                         return;
                                     }
-                                    
-                                    // Actualizar horarioData en memoria con los datos actualizados
+
+                                    // Actualizar horarioData en memoria
                                     const idx1 = horarioData.findIndex(h => h.id == data.asignacion1.id);
                                     const idx2 = horarioData.findIndex(h => h.id == data.asignacion2.id);
-                                    
+
                                     if (idx1 !== -1) {
                                         horarioData[idx1] = {
                                             id: data.asignacion1.id,
                                             docente_id: data.asignacion1.docente_id,
-                                            docente_nombre: data.asignacion1.docente?.persona 
-                                                ? data.asignacion1.docente.persona.primer_nombre + ' ' + data.asignacion1.docente.persona.primer_apellido 
+                                            docente_nombre: data.asignacion1.docente?.persona
+                                                ? data.asignacion1.docente.persona.primer_nombre + ' ' + data.asignacion1.docente.persona.primer_apellido
                                                 : 'N/A',
                                             materia_id: data.asignacion1.materia_id,
                                             materia_nombre: data.asignacion1.materia?.nombre_area_formacion || 'N/A',
                                             seccion_id: data.asignacion1.seccion_id,
                                             seccion_nombre: data.asignacion1.seccion?.nombre || 'N/A',
                                             grado_id: data.asignacion1.seccion?.grado_id || null,
-                                            grado_nombre: data.asignacion1.seccion?.grado 
-                                                ? data.asignacion1.seccion.grado.numero_grado + '° Grado' 
+                                            grado_nombre: data.asignacion1.seccion?.grado
+                                                ? data.asignacion1.seccion.grado.numero_grado + '° Grado'
                                                 : 'N/A',
                                             aula_id: data.asignacion1.aula_id,
                                             aula_nombre: data.asignacion1.aula?.nombre_aula || 'N/A',
@@ -1974,21 +1968,21 @@
                                             bloque_nombre: 'Bloque ' + data.asignacion1.bloque_id
                                         };
                                     }
-                                    
+
                                     if (idx2 !== -1) {
                                         horarioData[idx2] = {
                                             id: data.asignacion2.id,
                                             docente_id: data.asignacion2.docente_id,
-                                            docente_nombre: data.asignacion2.docente?.persona 
-                                                ? data.asignacion2.docente.persona.primer_nombre + ' ' + data.asignacion2.docente.persona.primer_apellido 
+                                            docente_nombre: data.asignacion2.docente?.persona
+                                                ? data.asignacion2.docente.persona.primer_nombre + ' ' + data.asignacion2.docente.persona.primer_apellido
                                                 : 'N/A',
                                             materia_id: data.asignacion2.materia_id,
                                             materia_nombre: data.asignacion2.materia?.nombre_area_formacion || 'N/A',
                                             seccion_id: data.asignacion2.seccion_id,
                                             seccion_nombre: data.asignacion2.seccion?.nombre || 'N/A',
                                             grado_id: data.asignacion2.seccion?.grado_id || null,
-                                            grado_nombre: data.asignacion2.seccion?.grado 
-                                                ? data.asignacion2.seccion.grado.numero_grado + '° Grado' 
+                                            grado_nombre: data.asignacion2.seccion?.grado
+                                                ? data.asignacion2.seccion.grado.numero_grado + '° Grado'
                                                 : 'N/A',
                                             aula_id: data.asignacion2.aula_id,
                                             aula_nombre: data.asignacion2.aula?.nombre_aula || 'N/A',
@@ -1999,7 +1993,7 @@
                                             bloque_nombre: 'Bloque ' + data.asignacion2.bloque_id
                                         };
                                     }
-                                    
+
                                     mostrarNotificacion('Asignaciones intercambiadas exitosamente', 'success');
                                     renderizarCalendario();
                                 } catch (error) {
@@ -2010,30 +2004,36 @@
                             return;
                         }
                     }
-                    
-                    // Si una es local y la otra persistida, no permitir intercambio
+
+                    // CASO B: una local + una persistida → bloquear
                     if ((origen.asignacionId && !destinoAsignacionId) || (!origen.asignacionId && destinoAsignacionId)) {
                         mostrarNotificacion('No se puede intercambiar una asignación guardada con una que aún no se ha guardado', 'warning');
                         return;
                     }
-                    
-                    // Si ambas son locales, intercambiar en memoria sin confirmación
+
+                    // CASO C: ambas locales → mover el array (o sumarlo si destino tiene otros)
                     if (!origen.asignacionId && !destinoAsignacionId) {
-                        horarioAsignaciones[destKey] = horarioAsignaciones[origen.localKey];
+                        // ⬅️ CAMBIO: concatenar arrays en vez de sobreescribir
+                        if (!Array.isArray(horarioAsignaciones[destKey])) {
+                            horarioAsignaciones[destKey] = destinoLocalArr.slice();
+                        }
+                        horarioAsignaciones[destKey].push(...origenArr);
                         delete horarioAsignaciones[origen.localKey];
                         renderizarCalendario();
-                        mostrarNotificacion('Asignaciones intercambiadas localmente', 'success');
+                        mostrarNotificacion('Asignación movida localmente', 'success');
                         return;
                     }
-                    
+
+                    // Fallback: celda destino ocupada por algo no manejado
                     mostrarNotificacion('La celda destino ya está ocupada', 'error');
                     return;
                 }
 
+                // CASO D: destino vacío
                 if (origen.asignacionId) {
-                    // Asignación persistida en BD: actualizar en backend
+                    // Asignación persistida → actualizar en backend
                     const diaNombre = dropZoneDestino.dataset.day;
-                    const dia = diasSemana.find(d => 
+                    const dia = diasSemana.find(d =>
                         (d.nombre_dia || d.nombre).toLowerCase() === diaNombre.toLowerCase()
                     );
 
@@ -2053,11 +2053,11 @@
                     try {
                         const response = await fetch(`/api/horario/${origen.asignacionId}/posicion`, {
                             method: 'PUT',
-                            headers: { 
+                            headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                             },
-                            body: JSON.stringify({ 
+                            body: JSON.stringify({
                                 dia_id: dia.id,
                                 bloque_id: bloque.id
                             })
@@ -2070,7 +2070,6 @@
                             return;
                         }
 
-                        // Actualizar horarioData en memoria en lugar de recargar todo
                         const asignacionIndex = horarioData.findIndex(h => h.id == origen.asignacionId);
                         if (asignacionIndex !== -1) {
                             horarioData[asignacionIndex].dia_id = dia.id;
@@ -2085,8 +2084,12 @@
                         mostrarNotificacion('Error de conexión al servidor', 'error');
                     }
                 } else {
-                    // Asignación solo local: mover en memoria y refrescar
-                    horarioAsignaciones[destKey] = horarioAsignaciones[origen.localKey];
+                    // Asignación solo local → mover el array en memoria
+                    // ⬅️ CAMBIO: concatenar arrays en vez de sobreescribir
+                    const destArr = Array.isArray(horarioAsignaciones[destKey])
+                        ? horarioAsignaciones[destKey]
+                        : (horarioAsignaciones[destKey] ? [horarioAsignaciones[destKey]] : []);
+                    horarioAsignaciones[destKey] = destArr.concat(origenArr);
                     delete horarioAsignaciones[origen.localKey];
                     renderizarCalendario();
                     mostrarNotificacion('Asignación movida localmente', 'success');
@@ -2096,8 +2099,10 @@
             // Función para asignar aula local
             window.asignarAulaLocal = function(selectElement) {
                 const key = selectElement.dataset.key;
-                if (horarioAsignaciones[key]) {
-                    horarioAsignaciones[key].aulaId = selectElement.value;
+                const index = parseInt(selectElement.dataset.index, 10);
+                const arr = horarioAsignaciones[key];
+                if (Array.isArray(arr) && arr[index]) {
+                    arr[index].aulaId = selectElement.value;
                     mostrarNotificacion('Aula asignada correctamente', 'success');
                 }
             };
@@ -2117,19 +2122,17 @@
             };
 
             // Eliminar asignación
-            window.eliminarAsignacion = function(key, event) {
-                if (event) {
-                    event.stopPropagation();
-                }
-                
-                delete horarioAsignaciones[key];
-                const dropZone = document.querySelector(`.drop-zone[data-day="${key.split('-')[0]}"][data-block="${key.split('-')[1]}"]`);
-                if (dropZone) {
-                    dropZone.innerHTML = '';
-                }
-                
-                mostrarNotificacion('Asignación eliminada correctamente', 'success');
-            };
+                window.eliminarAsignacion = function(key, index, event) {
+                    if (event) event.stopPropagation();
+                    const arr = horarioAsignaciones[key];
+                    if (!Array.isArray(arr)) return;
+
+                    arr.splice(index, 1);
+                    if (arr.length === 0) delete horarioAsignaciones[key];
+
+                    renderizarCalendario();
+                    mostrarNotificacion('Asignación eliminada correctamente', 'success');
+};
 
             // Guardar horario
             document.getElementById('btnGuardarHorario').addEventListener('click', async function() {
@@ -2150,32 +2153,40 @@
                 }
 
                 // Convertir asignaciones locales al formato que espera el backend
-                const asignacionesParaGuardar = asignacionesLocales.map(key => {
-                    const asignacion = horarioAsignaciones[key];
+                const asignacionesParaGuardar = [];
+                asignacionesLocales.forEach(key => {
+                    const arr = horarioAsignaciones[key];
+
+                    // Compatibilidad: si todavía hay un objeto suelto, lo envolvemos en array
+                    const items = Array.isArray(arr) ? arr : (arr ? [arr] : []);
+                    if (items.length === 0) return;
+
                     const [diaNombre, bloqueId] = key.split('-');
-                    
+
                     // Encontrar el ID del día correspondiente al nombre
-                    const dia = diasSemana.find(d => 
+                    const dia = diasSemana.find(d =>
                         (d.nombre_dia || d.nombre).toLowerCase() === diaNombre.toLowerCase()
                     );
-                    
-                    // Si no hay aulaId asignada, usar el aula regular fija de la sección si existe
-                    let aulaIdFinal = asignacion.aulaId;
-                    if (!aulaIdFinal && asignacion.seccionId) {
-                        const aulaRegular = obtenerAulaRegularDeSeccion(asignacion.seccionId);
-                        if (aulaRegular) {
-                            aulaIdFinal = aulaRegular.id;
+
+                    items.forEach(asignacion => {
+                        // Si no hay aulaId asignada, usar el aula regular fija de la sección si existe
+                        let aulaIdFinal = asignacion.aulaId;
+                        if (!aulaIdFinal && asignacion.seccionId) {
+                            const aulaRegular = obtenerAulaRegularDeSeccion(asignacion.seccionId);
+                            if (aulaRegular) {
+                                aulaIdFinal = aulaRegular.id;
+                            }
                         }
-                    }
-                    
-                    return {
-                        docente_id: parseInt(asignacion.id),
-                        materia_id: parseInt(asignacion.areaFormacionId),
-                        seccion_id: parseInt(asignacion.seccionId),
-                        aula_id: parseInt(aulaIdFinal || 0),
-                        dia_id: dia ? dia.id : 1,
-                        bloque_id: parseInt(bloqueId)
-                    };
+
+                        asignacionesParaGuardar.push({
+                            docente_id: parseInt(asignacion.id),
+                            materia_id: parseInt(asignacion.areaFormacionId),
+                            seccion_id: parseInt(asignacion.seccionId),
+                            aula_id: parseInt(aulaIdFinal || 0),
+                            dia_id: dia ? dia.id : 1,
+                            bloque_id: parseInt(bloqueId)
+                        });
+                    });
                 });
 
                 // Mostrar indicador de carga
@@ -2188,11 +2199,11 @@
                 try {
                     const response = await fetch('/api/horario/guardar-asignaciones', {
                         method: 'POST',
-                        headers: { 
+                        headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
-                        body: JSON.stringify({ 
+                        body: JSON.stringify({
                             asignaciones: asignacionesParaGuardar,
                             anio_escolar_id: anioEscolarActivo ? anioEscolarActivo.id : null
                         })

@@ -474,7 +474,15 @@
     flex-direction: column;
     gap: 0.25rem;
     overflow-y: auto;
-    max-height: 220px;
+    max-height: 260px;
+}
+
+.drop-zone-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .drop-zone .assigned-docente {
