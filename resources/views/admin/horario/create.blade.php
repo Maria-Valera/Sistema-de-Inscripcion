@@ -1306,6 +1306,9 @@
                         td.dataset.day = diaNombre.toLowerCase();
                         td.dataset.block = index + 1;
 
+                        const inner = document.createElement('div');
+                        inner.className = 'drop-zone-inner';
+
                         // Buscar todas las asignaciones para este día y bloque (usando datos filtrados)
                         const asignacionesDeCelda = horarioFiltrado.filter(h => {
                             const apiDiaNombre = h.dia_nombre;
@@ -1319,15 +1322,16 @@
 
                         // Priorizar asignación local sobre datos de API
                         if (asignacionLocal) {
-                            td.innerHTML = renderizarAsignacionLocalHTML(key, asignacionLocal);
+                            inner.innerHTML = renderizarAsignacionLocalHTML(key, asignacionLocal);
                         } else if (asignacionesDeCelda.length > 0) {
                             // Mostrar todas las asignaciones como tarjetas apiladas
-                            td.innerHTML = asignacionesDeCelda.map(horarioAsignado => renderizarTarjetaPersistida(horarioAsignado)).join('');
+                            inner.innerHTML = asignacionesDeCelda.map(horarioAsignado => renderizarTarjetaPersistida(horarioAsignado)).join('');
                         } else {
                             // Celda vacía pero visible para permitir drag and drop
-                            td.innerHTML = '';
+                            inner.innerHTML = '';
                         }
 
+                        td.appendChild(inner);
                         tr.appendChild(td);
                     });
 
