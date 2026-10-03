@@ -416,7 +416,22 @@
 
 .horario-matrix {
     width: 100%;
+    table-layout: fixed;          /* ⬅️ CLAVE */
     border-collapse: collapse;
+}
+
+/* Primera columna (Hora / Bloque) con ancho fijo */
+.horario-matrix thead th.time-header,
+.horario-matrix tbody td.time-cell {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+}
+
+/* Las 5 columnas de días se reparten el resto por igual */
+.horario-matrix thead th:not(.time-header),
+.horario-matrix tbody td.drop-zone {
+    width: calc((100% - 110px) / 5);
 }
 
 .horario-matrix thead th {
@@ -427,17 +442,15 @@
     font-size: 0.75rem;
     text-align: center;
     border: 1px solid var(--horario-primary-dark);
-    min-width: 80px;
 }
 
 .horario-matrix .time-header {
     background: var(--horario-dark);
-    min-width: 80px;
 }
 
 .horario-matrix tbody td {
     border: 1px solid var(--gray-200);
-    vertical-align: middle;
+    vertical-align: top;
     padding: 0.25rem;
 }
 
@@ -463,16 +476,16 @@
    Drop Zones
    =================================== */
 .drop-zone {
-    height: 80px;
+    min-height: 80px;  
     min-width: 140px;
     background: var(--gray-50);
     border: 2px dashed var(--gray-300);
     padding: 0.5rem;
     transition: all 0.15s ease-in-out;
     position: relative;
-    flex-direction: column;
-    gap: 0.25rem;
+    display: block;        /* el flex ya vive en .drop-zone-inner */
     max-height: 260px;
+    vertical-align: top;
 }
 
 .drop-zone-inner {
