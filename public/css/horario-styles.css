@@ -437,7 +437,7 @@
 
 .horario-matrix tbody td {
     border: 1px solid var(--gray-200);
-    vertical-align: middle;
+    vertical-align: top;
     padding: 0.25rem;
 }
 
@@ -463,28 +463,35 @@
    Drop Zones
    =================================== */
 .drop-zone {
-    height: 80px;
-    min-width: 140px;
+    min-height: 90px;              
     background: var(--gray-50);
     border: 2px dashed var(--gray-300);
     padding: 0.5rem;
     transition: all 0.15s ease-in-out;
     position: relative;
-    flex-direction: column;
-    gap: 0.25rem;
-    max-height: 260px;
+    vertical-align: top;          
 }
 
 .drop-zone-inner {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    height: 100%;
-    overflow-y: auto;
+    gap: 0.35rem;                   
+    min-height: 100%;
 }
 
 .drop-zone .assigned-docente {
-    flex-shrink: 0;
+    background: var(--horario-dark);
+    color: white;
+    padding: 0.5rem 0.6rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    animation: fadeIn 0.3s ease;
+    position: relative;
+    cursor: default;
+    /* SIN flex-shrink: 0 ahora, no lo necesitas */
 }
 
 .drop-zone:hover {
@@ -518,8 +525,9 @@
 .drop-zone .assigned-docente .adm-mini {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.4rem 0.6rem;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0;
     font-size: 0.7rem;
     white-space: nowrap;
     overflow: hidden;
