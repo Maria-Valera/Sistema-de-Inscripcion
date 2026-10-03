@@ -1,4 +1,4 @@
-git <div class="modal fade" id="viewModalHorario" tabindex="-1" aria-labelledby="viewModalHorarioLabel"
+<div class="modal fade" id="viewModalHorario" tabindex="-1" aria-labelledby="viewModalHorarioLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
         <div class="modal-content modal-modern shadow">
@@ -27,8 +27,11 @@ git <div class="modal fade" id="viewModalHorario" tabindex="-1" aria-labelledby=
                             </div>
                         </div>
 
+                        <!-- Estado: carga / vacío / error -->
+                        <div id="modalHorarioEstado" class="d-none"></div>
+
                         <!-- Matriz de Horarios -->
-                        <div class="horario-matrix-wrapper">
+                        <div class="horario-matrix-wrapper" id="modalHorarioMatrixWrapper">
                             <table class="table table-bordered horario-matrix" id="modalHorarioTable">
                                 <thead>
                                     <tr>
@@ -154,148 +157,159 @@ git <div class="modal fade" id="viewModalHorario" tabindex="-1" aria-labelledby=
 </style>
 
 <script>
+    // Endpoint basado en HorarioAsignacion (lo mismo que genera el servicio y lista index())
+    const HORARIO_SHOW_API_URL = @json(route('admin.horario.show-api', ['grado_id' => '__GRADO__', 'seccion_id' => '__SECCION__']));
+    const DIAS_POR_DEFECTO = [
+        { id: 1, nombre_dia: 'Lunes' }, { id: 2, nombre_dia: 'Martes' }, { id: 3, nombre_dia: 'Miércoles' },
+        { id: 4, nombre_dia: 'Jueves' }, { id: 5, nombre_dia: 'Viernes' }
+    ];
+    let horarioModalRequestId = 0;
+
+    function escHtml(valor) {
+        return String(valor ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function horaCorta(hora) {
+        return hora ? String(hora).substring(0, 5) : '--:--';
+    }
+
+    // tipo: 'loading' | 'empty' | 'error' | null (oculta el estado y muestra la tabla)
+    function setEstadoHorarioModal(tipo, mensaje = '') {
+        const estado = document.getElementById('modalHorarioEstado');
+        const matriz = document.getElementById('modalHorarioMatrixWrapper');
+        if (!tipo) {
+            estado.classList.add('d-none');
+            estado.innerHTML = '';
+            matriz.classList.remove('d-none');
+            return;
+        }
+        const config = {
+            loading: { cls: 'text-center text-muted py-5', icon: '<div class="spinner-border text-primary mb-3" role="status"></div>' },
+            empty:   { cls: 'alert alert-info text-center my-3', icon: '<i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>' },
+            error:   { cls: 'alert alert-danger text-center my-3', icon: '<i class="fas fa-exclamation-triangle fa-2x mb-2 d-block"></i>' },
+        }[tipo];
+        estado.className = config.cls;
+        estado.innerHTML = `${config.icon}<div>${escHtml(mensaje)}</div>`;
+        matriz.classList.toggle('d-none', tipo !== 'empty');
+    }
+
     // Función para cargar horario en la modal
     async function cargarHorarioEnModal(gradoId, seccionId) {
+        const requestId = ++horarioModalRequestId;
+        const docentesList = document.getElementById('modalDocentesList');
+
+        document.getElementById('modalContextNivel').textContent = 'Grado: --';
+        document.getElementById('modalContextSeccion').textContent = 'Sección: --';
+        document.querySelector('#modalHorarioTable thead tr').innerHTML = '<th class="time-header">Hora / Bloque</th>';
+        document.querySelector('#modalHorarioTable tbody').innerHTML = '';
+        docentesList.innerHTML = '<div class="empty-state"><i class="fas fa-user-tie"></i><p>Cargando docentes...</p></div>';
+        setEstadoHorarioModal('loading', 'Cargando horario...');
+
         try {
-            mostrarPantallaCargaModal('Cargando horario...');
+            const url = HORARIO_SHOW_API_URL
+                .replace('__GRADO__', encodeURIComponent(gradoId))
+                .replace('__SECCION__', encodeURIComponent(seccionId));
 
-            const response = await fetch(`/api/horario/asignaciones?grado_id=${gradoId}`);
-            const horarioData = await response.json();
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
+            const data = await response.json().catch(() => ({}));
 
-            // Filtrar por sección específica
-            const horarioFiltrado = horarioData.filter(h => h.seccion_id == seccionId);
+            // Ignorar respuestas viejas si el usuario abrió otro horario mientras tanto
+            if (requestId !== horarioModalRequestId) return;
 
-            const diasResponse = await fetch('/api/dias-semana');
-            const diasSemana = await diasResponse.json();
+            if (!response.ok) {
+                throw new Error(data.message || `Error ${response.status} al consultar el horario`);
+            }
 
-            const bloquesResponse = await fetch('/api/bloques-horario');
-            const bloquesHorario = await bloquesResponse.json();
-
-            renderizarHorarioEnModal(horarioFiltrado, diasSemana, bloquesHorario, gradoId, seccionId);
-
+            renderizarHorarioEnModal(data);
         } catch (error) {
+            if (requestId !== horarioModalRequestId) return;
             console.error('Error al cargar horario:', error);
-            alert('Error al cargar el horario');
-        } finally {
-            ocultarPantallaCargaModal();
+            setEstadoHorarioModal('error', error.message || 'Error al cargar el horario');
+            docentesList.innerHTML = '<div class="empty-state"><i class="fas fa-user-tie"></i><p>Sin datos</p></div>';
         }
     }
 
-    function renderizarHorarioEnModal(horarioData, diasSemana, bloquesHorario, gradoId, seccionId) {
-        console.log('Datos recibidos:', { horarioData, diasSemana, bloquesHorario, gradoId, seccionId });
-
+    function renderizarHorarioEnModal(data) {
         const thead = document.querySelector('#modalHorarioTable thead tr');
         const tbody = document.querySelector('#modalHorarioTable tbody');
-        const docentesList = document.querySelector('#modalDocentesList');
+        const docentesList = document.getElementById('modalDocentesList');
+        const asignaciones = Array.isArray(data.asignaciones) ? data.asignaciones : [];
+        const dias = (Array.isArray(data.dias) && data.dias.length) ? data.dias : DIAS_POR_DEFECTO;
 
-        // Actualizar contexto
-        document.getElementById('modalContextNivel').textContent = `Grado: ${gradoId}`;
-        document.getElementById('modalContextSeccion').textContent = `Sección: ${seccionId}`;
+        document.getElementById('modalContextNivel').textContent =
+            `Grado: ${data.grado?.numero_grado != null ? data.grado.numero_grado + '° Año' : '--'}`;
+        document.getElementById('modalContextSeccion').textContent = `Sección: ${data.seccion?.nombre ?? '--'}`;
 
-        // Renderizar días en el header
-        thead.innerHTML = '<th class="time-header">Hora / Bloque</th>';
-        diasSemana.forEach(dia => {
-            const th = document.createElement('th');
-            th.textContent = dia.nombre_dia || dia.nombre;
-            thead.appendChild(th);
-        });
+        // Filas: bloques activos + cualquier bloque_id usado en asignaciones que no exista en la tabla
+        const bloques = (Array.isArray(data.bloques) ? data.bloques : []).map(b => ({ ...b }));
+        const idsBloques = new Set(bloques.map(b => Number(b.id)));
+        [...new Set(asignaciones.map(a => Number(a.bloque_id)))]
+            .filter(id => !idsBloques.has(id))
+            .sort((a, b) => a - b)
+            .forEach(id => bloques.push({ id, hora_inicio: null, hora_fin: null, huerfano: true }));
 
-        // Renderizar filas y celdas
-        tbody.innerHTML = '';
-        bloquesHorario.forEach((bloque, index) => {
-            const tr = document.createElement('tr');
+        // Encabezado: días en columnas
+        thead.innerHTML = '<th class="time-header">Hora / Bloque</th>' +
+            dias.map(d => `<th>${escHtml(d.nombre_dia || d.nombre)}</th>`).join('');
 
-            // Celda de tiempo
-            const timeCell = document.createElement('td');
-            timeCell.className = 'time-cell';
-            timeCell.innerHTML = `
-                <strong>${bloque.hora_inicio} - ${bloque.hora_fin}</strong>
-                <small>Bloque ${index + 1}</small>
-            `;
-            tr.appendChild(timeCell);
+        // Cuerpo: una fila por bloque, todas las asignaciones de cada celda
+        tbody.innerHTML = bloques.map((bloque, index) => {
+            const horario = bloque.huerfano
+                ? '<strong>Bloque sin horario</strong>'
+                : `<strong>${horaCorta(bloque.hora_inicio)} - ${horaCorta(bloque.hora_fin)}</strong>`;
 
-            // Celdas de días
-            diasSemana.forEach(dia => {
-                const td = document.createElement('td');
-                td.className = 'drop-zone';
-                td.dataset.day = (dia.nombre_dia || dia.nombre).toLowerCase();
-                td.dataset.block = index + 1;
+            const celdas = dias.map(dia => {
+                const enCelda = asignaciones.filter(a =>
+                    Number(a.dia_id) === Number(dia.id) && Number(a.bloque_id) === Number(bloque.id));
 
-                // Buscar asignación para este día y bloque
-                const asignacion = horarioData.find(h => {
-                    const diaNombre = (dia.nombre_dia || dia.nombre).toLowerCase();
-                    const asignacionDia = (h.dia_nombre || '').toLowerCase();
-                    console.log('Comparando:', {
-                        diaNombre,
-                        bloqueId: bloque.id,
-                        asignacionDia: asignacionDia,
-                        asignacionBloqueId: h.bloque_id,
-                        match: asignacionDia === diaNombre && h.bloque_id === bloque.id
-                    });
-                    return asignacionDia === diaNombre && h.bloque_id === bloque.id;
-                });
+                const contenido = enCelda.map(a => `
+                    <div class="assigned-docente mb-1${a.conflicto_manual ? ' border border-warning' : ''}">
+                        <div class="docente-materia">${escHtml(a.materia_nombre || 'Sin materia')}</div>
+                        <div class="docente-nombre">${escHtml(a.docente_nombre || 'Sin docente')}</div>
+                        <div class="aula-texto">${escHtml(a.aula_nombre || 'Sin aula')}</div>
+                        ${a.conflicto_manual ? '<small class="text-warning"><i class="fas fa-exclamation-circle"></i> Conflicto</small>' : ''}
+                    </div>`).join('');
 
-                console.log('Asignación encontrada para celda:', {
-                    dia: (dia.nombre_dia || dia.nombre).toLowerCase(),
-                    bloque: bloque.id,
-                    asignacion: asignacion ? 'ENCONTRADA' : 'NO ENCONTRADA'
-                });
+                return `<td class="drop-zone" data-day="${escHtml(dia.id)}" data-block="${escHtml(bloque.id)}">${contenido}</td>`;
+            }).join('');
 
-                if (asignacion) {
-                    td.innerHTML = `
-                        <div class="assigned-docente">
-                            <div class="docente-nombre">${asignacion.docente_nombre || 'Docente'}</div>
-                            <div class="docente-materia">${asignacion.materia_nombre || 'Materia'}</div>
-                            <div class="aula-texto">${asignacion.aula_nombre || 'Sin aula'}</div>
-                        </div>
-                    `;
-                }
+            return `<tr><td class="time-cell">${horario}<small>Bloque ${index + 1}</small></td>${celdas}</tr>`;
+        }).join('');
 
-                tr.appendChild(td);
-            });
+        // Asignaciones en días fuera de la grilla (no debería pasar, pero se avisa para no ocultarlas)
+        const idsDias = new Set(dias.map(d => Number(d.id)));
+        const fueraDeGrilla = asignaciones.filter(a => !idsDias.has(Number(a.dia_id))).length;
 
-            tbody.appendChild(tr);
-        });
-
-        // Renderizar docentes únicos en el sidebar
-        const docentesUnicos = {};
-        horarioData.forEach(asignacion => {
-            if (asignacion.docente_id && asignacion.docente_nombre) {
-                if (!docentesUnicos[asignacion.docente_id]) {
-                    docentesUnicos[asignacion.docente_id] = {
-                        id: asignacion.docente_id,
-                        nombre: asignacion.docente_nombre,
-                        materias: []
-                    };
-                }
-                if (asignacion.materia_nombre && !docentesUnicos[asignacion.docente_id].materias.includes(asignacion.materia_nombre)) {
-                    docentesUnicos[asignacion.docente_id].materias.push(asignacion.materia_nombre);
-                }
-            }
-        });
-
-        docentesList.innerHTML = '';
-        Object.values(docentesUnicos).forEach(docente => {
-            const div = document.createElement('div');
-            div.className = 'docente-card';
-            div.innerHTML = `
-                <div class="docente-name">${docente.nombre}</div>
-                <div class="docente-area">
-                    <i class="fas fa-book"></i>
-                    <span>${docente.materias.join(', ')}</span>
-                </div>
-            `;
-            docentesList.appendChild(div);
-        });
-
-        if (Object.keys(docentesUnicos).length === 0) {
-            docentesList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-user-tie"></i>
-                    <p>No hay docentes asignados</p>
-                </div>
-            `;
+        if (asignaciones.length === 0) {
+            setEstadoHorarioModal('empty', 'Esta sección no tiene clases asignadas en el año escolar activo.');
+        } else if (fueraDeGrilla > 0) {
+            setEstadoHorarioModal(null);
+            const estado = document.getElementById('modalHorarioEstado');
+            estado.className = 'alert alert-warning text-center my-2';
+            estado.textContent = `${fueraDeGrilla} asignación(es) tienen un día fuera de Lunes–Viernes y no se muestran en la tabla.`;
+        } else {
+            setEstadoHorarioModal(null);
         }
+
+        // Docentes únicos en el sidebar
+        const docentesUnicos = {};
+        asignaciones.forEach(a => {
+            if (!a.docente_id) return;
+            const d = docentesUnicos[a.docente_id] ??= { nombre: a.docente_nombre || 'Sin nombre', materias: [] };
+            if (a.materia_nombre && !d.materias.includes(a.materia_nombre)) d.materias.push(a.materia_nombre);
+        });
+
+        const lista = Object.values(docentesUnicos);
+        docentesList.innerHTML = lista.length
+            ? lista.map(d => `
+                <div class="docente-card">
+                    <div class="docente-name">${escHtml(d.nombre)}</div>
+                    <div class="docente-area"><i class="fas fa-book"></i><span>${escHtml(d.materias.join(', '))}</span></div>
+                </div>`).join('')
+            : '<div class="empty-state"><i class="fas fa-user-tie"></i><p>No hay docentes asignados</p></div>';
     }
 
     function mostrarPantallaCargaModal(mensaje) {

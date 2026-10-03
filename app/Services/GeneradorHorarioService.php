@@ -146,7 +146,7 @@ Class GeneradorHorarioService
 
                 
             if (!$seccionAula) {
-                $aulaRegular = Aula::where('tipo_aula', 'Aula Regular')
+                $aulaRegular = Aula::where('tipo_aula', Aula::TIPO_REGULAR)
                     ->where('status', true)
                     ->first();
                 
@@ -212,7 +212,7 @@ Class GeneradorHorarioService
 
             //busca si el area necesita un aula especializada(ejem. Edu fisica)
             $aulaFijaMateria = $clase['area_aula'] ?? null;
-            $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
+            $esEspecializada = $aulaFijaMateria && !Aula::esTipoRegular($aulaFijaMateria->tipo_aula);
 
             //por cada dia y bloque se asegura que la seccion no haya pasado el limite diario de bloques
             for ($dia = 1; $dia <= $totalDias; $dia++) {
@@ -568,11 +568,33 @@ Class GeneradorHorarioService
         {
             //recorre todo dentro de una transacion
             return \DB::transaction(function() use ($anioEscolar, $totalDias, $totalBloques, $gradoId, $areaFormacionId) {
-                HorarioAsignacion::where('anio_escolar_id', $anioEscolar)->delete();
+                //borra solo lo que se va a regenerar (todo el año, solo el grado y/o solo el área)
+                $aBorrar = HorarioAsignacion::where('anio_escolar_id', $anioEscolar);
+                if ($gradoId !== null) {
+                    $aBorrar->whereHas('seccion', function ($q) use ($gradoId) {
+                        $q->where('grado_id', $gradoId);
+                    });
+                }
+                if ($areaFormacionId !== null) {
+                    $aBorrar->where('materia_id', $areaFormacionId);
+                }
+                $aBorrar->delete();
 
                 //cargar los dato, las restricciones y las prioridades
                 $clases = $this->PreparasDatos($gradoId, $areaFormacionId);
                 $matrices = $this->InicializarMatrices($anioEscolar);
+
+                //las asignaciones que se conservan (fuera del alcance) ocupan docente, sección y aula
+                $conservadas = HorarioAsignacion::where('anio_escolar_id', $anioEscolar)->get();
+                foreach ($conservadas as $c) {
+                    $matrices['docenteOcupado'][$c->docente_id . '_' . $c->dia_id . '_' . $c->bloque_id] = true;
+                    $matrices['seccionOcupado'][$c->seccion_id . '_' . $c->dia_id . '_' . $c->bloque_id] = true;
+                    if ($c->aula_id) {
+                        $matrices['aulaEspecialOcupada'][$c->aula_id . '_' . $c->dia_id . '_' . $c->bloque_id] = true;
+                    }
+                    $matrices['bloquesPorDocente'][$c->docente_id] = ($matrices['bloquesPorDocente'][$c->docente_id] ?? 0) + 1;
+                }
+
                 $clasesOrdenadas = $this->ordenarClasesPendientes($clases, $matrices['docenteOcupado'], $totalDias, $totalBloques);
 
                 $todasLasAsignaciones = [];
@@ -675,7 +697,7 @@ Class GeneradorHorarioService
             $docenteId = $clase['docente_id'];
             $seccionId = $clase['seccion_id'];
             $aulaFijaMateria = $clase['area_aula'] ?? null;
-            $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
+            $esEspecializada = $aulaFijaMateria && !Aula::esTipoRegular($aulaFijaMateria->tipo_aula);
             $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
             $diasMaxSemana = $clase['dias_max_semana'] ?? 3;
 
@@ -831,7 +853,7 @@ Class GeneradorHorarioService
             $docenteId = $clase['docente_id'];
             $seccionId = $clase['seccion_id'];
             $aulaFijaMateria = $clase['area_aula'] ?? null;
-            $esEspecializada = $aulaFijaMateria && $aulaFijaMateria->tipo_aula !== 'Aula Regular';
+            $esEspecializada = $aulaFijaMateria && !Aula::esTipoRegular($aulaFijaMateria->tipo_aula);
             $maxBloquesPorDia = $clase['bloques_max_dia'] ?? 2;
             $diasMaxSemana = $clase['dias_max_semana'] ?? 3;
 

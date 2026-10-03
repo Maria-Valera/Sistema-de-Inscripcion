@@ -65,6 +65,67 @@ class HorarioController extends Controller
     return response()->json($resultado);
 }
 
+    //devuelve todas las asignaciones (HorarioAsignacion) de una sección para el modal "Ver Horario"
+    public function showApi($grado_id, $seccion_id)
+    {
+        $anioEscolarActivo = AnioEscolar::activos()->first();
+
+        if (!$anioEscolarActivo) {
+            return response()->json(['message' => 'No hay año escolar activo.'], 404);
+        }
+
+        $seccion = Seccion::with('grado')
+            ->where('id', $seccion_id)
+            ->where('grado_id', $grado_id)
+            ->first();
+
+        if (!$seccion) {
+            return response()->json(['message' => 'La sección no pertenece al grado indicado.'], 404);
+        }
+
+        $asignaciones = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
+            ->where('seccion_id', $seccion->id)
+            ->whereHas('seccion', function ($q) use ($grado_id) {
+                $q->where('grado_id', $grado_id);
+            })
+            ->with(['docente.persona', 'materia', 'aula', 'dia', 'bloque'])
+            ->orderBy('dia_id')
+            ->orderBy('bloque_id')
+            ->get()
+            ->map(function ($a) {
+                $persona = $a->docente?->persona;
+                return [
+                    'id' => $a->id,
+                    'dia_id' => (int) $a->dia_id,
+                    'dia_nombre' => $a->dia?->nombre_dia,
+                    'bloque_id' => (int) $a->bloque_id,
+                    'docente_id' => $a->docente_id,
+                    'docente_nombre' => $persona ? trim($persona->primer_nombre . ' ' . $persona->primer_apellido) : null,
+                    'materia_id' => $a->materia_id,
+                    'materia_nombre' => $a->materia?->nombre_area_formacion,
+                    'aula_id' => $a->aula_id,
+                    'aula_nombre' => $a->aula?->nombre_aula,
+                    'conflicto_manual' => (bool) $a->conflicto_manual,
+                ];
+            })
+            ->values();
+
+        $dias = Dias_semana::whereBetween('id', [1, 5])->orderBy('id')->get(['id', 'nombre_dia']);
+
+        $bloques = BloqueHorario::where('status', true)
+            ->orderBy('hora_inicio', 'asc')
+            ->get(['id', 'hora_inicio', 'hora_fin']);
+
+        return response()->json([
+            'grado' => ['id' => $seccion->grado?->id, 'numero_grado' => $seccion->grado?->numero_grado],
+            'seccion' => ['id' => $seccion->id, 'nombre' => $seccion->nombre],
+            'anio_escolar_id' => $anioEscolarActivo->id,
+            'dias' => $dias,
+            'bloques' => $bloques,
+            'asignaciones' => $asignaciones,
+        ]);
+    }
+
     //muestra vista principal con grados, areas y horarios asignados
     public function index(Request $request)
     {
@@ -99,14 +160,24 @@ class HorarioController extends Controller
                 });
             }
 
+            // El select de secciones viene con ->unique('nombre'), así que el id recibido es solo
+            // representativo: se filtra por el NOMBRE de la sección para abarcar todos los grados.
             if ($request->filled('seccion_id')) {
-                $query->where('seccion_id', $request->seccion_id);
+                $nombreSeccion = Seccion::whereKey($request->seccion_id)->value('nombre');
+                $query->whereHas('seccion', function($q) use ($nombreSeccion) {
+                    $q->where('nombre', $nombreSeccion);
+                });
             }
 
+            // El filtro de área solo decide QUÉ secciones mostrar; el conteo y las áreas
+            // se calculan con todas las asignaciones de esas secciones.
             if ($request->filled('area_formacion_id')) {
-                $query->whereHas('materia', function($q) use ($request) {
-                    $q->where('area_formacion_id', $request->area_formacion_id);
-                });
+                $seccionesConArea = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
+                    ->where('materia_id', $request->area_formacion_id)
+                    ->distinct()
+                    ->pluck('seccion_id');
+
+                $query->whereIn('seccion_id', $seccionesConArea);
             }
 
             $asignaciones = $query->get();
@@ -171,9 +242,9 @@ class HorarioController extends Controller
             ->get()
             ->unique('nombre');
 
-        //filtra aulas
+        //filtra aulas (tipo_aula real en BD: Aula::TIPO_REGULAR = 'Aula Regular')
         $aulasNoRegulares = Aula::where('status', true)
-            ->where('tipo_aula', '!=', 'regular')
+            ->whereRaw('LOWER(TRIM(tipo_aula)) != ?', [mb_strtolower(Aula::TIPO_REGULAR)])
             ->orderBy('nombre_aula', 'asc')
             ->get();
 
@@ -181,7 +252,7 @@ class HorarioController extends Controller
             ->join('seccion_aula as sa', 'a.id_aula', '=', 'sa.id_aula')
             ->join('seccions as s', 'sa.id_seccion', '=', 's.id')
             ->where('a.status', true)
-            ->where('a.tipo_aula', '=', 'regular')
+            ->whereRaw('LOWER(TRIM(a.tipo_aula)) = ?', [mb_strtolower(Aula::TIPO_REGULAR)])
             ->where('s.status', true)
             ->select('a.*', 's.id as seccion_id', 's.nombre as seccion_nombre')
             ->get()

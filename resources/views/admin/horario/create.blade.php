@@ -1810,7 +1810,7 @@
                     const tipoAula = opcion.dataset.tipo;
                     const seccionAsignada = opcion.dataset.seccion;
 
-                    if (tipoAula === 'regular') {
+                    if (tipoAula === 'Aula Regular') {
                         // Aulas regulares: solo mostrar si está asignada a la sección seleccionada
                         if (seccionId && seccionAsignada === seccionId) {
                             opcion.style.display = 'block';
