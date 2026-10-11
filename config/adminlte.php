@@ -236,10 +236,14 @@ return [
             'icon' => 'fas fa-calendar-check',
         ],
 
+        // ============================================================
+        //  HORARIOS
+        // ============================================================
         [
-            'text' => 'Histórico',
-            'url'  => 'admin/historico',
-            'icon' => 'fas fa-history',
+            'text' => 'Horarios',
+            'url' => 'admin/horario',
+            'icon' => 'fas fa-clock',
+            'role' => 'Subdirectora',
         ],
 
         ['header' => 'INSCRIPCIONES'],
@@ -261,25 +265,43 @@ return [
                     'icon' => 'fas fa-fw fa-user-graduate',
                     'active' => ['admin/transacciones/inscripcion_prosecucion', 'admin/transacciones/inscripcion_prosecucion/*'],
                 ],
+
+                [
+                    'text' => 'Histórico de Inscripciones',
+                    'url'  => 'admin/historico',
+                    'icon' => 'fas fa-history',
+                ],
+
+                [
+                    'text' => 'Historial del Percentil',
+                    'url' => 'admin/transacciones/percentil',
+                    'icon' => 'fas fa-fw fa-chart-line',
+                    'active' => ['admin/transacciones/percentil', 'admin/transacciones/percentil/*'],
+                ],
             ],
         ],
 
         ['header' => 'ASISTENCIA'],
 
         [
-            'text' => 'Permisos y Reposos',
-            'url' => 'admin/permisos_reposos',
+            'text' => 'Asistencia',
             'icon' => 'fas fa-fw fa-calendar-check',
-            'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
+            'submenu' => [
+                [
+                    'text' => 'Permisos y Reposos',
+                    'url' => 'admin/permisos_reposos',
+                    'icon' => 'fas fa-fw fa-calendar-check',
+                    'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
+                ],
+                [
+                    'text' => 'Gestión de Inasistencias',
+                    'url' => 'admin/inasistencia',
+                    'icon' => 'fas fa-clipboard-list',
+                    'role' => 'Subdirectora',
+                ],
+            ],
         ],
-
         // ================== EVALUACIÓN ==================
-        [
-            'text' => 'Historial del Percentil',
-            'url' => 'admin/transacciones/percentil',
-            'icon' => 'fas fa-fw fa-chart-line',
-            'active' => ['admin/transacciones/percentil', 'admin/transacciones/percentil/*'],
-        ],
 
         ['header' => 'INFORMACION ACADÉMICA'],
 
@@ -298,19 +320,7 @@ return [
             'active' => ['representante', 'representante/*'],
         ],
 
-        [
-            'text' => 'Aulas',
-            'url' => 'aulas',
-            'icon' => 'fas fa-fw fa-door-open',
-            'active' => ['aulas', 'aulas/*'],
-        ],
 
-        [
-            'text' => 'Asignar Aulas a Seccion',
-            'url' => 'admin/seccion_aula',
-            'icon' => 'fas fa-fw fa-door-open',
-            'active' => ['admin/seccion_aula', 'admin/seccion_aula/*'],
-        ],
 
         // ============================================================
         //  GESTIÓN DOCENTES
@@ -372,12 +382,20 @@ return [
                     'active' => ['admin/bloque_horario', 'admin/bloque_horario/*'],
                 ],
 
-                                [
-                    'text' => 'Reposos y permisos',
+                [
+                    'text' => 'Gestion de permisos y reposos',
                     'url' => 'admin/permisos_reposos',
                     'icon' => 'fas fa-fw fa-clock',
                     'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
                 ],
+
+                [
+                    'text' => 'Aulas',
+                    'url' => 'aulas',
+                    'icon' => 'fas fa-fw fa-door-open',
+                    'active' => ['aulas', 'aulas/*'],
+                ],
+
 
                 // Asignaciones
                 [
@@ -400,6 +418,12 @@ return [
                             'text' => 'Área de Formacion → Estudios Realizados',
                             'url'  => 'admin/transacciones/area_estudio_realizado',
                             'icon' => 'fas fa-arrow-right',
+                        ],
+                        [
+                            'text' => 'Asignar Aulas a Seccion',
+                            'url' => 'admin/seccion_aula',
+                            'icon' => 'fas fa-fw fa-door-open',
+                            'active' => ['admin/seccion_aula', 'admin/seccion_aula/*'],
                         ],
                     ],
                 ],
@@ -495,25 +519,9 @@ return [
             'icon' => 'fas fa-user-tie',
             'role' => 'Subdirectora',
         ],
-        // ============================================================
-        //  HORARIOS
-        // ============================================================
-        [
-            'text' => 'Horarios',
-            'url' => 'admin/horario',
-            'icon' => 'fas fa-clock',
-            'role' => 'Subdirectora',
-        ],
 
-        // ============================================================
-        //  INASISTENCIAS
-        // ============================================================
-        [
-            'text' => 'Gestión de Inasistencias',
-            'url' => 'admin/inasistencia',
-            'icon' => 'fas fa-clipboard-list',
-            'role' => 'Subdirectora',
-        ],
+
+
 
 // ============================================================
 //  MENU DEL DOCENTE
