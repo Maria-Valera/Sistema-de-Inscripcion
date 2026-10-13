@@ -28,26 +28,28 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
         });
 
-        // Crear triggers para hacer la tabla inmutable
-        DB::unprepared('
-            CREATE TRIGGER prevent_auditorias_update
-            BEFORE UPDATE ON auditorias
-            FOR EACH ROW
-            BEGIN
-                SIGNAL SQLSTATE "45000"
-                SET MESSAGE_TEXT = "No se permite actualizar registros en la tabla de auditorias. La tabla es de solo lectura.";
-            END;
-        ');
+        // Crear triggers para hacer la tabla inmutable (solo en MySQL)
+        if (DB::getDriverName() === 'mysql') {
+            DB::unprepared('
+                CREATE TRIGGER prevent_auditorias_update
+                BEFORE UPDATE ON auditorias
+                FOR EACH ROW
+                BEGIN
+                    SIGNAL SQLSTATE "45000"
+                    SET MESSAGE_TEXT = "No se permite actualizar registros en la tabla de auditorias. La tabla es de solo lectura.";
+                END;
+            ');
 
-        DB::unprepared('
-            CREATE TRIGGER prevent_auditorias_delete
-            BEFORE DELETE ON auditorias
-            FOR EACH ROW
-            BEGIN
-                SIGNAL SQLSTATE "45000"
-                SET MESSAGE_TEXT = "No se permite eliminar registros en la tabla de auditorias. La tabla es de solo lectura.";
-            END;
-        ');
+            DB::unprepared('
+                CREATE TRIGGER prevent_auditorias_delete
+                BEFORE DELETE ON auditorias
+                FOR EACH ROW
+                BEGIN
+                    SIGNAL SQLSTATE "45000"
+                    SET MESSAGE_TEXT = "No se permite eliminar registros en la tabla de auditorias. La tabla es de solo lectura.";
+                END;
+            ');
+        }
     }
 
     /**
