@@ -14,6 +14,7 @@ use App\Models\RepresentanteLegal;
 use App\Models\Inscripcion;
 use App\Models\InscripcionNuevoIngreso;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
@@ -26,7 +27,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@example.com',
-            'password' => bcrypt('12345678'),
+            'password' => Hash::make('12345678'),
         ]);
 
         $this->call([
@@ -101,7 +102,7 @@ class DatabaseSeeder extends Seeder
                     ['email' => $rep->persona->email],
                     [
                         'name' => $rep->persona->primer_nombre . ' ' . $rep->persona->primer_apellido,
-                        'password' => bcrypt('12345678'), // Encriptación bcrypt de la contraseña por defecto
+                        'password' => Hash::make('12345678'), // Encriptación de la contraseña por defecto
                     ]
                 );
                 
