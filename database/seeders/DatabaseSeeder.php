@@ -24,13 +24,24 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Iniciando seeders...');
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('12345678'),
-        ]);
+
+        // Crear usuario administrador
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Administrador',
+                'password' => Hash::make('12345678'),
+                'debe_cambiar_password' => true,
+                'activo' => true,
+                'rol_principal' => 'Admin',
+            ]
+        );
+
+        $this->command->info('Usuario administrador creado: ' . $adminUser->email);
 
         $this->call([
+            PermisosSeeder::class, // Debe ejecutarse antes que RoleSeeder
+            RoleSeeder::class,
             PaisSeeder::class,
             AnioEscolarSeeder::class,
             GradoSeeder::class,
@@ -48,7 +59,6 @@ class DatabaseSeeder extends Seeder
             ExpresionLiterariaSeeder::class,
             BancoSeeder::class,
             PrefijoTelefonoSeeder::class,
-            RoleSeeder::class,
             InstitucionProcedenciaSeeder::class,
             GeneroSeeder::class,
             LateralidadSeeder::class,
@@ -78,11 +88,8 @@ class DatabaseSeeder extends Seeder
             ProsecucionAreaSeeder::class,  */
         ]);
 
-        // Asignar rol al usuario Admin ya existente
-        $adminUser = User::where('email', 'admin@example.com')->first();
-        if ($adminUser) {
-            $adminUser->assignRole('Admin');
-        }
+        // Asignar rol Admin al usuario administrador
+        $adminUser->assignRole('Admin');
 
         /* 
         |--------------------------------------------------------------------------
