@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registrar alias de middleware personalizados
         $middleware->alias([
             'verificar.anio.escolar' => \App\Http\Middleware\VerificarAnioEscolarActivo::class,
+            'forzar.cambio.password' => \App\Http\Middleware\ForzarCambioPassword::class,
         ]);
 
         // Agregar el middleware de verificación de años vencidos
