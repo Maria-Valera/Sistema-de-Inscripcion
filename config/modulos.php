@@ -17,6 +17,8 @@ return [
     | - grupo: grupo para organizar el menú (configuracion, academico, asistencia, portal, seguridad)
     | - permisos: array de permisos, el primero es el de acceso
     |
+    | Regla de acceso: un módulo aparece en el menú si el usuario tiene CUALQUIER permiso de ese módulo
+    |
     */
 
     // ===== MÓDULOS BASE =====
@@ -79,35 +81,73 @@ return [
     'prosecucion' => [
         'nombre' => 'Prosecución',
         'icono' => 'fas fa-graduation-cap',
-        'ruta' => 'portal-representante.prosecucion.index',
-        'grupo' => 'portal',
+        'ruta' => 'admin.transacciones.inscripcion_prosecucion.index',
+        'grupo' => 'academico',
         'permisos' => [
             'prosecucion.ver',
             'prosecucion.registrar',
             'prosecucion.consultar',
+            'prosecucion.activar',
         ],
     ],
 
-    'carnets' => [
-        'nombre' => 'Carnets',
+    // ===== MÓDULOS DEL PORTAL =====
+    'portal_prosecucion' => [
+        'nombre' => 'Prosecución (Portal)',
+        'icono' => 'fas fa-graduation-cap',
+        'ruta' => 'portal-representante.prosecucion.index',
+        'grupo' => 'portal',
+        'permisos' => [
+            'portal_prosecucion.registrar',
+            'portal_prosecucion.ver_planilla',
+            'portal_prosecucion.generar_planilla',
+        ],
+    ],
+
+    'portal_carnets' => [
+        'nombre' => 'Carnets (Portal)',
         'icono' => 'fas fa-id-card',
         'ruta' => 'portal-representante.carnet.index',
         'grupo' => 'portal',
         'permisos' => [
-            'carnets.ver',
-            'carnets.estudiante',
-            'carnets.propio',
+            'portal_carnets.ver_estudiante',
+            'portal_carnets.generar_estudiante',
+            'portal_carnets.ver_docente',
+            'portal_carnets.generar_docente',
         ],
     ],
 
-    'constancias' => [
-        'nombre' => 'Constancias',
+    'portal_horarios' => [
+        'nombre' => 'Horarios (Portal)',
+        'icono' => 'fas fa-calendar-alt',
+        'ruta' => null,
+        'grupo' => 'portal',
+        'permisos' => [
+            'portal_horarios.ver_estudiante',
+            'portal_horarios.generar_estudiante',
+            'portal_horarios.ver_docente',
+            'portal_horarios.generar_docente',
+        ],
+    ],
+
+    'portal_constancias' => [
+        'nombre' => 'Constancias (Portal)',
         'icono' => 'fas fa-file-alt',
         'ruta' => null,
         'grupo' => 'portal',
         'permisos' => [
-            'constancias.ver',
-            'constancias.generar',
+            'portal_constancias.ver',
+            'portal_constancias.generar',
+        ],
+    ],
+
+    'portal_carga_academica' => [
+        'nombre' => 'Carga Académica (Portal)',
+        'icono' => 'fas fa-book',
+        'ruta' => null,
+        'grupo' => 'portal',
+        'permisos' => [
+            'portal_carga_academica.ver',
         ],
     ],
 
@@ -212,7 +252,6 @@ return [
             'inscripciones.eliminar',
             'inscripciones.restaurar',
             'inscripciones.reporte',
-            'inscripciones.activar',
         ],
     ],
 

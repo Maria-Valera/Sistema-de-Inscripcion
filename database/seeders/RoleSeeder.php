@@ -18,6 +18,7 @@ class RoleSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         $modulos = config('modulos');
+        $rolesModulos = config('roles_modulos');
 
         // Crear roles
         $roles = [
@@ -36,137 +37,43 @@ class RoleSeeder extends Seeder
             ]);
         }
 
-        // Asignar módulos por defecto a cada rol
-        $this->asignarModulosPorDefecto($modulos);
+        // Asignar permisos según config/roles_modulos.php
+        foreach ($rolesModulos as $rolNombre => $modulosRol) {
+            $rol = Role::where('name', $rolNombre)->first();
+            if (!$rol) {
+                continue;
+            }
+
+            $permisosRol = [];
+
+            foreach ($modulosRol as $moduloNombre => $permisosConfig) {
+                if (!isset($modulos[$moduloNombre])) {
+                    $this->command->warn("Advertencia: El módulo '$moduloNombre' no existe en config/modulos.php");
+                    continue;
+                }
+
+                if ($permisosConfig === '*') {
+                    // Todos los permisos del módulo
+                    $permisosRol = array_merge($permisosRol, $modulos[$moduloNombre]['permisos']);
+                } else {
+                    // Permisos específicos
+                    foreach ($permisosConfig as $permisoAccion) {
+                        $permisoNombre = $moduloNombre . '.' . $permisoAccion;
+                        $permisosRol[] = $permisoNombre;
+                    }
+                }
+            }
+
+            // Eliminar duplicados
+            $permisosRol = array_unique($permisosRol);
+
+            // Sincronizar permisos (reemplaza los existentes)
+            $permisosModelos = Permission::whereIn('name', $permisosRol)->get();
+            $rol->syncPermissions($permisosModelos);
+
+            $this->command->info("Rol '$rolNombre': " . count($permisosModelos) . " permisos asignados");
+        }
 
         $this->command->info(string: 'Seeder de roles ejecutado correctamente.');
-    }
-
-    /**
-     * Asigna los módulos por defecto a cada rol según la configuración
-     */
-    private function asignarModulosPorDefecto(array $modulos): void
-    {
-        // ===== REPRESENTANTE =====
-        // Permisos: prosecucion (registrar y consultar planilla), carnets (estudiante), horarios (estudiante), constancias
-        $rolRepresentante = Role::where('name', 'Representante')->first();
-        if ($rolRepresentante) {
-            $permisosRepresentante = [];
-            
-            // prosecucion: registrar y consultar
-            $permisosRepresentante = array_merge($permisosRepresentante, $modulos['prosecucion']['permisos']);
-            
-            // carnets: estudiante
-            $permisosRepresentante[] = 'carnets.estudiante';
-            
-            // horarios: estudiante
-            $permisosRepresentante[] = 'horarios.ver';
-            
-            // constancias
-            $permisosRepresentante = array_merge($permisosRepresentante, $modulos['constancias']['permisos']);
-            
-            // Eliminar duplicados
-            $permisosRepresentante = array_unique($permisosRepresentante);
-            
-            foreach ($permisosRepresentante as $permiso) {
-                $permisoModel = Permission::where('name', $permiso)->first();
-                if ($permisoModel) {
-                    $rolRepresentante->givePermissionTo($permisoModel);
-                }
-            }
-        }
-
-        // ===== DOCENTE =====
-        // Permisos: carnets (propio), horarios (propio), carga académica y listas de alumnos de sus secciones
-        $rolDocente = Role::where('name', 'Docente')->first();
-        if ($rolDocente) {
-            $permisosDocente = [];
-            
-            // carnets: propio
-            $permisosDocente[] = 'carnets.propio';
-            
-            // horarios: propio (ver)
-            $permisosDocente[] = 'horarios.ver';
-            
-            // Carga académica y listas de alumnos (asignación docente)
-            $permisosDocente = array_merge($permisosDocente, $modulos['asignacion_docente']['permisos']);
-            
-            // Eliminar duplicados
-            $permisosDocente = array_unique($permisosDocente);
-            
-            foreach ($permisosDocente as $permiso) {
-                $permisoModel = Permission::where('name', $permiso)->first();
-                if ($permisoModel) {
-                    $rolDocente->givePermissionTo($permisoModel);
-                }
-            }
-        }
-
-        // ===== SUBDIRECTORA =====
-        // Permisos: asistencia, justificaciones, reportes_asistencia
-        $rolSubdirectora = Role::where('name', 'Subdirectora')->first();
-        if ($rolSubdirectora) {
-            $permisosSubdirectora = [];
-            
-            // asistencia
-            $permisosSubdirectora = array_merge($permisosSubdirectora, $modulos['asistencia']['permisos']);
-            
-            // justificaciones
-            $permisosSubdirectora = array_merge($permisosSubdirectora, $modulos['justificaciones']['permisos']);
-            
-            // reportes_asistencia
-            $permisosSubdirectora = array_merge($permisosSubdirectora, $modulos['reportes_asistencia']['permisos']);
-            
-            // Eliminar duplicados
-            $permisosSubdirectora = array_unique($permisosSubdirectora);
-            
-            foreach ($permisosSubdirectora as $permiso) {
-                $permisoModel = Permission::where('name', $permiso)->first();
-                if ($permisoModel) {
-                    $rolSubdirectora->givePermissionTo($permisoModel);
-                }
-            }
-        }
-
-        // ===== ADMIN =====
-        // Permisos: horarios, aulas, personal, areas_formacion, prosecucion con activar, actas, usuarios_accesos, auditoria
-        // + módulos sin dueño claro (calendario, inscripciones, alumnos, grados, secciones, bloques_horarios, asignacion_docente, 
-        // grado_area_formacion, estudios_realizados, area_estudio_realizado, historico, percentil, permisos_reposos, 
-        // inasistencia_docente, ubicacion_geografica, catalogos, instituciones)
-        $rolAdmin = Role::where('name', 'Admin')->first();
-        if ($rolAdmin) {
-            $permisosAdmin = [];
-            
-            // Módulos base asignados al Director
-            $modulosDirector = ['horarios', 'aulas', 'personal', 'areas_formacion', 'actas', 'usuarios_accesos', 'auditoria'];
-            foreach ($modulosDirector as $modulo) {
-                $permisosAdmin = array_merge($permisosAdmin, $modulos[$modulo]['permisos']);
-            }
-            
-            // prosecucion con activar
-            $permisosAdmin = array_merge($permisosAdmin, $modulos['prosecucion']['permisos']);
-            $permisosAdmin[] = 'inscripciones.activar';
-            
-            // Módulos sin dueño claro
-            $modulosSinDueno = [
-                'calendario', 'inscripciones', 'alumnos', 'grados', 'secciones', 'bloques_horarios',
-                'grado_area_formacion', 'estudios_realizados', 'area_estudio_realizado', 'historico',
-                'percentil', 'permisos_reposos', 'inasistencia_docente', 'ubicacion_geografica',
-                'catalogos', 'instituciones'
-            ];
-            foreach ($modulosSinDueno as $modulo) {
-                $permisosAdmin = array_merge($permisosAdmin, $modulos[$modulo]['permisos']);
-            }
-            
-            // Eliminar duplicados
-            $permisosAdmin = array_unique($permisosAdmin);
-            
-            foreach ($permisosAdmin as $permiso) {
-                $permisoModel = Permission::where('name', $permiso)->first();
-                if ($permisoModel) {
-                    $rolAdmin->givePermissionTo($permisoModel);
-                }
-            }
-        }
     }
 }
