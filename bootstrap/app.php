@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Agregar el middleware de verificación de años vencidos
         // Se ejecutará en TODAS las rutas autenticadas
         $middleware->append(\App\Http\Middleware\VerificarAniosVencidos::class);
+
+        $middleware->appendToGroup('web', \App\Http\Middleware\ForzarCambioPassword::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

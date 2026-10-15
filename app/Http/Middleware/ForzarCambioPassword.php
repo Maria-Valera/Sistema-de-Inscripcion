@@ -32,9 +32,11 @@ class ForzarCambioPassword
                     'password.change.post',
                     'password.confirm',
                     'logout',
+                    'default-livewire.update',
+                    'livewire.upload-file',
                 ];
                 
-                $rutaActual = $request->route()->getName();
+                $rutaActual = optional($request->route())->getName();
                 
                 // Si no está en una ruta excluida, redirigir a cambio de contraseña
                 if ($rutaActual && !in_array($rutaActual, $rutasExcluidas)) {
