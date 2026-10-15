@@ -78,10 +78,13 @@ class LoginController extends Controller
     }
 
     /**
-     * Tras login correcto: actualiza ultimo_acceso_at y audita.
+     * Tras login correcto: regenera sesión, actualiza ultimo_acceso_at y audita.
      */
     protected function authenticated(Request $request, $user)
     {
+        // Regenerar sesión para evitar session fixation
+        $request->session()->regenerate();
+        
         $user->forceFill(['ultimo_acceso_at' => now()])->save();
 
         Auditoria::registrar(

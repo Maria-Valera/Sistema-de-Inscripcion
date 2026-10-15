@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Auditoria;
 use Illuminate\Foundation\Auth\SendsPasswordResetEmails;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -37,6 +38,15 @@ class ForgotPasswordController extends Controller
         $status = Password::sendResetLink(
             $request->only('email'),
             $this->broker()
+        );
+
+        // Registrar en auditoría (sin revelar si el usuario existe)
+        Auditoria::registrar(
+            'reset_password_email',
+            null,
+            null,
+            null,
+            'Solicitud de restablecimiento de contraseña para: ' . $request->input('email')
         );
 
         // Mensaje genérico independientemente de si el correo existe o no

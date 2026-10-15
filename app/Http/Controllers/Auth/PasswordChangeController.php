@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Auditoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +54,15 @@ class PasswordChangeController extends Controller
             'password' => Hash::make($request->password),
             'debe_cambiar_password' => false,
         ]);
+
+        // Registrar en auditoría
+        Auditoria::registrar(
+            'cambio_password',
+            $user,
+            null,
+            null,
+            'Cambio de contraseña por el usuario'
+        );
 
         return redirect()->route('home')->with('status', 'Tu contraseña ha sido cambiada exitosamente.');
     }

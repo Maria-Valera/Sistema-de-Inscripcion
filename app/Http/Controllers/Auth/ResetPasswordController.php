@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Auditoria;
 use Illuminate\Foundation\Auth\ResetsPasswords;
+use Illuminate\Support\Facades\Auth;
 
 class ResetPasswordController extends Controller
 {
@@ -26,4 +28,35 @@ class ResetPasswordController extends Controller
      * @var string
      */
     protected $redirectTo = '/home';
+
+    /**
+     * Reset the given user's password.
+     *
+     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
+     * @param  string  $password
+     * @return void
+     */
+    protected function resetPassword($user, $password)
+    {
+        $this->setUserPassword($user, $password);
+        
+        $user->save();
+        
+        // Forzar cambio de contraseña en el próximo login
+        $user->forceFill([
+            'debe_cambiar_password' => true,
+        ])->save();
+
+        event($this->userHasJustAuthenticated($user));
+        $this->guard()->login($user);
+
+        // Registrar en auditoría
+        Auditoria::registrar(
+            'reset_password',
+            $user,
+            null,
+            null,
+            'Restablecimiento de contraseña mediante enlace'
+        );
+    }
 }
