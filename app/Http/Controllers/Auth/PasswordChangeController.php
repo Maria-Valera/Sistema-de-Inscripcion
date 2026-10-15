@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Password;
 
 class PasswordChangeController extends Controller
 {
@@ -24,13 +25,15 @@ class PasswordChangeController extends Controller
     {
         $request->validate([
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'max:16', 'confirmed'],
+            'password' => ['required', 'string', 'min:8', 'max:16', 'confirmed', Password::min(8)->letters()->numbers()],
         ], [
             'current_password.required' => 'El campo contraseña actual es obligatorio.',
             'password.required' => 'El campo nueva contraseña es obligatorio.',
             'password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
             'password.max' => 'La nueva contraseña no puede tener más de 16 caracteres.',
             'password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
+            'password.letters' => 'La contraseña debe contener al menos una letra.',
+            'password.numbers' => 'La contraseña debe contener al menos un número.',
         ]);
 
         $user = Auth::user();

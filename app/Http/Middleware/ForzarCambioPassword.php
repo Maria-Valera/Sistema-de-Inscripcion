@@ -22,12 +22,22 @@ class ForzarCambioPassword
             
             // Si el usuario debe cambiar contraseña
             if ($user->debe_cambiar_password) {
-                // Rutas excluidas del redirect
-                $rutasExcluidas = ['logout', 'password.change', 'password.confirm'];
+                // Rutas excluidas del redirect (patrones de nombres de ruta)
+                $rutasExcluidas = [
+                    'login',
+                    'password.request',
+                    'password.email',
+                    'password.reset',
+                    'password.change',
+                    'password.change.post',
+                    'password.confirm',
+                    'logout',
+                ];
+                
                 $rutaActual = $request->route()->getName();
                 
                 // Si no está en una ruta excluida, redirigir a cambio de contraseña
-                if (!in_array($rutaActual, $rutasExcluidas)) {
+                if ($rutaActual && !in_array($rutaActual, $rutasExcluidas)) {
                     return redirect()->route('password.change');
                 }
             }

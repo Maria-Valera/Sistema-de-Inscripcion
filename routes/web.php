@@ -61,11 +61,14 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::middleware(['auth'])->get('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'showChangeForm'])->name('password.change');
 Route::middleware(['auth'])->post('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'change'])->name('password.change.post');
 
-// Rutas para Dashboards por rol con middleware de cambio de contraseña
+// Rutas para Dashboards por rol
 Route::middleware(['auth', 'forzar.cambio.password'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/subdirectora', [App\Http\Controllers\HomeController::class, 'subdirectora'])->name('subdirectora');
     Route::get('/docente', [App\Http\Controllers\HomeController::class, 'docente'])->name('docente');
 });
+
+// Aplicar middleware de cambio de contraseña a home también
+Route::middleware(['auth', 'forzar.cambio.password'])->get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 
 
