@@ -1,0 +1,1110 @@
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  MODELO ENTIDAD-RELACION: MODULO DE NOTAS (CARGA REMOTA DE CALIFICACIONES)   ║
+// ║  Liceo General "Juan Guillermo Iribarren" - Sistema de Inscripcion y Gestion ║
+// ║  Escolar (Laravel 12 / MySQL 8)                                              ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+//
+// COMO ABRIR ESTE ARCHIVO
+//   1. Entra a https://dbdiagram.io  ->  "Go to App" / "Create new diagram".
+//   2. Borra el contenido de ejemplo y pega aqui TODO este archivo
+//      (o usa Import -> From DBML).
+//   3. Las tablas aparecen agrupadas por colores (ver TableGroup al final).
+//
+// PARA QUE SIRVE ESTE MODULO
+//   Permite que cada docente entre al sistema desde su casa y cargue las notas
+//   SOLO de las materias, grados y secciones que tiene asignadas. Ademas cumple
+//   las normas del MPPE: lapsos, evaluaciones ponderadas, escala 1-20, revision,
+//   areas pendientes, alerta del 30% de aplazados (art. 112), historial de
+//   cambios que nadie puede borrar y boletines.
+//
+// TABLAS "EXISTENTES" vs "NUEVAS"
+//   - EXISTENTES (grupo gris): ya estan en el sistema de inscripcion. Aqui solo
+//     se muestran las columnas que el modulo de notas necesita, para poder
+//     dibujar las relaciones. NO hay que crearlas de nuevo.
+//   - NUEVAS (grupos de color): las 23 tablas que se agregan (ver VERSION 3).
+//
+// IDEA CENTRAL DEL DISENO (leer antes de mirar el diagrama)
+//   Una nota NO pertenece a un "alumno": pertenece a una INSCRIPCION
+//   (alumno + año escolar + grado + seccion). Asi, si un alumno repite el año,
+//   se crea una inscripcion nueva y las notas viejas quedan intactas, sin
+//   duplicar ni sobrescribir nada.
+//
+// CAMINO DE UNA NOTA (de izquierda a derecha en el diagrama)
+//   docente_area_grados -> evaluacions -> calificacions -> nota_lapsos
+//   -> resultado_areas -> (recuperacions) -> boletins
+//
+// CONVENCIONES
+//   - Nombres de tablas en plural y minuscula, igual que el resto del proyecto
+//     (Laravel pluraliza en ingles: "inscripcions", "seccions"). Se mantiene
+//     para no tener que escribir $table en cada modelo.
+//   - Todas las claves foraneas terminan en _id (salvo las que apuntan a users:
+//     creado_por, cargado_por, resuelta_por, etc. -> siempre references users.id).
+//   - Por legibilidad NO se dibujan created_at / updated_at. Todas las tablas
+//     nuevas los llevan, excepto: calificacion_historials, alerta_aplazados,
+//     recuperacion_actividads y boletins (solo tienen su fecha propia).
+//   - Los tipos son de MySQL; en Laravel los ids son bigint unsigned.
+//   - Las lineas hacia "users" se pueden ocultar en dbdiagram.io si estorban;
+//     todas significan "este usuario hizo esta accion" (auditoria).
+//
+// COMO LEER LAS RELACIONES
+//   "ref: > tabla.id"  = muchos a uno  (esta columna apunta a UNA fila de tabla)
+//   "ref: - tabla.id"  = uno a uno
+//   Una columna sin "not null" es OPCIONAL (puede quedar vacia).
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VERSION 3 - CAMBIOS TRAS LA AUDITORIA DEL CODIGO REAL (docs/notas/00-auditoria.md)
+// Prevalece sobre la VERSION 2 cuando haya diferencias.
+//
+//  1. NUEVA TABLA asignacion_notas: copia por año de docente_area_grados. Motivo: esa tabla no
+//     tiene año, no apunta directo a docente ni a materia (pasa por detalle_docente_estudios y
+//     area_estudio_realizados) y puede cambiar de manos. evaluacions, carga_lapsos,
+//     recuperacions y responsabilidad_interinas ahora apuntan a asignacion_nota_id.
+//  2. GRUPOS DE INTERES = GRUPOS ESTABLES (ya existen y docente_area_grados los asigna con
+//     tipo_asignacion). Se eliminan grupo_intereses y asignacion_grupos y las columnas
+//     asignacion_grupo_id. exoneracions usa grupo_estable_id. Queda PENDIENTE solo
+//     asignacion_nota_miembros (si los alumnos del grupo no se deducen del grado).
+//  3. inasistencias NO existe: calificacions.inasistencia_id se reemplaza por justificacion.
+//  4. users.persona_id YA existe (nullable, sin unico): no se crea. Ruta: users -> personas ->
+//     docentes.
+//  5. prosecucion_areas apunta a inscripcion_prosecucions y a grado_area_formacions; se agrega
+//     solo resultado_area_id.
+//  6. grado_area_formacions: el unico (grado_id, area_formacion_id) se reemplaza por
+//     (pensum_id, grado_id, area_formacion_id) con un pensum por defecto para los datos actuales.
+//  7. Nombres reales de columnas corregidos: grados.numero_grado, area_formacions.
+//     nombre_area_formacion, anio_escolars.inicio_anio_escolar / cierre_anio_escolar /
+//     extencion_anio_escolar / status.
+//  8. No hay permisos sembrados ni rol Control de Estudios: el modulo los crea. Pruebas: PHPUnit 11.
+//  Total: 23 tablas nuevas (21 confirmadas + 2 pendientes: discusion_notas y asignacion_nota_miembros).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VERSION 2 - QUE CAMBIO RESPECTO A LA VERSION 1
+// Origen: se comparo este diseño con los 29 modulos del sistema anterior del liceo.
+//
+// TABLAS NUEVAS CONFIRMADAS (6)
+//   cortes                     -> plazos de carga por corte dentro del lapso
+//   exoneracions               -> exoneraciones (estudiante, seccion, grupo o lapso completo)
+//   exoneracion_validacions    -> doble validacion de las exoneraciones delicadas
+//   responsabilidad_interinas  -> personal que asume temporalmente la carga de notas
+//   pensums                    -> version del plan de estudios (se actualiza por año)
+//   nota_lapso_historials      -> bitacora inborrable de la nota definitiva del lapso
+//
+// TABLAS NUEVAS PENDIENTES DE CONFIRMAR (4) - buscar la etiqueta [PENDIENTE-2] o [PENDIENTE-5]
+//   discusion_notas            -> [PENDIENTE-2] acta de la "discusion de notas" por seccion
+//   (v3: grupo_intereses, grupo_interes_miembros y asignacion_grupos fueron reemplazadas por los
+//    grupos estables existentes y asignacion_nota_miembros; ver VERSION 3)
+//
+// TABLAS EXISTENTES CON COLUMNAS NUEVAS
+//   grado_area_formacions (malla): pensum_id, horas_semanales, nota_aprobatoria
+//
+// TABLAS NUEVAS DE LA V1 QUE CAMBIARON
+//   evaluacions  : ahora pertenece a un corte (corte_id) en vez de colgar directo del lapso;
+//                  puede apuntar a una seccion o a un grupo estable.
+//   carga_lapsos : puede apuntar a una seccion o a un grupo estable.
+//   calificacions: + exoneracion_id, responsabilidad_interina_id.
+//   nota_lapsos  : + origen, estado, justificacion_ajuste, cargado_por, discusion_nota_id.
+//   lapsos       : fecha_limite_carga ahora es el limite de las notas DEFINITIVAS; cada corte
+//                  tiene su propio limite.
+//   Terminologia : "revision" final pasa a llamarse "reparacion" (termino del liceo):
+//                  tipo_proceso = reparacion, condicion = en_reparacion.
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+// PREGUNTAS PARA LA REUNION CON LA INSTITUCION (martes)
+//
+// [PENDIENTE-2] Discusion de notas
+//   a) La nota definitiva del lapso: la calcula el sistema, la escribe a mano alguien tras la
+//      discusion, o se calcula y luego se puede ajustar?
+//   b) Quien participa en la discusion (docentes de la seccion, coordinacion, subdirectora)?
+//      Queda un acta?
+//   c) Se puede ajustar cualquier nota o solo las aplazadas? Con que justificacion?
+//
+// [PENDIENTE-5] Grupos de interes
+//   a) Son lo mismo que los "Grupos Estables" que ya existen en el sistema de inscripcion
+//      (actividades socio-productivas y culturales) o son otra cosa?
+//   b) Un grupo reune alumnos de varias secciones o grados? Un alumno puede estar en mas
+//      de un grupo?
+//   c) Que se califica en un grupo: una nota numerica por lapso? Entra al promedio y al
+//      boletin? Esta ligado a una materia (area de formacion)?
+//   d) Quien califica: un docente responsable por grupo?
+//
+// OTRAS DUDAS QUE SURGIERON AL DISEÑAR
+//   - Cortes: cuantos hay por lapso? Cada corte pesa un porcentaje del lapso o todas las
+//     evaluaciones del lapso suman 100% sin importar el corte? (ver cortes.ponderacion)
+//   - Exoneracion: que nota queda? Se asigna una nota fija o simplemente no cuenta en el
+//     promedio? (ver exoneracions.nota_otorgada)
+//   - Cambio de seccion a mitad de lapso: ver nota en calificacions.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Project modulo_notas {
+  database_type: 'MySQL'
+  Note: '''
+  # Modulo de notas - Liceo Juan Guillermo Iribarren
+  Extiende el Sistema de Inscripcion y Gestion Escolar.
+  23 tablas nuevas (2 de ellas PENDIENTES de confirmar, ver VERSION 3) + tablas existentes
+  (grupo gris) usadas como ancla.
+  Las reglas RN-xx citadas en los comentarios vienen del documento
+  "Reglas de negocio del modulo de notas" (borrador, por confirmar con
+  Control de Estudios).
+  '''
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENUMERACIONES (listas cerradas de valores permitidos)
+// En Laravel se implementan como PHP Enums + columna string (no ENUM nativo de
+// MySQL), para poder agregar valores sin migraciones pesadas.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Estado de un lapso (momento pedagogico: normalmente 3 por año escolar).
+Enum estado_lapso {
+  planificado [note: 'Creado pero aun no comienza.']
+  abierto     [note: 'En curso: los docentes pueden cargar notas hasta fecha_limite_carga.']
+  cerrado     [note: 'Cierre oficial. Las notas quedan congeladas; solo cambian por solicitud_correccions aprobada (RN-09).']
+}
+
+// Estado de la carga de notas de UN docente en UNA seccion durante UN lapso.
+Enum estado_carga {
+  planificacion [note: 'El docente esta definiendo sus evaluaciones y ponderaciones.']
+  en_carga      [note: 'Plan aprobado (ponderaciones suman 100%). Ya puede cargar notas.']
+  entregada     [note: 'El docente declaro terminada su carga.']
+  cerrada       [note: 'Control de Estudios o la direccion confirmo y cerro.']
+}
+
+// Asistencia del estudiante a una evaluacion (RN-12).
+Enum estado_asistencia_eval {
+  presente
+  ausente_justificado   [note: 'Tiene derecho a presentar en otra fecha (ver fecha_reprogramada).']
+  ausente_injustificado
+  exonerado
+}
+
+// Situacion de un area de formacion (materia) al final del año.
+Enum condicion_area {
+  en_curso   [note: 'El año escolar aun no termina.']
+  aprobada   [note: 'Nota final >= nota_aprobatoria (10 por defecto).']
+  en_reparacion [note: 'Promedio menor a 10: debe hacer reparacion (actividades de superacion pedagogica).']
+  pendiente  [note: 'No aprobo tras revision. Maximo 2 pendientes para ser promovido (RN-06).']
+  reprobada  [note: 'Area perdida sin opcion de pendiente (el estudiante repite el año).']
+}
+
+// Tipo de proceso de recuperacion.
+Enum tipo_proceso_recuperacion {
+  revision_lapso [note: 'Revision de un lapso con promedio menor a 10.']
+  reparacion [note: 'Reparacion: termino del liceo para la recuperacion al cierre del año escolar.']
+  pendiente      [note: 'Evaluacion de un area pendiente de un año anterior.']
+}
+
+Enum estado_recuperacion {
+  abierta
+  aprobada
+  no_aprobada
+}
+
+// Estado de una solicitud de correccion de nota con lapso cerrado.
+Enum estado_solicitud {
+  pendiente
+  aprobada
+  rechazada
+}
+
+// Que tipo de cambio quedo registrado en el historial de una nota.
+Enum accion_historial {
+  creacion
+  modificacion
+  anulacion
+  correccion_aprobada
+}
+
+// Decision sobre la alerta del articulo 112 (30% o mas de aplazados).
+Enum estado_alerta {
+  pendiente         [note: 'La alerta se genero y nadie ha decidido.']
+  repetir_autorizada [note: 'Se autorizo repetir la evaluacion (ver evaluacion_repetida_id).']
+  descartada        [note: 'Se decidio no repetirla.']
+}
+
+// Regla para convertir un promedio con decimales en nota entera (RN-03).
+Enum regla_redondeo {
+  half_up [note: 'Normal: 9,5 sube a 10.']
+  truncar [note: 'Se descartan los decimales: 9,9 queda en 9.']
+  techo   [note: 'Siempre hacia arriba: 9,1 sube a 10.']
+}
+
+// Estado de un corte (plazo de carga dentro del lapso).
+Enum estado_corte {
+  planificado [note: 'Creado pero cerrado a la carga: el docente NO puede cargar notas.']
+  abierto     [note: 'Abierto desde Gestion Academica: el docente puede cargar hasta fecha_limite_carga.']
+  cerrado     [note: 'Plazo terminado. Cambios solo por solicitud_correccions aprobada.']
+}
+
+// Tipo de asignacion de notas (copia de docente_area_grados.tipo_asignacion).
+Enum tipo_asignacion_nota {
+  area          [note: 'Materia en una seccion.']
+  grupo_estable [note: 'Grupo estable (actividad socio-productiva o cultural).']
+}
+
+// A quien aplica una exoneracion.
+Enum alcance_exoneracion {
+  estudiante     [note: 'Una sola inscripcion.']
+  seccion        [note: 'Todos los estudiantes de una seccion.']
+  grupo_estable  [note: 'Todas las inscripciones de las asignaciones de un grupo estable.']
+  lapso_completo [note: 'Todo el lapso. Exige DOBLE VALIDACION por su naturaleza tan delicada.']
+}
+
+Enum estado_exoneracion {
+  solicitada
+  en_validacion [note: 'Falta alguna de las validaciones requeridas.']
+  aprobada      [note: 'Reunio todas las validaciones requeridas.']
+  rechazada
+  aplicada      [note: 'Ya se reflejo en las calificaciones afectadas.']
+  revocada
+}
+
+Enum decision_validacion {
+  aprobada
+  rechazada
+}
+
+Enum estado_responsabilidad {
+  activa
+  finalizada [note: 'Termino el plazo o regreso el titular.']
+  revocada   [note: 'Un directivo la retiro antes de tiempo.']
+}
+
+// [PENDIENTE-2] De donde sale la nota definitiva del lapso.
+Enum origen_nota_lapso {
+  calculada [note: 'El sistema la calculo con el promedio ponderado.']
+  manual    [note: 'Se cargo a mano tras la discusion de notas.']
+  ajustada  [note: 'Se calculo y luego se modifico tras la discusion.']
+}
+
+// [PENDIENTE-2] Etapa de la nota definitiva del lapso.
+Enum estado_nota_lapso {
+  borrador
+  en_discusion
+  definitiva [note: 'Congelada. Solo cambia por solicitud_correccions aprobada.']
+}
+
+Enum estado_discusion {
+  programada
+  realizada
+  cerrada
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRUPO 1 - TABLAS EXISTENTES (gris)
+// Ya forman parte del sistema de inscripcion. Se listan solo las columnas
+// necesarias para entender las relaciones del modulo de notas.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Table users [headercolor: #7f8c8d, note: '''
+EXISTENTE. Cuentas de acceso. Roles con spatie/laravel-permission (confirmado en RoleSeeder): Admin,
+Editor, User, Representante, Subdirectora, Docente. NO existe el rol Control de Estudios (se
+propone nuevo) y NO hay permisos sembrados: el modulo crea todos los notas.*.
+persona_id YA EXISTE (migracion 2026_06_23_030003): nullable, sin unico, nullOnDelete.
+Ruta oficial: Auth::user()->persona->docente (docente -> persona -> user).
+'''] {
+  id bigint [pk, increment]
+  name varchar(255) [not null]
+  email varchar(255) [unique, not null]
+  password varchar(255) [not null, note: 'Siempre cifrada (bcrypt).']
+  persona_id bigint [ref: > personas.id, note: 'EXISTENTE. Nullable y sin unico. Agregar un indice unico exige primero revisar duplicados (comando notas:auditar-vinculos).']
+}
+
+Table personas [headercolor: #7f8c8d, note: '''
+EXISTENTE. Entidad central de personas: de ella cuelgan alumnos, docentes y representantes.
+users.persona_id la relaciona con la cuenta de acceso. Su correo (email) es opcional y NO es
+unico, por eso no sirve como llave para enlazar. numero_documento si es unico.
+status = false significa persona inactiva.
+'''] {
+  id bigint [pk, increment]
+  numero_documento varchar(255) [unique, not null, note: 'Cedula o documento.']
+  email varchar(255) [note: 'Nullable y no unico.']
+  status boolean [not null, default: true]
+}
+
+Table anio_escolars [headercolor: #7f8c8d, note: '''
+EXISTENTE. Periodo academico. Columnas reales (auditoria): NO tiene nombre ni estado. El nombre
+(ej. 2025-2026) lo calcula un accessor del modelo y el estado se llama status (enum). Para saber
+cual es el año activo hay que reutilizar la logica existente (middleware verificar.anio.escolar).
+'''] {
+  id bigint [pk, increment]
+  inicio_anio_escolar date [not null, note: 'Tipo exacto por confirmar.']
+  cierre_anio_escolar date [not null]
+  extencion_anio_escolar date [note: 'Prorroga. Se escribe asi en la base real.']
+  status varchar(15) [not null, note: 'enum real; valores por confirmar (Activo / Inactivo / Extendido).']
+}
+
+Table grados [headercolor: #7f8c8d, note: 'EXISTENTE. Nivel academico. La columna real es numero_grado (no nombre).'] {
+  id bigint [pk, increment]
+  numero_grado varchar(30) [not null]
+  capacidad_max int
+  min_seccion int
+  max_seccion int
+  status boolean [not null, default: true]
+}
+
+Table seccions [headercolor: #7f8c8d, note: '''
+EXISTENTE. Seccion (A, B, C...) de un grado, creada por el algoritmo de percentil. NO tiene
+anio_escolar_id (confirmado): el año se obtiene por ejecuciones_percentils.anio_escolar_id o por
+las inscripciones cursadas en la seccion.
+'''] {
+  id bigint [pk, increment]
+  nombre varchar(5) [not null, note: 'A, B, C...']
+  cantidad_actual int
+  grado_id bigint [not null, ref: > grados.id]
+  ejecucion_percentil_id bigint [ref: > ejecuciones_percentils.id]
+  status boolean [not null, default: true]
+}
+
+Table ejecuciones_percentils [headercolor: #7f8c8d, note: 'EXISTENTE. Cada corrida del algoritmo de percentil; ahi vive el año de las secciones.'] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [ref: > anio_escolars.id]
+}
+
+Table area_formacions [headercolor: #7f8c8d, note: 'EXISTENTE. Las "materias". La columna real es nombre_area_formacion (no nombre).'] {
+  id bigint [pk, increment]
+  nombre_area_formacion varchar(100) [not null]
+  codigo_area varchar(30)
+  siglas varchar(20)
+  status boolean [not null, default: true]
+}
+
+Table alumnos [headercolor: #7f8c8d, note: 'EXISTENTE. Ficha del estudiante. Sus datos personales estan en personas (no se repiten en las notas).'] {
+  id bigint [pk, increment]
+  persona_id bigint [not null, ref: > personas.id, note: 'Apunta a personas (nombre, cedula, etc.).']
+}
+
+Table docentes [headercolor: #7f8c8d, note: '''
+EXISTENTE. Ficha del profesor. NO tiene user_id: se vincula con la persona (persona_id, borrado en
+cascada) y la persona con la cuenta por users.persona_id (existe). Ruta: Auth::user()->persona->docente.
+anio_escolar_id es nullable (año de registro, no la asignacion anual). status = false significa
+docente inactivo: no carga notas y NO se debe borrar.
+'''] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [ref: > anio_escolars.id, note: 'Nullable (nullOnDelete).']
+  persona_id bigint [not null, ref: > personas.id, note: 'cascadeOnDelete.']
+  status boolean [not null, default: true]
+}
+
+Table inscripcions [headercolor: #7f8c8d, note: '''
+EXISTENTE. LA TABLA CLAVE. Cada fila dice "este alumno cursa este grado y seccion en este año".
+Las notas se guardan contra la inscripcion, no contra el alumno. Usa SoftDeletes (deleted_at):
+las consultas deben excluir las eliminadas. Esta tabla tambien relaciona al alumno con sus
+representantes (padre_id, madre_id, representante_legal_id); no hay tabla alumno_representante.
+'''] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [ref: > anio_escolars.id, note: 'Nullable (nullOnDelete).']
+  alumno_id bigint [not null, ref: > alumnos.id]
+  grado_id bigint [not null, ref: > grados.id]
+  seccion_id bigint [ref: > seccions.id, note: 'Se llena despues del algoritmo de percentil.']
+  padre_id bigint [ref: > representantes.id]
+  madre_id bigint [ref: > representantes.id]
+  representante_legal_id bigint [ref: > representante_legal.id]
+  tipo_inscripcion varchar(20) [not null, note: 'enum: nuevo_ingreso | prosecucion']
+  status varchar(20) [not null, default: 'Activo']
+  deleted_at timestamp [note: 'SoftDeletes.']
+}
+
+Table representantes [headercolor: #7f8c8d, note: 'EXISTENTE. Padres y madres registrados.'] {
+  id bigint [pk, increment]
+}
+
+Table representante_legal [headercolor: #7f8c8d, note: 'EXISTENTE. Representante legal; se apoya en representantes.'] {
+  id bigint [pk, increment]
+  representante_id bigint [ref: > representantes.id]
+}
+
+Table docente_area_grados [headercolor: #7f8c8d, note: '''
+EXISTENTE. CARGA ACADEMICA actual. OJO (auditoria): NO tiene docente_id, area_formacion_id ni
+anio_escolar_id. El docente se llega por detalle_docente_estudios y la materia por
+area_estudio_realizados. Tambien cubre grupos estables (tipo_asignacion). Como no tiene año y
+puede cambiar de manos, el modulo de notas NO la usa como llave: la copia a asignacion_notas.
+'''] {
+  id bigint [pk, increment]
+  docente_estudio_realizado_id bigint [not null, ref: > detalle_docente_estudios.id]
+  area_estudio_realizado_id bigint [ref: > area_estudio_realizados.id]
+  grado_id bigint [ref: > grados.id]
+  seccion_id bigint [ref: > seccions.id]
+  grupo_estable_id bigint [ref: > grupo_estables.id]
+  grado_grupo_estable_id bigint [ref: > grados.id, note: 'Grado al que pertenece el grupo estable.']
+  tipo_asignacion varchar(20) [not null, default: 'area', note: 'enum: area | grupo_estable']
+  status boolean [not null, default: true]
+}
+
+Table detalle_docente_estudios [headercolor: #7f8c8d, note: 'EXISTENTE. Estudios del docente. [SUPUESTO: tiene docente_id; confirmar en el codigo].'] {
+  id bigint [pk, increment]
+  docente_id bigint [ref: > docentes.id, note: 'SUPUESTO por confirmar.']
+}
+
+Table area_estudio_realizados [headercolor: #7f8c8d, note: 'EXISTENTE. Que materias puede dar segun sus estudios. [SUPUESTO: tiene area_formacion_id].'] {
+  id bigint [pk, increment]
+  area_formacion_id bigint [ref: > area_formacions.id, note: 'SUPUESTO por confirmar.']
+}
+
+Table grupo_estables [headercolor: #7f8c8d, note: '''
+EXISTENTE. Grupos estables (actividades socio-productivas y culturales). La auditoria indica
+que docente_area_grados ya los asigna a docentes: son el equivalente a los "grupos de interes".
+'''] {
+  id bigint [pk, increment]
+  nombre_grupo_estable varchar(100) [not null]
+  status boolean [not null, default: true]
+}
+
+Table prosecucion_areas [headercolor: #7f8c8d, note: '''
+EXISTENTE (con UNA columna nueva). Materias que un estudiante arrastra al inscribirse por
+prosecucion. Apunta a inscripcion_prosecucions y a la malla (grado_area_formacions), no
+directo a inscripcions/area_formacions. status guarda Aprobado/Pendiente/Reprobado.
+resultado_area_id enlaza cada pendiente con el resultado del año en que se origino.
+'''] {
+  id bigint [pk, increment]
+  inscripcion_prosecucion_id bigint [not null, ref: > inscripcion_prosecucions.id]
+  grado_area_formacion_id bigint [not null, ref: > grado_area_formacions.id]
+  status varchar(20) [note: 'enum real: Aprobado | Pendiente | Reprobado']
+  resultado_area_id bigint [ref: > resultado_areas.id, note: 'COLUMNA NUEVA. De que resultado anual viene esta pendiente.']
+}
+
+Table inscripcion_prosecucions [headercolor: #7f8c8d, note: 'EXISTENTE. Datos de la inscripcion por prosecucion. [SUPUESTO: tiene inscripcion_id; confirmar].'] {
+  id bigint [pk, increment]
+  inscripcion_id bigint [ref: > inscripcions.id, note: 'SUPUESTO por confirmar.']
+}
+
+Table grado_area_formacions [headercolor: #7f8c8d, note: '''
+EXISTENTE (con 3 columnas nuevas). Malla curricular: que materias se ven en cada grado.
+Hoy tiene unico (grado_id, area_formacion_id): como se agrega pensum_id, ese unico se reemplaza
+por (pensum_id, grado_id, area_formacion_id) y las filas actuales se asignan a un pensum
+por defecto «Plan vigente (migrado)».
+'''] {
+  id bigint [pk, increment]
+  codigo varchar(30) [note: 'Autogenerado por el modelo.']
+  grado_id bigint [not null, ref: > grados.id]
+  area_formacion_id bigint [not null, ref: > area_formacions.id]
+  status boolean [not null, default: true]
+  pensum_id bigint [ref: > pensums.id, note: 'COLUMNA NUEVA. Version del plan de estudios (NOT NULL tras el relleno).']
+  horas_semanales tinyint [note: 'COLUMNA NUEVA.']
+  nota_aprobatoria tinyint [note: 'COLUMNA NUEVA. NULL = usa configuracion_evaluacions.nota_aprobatoria.']
+
+  indexes {
+    (pensum_id, grado_id, area_formacion_id) [unique, note: 'Reemplaza el unico (grado_id, area_formacion_id).']
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRUPO 2 - CONFIGURACION NORMATIVA (azul)
+// Las reglas del MPPE cambian con frecuencia, por eso NO estan fijas en el codigo:
+// son datos que se pueden ajustar sin reprogramar.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Table configuracion_evaluacions [headercolor: #3498db, note: '''
+NUEVA. Parametros normativos de UN año escolar (relacion 1 a 1 con anio_escolars).
+Aqui se define la escala de notas, el redondeo y los limites de promocion. Si el
+Ministerio cambia algo, el nuevo año tiene su propia fila y los años cerrados
+conservan los valores con los que se calificaron. (RN-01, RN-03, RN-05, RN-06)
+'''] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [unique, not null, ref: - anio_escolars.id, note: 'Una configuracion por año escolar.']
+  nota_minima tinyint [not null, default: 1, note: 'Nota mas baja posible (escala 1 a 20).']
+  nota_maxima tinyint [not null, default: 20, note: 'Nota mas alta posible.']
+  nota_aprobatoria tinyint [not null, default: 10, note: 'Desde esta nota se aprueba. Valor general del año; la malla (grado_area_formacions) puede sobrescribirlo por materia.']
+  regla_redondeo regla_redondeo [not null, default: 'half_up', note: 'Como convertir un promedio con decimales a nota entera. POR CONFIRMAR con Control de Estudios (RN-03).']
+  num_lapsos tinyint [not null, default: 3, note: 'Cantidad de lapsos del año (hoy son 3).']
+  aplica_art_112 boolean [not null, default: false, note: 'Activar solo cuando el liceo confirme que aplica el art. 112 (RN-05).']
+  umbral_aplazados_pct decimal(5,2) [not null, default: 30.00, note: 'Porcentaje de aplazados que dispara la alerta de repetir la evaluacion.']
+  max_areas_pendientes tinyint [not null, default: 2, note: 'Maximo de areas pendientes para ser promovido; con mas, repite el año (RN-06).']
+  min_actividades_revision tinyint [not null, default: 3, note: 'Minimo de actividades de superacion pedagogica por forma de revision (RN-04).']
+  max_formas_revision tinyint [not null, default: 2, note: 'Cuantas formas de revision existen (1ra y 2da oportunidad).']
+}
+
+Table lapsos [headercolor: #3498db, note: '''
+NUEVA. Cada lapso (momento pedagogico) de un año escolar, con sus fechas. Las fechas
+salen del calendario oficial del MPPE que ya carga el modulo de calendario. El numero
+de lapsos es un dato, no una constante del codigo.
+'''] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [not null, ref: > anio_escolars.id]
+  numero tinyint [not null, note: '1, 2, 3... Es unico dentro del año (ver indice).']
+  nombre varchar(50) [not null, note: 'Ejemplo: Primer lapso.']
+  fecha_inicio date [not null]
+  fecha_fin date [not null]
+  fecha_limite_carga datetime [not null, note: 'Limite para cargar las notas DEFINITIVAS del lapso (nota_lapsos). Los limites de las evaluaciones los fija cada corte. Despues de la fecha, corregir exige solicitud aprobada (RN-09).']
+  estado estado_lapso [not null, default: 'planificado']
+  cerrado_por bigint [ref: > users.id, note: 'Quien cerro el lapso (Control de Estudios / direccion).']
+  cerrado_at timestamp [note: 'Cuando se cerro. NULL = aun no cerrado.']
+
+  indexes {
+    (anio_escolar_id, numero) [unique, note: 'No puede haber dos "lapso 1" en el mismo año.']
+  }
+}
+
+Table cortes [headercolor: #3498db, note: '''
+NUEVA. Un CORTE es un plazo de carga dentro de un lapso (ej. "Corte 2 del Lapso 1").
+Desde Gestion Academica la direccion ABRE el corte; mientras este "planificado" el
+docente no puede cargar notas de el. Cada evaluacion pertenece a un corte, y de
+el se deduce su lapso. Si el liceo no usara cortes, se crea uno solo por lapso.
+'''] {
+  id bigint [pk, increment]
+  lapso_id bigint [not null, ref: > lapsos.id]
+  numero tinyint [not null, note: '1, 2... Unico dentro del lapso.']
+  nombre varchar(50) [not null, note: 'Ejemplo: Primer corte.']
+  fecha_inicio date
+  fecha_fin date
+  fecha_limite_carga datetime [not null, note: 'Despues de esta fecha el docente ya no edita este corte.']
+  ponderacion decimal(5,2) [note: '[POR CONFIRMAR] Peso del corte dentro del lapso. NULL = no se pondera por corte (las evaluaciones del lapso suman 100%).']
+  estado estado_corte [not null, default: 'planificado']
+  abierto_por bigint [ref: > users.id, note: 'Quien abrio el plazo.']
+  abierto_at timestamp
+  cerrado_por bigint [ref: > users.id]
+  cerrado_at timestamp
+
+  indexes {
+    (lapso_id, numero) [unique, note: 'No puede haber dos "corte 1" en el mismo lapso.']
+  }
+}
+
+Table tipo_evaluacions [headercolor: #3498db, note: '''
+NUEVA. Catalogo de tipos de evaluacion que reconoce el reglamento: parcial,
+final_lapso, extraordinaria, etc. (RN-02). Sirve para clasificar cada evaluacion
+y no escribir el texto a mano.
+'''] {
+  id bigint [pk, increment]
+  codigo varchar(30) [unique, not null, note: 'Identificador interno, ej. parcial, final_lapso.']
+  nombre varchar(60) [not null, note: 'Texto visible, ej. Evaluacion parcial.']
+  activo boolean [not null, default: true, note: 'Permite retirar un tipo sin borrarlo.']
+}
+
+Table pensums [headercolor: #3498db, note: '''
+NUEVA. VERSION del plan de estudios (pensum). Cuando el Ministerio cambia el plan se crea
+un pensum nuevo, y la malla (grado_area_formacions) apunta a el, sin perder el plan
+anterior con el que se califico a los estudiantes de años pasados. (Marco legal: el plan
+debe poder actualizarse sin tocar el codigo.)
+'''] {
+  id bigint [pk, increment]
+  nombre varchar(100) [not null, note: 'Ejemplo: Plan de estudios Media General 2026.']
+  resolucion varchar(150) [note: 'Resolucion o circular del MPPE que lo establece.']
+  anio_escolar_inicio_id bigint [not null, ref: > anio_escolars.id, note: 'Primer año en que rige.']
+  anio_escolar_fin_id bigint [ref: > anio_escolars.id, note: 'Ultimo año en que rige. NULL = sigue vigente.']
+  activo boolean [not null, default: true]
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRUPO 3 - CARGA DE NOTAS: EL NUCLEO DEL MODULO (verde)
+// Aqui trabaja el docente desde su casa.
+// Flujo: 1) planifica evaluaciones  2) carga la nota de cada estudiante
+//        3) entrega la carga del lapso.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Table asignacion_notas [headercolor: #1abc9c, note: '''
+NUEVA (v3). ASIGNACION CONGELADA POR AÑO: "este docente da esta materia en esta seccion (o
+este grupo estable) durante este año". Se copia desde docente_area_grados con la accion
+SincronizarAsignacionesNotas. Existe porque docente_area_grados no tiene año, no apunta
+directo a docente ni a materia y puede cambiar de manos: sin esta copia, las evaluaciones de un
+año quedarian colgadas de una fila que se modifica. Todo el modulo de notas apunta aqui.
+'''] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [not null, ref: > anio_escolars.id]
+  docente_id bigint [not null, ref: > docentes.id, note: 'Resuelto desde detalle_docente_estudios.']
+  tipo tipo_asignacion_nota [not null, default: 'area']
+  area_formacion_id bigint [ref: > area_formacions.id, note: 'Materia. NULL en grupos estables sin materia.']
+  grado_id bigint [not null, ref: > grados.id]
+  seccion_id bigint [ref: > seccions.id, note: 'NULL en un grupo estable que abarca todo el grado.']
+  grupo_estable_id bigint [ref: > grupo_estables.id, note: 'Solo si tipo = grupo_estable.']
+  docente_area_grado_id bigint [ref: > docente_area_grados.id, note: 'Origen (referencia). No se usa para calcular nada.']
+  activa boolean [not null, default: true, note: 'false = el titular ya no la tiene; se conserva si tiene evaluaciones.']
+  sincronizada_at timestamp [not null]
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (anio_escolar_id, docente_area_grado_id) [unique, note: 'Una copia por asignacion origen y año.']
+    (anio_escolar_id, docente_id)
+  }
+}
+
+Table carga_lapsos [headercolor: #1abc9c, note: '''
+NUEVA. "Semaforo" de entrega: dice en que estado esta la carga de notas de cada
+docente, en cada seccion, en cada lapso. Permite a la direccion ver "que docentes
+tienen notas sin cargar" y es requisito para generar boletines (RN-09, RN-13).
+Una fila por (asignacion docente-materia-seccion) y lapso.
+'''] {
+  id bigint [pk, increment]
+  asignacion_nota_id bigint [not null, ref: > asignacion_notas.id, note: 'Que docente, materia y seccion (o grupo estable) y que año.']
+  lapso_id bigint [not null, ref: > lapsos.id]
+  estado estado_carga [not null, default: 'planificacion']
+  entregada_at timestamp [note: 'Cuando el docente marco su carga como terminada.']
+  cerrada_por bigint [ref: > users.id, note: 'Quien confirmo el cierre.']
+  cerrada_at timestamp
+
+  indexes {
+    (asignacion_nota_id, lapso_id) [unique, note: 'Un solo estado por asignacion y lapso.']
+  }
+}
+
+// NOTA V2/V3: la evaluacion pertenece a un CORTE (de el se deduce el lapso, por eso ya no tiene
+// lapso_id: guardarlo seria repetir un dato) y a una asignacion_notas (docente + materia + seccion
+// o grupo estable + año).
+Table evaluacions [headercolor: #1abc9c, note: '''
+NUEVA. Una actividad evaluativa PLANIFICADA por el docente (ej. "Examen parcial 1",
+valor 30%). Pertenece a una asignacion docente-materia-SECCION: dos secciones del
+mismo profesor tienen evaluaciones propias. REGLA: la suma de ponderacion de todas
+las evaluaciones de una asignacion en un lapso debe dar 100 (se valida en el codigo
+al pasar carga_lapsos a "en_carga"; la base de datos no puede validar sumas entre
+filas). (RN-02)
+'''] {
+  id bigint [pk, increment]
+  asignacion_nota_id bigint [not null, ref: > asignacion_notas.id, note: 'De quien es: docente + materia + seccion (o grupo estable) + año. De aqui se valida RN-08.']
+  corte_id bigint [not null, ref: > cortes.id, note: 'Corte (plazo) en que se carga. El docente solo puede cargar si el corte esta abierto.']
+  tipo_evaluacion_id bigint [not null, ref: > tipo_evaluacions.id]
+  nombre varchar(120) [not null, note: 'Ejemplo: Examen parcial 1.']
+  descripcion text [note: 'Detalle opcional: contenidos evaluados.']
+  fecha_evaluacion date [not null]
+  ponderacion decimal(5,2) [not null, note: 'Porcentaje que vale dentro del lapso (mayor que 0 y hasta 100).']
+  activa boolean [not null, default: true, note: 'false = evaluacion anulada (no se borra para conservar historial).']
+  creado_por bigint [not null, ref: > users.id]
+
+  indexes {
+    (asignacion_nota_id, corte_id)
+  }
+}
+
+// NOTA V2 - CAMBIO DE SECCION A MITAD DE LAPSO: las notas siguen unidas a la misma inscripcion,
+// aunque las evaluaciones sean de la seccion anterior. El calculo de nota_lapsos junta
+// ambas. Falta definir con la institucion como se combinan los dos planes de evaluacion
+// (cada seccion tiene sus ponderaciones). No requiere tablas nuevas.
+Table calificacions [headercolor: #1abc9c, note: '''
+NUEVA. LA NOTA: el resultado de UN estudiante (inscripcion) en UNA evaluacion.
+Es la tabla donde el docente carga datos. No guarda nombre, grado ni docente porque
+se obtienen navegando: calificacion -> inscripcion -> alumno, y calificacion ->
+evaluacion -> docente_area_grado. Nunca se borra fisicamente; cualquier cambio queda
+en calificacion_historials.
+'''] {
+  id bigint [pk, increment]
+  evaluacion_id bigint [not null, ref: > evaluacions.id]
+  inscripcion_id bigint [not null, ref: > inscripcions.id, note: 'Estudiante en ese año, grado y seccion. Debe ser de la misma seccion que la evaluacion (se valida al cargar).']
+  nota decimal(5,2) [note: 'NULL = aun sin cargar. Admite decimales; la definitiva del lapso es la que se redondea a entero. Rango validado contra configuracion_evaluacions.']
+  estado_asistencia estado_asistencia_eval [not null, default: 'presente', note: 'Si falto, la nota queda NULL hasta que presente.']
+  justificacion varchar(500) [note: 'Motivo escrito de la falta (RN-12). La tabla inasistencias NO existe en el sistema; si luego se crea, se enlaza.']
+  exoneracion_id bigint [ref: > exoneracions.id, note: 'Si estado_asistencia = exonerado, de que exoneracion viene.']
+  responsabilidad_interina_id bigint [ref: > responsabilidad_interinas.id, note: 'Si la nota la cargo un interino, bajo cual autorizacion. NULL = la cargo el titular.']
+  fecha_reprogramada date [note: 'Nueva fecha para presentar si la falta fue justificada.']
+  observacion varchar(500) [note: 'Juicio cualitativo del docente (LOE art. 44: evaluacion cuali-cuantitativa).']
+  cargado_por bigint [not null, ref: > users.id, note: 'Usuario que registro la nota.']
+  cargado_at timestamp [not null]
+
+  indexes {
+    (evaluacion_id, inscripcion_id) [unique, note: 'Un estudiante tiene UNA sola nota por evaluacion.']
+    inscripcion_id [note: 'Acelera "todas las notas de este estudiante".']
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRUPO 4 - AUDITORIA Y CONTROL (naranja)
+// Protege al docente y al liceo: todo cambio de nota deja huella y las
+// correcciones despues del cierre requieren aprobacion. (RN-05, RN-09, RN-10)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Table solicitud_correccions [headercolor: #e67e22, note: '''
+NUEVA. Cuando el lapso ya cerro (o paso la fecha limite) el docente NO puede editar
+la nota directamente: debe pedir una correccion con su justificacion, y Control de
+Estudios o la direccion la aprueba o rechaza. (RN-09)
+'''] {
+  id bigint [pk, increment]
+  calificacion_id bigint [not null, ref: > calificacions.id, note: 'La nota que se quiere corregir.']
+  solicitada_por bigint [not null, ref: > users.id, note: 'Normalmente el docente.']
+  nota_actual decimal(5,2) [note: 'Valor al momento de pedir el cambio.']
+  nota_propuesta decimal(5,2) [note: 'Valor que se solicita.']
+  motivo text [not null, note: 'Justificacion obligatoria.']
+  estado estado_solicitud [not null, default: 'pendiente']
+  resuelta_por bigint [ref: > users.id, note: 'Quien aprobo o rechazo.']
+  resuelta_at timestamp
+  comentario_resolucion text [note: 'Explicacion de la decision.']
+}
+
+Table calificacion_historials [headercolor: #e67e22, note: '''
+NUEVA. BITACORA INBORRABLE de toda nota: quien, cuando, valor anterior, valor nuevo y
+motivo (RN-10; Ley contra Delitos Informaticos). SOLO SE INSERTA: triggers de MySQL
+bloquean UPDATE y DELETE, y el usuario de base de datos de la aplicacion solo tiene
+permiso de INSERT/SELECT sobre esta tabla. Se alimenta desde un Observer de Eloquent
+(y un trigger como red de seguridad).
+'''] {
+  id bigint [pk, increment]
+  calificacion_id bigint [not null, ref: > calificacions.id]
+  accion accion_historial [not null]
+  nota_anterior decimal(5,2) [note: 'NULL en la creacion.']
+  nota_nueva decimal(5,2)
+  estado_anterior varchar(25) [note: 'Estado de asistencia antes del cambio.']
+  estado_nuevo varchar(25)
+  motivo varchar(500) [note: 'Por que se cambio.']
+  solicitud_correccion_id bigint [ref: > solicitud_correccions.id, note: 'Si el cambio vino de una correccion aprobada.']
+  user_id bigint [not null, ref: > users.id, note: 'Quien hizo el cambio.']
+  ip_address varchar(45) [note: 'Desde donde (IPv4 o IPv6).']
+  created_at timestamp [not null, note: 'Momento exacto del cambio.']
+
+  indexes {
+    (calificacion_id, created_at)
+  }
+}
+
+Table alerta_aplazados [headercolor: #e67e22, note: '''
+NUEVA. Articulo 112 del Reglamento: si el 30% o mas de una seccion queda aplazada en
+una evaluacion, esa evaluacion debe repetirse. El sistema calcula el porcentaje, guarda
+una "foto" de lo que vio (evidencia) y registra la decision de la direccion: repetir
+o descartar. Si se repite, la nueva evaluacion es otra fila de evaluacions. (RN-05)
+'''] {
+  id bigint [pk, increment]
+  evaluacion_id bigint [unique, not null, ref: - evaluacions.id, note: 'Evaluacion que disparo la alerta (1 alerta por evaluacion).']
+  total_evaluados smallint [not null, note: 'Estudiantes con nota al calcular.']
+  total_aplazados smallint [not null, note: 'Cuantos sacaron menos de la nota aprobatoria.']
+  porcentaje decimal(5,2) [not null, note: 'total_aplazados / total_evaluados x 100.']
+  estado estado_alerta [not null, default: 'pendiente']
+  evaluacion_repetida_id bigint [ref: > evaluacions.id, note: 'Evaluacion nueva creada para repetir (si se autorizo).']
+  resuelta_por bigint [ref: > users.id]
+  resuelta_at timestamp
+  observacion text [note: 'Causas investigadas y decision tomada.']
+  created_at timestamp [not null]
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRUPO 5 - RESULTADOS Y RECUPERACION (morado)
+// Convierte las notas sueltas en resultados oficiales del lapso y del año, y maneja
+// las areas que se reprueban (revision y pendientes).
+// Nota: nota_lapsos y resultado_areas son datos CALCULADOS que se guardan a proposito
+// (copia congelada al cerrar), para que un boletin ya emitido no cambie en silencio
+// si luego cambia la regla de redondeo.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// [PENDIENTE-2] Los campos origen, estado, justificacion_ajuste, cargado_por y discusion_nota_id
+// permiten los tres escenarios posibles (calculada / manual / ajustada). Segun lo que responda
+// la institucion se dejan los que apliquen y se borran los demas.
+Table nota_lapsos [headercolor: #9b59b6, note: '''
+NUEVA. NOTA DEFINITIVA de un estudiante en una materia durante un lapso (la que sale
+en el boletin). Se calcula con el promedio ponderado de sus calificacions y se
+redondea segun configuracion_evaluacions. Se congela al cerrar el lapso. No depende del
+docente (si hubo reemplazo, la nota sigue siendo del estudiante en esa materia).
+Solo la escribe el servicio de cierre, nunca un formulario.
+'''] {
+  id bigint [pk, increment]
+  inscripcion_id bigint [not null, ref: > inscripcions.id]
+  area_formacion_id bigint [not null, ref: > area_formacions.id, note: 'La materia.']
+  lapso_id bigint [not null, ref: > lapsos.id]
+  promedio_calculado decimal(5,2) [not null, note: 'Promedio ponderado ANTES de redondear.']
+  nota_definitiva tinyint [not null, note: 'Entero entre nota_minima y nota_maxima (RN-01).']
+  aprobada boolean [not null, note: 'nota_definitiva >= nota_aprobatoria.']
+  observacion_cualitativa text [note: 'Juicio descriptivo para el boletin.']
+  calculada_at timestamp [not null, note: 'Cuando se calculo o se cargo.']
+  origen origen_nota_lapso [not null, default: 'calculada', note: '[PENDIENTE-2] Si la nota salio del calculo automatico, se cargo a mano o se ajusto.']
+  estado estado_nota_lapso [not null, default: 'borrador', note: '[PENDIENTE-2] borrador -> en_discusion -> definitiva.']
+  justificacion_ajuste varchar(500) [note: '[PENDIENTE-2] Obligatoria cuando origen = manual o ajustada.']
+  cargado_por bigint [ref: > users.id, note: '[PENDIENTE-2] Quien la cargo o ajusto. NULL = la calculo el sistema.']
+  discusion_nota_id bigint [ref: > discusion_notas.id, note: '[PENDIENTE-2] Discusion de notas donde se acordo.']
+
+  indexes {
+    (inscripcion_id, area_formacion_id, lapso_id) [unique, note: 'Una definitiva por estudiante, materia y lapso.']
+    lapso_id
+  }
+}
+
+Table resultado_areas [headercolor: #9b59b6, note: '''
+NUEVA. Resultado ANUAL de un estudiante en una materia: su nota final y su condicion
+(aprobada, en revision, pendiente...). Es lo que permite contar cuantas areas
+pendientes tiene y avisar cuando supera el maximo de 2 (Circular 006696; RN-06).
+'''] {
+  id bigint [pk, increment]
+  inscripcion_id bigint [not null, ref: > inscripcions.id]
+  area_formacion_id bigint [not null, ref: > area_formacions.id]
+  nota_final tinyint [note: 'Resultado del año (promedio de los lapsos). NULL mientras esta en curso.']
+  condicion condicion_area [not null, default: 'en_curso']
+  cerrado_at timestamp [note: 'Cuando se determino la condicion final.']
+
+  indexes {
+    (inscripcion_id, area_formacion_id) [unique, note: 'Un resultado por estudiante y materia en el año.']
+    condicion [note: 'Acelera "estudiantes con areas pendientes".']
+  }
+}
+
+Table recuperacions [headercolor: #9b59b6, note: '''
+NUEVA. Cada PROCESO de revision o de evaluacion de area pendiente de un estudiante:
+"revision del lapso 2, forma 1", "pendiente de Fisica, intento del 3er lapso", etc.
+Apunta al resultado_area que se intenta recuperar. anio_escolar_id es el año en que
+SE EJECUTA, que en las pendientes es distinto del año en que se origino la deuda.
+(RN-04, RN-07)
+'''] {
+  id bigint [pk, increment]
+  resultado_area_id bigint [not null, ref: > resultado_areas.id, note: 'Que area del estudiante se intenta recuperar.']
+  anio_escolar_id bigint [not null, ref: > anio_escolars.id, note: 'Año en que se hace el intento.']
+  lapso_id bigint [ref: > lapsos.id, note: 'Solo en revision de lapso.']
+  tipo_proceso tipo_proceso_recuperacion [not null]
+  forma tinyint [not null, default: 1, note: '1 = primera forma, 2 = segunda (si no aprobo la primera).']
+  asignacion_nota_id bigint [ref: > asignacion_notas.id, note: 'Asignacion (docente) que evalua, si aplica.']
+  estado estado_recuperacion [not null, default: 'abierta']
+  nota_resultado tinyint [note: 'Nota obtenida al cerrar el proceso.']
+  fecha_cierre date
+
+  indexes {
+    (resultado_area_id, anio_escolar_id)
+  }
+}
+
+Table recuperacion_actividads [headercolor: #9b59b6, note: '''
+NUEVA. Las ACTIVIDADES DE SUPERACION PEDAGOGICA de un proceso de recuperacion. El
+reglamento exige un minimo de 3 por forma de revision; el sistema no deja cerrar la
+recuperacion si hay menos (se valida en el codigo con min_actividades_revision).
+'''] {
+  id bigint [pk, increment]
+  recuperacion_id bigint [not null, ref: > recuperacions.id]
+  numero tinyint [not null, note: 'Orden de la actividad: 1, 2, 3...']
+  descripcion varchar(255) [not null, note: 'Ejemplo: Taller de ecuaciones.']
+  fecha_actividad date
+  nota decimal(5,2)
+  cargado_por bigint [ref: > users.id]
+  cargado_at timestamp
+
+  indexes {
+    (recuperacion_id, numero) [unique]
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRUPO 6 - DOCUMENTOS (rosado)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Table boletins [headercolor: #e84393, note: '''
+NUEVA. Registro de cada boletin generado en PDF. Solo se genera con el lapso cerrado y
+las notas completas (RN-13). Guarda una huella SHA-256 del archivo para poder probar
+que no fue alterado. Por defecto es_oficial = false: el sistema produce BORRADORES;
+los documentos oficiales los emite el liceo bajo las reglas del Ministerio (RN-14).
+'''] {
+  id bigint [pk, increment]
+  inscripcion_id bigint [not null, ref: > inscripcions.id]
+  lapso_id bigint [ref: > lapsos.id, note: 'NULL = boletin final del año.']
+  version smallint [not null, default: 1, note: 'Sube si se regenera tras una correccion aprobada.']
+  hash_sha256 char(64) [not null, note: 'Huella digital del PDF.']
+  ruta_archivo varchar(255) [not null, note: 'Donde esta guardado el PDF.']
+  es_oficial boolean [not null, default: false, note: 'false = borrador informativo. No cambiar sin confirmar RN-14.']
+  generado_por bigint [not null, ref: > users.id]
+  generado_at timestamp [not null]
+
+  indexes {
+    (inscripcion_id, lapso_id, version) [unique]
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUDITORIA ADICIONAL (naranja)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Table nota_lapso_historials [headercolor: #e67e22, note: '''
+NUEVA. Bitacora inborrable de la NOTA DEFINITIVA del lapso (igual que
+calificacion_historials, pero para nota_lapsos). Necesaria porque la nota definitiva es la
+que sale en el boletin y, si se carga o ajusta a mano, cada cambio debe dejar huella.
+SOLO SE INSERTA: mismos triggers que calificacion_historials (bloquean UPDATE y DELETE).
+'''] {
+  id bigint [pk, increment]
+  nota_lapso_id bigint [not null, ref: > nota_lapsos.id]
+  nota_anterior tinyint [note: 'NULL en la primera carga.']
+  nota_nueva tinyint [not null]
+  origen_nuevo origen_nota_lapso [not null]
+  motivo varchar(500)
+  solicitud_correccion_id bigint [ref: > solicitud_correccions.id, note: 'Si vino de una correccion aprobada.']
+  user_id bigint [not null, ref: > users.id]
+  ip_address varchar(45)
+  created_at timestamp [not null]
+
+  indexes {
+    (nota_lapso_id, created_at)
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXONERACIONES Y RESPONSABILIDADES (dorado)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Table exoneracions [headercolor: #d4ac0d, note: '''
+NUEVA. Exoneracion de evaluaciones en un lapso. Puede aplicarse a un estudiante, a una
+seccion, a un grupo estable o al lapso completo. Es delicada: una exoneracion de
+lapso completo necesita DOS validaciones de personas distintas (ver exoneracion_validacions).
+Segun el alcance, solo UNO de inscripcion_id / seccion_id / grupo_estable_id tiene valor
+(en lapso_completo ninguno). Al aprobarse, el sistema marca las calificaciones afectadas
+con estado_asistencia = exonerado y exoneracion_id.
+'''] {
+  id bigint [pk, increment]
+  lapso_id bigint [not null, ref: > lapsos.id]
+  alcance alcance_exoneracion [not null]
+  inscripcion_id bigint [ref: > inscripcions.id, note: 'Si alcance = estudiante.']
+  seccion_id bigint [ref: > seccions.id, note: 'Si alcance = seccion.']
+  grupo_estable_id bigint [ref: > grupo_estables.id, note: 'Si alcance = grupo_estable.']
+  area_formacion_id bigint [ref: > area_formacions.id, note: 'Materia exonerada. NULL = todas las materias del alcance.']
+  motivo text [not null, note: 'Justificacion obligatoria.']
+  nota_otorgada decimal(5,2) [note: '[POR CONFIRMAR] NULL = la exoneracion no cuenta en el promedio. Con valor = se asigna esa nota.']
+  estado estado_exoneracion [not null, default: 'solicitada']
+  validaciones_requeridas tinyint [not null, default: 1, note: 'El sistema pone 2 cuando alcance = lapso_completo.']
+  solicitada_por bigint [not null, ref: > users.id]
+  aplicada_at timestamp [note: 'Cuando se reflejo en las calificaciones.']
+  created_at timestamp [not null]
+
+  indexes {
+    (lapso_id, alcance)
+  }
+}
+
+Table exoneracion_validacions [headercolor: #d4ac0d, note: '''
+NUEVA. Cada validacion de una exoneracion. Para el alcance lapso_completo se exigen DOS,
+de PERSONAS DISTINTAS (y distintas de quien la solicito, regla del servicio). La
+exoneracion solo pasa a "aprobada" cuando se reune el numero de validaciones requeridas.
+'''] {
+  id bigint [pk, increment]
+  exoneracion_id bigint [not null, ref: > exoneracions.id]
+  orden tinyint [not null, note: '1 = primera validacion, 2 = segunda.']
+  validado_por bigint [not null, ref: > users.id]
+  decision decision_validacion [not null]
+  comentario varchar(500)
+  validated_at timestamp [not null]
+
+  indexes {
+    (exoneracion_id, orden) [unique]
+    (exoneracion_id, validado_por) [unique, note: 'La misma persona no puede validar dos veces la misma exoneracion.']
+  }
+}
+
+Table responsabilidad_interinas [headercolor: #d4ac0d, note: '''
+NUEVA. RESPONSABILIDAD INTERINA: autoriza a una persona (cualquier personal con usuario:
+otro docente, coordinador, directivo) a cargar las notas de una asignacion cuando el
+titular no puede (reposo, permiso, vacante). Cambia la regla RN-08: puede cargar notas
+quien sea el docente asignado O tenga aqui una responsabilidad ACTIVA y vigente para
+esa asignacion. El titular no se guarda porque se obtiene de la asignacion
+(asignacion_notas.docente_id). Para varias asignaciones de un mismo docente se crean
+varias filas. Se puede relacionar con los reposos y permisos ya registrados en el sistema.
+'''] {
+  id bigint [pk, increment]
+  asignacion_nota_id bigint [not null, ref: > asignacion_notas.id, note: 'Asignacion cubierta (docente, materia y seccion o grupo estable).']
+  usuario_interino_id bigint [not null, ref: > users.id, note: 'Quien asume la carga.']
+  motivo varchar(300) [not null, note: 'Ejemplo: reposo medico del titular.']
+  fecha_desde date [not null]
+  fecha_hasta date [note: 'NULL = hasta que un directivo la finalice.']
+  estado estado_responsabilidad [not null, default: 'activa']
+  autorizada_por bigint [not null, ref: > users.id]
+  autorizada_at timestamp [not null]
+
+  indexes {
+    asignacion_nota_id
+    usuario_interino_id
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PENDIENTES DE CONFIRMAR EN LA REUNION (rojo)
+// Si la institucion responde que no aplican, se borra el bloque y las columnas marcadas
+// con la misma etiqueta.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+Table discusion_notas [headercolor: #e74c3c, note: '''
+[PENDIENTE-2] NUEVA. ACTA de la "discusion de notas": la reunion donde, al terminar el
+lapso, se revisan las notas de una seccion antes de fijar las definitivas. Una por
+seccion y lapso. Solo se necesita si la institucion confirma que la discusion queda
+registrada en el sistema; si no, se elimina junto con nota_lapsos.discusion_nota_id.
+'''] {
+  id bigint [pk, increment]
+  lapso_id bigint [not null, ref: > lapsos.id]
+  seccion_id bigint [not null, ref: > seccions.id]
+  fecha_discusion date
+  estado estado_discusion [not null, default: 'programada']
+  acta text [note: 'Resumen de los acuerdos.']
+  registrada_por bigint [ref: > users.id]
+  cerrada_at timestamp
+
+  indexes {
+    (lapso_id, seccion_id) [unique, note: 'Una discusion por seccion y lapso.']
+  }
+}
+
+Table asignacion_nota_miembros [headercolor: #e74c3c, note: '''
+[PENDIENTE-5] NUEVA (v3, reemplaza a grupo_interes_miembros). Estudiantes que cursan una asignacion
+de tipo grupo_estable, SOLO si los alumnos de un grupo no se pueden deducir del grado. Si el
+grupo estable lo cursan todos los alumnos del grado, esta tabla se elimina y
+AsignacionNota::inscripciones() usa el grado.
+'''] {
+  id bigint [pk, increment]
+  asignacion_nota_id bigint [not null, ref: > asignacion_notas.id]
+  inscripcion_id bigint [not null, ref: > inscripcions.id]
+  fecha_ingreso date
+  fecha_retiro date [note: 'NULL = sigue en el grupo.']
+
+  indexes {
+    (asignacion_nota_id, inscripcion_id) [unique]
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AGRUPACION VISUAL (en dbdiagram.io se dibuja una caja de color por grupo)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// g1: tablas que ya existen en el sistema de inscripcion (solo columnas relevantes).
+TableGroup g1_existentes_gris {
+  users
+  personas
+  anio_escolars
+  grados
+  seccions
+  ejecuciones_percentils
+  area_formacions
+  alumnos
+  docentes
+  inscripcions
+  representantes
+  representante_legal
+  docente_area_grados
+  detalle_docente_estudios
+  area_estudio_realizados
+  grupo_estables
+  inscripcion_prosecucions
+  prosecucion_areas
+  grado_area_formacions
+}
+
+// g2: reglas del MPPE como datos configurables: escala, redondeo, lapsos, cortes, tipos, pensum.
+TableGroup g2_configuracion_azul {
+  configuracion_evaluacions
+  lapsos
+  cortes
+  tipo_evaluacions
+  pensums
+}
+
+// g3: nucleo - asignaciones por año, el docente planifica evaluaciones, carga notas y entrega.
+TableGroup g3_carga_de_notas_verde {
+  asignacion_notas
+  carga_lapsos
+  evaluacions
+  calificacions
+}
+
+// g4: correcciones con aprobacion, historiales inborrables y alerta del 30% de aplazados.
+TableGroup g4_auditoria_naranja {
+  solicitud_correccions
+  calificacion_historials
+  nota_lapso_historials
+  alerta_aplazados
+}
+
+// g5: notas definitivas por lapso, resultado anual por area, reparacion y pendientes.
+TableGroup g5_resultados_morado {
+  nota_lapsos
+  resultado_areas
+  recuperacions
+  recuperacion_actividads
+}
+
+// g6: boletines generados (borradores con huella digital).
+TableGroup g6_documentos_rosado {
+  boletins
+}
+
+// g7: exoneraciones con doble validacion y responsabilidad interina.
+TableGroup g7_exoneraciones_y_responsabilidades_dorado {
+  exoneracions
+  exoneracion_validacions
+  responsabilidad_interinas
+}
+
+// g8: PENDIENTES de confirmar en la reunion con la institucion (puntos 2 y 5).
+TableGroup g8_pendientes_reunion_rojo {
+  discusion_notas
+  asignacion_nota_miembros
+}
