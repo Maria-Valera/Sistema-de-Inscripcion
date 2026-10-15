@@ -61,19 +61,17 @@ class LoginController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    protected function validateLogin(Request $request)
-    {
-        $request->validate([
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string', 'min:8', 'max:16'],
-        ], [
-            'email.required' => 'El campo correo electrónico es obligatorio.',
-            'email.email' => 'El formato del correo electrónico no es válido.',
-            'email.string' => 'El correo electrónico debe ser una cadena de texto.',
-            'password.required' => 'El campo contraseña es obligatorio.',
-            'password.string' => 'La contraseña debe ser una cadena de texto.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.max' => 'La contraseña no puede tener más de 16 caracteres.',
-        ]);
-    }
+        protected function validateLogin(Request $request)
+        {
+            $request->validate([
+                'email'    => ['required', 'string', 'email'],
+                'password' => ['required', 'string'],
+            ], [
+                'email.required' => 'El campo correo electrónico es obligatorio.',
+                'email.email'    => 'El formato del correo electrónico no es válido.',
+                'email.string'   => 'El correo electrónico debe ser una cadena de texto.',
+                'password.required' => 'El campo contraseña es obligatorio.',
+                'password.string'   => 'La contraseña debe ser una cadena de texto.',
+            ]);
+        }
 }
