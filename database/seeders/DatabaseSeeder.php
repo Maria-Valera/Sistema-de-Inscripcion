@@ -25,23 +25,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->command->info('Iniciando seeders...');
 
-        // Crear usuario administrador
-        $adminUser = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Administrador',
-                'password' => Hash::make('12345678'),
-                'debe_cambiar_password' => true,
-                'activo' => true,
-                'rol_principal' => 'Admin',
-            ]
-        );
-
-        $this->command->info('Usuario administrador creado: ' . $adminUser->email);
-
         $this->call([
-            PermisosSeeder::class, // Debe ejecutarse antes que RoleSeeder
-            RoleSeeder::class,
+            SeguridadSeeder::class, // Ejecuta PermisosSeeder, RoleSeeder y Administrador
             PaisSeeder::class,
             AnioEscolarSeeder::class,
             GradoSeeder::class,
@@ -88,9 +73,6 @@ class DatabaseSeeder extends Seeder
             ProsecucionAreaSeeder::class,  */
         ]);
 
-        // Asignar rol Admin al usuario administrador
-        $adminUser->assignRole('Admin');
-
         /* 
         |--------------------------------------------------------------------------
         | GENERACIÓN DINÁMICA DE USUARIOS PARA REPRESENTANTES
@@ -98,30 +80,47 @@ class DatabaseSeeder extends Seeder
         | Recorremos todos los representantes que fueron registrados por los seeders.
         | Para cada uno, creamos una cuenta en la tabla 'users' utilizando su email
         | y le asignamos el rol 'Representante' para que puedan loguearse.
+        | Solo se ejecuta en entorno local.
         */
-        $representantes = \App\Models\Representante::with('persona')->get();
-        
-        foreach ($representantes as $rep) {
-            // Verificamos que el representante tenga datos personales y una dirección de correo válida
-            if ($rep->persona && $rep->persona->email) {
-                // Buscamos o creamos el usuario correspondiente con contraseña por defecto '12345678'
-                $user = User::firstOrCreate(
-                    ['email' => $rep->persona->email],
-                    [
-                        'name' => $rep->persona->primer_nombre . ' ' . $rep->persona->primer_apellido,
-                        'password' => Hash::make('12345678'), // Encriptación de la contraseña por defecto
-                        'rol_principal' => 'Representante',
-                    ]
-                );
-                
-                // Asegurar rol_principal si el usuario ya existía previamente
-                if (!$user->rol_principal) {
-                    $user->update(['rol_principal' => 'Representante']);
+        $entorno = app()->environment();
+        if ($entorno === 'local') {
+            $representantes = \App\Models\Representante::with('persona')->get();
+            $passwordDev = config('seguridad.password_desarrollo', '12345678');
+            
+            foreach ($representantes as $rep) {
+                // Verificamos que el representante tenga datos personales y una dirección de correo válida
+                if ($rep->persona && $rep->persona->email) {
+                    $user = User::firstOrCreate(
+                        ['email' => $rep->persona->email],
+                        [
+                            'name' => $rep->persona->primer_nombre . ' ' . $rep->persona->primer_apellido,
+                            'password' => Hash::make($passwordDev),
+                            'rol_principal' => 'Representante',
+                            'activo' => true,
+                            'debe_cambiar_password' => false,
+                            'email_verified_at' => now(),
+                        ]
+                    );
+                    
+                    if (!$user->rol_principal || $user->rol_principal !== 'Representante') {
+                        $user->update(['rol_principal' => 'Representante']);
+                    }
+                    if (!$user->activo) {
+                        $user->update(['activo' => true]);
+                    }
+                    if ($user->debe_cambiar_password) {
+                        $user->update(['debe_cambiar_password' => false]);
+                    }
+                    if (empty($user->email_verified_at)) {
+                        $user->update(['email_verified_at' => now()]);
+                    }
+                    
+                    // Asignamos el rol 'Representante' usando syncRoles
+                    $user->syncRoles(['Representante']);
                 }
-                
-                // Asignamos el rol 'Representante' usando Spatie Laravel-Permission
-                $user->assignRole('Representante');
             }
+        } else {
+            $this->command->info("[DatabaseSeeder] Entorno '{$entorno}' detectado. Saltando creación de usuarios de prueba.");
         }
 
         $this->command->info('¡Base de datos poblada con éxito!');

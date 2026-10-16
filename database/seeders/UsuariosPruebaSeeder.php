@@ -3,38 +3,104 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\User;
 use App\Models\Persona;
 use App\Models\Docente;
 use App\Models\Representante;
+use App\Models\Genero;
+use App\Models\TipoDocumento;
+use App\Models\PrefijoTelefono;
+use App\Models\Localidad;
+use App\Models\Estado;
+use App\Models\Municipio;
+use App\Models\Pais;
+use App\Models\Ocupacion;
+use App\Models\AnioEscolar;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class UsuariosPruebaSeeder extends Seeder
 {
+    use WithoutModelEvents;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+        $entorno = app()->environment();
+
         // Solo se ejecuta en entorno local
-        if (!app()->environment('local')) {
-            $this->command->info('UsuariosPruebaSeeder: Solo se ejecuta en entorno local. Omitiendo.');
+        if ($entorno !== 'local') {
+            $this->command->info("[UsuariosPruebaSeeder] Entorno '{$entorno}' detectado. Solo se ejecuta en entorno local. Omitiendo.");
             return;
         }
 
-        $password = '12345678';
+        $password = config('seguridad.password_desarrollo', '12345678');
         $this->command->info('Creando usuarios de prueba...');
 
-        // IDs de catálogos (asumiendo que ya existen en la base de datos)
-        $generoId = 1; // Masculino por defecto
-        $tipoDocumentoId = 1; // Cédula
-        $prefijoId = 1; // 0414
-        $localidadId = 1; // Parroquia
-        $estadoId = 1; // Estado
-        $municipioId = 1; // Municipio
-        $paisId = 242; // Venezuela
-        $ocupacionId = 1; // Ocupación
-        $anioEscolarId = 1; // Año escolar activo
+        // Tomar el primer registro existente de cada catálogo
+        $genero = Genero::first();
+        if (!$genero) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'generos'");
+        }
+        $generoId = $genero->id;
+
+        $generoFemenino = Genero::where('genero', 'LIKE', 'F%')->orWhere('genero', 'LIKE', 'Mujer%')->first() ?? $genero;
+        $generoFemeninoId = $generoFemenino->id;
+
+        $tipoDocumento = TipoDocumento::first();
+        if (!$tipoDocumento) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'tipo_documentos'");
+        }
+        $tipoDocumentoId = $tipoDocumento->id;
+
+        $prefijo = PrefijoTelefono::first();
+        if (!$prefijo) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'prefijo_telefonos'");
+        }
+        $prefijoId = $prefijo->id;
+
+        $localidad = Localidad::first();
+        if (!$localidad) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'localidads'");
+        }
+        $localidadId = $localidad->id;
+
+        $estado = Estado::first();
+        if (!$estado) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'estados'");
+        }
+        $estadoId = $estado->id;
+
+        $municipio = Municipio::first();
+        if (!$municipio) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'municipios'");
+        }
+        $municipioId = $municipio->id;
+
+        $pais = Pais::first();
+        if (!$pais) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'pais'");
+        }
+        $paisId = $pais->id;
+
+        $ocupacion = Ocupacion::first();
+        if (!$ocupacion) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'ocupacions'");
+        }
+        $ocupacionId = $ocupacion->id;
+
+        // Año escolar activo
+        $anioEscolar = AnioEscolar::where('status', 'Activo')
+            ->orWhere('status', 'Extendido')
+            ->first() ?? AnioEscolar::first();
+
+        if (!$anioEscolar) {
+            throw new RuntimeException("Falta catálogo requerido en base de datos: 'anio_escolars'");
+        }
+        $anioEscolarId = $anioEscolar->id;
 
         // ===== USUARIO REPRESENTANTE =====
         $this->crearUsuarioRepresentante(
@@ -80,7 +146,7 @@ class UsuariosPruebaSeeder extends Seeder
             'Soto',
             '99999993',
             $password,
-            2, // Femenino
+            $generoFemeninoId,
             $tipoDocumentoId,
             $prefijoId,
             $localidadId,
@@ -176,8 +242,13 @@ class UsuariosPruebaSeeder extends Seeder
                 'rol_principal' => 'Representante',
                 'debe_cambiar_password' => false,
                 'activo' => true,
+                'email_verified_at' => now(),
             ]
         );
+
+        if (empty($user->email_verified_at)) {
+            $user->update(['email_verified_at' => now()]);
+        }
 
         // Asignar rol
         $user->syncRoles(['Representante']);
@@ -224,11 +295,11 @@ class UsuariosPruebaSeeder extends Seeder
             ]
         );
 
-        // Crear o actualizar Docente
+        // Crear o actualizar Docente con código determinístico
         Docente::updateOrCreate(
             ['persona_id' => $persona->id],
             [
-                'codigo' => 'PRUEBA' . rand(1000, 9999),
+                'codigo' => 'PRUEBA-' . $cedula,
                 'dependencia' => 'Liceo General Juan Guillermo Iribarren',
                 'anio_escolar_id' => $anioEscolarId,
                 'horas_academicas' => 40,
@@ -246,8 +317,13 @@ class UsuariosPruebaSeeder extends Seeder
                 'rol_principal' => $rolPrincipal,
                 'debe_cambiar_password' => false,
                 'activo' => true,
+                'email_verified_at' => now(),
             ]
         );
+
+        if (empty($user->email_verified_at)) {
+            $user->update(['email_verified_at' => now()]);
+        }
 
         // Asignar rol
         $user->syncRoles([$rolPrincipal]);
@@ -297,11 +373,11 @@ class UsuariosPruebaSeeder extends Seeder
             ]
         );
 
-        // Crear o actualizar Docente
+        // Crear o actualizar Docente con código determinístico
         Docente::updateOrCreate(
             ['persona_id' => $persona->id],
             [
-                'codigo' => 'PRUEBA' . rand(1000, 9999),
+                'codigo' => 'PRUEBA-' . $cedula,
                 'dependencia' => 'Liceo General Juan Guillermo Iribarren',
                 'anio_escolar_id' => $anioEscolarId,
                 'horas_academicas' => 40,
@@ -333,8 +409,13 @@ class UsuariosPruebaSeeder extends Seeder
                 'rol_principal' => 'Docente', // Rol principal es Docente
                 'debe_cambiar_password' => false,
                 'activo' => true,
+                'email_verified_at' => now(),
             ]
         );
+
+        if (empty($user->email_verified_at)) {
+            $user->update(['email_verified_at' => now()]);
+        }
 
         // Asignar ambos roles
         $user->syncRoles(['Docente', 'Representante']);
