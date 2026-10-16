@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Actions\Usuarios\RegistrarUsuarioAction;
+use App\Http\Requests\RegistroUsuarioRequest;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -39,6 +42,34 @@ class RegisterController extends Controller
     public function __construct()
     {
         $this->middleware('guest');
+    }
+
+    /**
+     * Show the application registration form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showRegistrationForm()
+    {
+        $tipoDocumentos = \App\Models\TipoDocumento::where('status', 1)->get();
+
+        return view('auth.register', compact('tipoDocumentos'));
+    }
+
+    /**
+     * Handle a registration request for the application.
+     *
+     * @param  \App\Http\Requests\RegistroUsuarioRequest  $request
+     * @param  \App\Actions\Usuarios\RegistrarUsuarioAction  $action
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function register(RegistroUsuarioRequest $request, RegistrarUsuarioAction $action)
+    {
+        $user = $action->ejecutar($request->validated());
+
+        Auth::login($user);
+
+        return redirect($user->rutaDashboard());
     }
 
     /**
