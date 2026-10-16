@@ -31,14 +31,11 @@ class ForgotPasswordController extends Controller
      */
     public function sendResetLinkEmail(Request $request)
     {
-        $request->validate(['email' => ['required|email']]);
+        $request->validate(['email' => ['required', 'email']]);
 
         // We will send the password reset link to this user's e-mail address.
         // But first, we'll check if the email exists in the database.
-        $status = Password::sendResetLink(
-            $request->only('email'),
-            $this->broker()
-        );
+        $status = Password::sendResetLink($request->only('email'));
 
         // Registrar en auditoría (sin revelar si el usuario existe)
         Auditoria::registrar(

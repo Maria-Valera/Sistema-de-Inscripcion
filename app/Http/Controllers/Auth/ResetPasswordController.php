@@ -24,10 +24,12 @@ class ResetPasswordController extends Controller
 
     /**
      * Where to redirect users after resetting their password.
-     *
-     * @var string
+     * Redirección dinámica según el rol principal del usuario (coherente con LoginController).
      */
-    protected $redirectTo = '/home';
+    protected function redirectTo()
+    {
+        return auth()->user() ? auth()->user()->rutaDashboard() : '/home';
+    }
 
     /**
      * Reset the given user's password.
@@ -47,7 +49,7 @@ class ResetPasswordController extends Controller
             'debe_cambiar_password' => true,
         ])->save();
 
-        event($this->userHasJustAuthenticated($user));
+        event(new \Illuminate\Auth\Events\PasswordReset($user));
         $this->guard()->login($user);
 
         // Registrar en auditoría
