@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verificar.anio.escolar' => \App\Http\Middleware\VerificarAnioEscolarActivo::class,
             'forzar.cambio.password' => \App\Http\Middleware\ForzarCambioPassword::class,
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         ]);
 
         // Agregar el middleware de verificación de años vencidos

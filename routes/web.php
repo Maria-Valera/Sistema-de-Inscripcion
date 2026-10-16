@@ -47,7 +47,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 
 Route::get('/check-email', function (Illuminate\Http\Request $request) {
     $email = $request->get('email');
@@ -55,20 +55,18 @@ Route::get('/check-email', function (Illuminate\Http\Request $request) {
     return response()->json(['exists' => $exists]);
 });
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
 // Ruta para cambio de contraseña
 Route::middleware(['auth'])->get('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'showChangeForm'])->name('password.change');
 Route::middleware(['auth'])->post('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'change'])->name('password.change.post');
 
 // Rutas para Dashboards por rol
-Route::middleware(['auth', 'forzar.cambio.password'])->prefix('dashboard')->name('dashboard.')->group(function () {
+Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/subdirectora', [App\Http\Controllers\HomeController::class, 'subdirectora'])->name('subdirectora');
     Route::get('/docente', [App\Http\Controllers\HomeController::class, 'docente'])->name('docente');
 });
 
-// Aplicar middleware de cambio de contraseña a home también
-Route::middleware(['auth', 'forzar.cambio.password'])->get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Aplicar middleware de verificación y cambio de contraseña a home
+Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 
 
@@ -88,7 +86,7 @@ Route::get("/vidaEstudiantil", function () {
 // RUTAS PROTEGIDAS POR AUTENTICACIÓN
 // ============================================
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     // ===== GENERADOR DE HORARIOS API =====
     Route::middleware(['verificar.anio.escolar'])->group(function () {
         Route::post('api/horario/generar', [GeneradorHorarioController::class, 'generar'])->name('api.horario.generar');
@@ -104,7 +102,7 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get(
         'historico/secciones-por-grado/{grado}',
@@ -516,7 +514,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 });
 
 // ====== PORTAL DEL REPRESENTANTE ======
-Route::middleware(['auth'])->prefix('portal-representante')->name('portal-representante.')->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('portal-representante')->name('portal-representante.')->group(function () {
     Route::get('/', [\App\Http\Controllers\PortalRepresentanteController::class, 'index'])->name('index');
     
     Route::prefix('prosecucion')->name('prosecucion.')->group(function () {
@@ -562,7 +560,7 @@ Route::post('aulas/verificar-existencia', [AulaController::class, 'verificarExis
 
 
 // ======  REPRESENTANTE  ======
-Route::middleware(['auth'])->prefix('representante')->name('representante.')->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('representante')->name('representante.')->group(function () {
     // Vista principal (listado)
     Route::get('/', [RepresentanteController::class, 'index'])->name('index');
 

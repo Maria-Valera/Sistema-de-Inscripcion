@@ -8,7 +8,9 @@ use App\Models\Persona;
 use App\Models\Representante;
 use App\Models\TipoDocumento;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -337,5 +339,80 @@ class RegistroUsuarioTest extends TestCase
             'password_confirmation' => '12345678',
         ]);
         $response->assertSessionHasErrors(['password']);
+    }
+
+    /**
+     * Se envía correo de verificación al registrarse
+     */
+    public function test_se_envia_correo_de_verificacion_al_registrarse()
+    {
+        Notification::fake();
+
+        $persona = $this->crearPersona(['numero_documento' => '77889900']);
+        $this->crearRepresentante($persona->id);
+
+        $this->post(route('register'), [
+            'tipo_documento_id'     => $this->tipoV->id,
+            'numero_documento'      => '77889900',
+            'email'                 => 'notif.test@example.com',
+            'password'              => 'Password123',
+            'password_confirmation' => 'Password123',
+        ]);
+
+        $user = User::where('email', 'notif.test@example.com')->first();
+        $this->assertNotNull($user);
+
+        Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    /**
+     * Usuario recién registrado tiene email_verified_at = null
+     */
+    public function test_usuario_recien_registrado_tiene_email_verified_at_null()
+    {
+        $persona = $this->crearPersona(['numero_documento' => '88990011']);
+        $this->crearRepresentante($persona->id);
+
+        $this->post(route('register'), [
+            'tipo_documento_id'     => $this->tipoV->id,
+            'numero_documento'      => '88990011',
+            'email'                 => 'verified.null@example.com',
+            'password'              => 'Password123',
+            'password_confirmation' => 'Password123',
+        ]);
+
+        $user = User::where('email', 'verified.null@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertNull($user->email_verified_at);
+        $this->assertFalse($user->hasVerifiedEmail());
+    }
+
+    /**
+     * Usuario sin verificar es redirigido a /email/verify al intentar acceder al portal
+     */
+    public function test_usuario_sin_verificar_es_redirigido_a_email_verify_al_intentar_acceder_al_portal()
+    {
+        $persona = $this->crearPersona(['numero_documento' => '99001122']);
+        $this->crearRepresentante($persona->id);
+
+        $user = User::create([
+            'name'                  => 'Usuario No Verificado',
+            'email'                 => 'no.verificado@example.com',
+            'password'              => bcrypt('Password123'),
+            'persona_id'            => $persona->id,
+            'rol_principal'         => 'Representante',
+            'activo'                => true,
+            'debe_cambiar_password' => false,
+            'email_verified_at'     => null,
+        ]);
+        $user->assignRole('Representante');
+
+        // Al intentar acceder a una ruta protegida con verified, debe redirigir a verification.notice
+        $response = $this->actingAs($user)->get(route('portal-representante.index'));
+        $response->assertRedirect(route('verification.notice'));
+
+        // También al intentar acceder al dashboard o home
+        $responseHome = $this->actingAs($user)->get(route('home'));
+        $responseHome->assertRedirect(route('verification.notice'));
     }
 }

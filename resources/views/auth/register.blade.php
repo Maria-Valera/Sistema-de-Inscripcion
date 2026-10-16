@@ -22,6 +22,10 @@
             background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), 
                         url('{{ asset("HomePage/vidaEstudiantil/Bievenida_img.jpg") }}') no-repeat center center fixed;
             background-size: cover;
+            min-height: 100vh;
+            height: auto !important;
+            overflow-y: auto;
+            padding: 20px 0;
         }
         
         /* Ajustes adicionales */

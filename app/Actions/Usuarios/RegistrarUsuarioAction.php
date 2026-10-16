@@ -86,6 +86,7 @@ class RegistrarUsuarioAction
                 'rol_principal'         => $rolPrincipal,
                 'debe_cambiar_password' => false,
                 'activo'                => true,
+                'email_verified_at'     => null,
             ]);
 
             // g) Asignar roles con Spatie
@@ -99,6 +100,9 @@ class RegistrarUsuarioAction
                 null,
                 'Registro de cuenta para cédula: ' . $persona->numero_documento
             );
+
+            // Disparar evento Registered para envío automático de correo de verificación
+            event(new \Illuminate\Auth\Events\Registered($user));
 
             // i) Devolver $user
             return $user;
