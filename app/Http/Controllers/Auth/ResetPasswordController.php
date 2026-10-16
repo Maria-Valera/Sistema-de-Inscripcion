@@ -54,11 +54,11 @@ class ResetPasswordController extends Controller
 
         // Registrar en auditoría
         Auditoria::registrar(
-            'reset_password',
+            'password_reset_completed',
             $user,
             null,
             null,
-            'Restablecimiento de contraseña mediante enlace'
+            'Contraseña restablecida por recuperación para: ' . $user->email
         );
     }
 }

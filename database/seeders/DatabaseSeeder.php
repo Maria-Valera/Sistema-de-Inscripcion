@@ -110,8 +110,14 @@ class DatabaseSeeder extends Seeder
                     [
                         'name' => $rep->persona->primer_nombre . ' ' . $rep->persona->primer_apellido,
                         'password' => Hash::make('12345678'), // Encriptación de la contraseña por defecto
+                        'rol_principal' => 'Representante',
                     ]
                 );
+                
+                // Asegurar rol_principal si el usuario ya existía previamente
+                if (!$user->rol_principal) {
+                    $user->update(['rol_principal' => 'Representante']);
+                }
                 
                 // Asignamos el rol 'Representante' usando Spatie Laravel-Permission
                 $user->assignRole('Representante');

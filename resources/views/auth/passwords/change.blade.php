@@ -95,7 +95,7 @@
                     <!-- Nueva contraseña -->
                     <div class="input-group mb-3">
                         <input type="password" name="password" class="form-control" 
-                               placeholder="Nueva contraseña (8-16 caracteres, letras y números)" maxlength="16" required>
+                               placeholder="Nueva contraseña (mínimo 8 caracteres, con letras y números)" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
@@ -106,7 +106,7 @@
                     <!-- Confirmar nueva contraseña -->
                     <div class="input-group mb-3">
                         <input type="password" name="password_confirmation" class="form-control" 
-                               placeholder="Confirmar nueva contraseña" maxlength="16" required>
+                               placeholder="Confirmar nueva contraseña" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>

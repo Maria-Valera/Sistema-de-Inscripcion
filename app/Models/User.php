@@ -57,6 +57,22 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * The "booted" method of the model.
+     * Integridad defensiva: Si tiene rol y rol_principal es null, auto-asignar el primer rol.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            if (empty($user->rol_principal) && $user->roles()->exists()) {
+                $primerRol = $user->roles()->first();
+                if ($primerRol) {
+                    $user->rol_principal = $primerRol->name;
+                }
+            }
+        });
+    }
+
     public function persona()
     {
         return $this->belongsTo(Persona::class);
