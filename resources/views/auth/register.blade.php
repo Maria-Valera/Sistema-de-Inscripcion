@@ -307,28 +307,12 @@
                 return;
             }
             
-            // Verificar si el email ya existe (con debounce)
-            emailTimeout = setTimeout(function() {
-                $.get('/check-email?email=' + encodeURIComponent(email))
-                    .done(function(data) {
-                        if (data.exists) {
-                            $('input[name="email"]').addClass('is-invalid');
-                            $inputGroup.append('<div class="validation-message invalid-feedback">Este correo electrónico ya está registrado.</div>');
-                            validationResults.email = false;
-                            scrollToBottomIfNeeded();
-                        } else {
-                            $('input[name="email"]').removeClass('is-invalid').addClass('is-valid');
-                            validationResults.email = true;
-                        }
-                        scrollToBottomIfNeeded();
-                    })
-                    .fail(function() {
-                        $('input[name="email"]').removeClass('is-invalid').addClass('is-valid');
-                        validationResults.email = true;
-                        scrollToBottomIfNeeded();
-                    });
-            }, 500);
+            // Correo con formato válido
+            $('input[name="email"]').removeClass('is-invalid').addClass('is-valid');
+            validationResults.email = true;
+            scrollToBottomIfNeeded();
         });
+
         
         // Validación de la contraseña (mínimo 8 caracteres, con letras y números)
         $('input[name="password"]').on('input', function() {

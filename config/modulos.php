@@ -42,6 +42,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'aulas.ver',
+            'aulas.gestionar',
             'aulas.crear',
             'aulas.editar',
             'aulas.eliminar',
@@ -55,6 +56,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'personal.ver',
+            'personal.gestionar',
             'personal.crear',
             'personal.editar',
             'personal.eliminar',
@@ -85,6 +87,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'prosecucion.ver',
+            'prosecucion.gestionar',
             'prosecucion.registrar',
             'prosecucion.consultar',
             'prosecucion.activar',
@@ -247,6 +250,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'inscripciones.ver',
+            'inscripciones.gestionar',
             'inscripciones.crear',
             'inscripciones.editar',
             'inscripciones.eliminar',
@@ -459,4 +463,27 @@ return [
             'instituciones.eliminar',
         ],
     ],
+
+    'representantes' => [
+        'nombre' => 'Representantes',
+        'icono' => 'fas fa-user-friends',
+        'ruta' => 'representante.index',
+        'grupo' => 'academico',
+        'permisos' => [
+            'representantes.ver',
+            'representantes.gestionar',
+        ],
+    ],
+
+    'grupos_estables' => [
+        'nombre' => 'Grupos Estables',
+        'icono' => 'fas fa-users',
+        'ruta' => null,
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'grupos_estables.ver',
+            'grupos_estables.gestionar',
+        ],
+    ],
 ];
+

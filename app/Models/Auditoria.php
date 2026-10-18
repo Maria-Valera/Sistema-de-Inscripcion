@@ -70,6 +70,16 @@ class Auditoria extends Model
             $usuario = Auth::user();
             $request = Request::capture();
 
+            // Obtener URL sin query string
+            $urlSinQuery = $request->url();
+
+            // Incluir el nombre de la ruta en la descripción si está disponible
+            $nombreRuta = request()->route() ? request()->route()->getName() : null;
+            $descripcionFinal = $descripcion;
+            if ($nombreRuta) {
+                $descripcionFinal = $descripcion ? "{$descripcion} [Ruta: {$nombreRuta}]" : "Ruta: {$nombreRuta}";
+            }
+
             $auditoria = new self([
                 'user_id' => $usuario?->id,
                 'usuario_email' => $usuario?->email,
@@ -78,10 +88,10 @@ class Auditoria extends Model
                 'auditable_id' => $modelo?->id,
                 'valores_anteriores' => $anteriores,
                 'valores_nuevos' => $nuevos,
-                'descripcion' => $descripcion,
+                'descripcion' => $descripcionFinal,
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'url' => $request->fullUrl(),
+                'url' => $urlSinQuery,
             ]);
 
             $auditoria->save();

@@ -19,10 +19,11 @@ class HomeController extends Controller
 
     public function index()
     {
-        // Redirigir si es representante
-        if (auth()->check() && auth()->user()->hasRole('Representante')) {
-            return redirect()->route('portal-representante.index');
+        // Si el usuario autenticado no es Admin, redirigir a su dashboard correspondiente
+        if (auth()->check() && !auth()->user()->hasRole('Admin')) {
+            return redirect(auth()->user()->rutaDashboard());
         }
+
 
         $anioEscolar = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
 

@@ -92,6 +92,24 @@ class InscripcionProsecucion extends Component
 
     public function mount()
     {
+        $puedeGestionar = auth()->user()?->can('prosecucion.gestionar')
+            || auth()->user()?->can('portal_prosecucion.registrar');
+
+        if (!$puedeGestionar) {
+            \App\Models\Auditoria::registrar(
+                'acceso_denegado',
+                null,
+                null,
+                [
+                    'componente' => static::class,
+                    'metodo' => 'mount',
+                    'permiso_requerido' => request()->routeIs('portal-representante.*') ? 'portal_prosecucion.registrar' : 'prosecucion.gestionar',
+                ],
+                'Intento de acceso denegado en componente Livewire'
+            );
+            abort(403);
+        }
+
         $this->cargarDatosIniciales();
         $this->cargarGrados();
     }
@@ -510,6 +528,24 @@ class InscripcionProsecucion extends Component
 
     public function finalizar()
     {
+        $puedeGestionar = auth()->user()?->can('prosecucion.gestionar')
+            || auth()->user()?->can('portal_prosecucion.registrar');
+
+        if (!$puedeGestionar) {
+            \App\Models\Auditoria::registrar(
+                'acceso_denegado',
+                null,
+                null,
+                [
+                    'componente' => static::class,
+                    'metodo' => 'finalizar',
+                    'permiso_requerido' => request()->routeIs('portal-representante.*') ? 'portal_prosecucion.registrar' : 'prosecucion.gestionar',
+                ],
+                'Intento de acceso denegado en componente Livewire'
+            );
+            abort(403);
+        }
+
         $this->validate();
 
         $anioActual = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();

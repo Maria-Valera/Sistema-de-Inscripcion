@@ -75,7 +75,13 @@ class AlumnoEdit extends Component
     public $enModoEdicion = false;
     public bool $soloEdicion = false;
 
+    public function mount()
+    {
+        abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
+    }
+
     protected function rules()
+
     {
         return [
             'tipo_documento_id' => 'required|exists:tipo_documentos,id',
@@ -556,7 +562,10 @@ class AlumnoEdit extends Component
 
     public function guardar()
     {
+        abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
+
         if (!$this->localidad_id) {
+
             session()->flash('error', 'Debe seleccionar una localidad.');
             return;
         }

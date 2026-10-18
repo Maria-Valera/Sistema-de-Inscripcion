@@ -126,10 +126,11 @@ class User extends Authenticatable implements MustVerifyEmail
         $rol = $this->rolPrincipalEfectivo();
 
         return match($rol) {
+            'Admin' => route('home'),
             'Subdirectora' => route('dashboard.subdirectora'),
             'Docente' => route('dashboard.docente'),
             'Representante' => route('portal-representante.index'),
-            default => route('home'),
+            default => route('sin-acceso'),
         };
     }
 }

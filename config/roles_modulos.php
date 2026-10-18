@@ -30,6 +30,24 @@ return [
         'asistencia' => '*',
         'justificaciones' => '*',
         'reportes_asistencia' => '*',
+        'permisos_reposos' => '*',
+        'inasistencia_docente' => '*',
+        'calendario' => '*',
+        'grados' => '*',
+        'secciones' => '*',
+        'bloques_horarios' => '*',
+        'grado_area_formacion' => '*',
+        'estudios_realizados' => '*',
+        'area_estudio_realizado' => '*',
+        'ubicacion_geografica' => '*',
+        'catalogos' => '*',
+        'instituciones' => '*',
+        'grupos_estables' => '*',
+        'aulas' => '*',
+        'areas_formacion' => '*',
+        'personal' => ['ver'],
+        'horarios' => ['ver'],
+        'asignacion_docente' => ['ver'],
     ],
 
     'Admin' => [
@@ -45,7 +63,7 @@ return [
         // Prosecución con activar
         'prosecucion' => '*',
         
-        // Módulos sin dueño claro (configuración)
+        // Módulos de configuración
         'calendario' => '*',
         'grados' => '*',
         'secciones' => '*',
@@ -56,16 +74,22 @@ return [
         'ubicacion_geografica' => '*',
         'catalogos' => '*',
         'instituciones' => '*',
+        'grupos_estables' => '*',
         
-        // Módulos académicos sin dueño claro
+        // Módulos académicos y control
         'inscripciones' => '*',
         'alumnos' => '*',
+        'representantes' => '*',
         'asignacion_docente' => '*',
         'historico' => '*',
         'percentil' => '*',
         'permisos_reposos' => '*',
         'inasistencia_docente' => '*',
+        'asistencia' => '*',
+        'justificaciones' => '*',
+        'reportes_asistencia' => '*',
     ],
+
 
     'Editor' => [],
 

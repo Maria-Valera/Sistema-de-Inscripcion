@@ -40,6 +40,8 @@ class AreaEstudioCreate extends Component
 
     public function store()
     {
+        abort_unless(auth()->user()?->can('area_estudio_realizado.gestionar'), 403);
+
         $this->validate();
 
         $existe = AreaEstudioRealizado::where('area_formacion_id', $this->area_formacion_id)

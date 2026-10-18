@@ -66,12 +66,27 @@ class PermisosSeederTest extends TestCase
         $this->assertTrue($rolDocente->hasPermissionTo('portal_horarios.generar_docente'));
         $this->assertTrue($rolDocente->hasPermissionTo('portal_carga_academica.ver'));
 
-        // Verificar Subdirectora tiene permisos de asistencia
+        // Verificar Subdirectora tiene permisos asignados y restricciones clave
         $rolSubdirectora = Role::where('name', 'Subdirectora')->first();
         $this->assertNotNull($rolSubdirectora);
         $this->assertTrue($rolSubdirectora->hasPermissionTo('asistencia.ver'));
         $this->assertTrue($rolSubdirectora->hasPermissionTo('justificaciones.ver'));
         $this->assertTrue($rolSubdirectora->hasPermissionTo('reportes_asistencia.ver'));
+        $this->assertTrue($rolSubdirectora->hasPermissionTo('aulas.ver'));
+        $this->assertTrue($rolSubdirectora->hasPermissionTo('aulas.crear'));
+        $this->assertTrue($rolSubdirectora->hasPermissionTo('calendario.ver'));
+        $this->assertTrue($rolSubdirectora->hasPermissionTo('calendario.crear'));
+        $this->assertTrue($rolSubdirectora->hasPermissionTo('horarios.ver'));
+        $this->assertFalse($rolSubdirectora->hasPermissionTo('horarios.crear'));
+        $this->assertFalse($rolSubdirectora->hasPermissionTo('horarios.editar'));
+        $this->assertFalse($rolSubdirectora->hasPermissionTo('horarios.eliminar'));
+        $this->assertTrue($rolSubdirectora->hasPermissionTo('personal.ver'));
+        $this->assertFalse($rolSubdirectora->hasPermissionTo('personal.crear'));
+        $this->assertFalse($rolSubdirectora->hasPermissionTo('personal.editar'));
+        $this->assertFalse($rolSubdirectora->hasPermissionTo('personal.eliminar'));
+        $this->assertFalse($rolSubdirectora->hasPermissionTo('alumnos.ver'));
+        $this->assertFalse($rolSubdirectora->hasPermissionTo('usuarios_accesos.ver'));
+
 
         // Verificar Admin tiene módulos administrativos y NO tiene permisos portal_*
         $rolAdmin = Role::where('name', 'Admin')->first();
