@@ -166,6 +166,28 @@ class AlumnoController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(Alumno $alumno)
+    {
+        $this->authorize('view', $alumno);
+
+        $alumno->load([
+            'persona.tipoDocumento',
+            'persona.genero',
+            'persona.localidad.municipio.estado.pais',
+            'discapacidades',
+            'ordenNacimiento',
+            'lateralidad',
+            'etniaIndigena',
+            'tallaCamisa',
+            'tallaPantalon'
+        ]);
+
+        return view('admin.alumnos.show', compact('alumno'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Alumno $alumno)

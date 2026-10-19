@@ -39,8 +39,15 @@ class InasistenciaPolicy
     /**
      * Determina si el usuario puede ver inasistencias de un alumno específico
      */
-    public function view(User $user, ?Alumno $alumno = null): bool
+    public function view(User $user, $target = null): bool
     {
+        $alumno = null;
+        if ($target instanceof Alumno) {
+            $alumno = $target;
+        } elseif (is_object($target)) {
+            $alumno = $target->alumno ?? (isset($target->alumno_id) ? Alumno::find($target->alumno_id) : null);
+        }
+
         if (!$alumno) {
             return true;
         }
@@ -100,8 +107,15 @@ class InasistenciaPolicy
     /**
      * Determina si el usuario puede registrar inasistencias o justificaciones
      */
-    public function create(User $user, ?Alumno $alumno = null): bool
+    public function create(User $user, $target = null): bool
     {
+        $alumno = null;
+        if ($target instanceof Alumno) {
+            $alumno = $target;
+        } elseif (is_object($target)) {
+            $alumno = $target->alumno ?? (isset($target->alumno_id) ? Alumno::find($target->alumno_id) : null);
+        }
+
         if ($user->can('justificaciones.crear') || $user->can('inasistencia_docente.crear')) {
             return true;
         }
@@ -128,8 +142,15 @@ class InasistenciaPolicy
     /**
      * Determina si el usuario puede modificar una inasistencia o justificación
      */
-    public function update(User $user, ?Alumno $alumno = null): bool
+    public function update(User $user, $target = null): bool
     {
+        $alumno = null;
+        if ($target instanceof Alumno) {
+            $alumno = $target;
+        } elseif (is_object($target)) {
+            $alumno = $target->alumno ?? (isset($target->alumno_id) ? Alumno::find($target->alumno_id) : null);
+        }
+
         // 1. Verificar si el usuario tiene AMBOS roles (Docente y Representante)
         $esDocente = $user->hasRole('Docente') || $user->isDocente();
         $esRepresentante = $user->hasRole('Representante') || $user->isRepresentante();

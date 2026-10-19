@@ -364,6 +364,7 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
     Route::get('alumnos',  [AlumnoController::class, 'index'])->middleware('permission:alumnos.ver')->name('alumnos.index');
     Route::get('alumnos/reporte/{id}', [AlumnoController::class, 'reportePDF'])->middleware('permission:alumnos.ver')->name('alumnos.reporte.individual');
     Route::get('alumnos/reportes/general', [AlumnoController::class, 'reporteGeneralPDF'])->middleware('permission:alumnos.ver')->name('alumnos.reporteGeneralPDF');
+    Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->middleware('role_or_permission:alumnos.ver|Representante|Docente')->name('alumnos.show');
 
     Route::middleware(['verificar.anio.escolar', 'permission:alumnos.gestionar'])->group(function () {
         Route::get('alumnos/create', [AlumnoController::class, 'create'])->name('alumnos.create');

@@ -141,8 +141,8 @@ class InscripcionProsecucion extends Component
                 $q->where('anio_escolar_id', $anioActual->id);
             });
 
-        // En el portal del representante, limitar a sus representados mediante el scope del modelo
-        if (request()->routeIs('portal-representante.*') && auth()->check() && auth()->user()->hasRole('Representante')) {
+        // Limitar a sus representados mediante el scope del modelo para usuarios Representante
+        if (auth()->check() && auth()->user()->hasRole('Representante')) {
             $query->visiblesParaRepresentante(auth()->user());
         }
 
@@ -228,16 +228,26 @@ class InscripcionProsecucion extends Component
             return;
         }
 
-        // En el portal del representante, verificar que el alumno sea efectivamente un representado
-        if (request()->routeIs('portal-representante.*') && auth()->check() && auth()->user()->hasRole('Representante')) {
+        // Si el usuario tiene rol Representante, verificar que el alumno sea efectivamente un representado
+        if (auth()->check() && auth()->user()->hasRole('Representante')) {
             $esHijoValido = Alumno::visiblesParaRepresentante(auth()->user())
-                ->where('id', $alumnoId)
+                ->where('alumnos.id', $alumnoId)
                 ->exists();
 
             if (!$esHijoValido) {
-                session()->flash('error', 'No tiene permisos para gestionar la inscripción de este estudiante.');
-                $this->reset(['alumnoId', 'alumnoSeleccionado']);
-                return;
+                \App\Models\Auditoria::registrar(
+                    'acceso_denegado',
+                    $this->alumnoSeleccionado,
+                    null,
+                    [
+                        'componente' => static::class,
+                        'metodo' => 'seleccionarAlumno',
+                        'alumno_id' => $alumnoId,
+                        'user_id' => auth()->id(),
+                    ],
+                    'Intento de seleccionar alumno no autorizado en Prosecución'
+                );
+                abort(403, 'No tiene permisos para gestionar la inscripción de este estudiante.');
             }
         }
 

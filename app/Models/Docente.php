@@ -91,14 +91,7 @@ class Docente extends Model
 
     public function docenteAreaGrado()
     {
-        return $this->hasManyThrough(
-            DocenteAreaGrado::class,
-            DetalleDocenteEstudio::class,
-            'docente_id',
-            'docente_estudio_realizado_id',
-            'id',
-            'id'
-        );
+        return $this->asignacionesAreas();
     }
 
 
