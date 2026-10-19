@@ -141,23 +141,26 @@ class InscripcionProsecucion extends Component
                 $q->where('anio_escolar_id', $anioActual->id);
             });
 
-        // En el portal del representante, limitar a sus representados por correo registrado
+        // En el portal del representante, limitar a sus representados mediante la relación User -> Persona -> Representante
         if (request()->routeIs('portal-representante.*') && auth()->check() && auth()->user()->hasRole('Representante')) {
-            $userEmail = auth()->user()->email;
-            $query->whereHas('inscripciones', function ($q) use ($userEmail, $anioAnterior) {
-                $q->where('anio_escolar_id', $anioAnterior->id)
-                  ->where(function ($sub) use ($userEmail) {
-                      $sub->whereHas('padre.persona', function ($p) use ($userEmail) {
-                          $p->where('email', $userEmail);
-                      })
-                      ->orWhereHas('madre.persona', function ($p) use ($userEmail) {
-                          $p->where('email', $userEmail);
-                      })
-                      ->orWhereHas('representanteLegal.representante.persona', function ($p) use ($userEmail) {
-                          $p->where('email', $userEmail);
+            $representante = auth()->user()->representante;
+            $representanteId = $representante?->id;
+
+            if ($representanteId) {
+                $query->whereHas('inscripciones', function ($q) use ($representanteId, $anioAnterior) {
+                    $q->where('anio_escolar_id', $anioAnterior->id)
+                      ->where(function ($sub) use ($representanteId) {
+                          $sub->where('padre_id', $representanteId)
+                              ->orWhere('madre_id', $representanteId)
+                              ->orWhere('representante_legal_id', $representanteId)
+                              ->orWhereHas('representanteLegal', function ($p) use ($representanteId) {
+                                  $p->where('representante_id', $representanteId);
+                              });
                       });
-                  });
-            });
+                });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
 
         $this->alumnos = $query->with([
@@ -240,6 +243,30 @@ class InscripcionProsecucion extends Component
         if (!$this->alumnoSeleccionado) {
             session()->flash('error', 'No se pudo cargar el alumno seleccionado.');
             return;
+        }
+
+        // En el portal del representante, verificar que el alumno sea efectivamente un representado
+        if (request()->routeIs('portal-representante.*') && auth()->check() && auth()->user()->hasRole('Representante')) {
+            $representante = auth()->user()->representante;
+            $representanteId = $representante?->id;
+
+            $esHijoValido = $representanteId && Alumno::where('id', $alumnoId)
+                ->whereHas('inscripciones', function ($q) use ($representanteId) {
+                    $q->where(function ($sub) use ($representanteId) {
+                        $sub->where('padre_id', $representanteId)
+                            ->orWhere('madre_id', $representanteId)
+                            ->orWhere('representante_legal_id', $representanteId)
+                            ->orWhereHas('representanteLegal', function ($p) use ($representanteId) {
+                                $p->where('representante_id', $representanteId);
+                            });
+                    });
+                })->exists();
+
+            if (!$esHijoValido) {
+                session()->flash('error', 'No tiene permisos para gestionar la inscripción de este estudiante.');
+                $this->reset(['alumnoId', 'alumnoSeleccionado']);
+                return;
+            }
         }
 
         // Obtener el año escolar actual

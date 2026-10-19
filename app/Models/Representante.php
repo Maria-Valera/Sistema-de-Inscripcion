@@ -69,10 +69,14 @@ class Representante extends Model
 
     public function inscripciones()
     {
-        return Inscripcion::where(function($query) {
-            $query->where('padre_id', $this->id)
-                  ->orWhere('madre_id', $this->id)
-                  ->orWhere('representante_legal_id', $this->id);
+        $representanteId = $this->id;
+        return Inscripcion::where(function($query) use ($representanteId) {
+            $query->where('padre_id', $representanteId)
+                  ->orWhere('madre_id', $representanteId)
+                  ->orWhere('representante_legal_id', $representanteId)
+                  ->orWhereHas('representanteLegal', function ($rl) use ($representanteId) {
+                      $rl->where('representante_id', $representanteId);
+                  });
         });
     }
 

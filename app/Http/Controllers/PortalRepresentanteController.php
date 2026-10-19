@@ -18,22 +18,17 @@ class PortalRepresentanteController extends Controller
         $inscripciones = [];
         
         if (auth()->check()) {
-            $userEmail = auth()->user()->email;
-            
-            // Buscar el representante asociado por el email del usuario logueado
-            $representante = \App\Models\Representante::whereHas('persona', function ($query) use ($userEmail) {
-                $query->where('email', $userEmail);
-            })->first();
+            // Obtener el representante asociado mediante la relación User -> persona_id -> Persona -> Representante
+            $representante = auth()->user()->representante;
 
             if ($representante) {
                 $inscs = \App\Models\Inscripcion::where('tipo_inscripcion', 'prosecucion')
                     ->where(function ($query) use ($representante) {
                         $query->where('padre_id', $representante->id)
                               ->orWhere('madre_id', $representante->id)
-                              ->orWhere('representante_legal_id', function ($sub) use ($representante) {
-                                  $sub->select('id')
-                                      ->from('representante_legal')
-                                      ->where('representante_id', $representante->id);
+                              ->orWhere('representante_legal_id', $representante->id)
+                              ->orWhereHas('representanteLegal', function ($sub) use ($representante) {
+                                  $sub->where('representante_id', $representante->id);
                               });
                     })
                     ->with(['alumno.persona', 'grado', 'seccion', 'anioEscolar'])
@@ -71,20 +66,16 @@ class PortalRepresentanteController extends Controller
         $representados = [];
 
         if (auth()->check()) {
-            $userEmail = auth()->user()->email;
-            
-            $representante = \App\Models\Representante::whereHas('persona', function ($query) use ($userEmail) {
-                $query->where('email', $userEmail);
-            })->first();
+            // Obtener el representante asociado mediante la relación User -> persona_id -> Persona -> Representante
+            $representante = auth()->user()->representante;
 
             if ($representante) {
                 $inscs = \App\Models\Inscripcion::where(function ($query) use ($representante) {
                         $query->where('padre_id', $representante->id)
                               ->orWhere('madre_id', $representante->id)
-                              ->orWhere('representante_legal_id', function ($sub) use ($representante) {
-                                  $sub->select('id')
-                                      ->from('representante_legal')
-                                      ->where('representante_id', $representante->id);
+                              ->orWhere('representante_legal_id', $representante->id)
+                              ->orWhereHas('representanteLegal', function ($sub) use ($representante) {
+                                  $sub->where('representante_id', $representante->id);
                               });
                     })
                     ->with(['alumno.persona', 'grado', 'seccion', 'anioEscolar'])

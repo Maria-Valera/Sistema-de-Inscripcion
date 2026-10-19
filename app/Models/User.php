@@ -88,6 +88,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->persona && $this->persona->representante;
     }
 
+    public function getRepresentanteAttribute()
+    {
+        return $this->persona?->representante;
+    }
+
+    public function getDocenteAttribute()
+    {
+        return $this->persona?->docente;
+    }
+
     public function getTipoUsuarioAttribute()
     {
         if ($this->isDocente()) {
