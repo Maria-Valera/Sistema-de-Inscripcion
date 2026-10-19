@@ -118,4 +118,13 @@ class AlumnoPolicy
     {
         return $user->can('alumnos.eliminar') || $user->can('alumnos.gestionar');
     }
+
+    /**
+     * Determina si el usuario puede ver los datos sensibles del alumno
+     * (tallas, peso, estatura, orden de nacimiento, lateralidad, etnia, dirección, localidad, datos de representantes)
+     */
+    public function viewSensitiveData(User $user, ?Alumno $alumno = null): bool
+    {
+        return !$user->esSoloDocente();
+    }
 }

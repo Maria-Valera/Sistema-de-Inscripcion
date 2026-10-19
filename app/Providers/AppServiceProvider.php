@@ -28,5 +28,9 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(\App\Models\Alumno::class, \App\Policies\AlumnoPolicy::class);
         Gate::policy(\App\Models\Inscripcion::class, \App\Policies\InscripcionPolicy::class);
+
+        Gate::define('ver-datos-sensibles-alumno', function (\App\Models\User $user) {
+            return !$user->esSoloDocente();
+        });
     }
 }

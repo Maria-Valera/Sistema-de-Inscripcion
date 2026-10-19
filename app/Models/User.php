@@ -98,6 +98,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->persona?->docente;
     }
 
+    /**
+     * Determina si el usuario tiene rol Docente sin privilegios de Admin o Subdirectora
+     */
+    public function esSoloDocente(): bool
+    {
+        return $this->hasRole('Docente') && !$this->hasRole('Admin') && !$this->hasRole('Subdirectora');
+    }
+
     public function getTipoUsuarioAttribute()
     {
         if ($this->isDocente()) {
