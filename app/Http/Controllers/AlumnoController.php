@@ -36,8 +36,8 @@ class AlumnoController extends Controller
         $genero = request('genero');
         $tipo_documento = request('tipo_documento');
 
-        // Construir la consulta base
-        $query = Alumno::with([
+        // Construir la consulta base filtrada según el rol y visibilidad del usuario
+        $query = Alumno::visiblesPara(auth()->user())->with([
             'persona',
             'etniaIndigena',
             'ordenNacimiento',
@@ -167,6 +167,8 @@ class AlumnoController extends Controller
                 'etniaIndigena'
             ])
             ->firstOrFail();
+
+        $this->authorize('view', $alumno);
 
         // Cargar nombres de tallas directamente
         if ($alumno->talla_camisa_id) {

@@ -18,33 +18,23 @@ class PortalRepresentanteController extends Controller
         $inscripciones = [];
         
         if (auth()->check()) {
-            // Obtener el representante asociado mediante la relación User -> persona_id -> Persona -> Representante
-            $representante = auth()->user()->representante;
+            $alumnosIds = \App\Models\Alumno::visiblesParaRepresentante(auth()->user())->pluck('id');
 
-            if ($representante) {
-                $inscs = \App\Models\Inscripcion::where('tipo_inscripcion', 'prosecucion')
-                    ->where(function ($query) use ($representante) {
-                        $query->where('padre_id', $representante->id)
-                              ->orWhere('madre_id', $representante->id)
-                              ->orWhere('representante_legal_id', $representante->id)
-                              ->orWhereHas('representanteLegal', function ($sub) use ($representante) {
-                                  $sub->where('representante_id', $representante->id);
-                              });
-                    })
-                    ->with(['alumno.persona', 'grado', 'seccion', 'anioEscolar'])
-                    ->get();
+            $inscs = \App\Models\Inscripcion::where('tipo_inscripcion', 'prosecucion')
+                ->whereIn('alumno_id', $alumnosIds)
+                ->with(['alumno.persona', 'grado', 'seccion', 'anioEscolar'])
+                ->get();
 
-                foreach ($inscs as $ins) {
-                    $inscripciones[] = [
-                        'id' => $ins->id,
-                        'estudiante' => $ins->alumno->persona->primer_nombre . ' ' . $ins->alumno->persona->primer_apellido,
-                        'cedula' => $ins->alumno->persona->numero_documento,
-                        'grado' => $ins->grado->numero_grado . ' ° Nivel',
-                        'seccion' => $ins->seccion ? $ins->seccion->nombre : 'Sin sección',
-                        'estado' => $ins->status,
-                        'fecha' => $ins->created_at->format('d/m/Y'),
-                    ];
-                }
+            foreach ($inscs as $ins) {
+                $inscripciones[] = [
+                    'id' => $ins->id,
+                    'estudiante' => $ins->alumno->persona->primer_nombre . ' ' . $ins->alumno->persona->primer_apellido,
+                    'cedula' => $ins->alumno->persona->numero_documento,
+                    'grado' => $ins->grado ? $ins->grado->numero_grado . ' ° Nivel' : 'Sin grado',
+                    'seccion' => $ins->seccion ? $ins->seccion->nombre : 'Sin sección',
+                    'estado' => $ins->status,
+                    'fecha' => $ins->created_at->format('d/m/Y'),
+                ];
             }
         }
 
@@ -66,29 +56,25 @@ class PortalRepresentanteController extends Controller
         $representados = [];
 
         if (auth()->check()) {
-            // Obtener el representante asociado mediante la relación User -> persona_id -> Persona -> Representante
-            $representante = auth()->user()->representante;
+            $alumnos = \App\Models\Alumno::visiblesParaRepresentante(auth()->user())
+                ->with([
+                    'persona',
+                    'inscripciones' => function ($q) {
+                        $q->with(['grado', 'seccion', 'anioEscolar'])->latest('id');
+                    }
+                ])
+                ->get();
 
-            if ($representante) {
-                $inscs = \App\Models\Inscripcion::where(function ($query) use ($representante) {
-                        $query->where('padre_id', $representante->id)
-                              ->orWhere('madre_id', $representante->id)
-                              ->orWhere('representante_legal_id', $representante->id)
-                              ->orWhereHas('representanteLegal', function ($sub) use ($representante) {
-                                  $sub->where('representante_id', $representante->id);
-                              });
-                    })
-                    ->with(['alumno.persona', 'grado', 'seccion', 'anioEscolar'])
-                    ->get();
-
-                foreach ($inscs as $ins) {
+            foreach ($alumnos as $alumno) {
+                $ins = $alumno->inscripciones->first();
+                if ($ins) {
                     $representados[] = [
-                        'id' => $ins->alumno->id,
-                        'nombre' => $ins->alumno->persona->primer_nombre . ' ' . $ins->alumno->persona->primer_apellido,
-                        'cedula' => 'V-' . number_format((int)$ins->alumno->persona->numero_documento, 0, ',', '.'),
-                        'grado' => $ins->grado->numero_grado . ' ° Nivel',
+                        'id' => $alumno->id,
+                        'nombre' => $alumno->persona->primer_nombre . ' ' . $alumno->persona->primer_apellido,
+                        'cedula' => 'V-' . number_format((int)$alumno->persona->numero_documento, 0, ',', '.'),
+                        'grado' => $ins->grado ? $ins->grado->numero_grado . ' ° Nivel' : 'Sin grado',
                         'seccion' => $ins->seccion ? 'Sección ' . $ins->seccion->nombre : 'Sin sección',
-                        'anio' => $ins->anioEscolar->inicio_anio_escolar->format('Y') . ' - ' . $ins->anioEscolar->cierre_anio_escolar->format('Y'),
+                        'anio' => $ins->anioEscolar ? ($ins->anioEscolar->inicio_anio_escolar->format('Y') . ' - ' . $ins->anioEscolar->cierre_anio_escolar->format('Y')) : 'No definido',
                         'foto' => null,
                     ];
                 }

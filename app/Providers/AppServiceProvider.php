@@ -25,5 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
         Livewire::component('admin.institucion-procedencia-index', InstitucionProcedenciaIndex::class);
+
+        Gate::policy(\App\Models\Alumno::class, \App\Policies\AlumnoPolicy::class);
+        Gate::policy(\App\Models\Inscripcion::class, \App\Policies\InscripcionPolicy::class);
     }
 }

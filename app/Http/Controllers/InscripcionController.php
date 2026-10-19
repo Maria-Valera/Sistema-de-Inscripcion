@@ -102,15 +102,23 @@ class InscripcionController extends Controller
                 ->get();
         }
 
-        $inscripciones = Inscripcion::with([
+        $user = auth()->user();
+        $query = Inscripcion::with([
             'alumno.persona',
             'alumno.discapacidades',
             'grado',
             'seccionAsignada',
             'nuevoIngreso',
             'anioEscolar'
-        ])
+        ]);
 
+        if ($user && $user->hasRole('Representante')) {
+            $query->whereHas('alumno', fn($q) => $q->visiblesParaRepresentante($user));
+        } elseif ($user && $user->hasRole('Docente')) {
+            $query->whereHas('alumno', fn($q) => $q->visiblesParaDocente($user));
+        }
+
+        $inscripciones = $query
             ->whereHas('nuevoIngreso', function ($q) use ($status) {
                 if ($status) {
                     $q->where('status', $status);
