@@ -215,6 +215,7 @@ return [
             'usuarios_accesos.roles',
             'usuarios_accesos.permisos',
             'usuarios_accesos.usuarios',
+            'usuarios.gestionar_modulos',
         ],
     ],
 

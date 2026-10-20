@@ -213,4 +213,27 @@ class PermisosSeederTest extends TestCase
         $this->assertEquals($permisosRepresentantePrimera, $permisosRepresentanteSegunda, 'Representante no debería cambiar permisos');
         $this->assertEquals($permisosDocentePrimera, $permisosDocenteSegunda, 'Docente no debería cambiar permisos');
     }
+
+    /**
+     * Test que el rol Admin siempre tiene el permiso usuarios.gestionar_modulos asignado
+     */
+    public function test_admin_siempre_tiene_permiso_gestionar_modulos()
+    {
+        $this->seed(\Database\Seeders\PermisosSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+
+        $rolAdmin = Role::where('name', 'Admin')->first();
+        $this->assertNotNull($rolAdmin, 'El rol Admin debe existir');
+        $this->assertTrue(
+            $rolAdmin->hasPermissionTo('usuarios.gestionar_modulos'),
+            'El rol Admin debe tener asignado el permiso usuarios.gestionar_modulos'
+        );
+
+        $permiso = Permission::where('name', 'usuarios.gestionar_modulos')->first();
+        $this->assertNotNull($permiso, 'El permiso usuarios.gestionar_modulos debe existir');
+        $this->assertTrue(
+            $permiso->roles->contains('name', 'Admin'),
+            'El permiso usuarios.gestionar_modulos debe estar asociado al rol Admin'
+        );
+    }
 }

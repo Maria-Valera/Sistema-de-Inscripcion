@@ -296,9 +296,13 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
         Route::delete('prefijo_telefono/{id}', [PrefijoTelefonoController::class, 'destroy'])->name('prefijo_telefono.destroy');
     });
 
-    // ===== ROLES =====
+    // ===== ROLES Y ACCESOS =====
     Route::get('roles', [RoleController::class, 'index'])->middleware('permission:usuarios_accesos.ver')->name('roles.index');
     Route::get('roles/permisos/{id}', [RoleController::class, 'permisos'])->middleware('permission:usuarios_accesos.ver')->name('roles.permisos');
+    Route::get('usuarios-accesos', function () {
+        return view('admin.usuarios.index');
+    })->middleware('permission:usuarios.gestionar_modulos')
+      ->name('usuarios.index');
 
     Route::middleware(['verificar.anio.escolar', 'permission:usuarios_accesos.gestionar'])->group(function () {
         Route::post('roles/modales/store', [RoleController::class, 'store'])->name('roles.modales.store');
