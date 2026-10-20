@@ -42,10 +42,17 @@ class GestionarUsuarios extends Component
     public $corregirCorreoActual = '';
     public $nuevoCorreo = '';
 
-    // Estado para crear usuario
+    // Estado para crear usuario (Flujo híbrido con múltiples roles)
     public $tipo_documento_id = '';
     public $numero_documento = '';
+    public $primer_nombre = '';
+    public $primer_apellido = '';
     public $email_crear = '';
+    public $roles_crear = [];
+    public $rol_principal_crear = '';
+
+    // Propiedad pública para los tipos de documentos
+    public $tipos_documentos = [];
 
     // Mensaje de éxito de contraseña temporal
     public $passwordTemporalGenerada = null;
@@ -54,16 +61,41 @@ class GestionarUsuarios extends Component
     protected function rules(): array
     {
         return [
-            'nuevoCorreo' => 'required|email|max:255',
-            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
-            'numero_documento' => 'required|string|max:20',
-            'email_crear' => 'required|email|max:255|unique:users,email',
+            'nuevoCorreo'         => 'required|email|max:255',
+            'tipo_documento_id'   => 'required|exists:tipo_documentos,id',
+            'numero_documento'    => 'required|string|max:9',
+            'primer_nombre'       => 'required|string|max:50',
+            'primer_apellido'     => 'required|string|max:50',
+            'email_crear'         => 'required|email|max:255|unique:users,email',
+            'roles_crear'         => 'required|array|min:1',
+            'roles_crear.*'       => 'in:Admin,Subdirectora,Docente,Representante',
+            'rol_principal_crear' => 'required|string',
         ];
+    }
+
+    public function updated($propertyName): void
+    {
+        $this->validateOnly($propertyName);
+    }
+
+    public function updatedRolesCrear($value): void
+    {
+        // Si el rol principal ya no está en los roles seleccionados, restablecerlo al primero o vacío
+        if (empty($this->roles_crear)) {
+            $this->rol_principal_crear = '';
+        } elseif (!in_array($this->rol_principal_crear, $this->roles_crear)) {
+            $this->rol_principal_crear = $this->roles_crear[0];
+        }
+        $this->validateOnly('roles_crear');
+        if (!empty($this->rol_principal_crear)) {
+            $this->validateOnly('rol_principal_crear');
+        }
     }
 
     public function mount(): void
     {
         $this->verificarPermiso();
+        $this->tipos_documentos = TipoDocumento::where('status', 1)->get();
     }
 
     protected function verificarPermiso(): void
@@ -231,41 +263,82 @@ class GestionarUsuarios extends Component
     public function abrirModalCrear(): void
     {
         $this->verificarPermiso();
-        $this->reset(['tipo_documento_id', 'numero_documento', 'email_crear']);
+        $this->reset([
+            'tipo_documento_id',
+            'numero_documento',
+            'primer_nombre',
+            'primer_apellido',
+            'email_crear',
+            'roles_crear',
+            'rol_principal_crear'
+        ]);
+        $this->resetErrorBag();
         $this->modalCrearAbierto = true;
     }
 
     public function cerrarModalCrear(): void
     {
         $this->modalCrearAbierto = false;
-        $this->reset(['tipo_documento_id', 'numero_documento', 'email_crear']);
+        $this->reset([
+            'tipo_documento_id',
+            'numero_documento',
+            'primer_nombre',
+            'primer_apellido',
+            'email_crear',
+            'roles_crear',
+            'rol_principal_crear'
+        ]);
+        $this->resetErrorBag();
     }
 
     /**
-     * Crear usuario para persona precargada con contraseña temporal.
+     * Crear usuario para persona con contraseña temporal y flujo de redirección híbrido.
      */
-    public function crearUsuario(CrearUsuarioParaPersonaAction $action): void
+    public function crearUsuario(CrearUsuarioParaPersonaAction $action)
     {
         $this->verificarPermiso();
 
         $this->validate([
-            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
-            'numero_documento'  => 'required|string|max:20',
-            'email_crear'       => 'required|email|max:255|unique:users,email',
+            'tipo_documento_id'   => 'required|exists:tipo_documentos,id',
+            'numero_documento'    => 'required|string|max:9',
+            'primer_nombre'       => 'required|string|max:50',
+            'primer_apellido'     => 'required|string|max:50',
+            'email_crear'         => 'required|email|max:255|unique:users,email',
+            'roles_crear'         => 'required|array|min:1',
+            'roles_crear.*'       => 'in:Admin,Subdirectora,Docente,Representante',
+            'rol_principal_crear' => 'required|string',
         ]);
 
         try {
             $resultado = $action->ejecutar([
                 'tipo_documento_id' => $this->tipo_documento_id,
                 'numero_documento'  => $this->numero_documento,
+                'primer_nombre'     => $this->primer_nombre,
+                'primer_apellido'   => $this->primer_apellido,
                 'email'             => $this->email_crear,
+                'roles'             => $this->roles_crear,
+                'rol_principal'     => $this->rol_principal_crear,
             ]);
 
             $user = $resultado['user'];
             $pass = $resultado['password_temporal'];
+            $persona = $resultado['persona'];
 
             $this->passwordTemporalGenerada = $pass;
             $this->usuarioPasswordTemporal = $user->email;
+
+            // Verificar si requiere completar la ficha en otro módulo
+            if (!empty($resultado['redirigir_a_docente'])) {
+                session()->flash('success', "Usuario creado. Ahora por favor completa la ficha del docente.");
+                $this->cerrarModalCrear();
+                return redirect()->route('admin.docente.create', ['persona_id' => $persona->id]);
+            }
+
+            if (!empty($resultado['redirigir_a_representante'])) {
+                session()->flash('success', "Usuario creado. Ahora por favor completa la ficha del representante.");
+                $this->cerrarModalCrear();
+                return redirect()->route('representante.formulario', ['persona_id' => $persona->id]);
+            }
 
             session()->flash('success', "Usuario creado exitosamente con contraseña temporal para {$user->email}.");
             $this->cerrarModalCrear();
@@ -345,13 +418,12 @@ class GestionarUsuarios extends Component
         }
 
         $rolesDisponibles = Role::pluck('name');
-        $tiposDocumento = TipoDocumento::where('status', 1)->get();
 
         return view('livewire.admin.usuarios.gestionar-usuarios', [
             'usuarios'         => $usuarios,
             'infoModulos'      => $infoModulos,
             'rolesDisponibles' => $rolesDisponibles,
-            'tiposDocumento'   => $tiposDocumento,
+            'tipos_documentos' => $this->tipos_documentos,
         ]);
     }
 }

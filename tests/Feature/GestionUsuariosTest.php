@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Actions\Usuarios\CorregirCorreoAction;
+use App\Actions\Usuarios\CrearUsuarioParaPersonaAction;
 use App\Actions\Usuarios\GestionarModulosUsuarioAction;
+use App\Livewire\Admin\Usuarios\GestionarUsuarios;
 use App\Models\Auditoria;
+use App\Models\Docente;
 use App\Models\Genero;
 use App\Models\Localidad;
 use App\Models\Persona;
@@ -14,6 +17,8 @@ use App\Models\User;
 use Database\Seeders\PermisosSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
@@ -297,5 +302,184 @@ class GestionUsuariosTest extends TestCase
         $this->assertTrue(Auditoria::where('accion', 'modulo_asignado')->exists());
         $this->assertTrue(Auditoria::where('accion', 'modulo_retirado')->exists());
         $this->assertTrue(Auditoria::where('accion', 'correo_corregido')->exists());
+    }
+
+    /**
+     * 8. Crear un Admin/Subdirectora nuevo: El sistema crea la Persona y el User sin redirigir a otros formularios.
+     */
+    public function test_crear_admin_o_subdirectora_nuevo_crea_persona_y_user_sin_redirigir()
+    {
+        Mail::fake();
+
+        $admin = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'activo' => true,
+        ]);
+        $admin->assignRole('Admin');
+        $admin->givePermissionTo('usuarios.gestionar_modulos');
+        $this->actingAs($admin);
+
+        $action = new CrearUsuarioParaPersonaAction();
+        $resultado = $action->ejecutar([
+            'tipo_documento_id' => $this->tipoV->id,
+            'numero_documento'  => '99887766',
+            'primer_nombre'     => 'Beatriz',
+            'primer_apellido'   => 'Mendoza',
+            'email'             => 'beatriz.subdirectora@example.com',
+            'rol'               => 'Subdirectora',
+            'rol_principal'     => 'Subdirectora',
+        ]);
+
+        $this->assertFalse($resultado['redirigir_a_docente']);
+        $this->assertFalse($resultado['redirigir_a_representante']);
+        $this->assertNotNull($resultado['user']);
+        $this->assertNotNull($resultado['password_temporal']);
+
+        $user = $resultado['user'];
+        $this->assertTrue($user->hasRole('Subdirectora'));
+        $this->assertEquals('Subdirectora', $user->rol_principal);
+        $this->assertDatabaseHas('personas', [
+            'numero_documento' => '99887766',
+            'primer_nombre'    => 'Beatriz',
+            'primer_apellido'  => 'Mendoza',
+        ]);
+    }
+
+    /**
+     * 9. Crear un Docente con nueva cédula: El sistema crea el User, le envía la contraseña y devuelve la señal de redirección a la ficha del docente.
+     */
+    public function test_crear_docente_nueva_cedula_crea_user_y_devuelve_senal_redireccion_docente()
+    {
+        Mail::fake();
+
+        $admin = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'activo' => true,
+        ]);
+        $admin->assignRole('Admin');
+        $admin->givePermissionTo('usuarios.gestionar_modulos');
+        $this->actingAs($admin);
+
+        // Prueba a través de la Action
+        $action = new CrearUsuarioParaPersonaAction();
+        $resultado = $action->ejecutar([
+            'tipo_documento_id' => $this->tipoV->id,
+            'numero_documento'  => '33445566',
+            'primer_nombre'     => 'Marcos',
+            'primer_apellido'   => 'Rivas',
+            'email'             => 'marcos.docente@example.com',
+            'rol'               => 'Docente',
+            'rol_principal'     => 'Docente',
+        ]);
+
+        $this->assertTrue($resultado['redirigir_a_docente']);
+        $this->assertFalse($resultado['redirigir_a_representante']);
+        $this->assertNotNull($resultado['user']);
+        $this->assertTrue($resultado['user']->hasRole('Docente'));
+        $this->assertNotNull($resultado['password_temporal']);
+
+        // Probar también a través del componente Livewire
+        Livewire::test(GestionarUsuarios::class)
+            ->set('tipo_documento_id', $this->tipoV->id)
+            ->set('numero_documento', '77889900')
+            ->set('primer_nombre', 'Elena')
+            ->set('primer_apellido', 'Gómez')
+            ->set('email_crear', 'elena.docente@example.com')
+            ->set('roles_crear', ['Docente'])
+            ->set('rol_principal_crear', 'Docente')
+            ->call('crearUsuario')
+            ->assertRedirect(route('admin.docente.create', ['persona_id' => Persona::where('numero_documento', '77889900')->first()->id]));
+    }
+
+    /**
+     * 10. Crear un Docente que YA existe en la tabla docentes: Solo crea el User sin señal de redirección.
+     */
+    public function test_crear_docente_que_ya_existe_en_docentes_solo_crea_user()
+    {
+        Mail::fake();
+
+        $admin = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'activo' => true,
+        ]);
+        $admin->assignRole('Admin');
+        $admin->givePermissionTo('usuarios.gestionar_modulos');
+        $this->actingAs($admin);
+
+        $persona = $this->crearPersona(['numero_documento' => '44556677']);
+        Docente::create([
+            'persona_id' => $persona->id,
+            'status'     => 1,
+        ]);
+
+        $action = new CrearUsuarioParaPersonaAction();
+        $resultado = $action->ejecutar([
+            'tipo_documento_id' => $persona->tipo_documento_id,
+            'numero_documento'  => '44556677',
+            'primer_nombre'     => $persona->primer_nombre,
+            'primer_apellido'   => $persona->primer_apellido,
+            'email'             => 'docente.existente@example.com',
+            'roles'             => ['Docente'],
+            'rol_principal'     => 'Docente',
+        ]);
+
+        $this->assertFalse($resultado['redirigir_a_docente']);
+        $this->assertFalse($resultado['redirigir_a_representante']);
+        $this->assertNotNull($resultado['user']);
+        $this->assertTrue($resultado['user']->hasRole('Docente'));
+        $this->assertEquals($persona->id, $resultado['user']->persona_id);
+    }
+
+    /**
+     * 11. Admin puede crear un usuario con DOS roles a la vez (Docente y Representante) y elegir uno de ellos como principal.
+     */
+    public function test_admin_puede_crear_usuario_con_multiples_roles_y_rol_principal()
+    {
+        Mail::fake();
+
+        $admin = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'activo' => true,
+        ]);
+        $admin->assignRole('Admin');
+        $admin->givePermissionTo('usuarios.gestionar_modulos');
+        $this->actingAs($admin);
+
+        // Persona previa que ya es Docente y Representante
+        $persona = $this->crearPersona(['numero_documento' => '66778899']);
+        Docente::create(['persona_id' => $persona->id, 'status' => 1]);
+        $ocupacion = \App\Models\Ocupacion::firstOrCreate(['id' => 1], ['nombre_ocupacion' => 'Docente', 'status' => 1]);
+        \App\Models\Representante::create([
+            'persona_id'                          => $persona->id,
+            'pais_id'                             => 1,
+            'estado_id'                           => 1,
+            'municipio_id'                        => 1,
+            'parroquia_id'                        => $this->localidad->id,
+            'ocupacion_representante'             => $ocupacion->id,
+            'convivenciaestudiante_representante' => 'Si',
+            'status'                              => 1,
+        ]);
+
+        Livewire::test(GestionarUsuarios::class)
+            ->set('tipo_documento_id', $persona->tipo_documento_id)
+            ->set('numero_documento', '66778899')
+            ->set('primer_nombre', 'Raúl')
+            ->set('primer_apellido', 'Paredes')
+            ->set('email_crear', 'raul.doblerol@example.com')
+            ->set('roles_crear', ['Docente', 'Representante'])
+            ->set('rol_principal_crear', 'Representante')
+            ->call('crearUsuario')
+            ->assertHasNoErrors();
+
+        $user = User::where('email', 'raul.doblerol@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertTrue($user->hasRole('Docente'));
+        $this->assertTrue($user->hasRole('Representante'));
+        $this->assertEquals('Representante', $user->rol_principal);
+        $this->assertEquals(2, $user->roles()->count());
     }
 }
