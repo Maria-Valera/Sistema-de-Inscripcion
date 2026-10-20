@@ -151,4 +151,33 @@ class User extends Authenticatable implements MustVerifyEmail
             default => route('sin-acceso'),
         };
     }
+
+    /**
+     * Devuelve las claves de los módulos para los cuales el usuario tiene
+     * cualquier permiso, ya sea por rol o por permiso directo.
+     *
+     * @return array
+     */
+    public function modulosEfectivos(): array
+    {
+        $todosPermisos = $this->getAllPermissions()
+            ->pluck('name')
+            ->flip();
+
+        $modulos = config('modulos', []);
+        $efectivos = [];
+
+        foreach ($modulos as $clave => $config) {
+            $permisosModulo = $config['permisos'] ?? [];
+
+            foreach ($permisosModulo as $permiso) {
+                if (isset($todosPermisos[$permiso])) {
+                    $efectivos[] = $clave;
+                    break;
+                }
+            }
+        }
+
+        return $efectivos;
+    }
 }
