@@ -49,9 +49,11 @@ Route::get('/', function () {
 
 Auth::routes(['verify' => true]);
 
-// Ruta para cambio de contraseña (requiere auth y verified, sin forzar.cambio.password para evitar bucles)
-Route::middleware(['auth', 'verified'])->get('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'showChangeForm'])->name('password.change');
-Route::middleware(['auth', 'verified'])->post('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'change'])->name('password.change.post');
+// Rutas para cambio de contraseña (requiere auth y verified, sin forzar.cambio.password para evitar bucles)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'showChangeForm'])->name('password.change');
+    Route::post('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'change'])->name('password.change.post');
+});
 
 // Rutas para Dashboards por rol
 Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('dashboard')->name('dashboard.')->group(function () {
