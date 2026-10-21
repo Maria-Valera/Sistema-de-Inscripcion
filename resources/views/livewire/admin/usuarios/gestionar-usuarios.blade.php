@@ -600,24 +600,34 @@
                             </div>
                             <div class="col-md-8">
                                 <label class="form-label fw-semibold small text-dark">Número de Cédula *</label>
-                                <input type="text" class="form-control @error('numero_documento') is-invalid @enderror" wire:model.live.debounce.500ms="numero_documento" placeholder="Ej: 12345678" maxlength="9" style="border-radius: 8px;">
+                                <input type="text" class="form-control @error('numero_documento') is-invalid @enderror" wire:model.live.debounce.400ms="numero_documento" placeholder="Ej: 12345678" maxlength="9" style="border-radius: 8px;">
                                 @error('numero_documento')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
+                        {{-- Aviso de persona existente detectada y autocompletada --}}
+                        @if ($personaEncontrada && $personaInfoTexto && !$personaTieneUsuario)
+                            <div class="alert alert-success py-2 px-3 mb-3 d-flex align-items-center gap-2 small" style="border-radius: 8px; font-size: 0.85rem;">
+                                <i class="fas fa-check-circle text-success fs-6"></i>
+                                <div>
+                                    <strong>{{ $personaInfoTexto }}</strong>
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small text-dark">Primer Nombre *</label>
-                                <input type="text" class="form-control @error('primer_nombre') is-invalid @enderror" wire:model.live.debounce.500ms="primer_nombre" placeholder="Ej: María" style="border-radius: 8px;">
+                                <input type="text" class="form-control @error('primer_nombre') is-invalid @enderror" wire:model.live.debounce.500ms="primer_nombre" placeholder="Ej: María" style="border-radius: 8px;" {{ $personaEncontrada && !$personaTieneUsuario ? 'readonly' : '' }}>
                                 @error('primer_nombre')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small text-dark">Primer Apellido *</label>
-                                <input type="text" class="form-control @error('primer_apellido') is-invalid @enderror" wire:model.live.debounce.500ms="primer_apellido" placeholder="Ej: González" style="border-radius: 8px;">
+                                <input type="text" class="form-control @error('primer_apellido') is-invalid @enderror" wire:model.live.debounce.500ms="primer_apellido" placeholder="Ej: González" style="border-radius: 8px;" {{ $personaEncontrada && !$personaTieneUsuario ? 'readonly' : '' }}>
                                 @error('primer_apellido')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

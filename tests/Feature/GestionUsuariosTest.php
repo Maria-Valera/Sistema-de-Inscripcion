@@ -482,4 +482,85 @@ class GestionUsuariosTest extends TestCase
         $this->assertEquals('Representante', $user->rol_principal);
         $this->assertEquals(2, $user->roles()->count());
     }
+
+    /**
+     * 12. Detección en tiempo real y autocompletado de Persona existente al tipear cédula.
+     */
+    public function test_autocompletado_en_tiempo_real_al_ingresar_cedula_de_persona_existente()
+    {
+        $admin = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'activo' => true,
+        ]);
+        $admin->assignRole('Admin');
+        $admin->givePermissionTo('usuarios.gestionar_modulos');
+        $this->actingAs($admin);
+
+        // Persona existente previamente registrada
+        $persona = $this->crearPersona([
+            'numero_documento' => '44332211',
+            'primer_nombre'    => 'Carolina',
+            'primer_apellido'  => 'Mendoza',
+            'email'            => 'carolina.docente@example.com',
+        ]);
+        Docente::create(['persona_id' => $persona->id, 'status' => 1]);
+
+        // Simular que el usuario abre el modal e ingresa el tipo y número de documento
+        Livewire::test(GestionarUsuarios::class)
+            ->call('abrirModalCrear')
+            ->set('tipo_documento_id', $persona->tipo_documento_id)
+            ->set('numero_documento', '44332211')
+            ->assertSet('personaEncontrada', true)
+            ->assertSet('primer_nombre', 'Carolina')
+            ->assertSet('primer_apellido', 'Mendoza')
+            ->assertSet('email_crear', 'carolina.docente@example.com')
+            ->assertHasNoErrors('numero_documento')
+            // Ahora simular que el usuario borra la cédula
+            ->set('numero_documento', '')
+            ->assertSet('personaEncontrada', false)
+            ->assertSet('primer_nombre', '')
+            ->assertSet('primer_apellido', '')
+            ->assertSet('email_crear', '')
+            ->assertHasNoErrors('numero_documento');
+    }
+
+    /**
+     * 13. Crear un Representante nuevo crea user y redirige a la edición individual del representante.
+     */
+    public function test_crear_representante_nuevo_crea_user_y_redirige_a_representante_editar()
+    {
+        Mail::fake();
+
+        $admin = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'activo' => true,
+        ]);
+        $admin->assignRole('Admin');
+        $admin->givePermissionTo('usuarios.gestionar_modulos');
+        $this->actingAs($admin);
+
+        Livewire::test(GestionarUsuarios::class)
+            ->set('tipo_documento_id', $this->tipoV->id)
+            ->set('numero_documento', '99887766')
+            ->set('primer_nombre', 'Manuel')
+            ->set('primer_apellido', 'Rivas')
+            ->set('email_crear', 'manuel.rep@example.com')
+            ->set('roles_crear', ['Representante'])
+            ->set('rol_principal_crear', 'Representante')
+            ->call('crearUsuario')
+            ->assertRedirect();
+
+        $persona = Persona::where('numero_documento', '99887766')->first();
+        $this->assertNotNull($persona);
+        $representante = \App\Models\Representante::where('persona_id', $persona->id)->first();
+        $this->assertNotNull($representante);
+
+        // Verificar que la ruta de edición cargue correctamente con el id del representante
+        $response = $this->get(route('representante.editar', ['id' => $representante->id]));
+        $response->assertStatus(200);
+        $response->assertSee('Manuel');
+        $response->assertSee('Rivas');
+    }
 }

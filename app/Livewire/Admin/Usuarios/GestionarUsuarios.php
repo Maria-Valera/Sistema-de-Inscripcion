@@ -51,6 +51,11 @@ class GestionarUsuarios extends Component
     public $roles_crear = [];
     public $rol_principal_crear = '';
 
+    // Estado de detección/autocompletado de Persona
+    public $personaEncontrada = false;
+    public $personaTieneUsuario = false;
+    public $personaInfoTexto = '';
+
     // Propiedad pública para los tipos de documentos
     public $tipos_documentos = [];
 
@@ -75,7 +80,91 @@ class GestionarUsuarios extends Component
 
     public function updated($propertyName): void
     {
+        // Si el usuario vacía la cédula para reescribirla, no mostrar 'campo obligatorio' en tiempo real
+        if ($propertyName === 'numero_documento' && empty(trim($this->numero_documento))) {
+            return;
+        }
+
         $this->validateOnly($propertyName);
+    }
+
+    public function updatedNumeroDocumento(): void
+    {
+        $this->buscarYAutocompletarPersona();
+    }
+
+    public function updatedTipoDocumentoId(): void
+    {
+        $this->buscarYAutocompletarPersona();
+    }
+
+    /**
+     * Detección en tiempo real y autocompletado de Persona existente al tipear cédula.
+     */
+    protected function buscarYAutocompletarPersona(): void
+    {
+        // Si se vacía el número de documento, limpiar datos autocompletados y validaciones
+        if (empty(trim($this->numero_documento))) {
+            $this->reset([
+                'primer_nombre',
+                'primer_apellido',
+                'email_crear',
+                'personaEncontrada',
+                'personaTieneUsuario',
+                'personaInfoTexto',
+            ]);
+            $this->resetValidation(['numero_documento', 'primer_nombre', 'primer_apellido', 'email_crear']);
+            return;
+        }
+
+        $this->personaEncontrada = false;
+        $this->personaTieneUsuario = false;
+        $this->personaInfoTexto = '';
+
+        if (empty($this->tipo_documento_id)) {
+            return;
+        }
+
+        $persona = Persona::where('tipo_documento_id', $this->tipo_documento_id)
+            ->where('numero_documento', trim($this->numero_documento))
+            ->first();
+
+        if ($persona) {
+            $this->personaEncontrada = true;
+            $this->primer_nombre = $persona->primer_nombre ?? $this->primer_nombre;
+            $this->primer_apellido = $persona->primer_apellido ?? $this->primer_apellido;
+            if (!empty($persona->email)) {
+                $this->email_crear = $persona->email;
+            }
+
+            // Validar si ya tiene un User registrado
+            $tieneUsuario = User::where('persona_id', $persona->id)->exists();
+            if ($tieneUsuario) {
+                $this->personaTieneUsuario = true;
+                $this->addError('numero_documento', 'Esta persona ya tiene un usuario registrado en el sistema.');
+            } else {
+                $this->resetErrorBag('numero_documento');
+                $rolesPersona = [];
+                if (\App\Models\Docente::where('persona_id', $persona->id)->where('status', 1)->exists()) {
+                    $rolesPersona[] = 'Docente';
+                }
+                if (\App\Models\Representante::where('persona_id', $persona->id)->where('status', 1)->exists()) {
+                    $rolesPersona[] = 'Representante';
+                }
+                $detalle = !empty($rolesPersona) ? ' (' . implode(', ', $rolesPersona) . ')' : '';
+                $this->personaInfoTexto = "Persona registrada{$detalle}: {$persona->primer_nombre} {$persona->primer_apellido}. Datos autocompletados.";
+            }
+
+            // Validar campos autocompletados
+            $this->validateOnly('primer_nombre');
+            $this->validateOnly('primer_apellido');
+            if (!empty($this->email_crear) && !$this->personaTieneUsuario) {
+                $this->validateOnly('email_crear');
+            }
+        } else {
+            // Si la persona ya no existe (por ejemplo cambió el último dígito) y antes estaba autocompletada
+            $this->resetValidation(['numero_documento']);
+        }
     }
 
     public function updatedRolesCrear($value): void
@@ -270,7 +359,10 @@ class GestionarUsuarios extends Component
             'primer_apellido',
             'email_crear',
             'roles_crear',
-            'rol_principal_crear'
+            'rol_principal_crear',
+            'personaEncontrada',
+            'personaTieneUsuario',
+            'personaInfoTexto',
         ]);
         $this->resetErrorBag();
         $this->modalCrearAbierto = true;
@@ -286,7 +378,10 @@ class GestionarUsuarios extends Component
             'primer_apellido',
             'email_crear',
             'roles_crear',
-            'rol_principal_crear'
+            'rol_principal_crear',
+            'personaEncontrada',
+            'personaTieneUsuario',
+            'personaInfoTexto',
         ]);
         $this->resetErrorBag();
     }
@@ -335,9 +430,45 @@ class GestionarUsuarios extends Component
             }
 
             if (!empty($resultado['redirigir_a_representante'])) {
+                // Asegurar que exista el registro en la tabla representantes antes de redirigir
+                $representante = \App\Models\Representante::withTrashed()->where('persona_id', $persona->id)->first();
+                if ($representante && $representante->trashed()) {
+                    $representante->restore();
+                }
+
+                if (!$representante) {
+                    $ocupacionDefecto = \App\Models\Ocupacion::firstOrCreate(
+                        ['nombre_ocupacion' => 'Comerciante'],
+                        ['status' => 1]
+                    );
+
+                    $localidadDefecto = \App\Models\Localidad::with('municipio.estado')->first();
+                    $parroquiaId = $localidadDefecto ? $localidadDefecto->id : 1;
+                    $municipioId = ($localidadDefecto && $localidadDefecto->municipio_id) ? $localidadDefecto->municipio_id : 1;
+                    $estadoId = ($localidadDefecto && $localidadDefecto->municipio && $localidadDefecto->municipio->estado_id) 
+                        ? $localidadDefecto->municipio->estado_id 
+                        : (\App\Models\Estado::value('id') ?? 1);
+                    $paisId = ($localidadDefecto && $localidadDefecto->municipio && $localidadDefecto->municipio->estado && $localidadDefecto->municipio->estado->pais_id)
+                        ? $localidadDefecto->municipio->estado->pais_id
+                        : (\App\Models\Pais::value('id') ?? 1);
+
+                    $representante = \App\Models\Representante::firstOrCreate(
+                        ['persona_id' => $persona->id],
+                        [
+                            'pais_id'                             => $paisId,
+                            'estado_id'                           => $estadoId,
+                            'municipio_id'                        => $municipioId,
+                            'parroquia_id'                        => $parroquiaId,
+                            'ocupacion_representante'             => $ocupacionDefecto->id,
+                            'convivenciaestudiante_representante' => 'Si',
+                            'status'                              => 1,
+                        ]
+                    );
+                }
+
                 session()->flash('success', "Usuario creado. Ahora por favor completa la ficha del representante.");
                 $this->cerrarModalCrear();
-                return redirect()->route('representante.formulario', ['persona_id' => $persona->id]);
+                return redirect()->route('representante.editar', ['id' => $representante->id]);
             }
 
             session()->flash('success', "Usuario creado exitosamente con contraseña temporal para {$user->email}.");
