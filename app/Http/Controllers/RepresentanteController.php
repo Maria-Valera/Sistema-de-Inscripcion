@@ -1441,6 +1441,14 @@ class RepresentanteController extends Controller
                 if ($persona) {
                     $isUpdate = true;
                 }
+            } elseif (!empty($request->input('numero_documento-representante'))) {
+                // Si la cédula ya existe en personas (por ejemplo es Docente o Alumno), reutilizar su ID
+                $persona = Persona::with(['representante', 'representante.legal'])
+                    ->where('numero_documento', $request->input('numero_documento-representante'))
+                    ->first();
+                if ($persona) {
+                    $isUpdate = true;
+                }
             }
 
             if ($isUpdate && !$esProgenitorRepresentante) {
@@ -2029,13 +2037,41 @@ class RepresentanteController extends Controller
 
         $personaExistente = $query->first();
 
+        // 1. Si la persona existe Y ya tiene representante activo:
         if ($personaExistente) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Esta cédula ya está registrada en el sistema',
+                'message' => 'Este representante ya está registrado en el sistema',
             ], 409);
         }
 
+        // 2. Si la persona existe en el sistema (por ejemplo, es Docente o Alumno) pero NO es representante activo:
+        $personaGeneral = Persona::where('numero_documento', $numero_documento)->first();
+        if ($personaGeneral) {
+            return response()->json([
+                'status' => 'persona_existente',
+                'message' => 'Persona encontrada en el sistema. Los datos personales han sido bloqueados.',
+                'persona' => [
+                    'id' => $personaGeneral->id,
+                    'primer_nombre' => $personaGeneral->primer_nombre,
+                    'segundo_nombre' => $personaGeneral->segundo_nombre,
+                    'tercer_nombre' => $personaGeneral->tercer_nombre,
+                    'primer_apellido' => $personaGeneral->primer_apellido,
+                    'segundo_apellido' => $personaGeneral->segundo_apellido,
+                    'fecha_nacimiento' => $personaGeneral->fecha_nacimiento ? substr($personaGeneral->fecha_nacimiento, 0, 10) : '',
+                    'genero_id' => $personaGeneral->genero_id,
+                    'tipo_documento_id' => $personaGeneral->tipo_documento_id,
+                    'email' => $personaGeneral->email,
+                    'direccion' => $personaGeneral->direccion,
+                    'telefono' => $personaGeneral->telefono,
+                    'telefono_dos' => $personaGeneral->telefono_dos,
+                    'prefijo_id' => $personaGeneral->prefijo_id,
+                    'prefijo_dos_id' => $personaGeneral->prefijo_dos_id,
+                ]
+            ], 200);
+        }
+
+        // 3. Si pertenecía a un representante eliminado:
         $registroEliminado = Persona::where('numero_documento', $numero_documento)
             ->whereHas('representante', function ($q) {
                 $q->where('status', 0)

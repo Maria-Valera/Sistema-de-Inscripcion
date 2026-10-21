@@ -1239,6 +1239,15 @@
                         </div>
                     </div>
 
+                    <!-- Alerta de Persona Encontrada en el Sistema (Representante) -->
+                    <div id="alerta-persona-encontrada-representante" class="alert alert-info d-none align-items-center mt-2 mb-3" role="alert" style="border-left: 4px solid #0284c7; background-color: #f0f9ff; color: #0369a1;">
+                        <i class="fas fa-info-circle fa-lg me-2" style="color: #0284c7;"></i>
+                        <div>
+                            <strong>Persona encontrada en el sistema.</strong>
+                            <span>Los datos personales han sido bloqueados para evitar inconsistencias.</span>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <div class="form-group">
@@ -4783,14 +4792,131 @@
                         .then(resp => {
                             console.log('numero_documento OK', selector, resp);
                             limpiarnumero_documentoError(input);
+
+                            // Si es el campo de representante y se detectó una persona existente
+                            if (selector === '#numero_documento-representante') {
+                                const alerta = document.getElementById('alerta-persona-encontrada-representante');
+                                if (resp && resp.status === 'persona_existente' && resp.persona) {
+                                    if (alerta) {
+                                        alerta.classList.remove('d-none');
+                                        alerta.classList.add('d-flex');
+                                    }
+                                    autocompletarYBloquearRepresentante(resp.persona);
+                                } else {
+                                    if (alerta) {
+                                        alerta.classList.add('d-none');
+                                        alerta.classList.remove('d-flex');
+                                    }
+                                    desbloquearCamposRepresentante();
+                                }
+                            }
                         })
                         .catch(error => {
+                            if (selector === '#numero_documento-representante') {
+                                const alerta = document.getElementById('alerta-persona-encontrada-representante');
+                                if (alerta) {
+                                    alerta.classList.add('d-none');
+                                    alerta.classList.remove('d-flex');
+                                }
+                                desbloquearCamposRepresentante();
+                            }
                             if (error.message) {
                                 marcarnumero_documentoError(input, error.message);
                             } else {
                                 console.error('Error al verificar cédula', error);
                             }
                         });
+                });
+            }
+
+            function autocompletarYBloquearRepresentante(persona) {
+                if (!persona) return;
+
+                const personaIdHidden = document.getElementById('persona-id-representante');
+                if (personaIdHidden && persona.id) {
+                    personaIdHidden.value = persona.id;
+                }
+
+                const mapeo = [
+                    { id: 'primer-nombre-representante', val: persona.primer_nombre },
+                    { id: 'segundo-nombre-representante', val: persona.segundo_nombre },
+                    { id: 'tercer-nombre-representante', val: persona.tercer_nombre },
+                    { id: 'primer-apellido-representante', val: persona.primer_apellido },
+                    { id: 'segundo-apellido-representante', val: persona.segundo_apellido },
+                    { id: 'fecha-nacimiento-representante', val: persona.fecha_nacimiento },
+                    { id: 'correo-representante', val: persona.email },
+                    { id: 'telefono-representante', val: persona.telefono },
+                    { id: 'telefono_dos-representante', val: persona.telefono_dos },
+                    { id: 'direccion-habitacion', val: persona.direccion }
+                ];
+
+                mapeo.forEach(item => {
+                    const el = document.getElementById(item.id);
+                    if (el) {
+                        if (item.val !== undefined && item.val !== null && item.val !== '') {
+                            el.value = item.val;
+                        }
+                        el.readOnly = true;
+                        el.classList.add('bg-light');
+                    }
+                });
+
+                if (persona.genero_id) {
+                    const gen = document.getElementById('sexo-representante');
+                    if (gen) {
+                        gen.value = persona.genero_id;
+                        gen.style.pointerEvents = 'none';
+                        gen.classList.add('bg-light');
+                    }
+                }
+
+                if (persona.tipo_documento_id) {
+                    const tipoDoc = document.getElementById('tipo-ci-representante');
+                    if (tipoDoc) {
+                        tipoDoc.value = persona.tipo_documento_id;
+                        tipoDoc.style.pointerEvents = 'none';
+                        tipoDoc.classList.add('bg-light');
+                    }
+                }
+
+                if (persona.prefijo_id) {
+                    const pref = document.getElementById('prefijo-representante');
+                    if (pref) {
+                        pref.value = persona.prefijo_id;
+                        pref.style.pointerEvents = 'none';
+                        pref.classList.add('bg-light');
+                    }
+                }
+            }
+
+            function desbloquearCamposRepresentante() {
+                const campos = [
+                    'primer-nombre-representante',
+                    'segundo-nombre-representante',
+                    'tercer-nombre-representante',
+                    'primer-apellido-representante',
+                    'segundo-apellido-representante',
+                    'fecha-nacimiento-representante',
+                    'correo-representante',
+                    'telefono-representante',
+                    'telefono_dos-representante',
+                    'direccion-habitacion'
+                ];
+
+                campos.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.readOnly) {
+                        el.readOnly = false;
+                        el.classList.remove('bg-light');
+                    }
+                });
+
+                ['sexo-representante', 'tipo-ci-representante', 'prefijo-representante'].forEach(id => {
+                    const select = document.getElementById(id);
+                    if (select) {
+                        select.style.pointerEvents = '';
+                        select.classList.remove('bg-light');
+                    }
                 });
             }
 
