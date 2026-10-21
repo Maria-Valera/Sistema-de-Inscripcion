@@ -495,9 +495,16 @@
     padding: 0;
 }
 
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .table-modern {
     width: 100%;
     border-collapse: collapse;
+    min-width: 600px;
 }
 
 .table-modern thead tr {

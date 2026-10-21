@@ -38,7 +38,7 @@ return [
     'aulas' => [
         'nombre' => 'Aulas',
         'icono' => 'fas fa-chalkboard-teacher',
-        'ruta' => 'admin.seccion_aula.index', // Provisional hasta tener ruta específica de aulas
+        'ruta' => 'aulas.index',
         'grupo' => 'academico',
         'permisos' => [
             'aulas.ver',
@@ -96,7 +96,7 @@ return [
 
     // ===== MÓDULOS DEL PORTAL =====
     'portal_prosecucion' => [
-        'nombre' => 'Prosecución (Portal)',
+        'nombre' => 'Inscripción por Prosecución',
         'icono' => 'fas fa-graduation-cap',
         'ruta' => 'portal-representante.prosecucion.index',
         'grupo' => 'portal',
@@ -108,7 +108,7 @@ return [
     ],
 
     'portal_carnets' => [
-        'nombre' => 'Carnets (Portal)',
+        'nombre' => 'Mi Carnet',
         'icono' => 'fas fa-id-card',
         'ruta' => 'portal-representante.carnet.index',
         'grupo' => 'portal',
@@ -121,7 +121,7 @@ return [
     ],
 
     'portal_horarios' => [
-        'nombre' => 'Horarios (Portal)',
+        'nombre' => 'Horarios',
         'icono' => 'fas fa-calendar-alt',
         'ruta' => null,
         'grupo' => 'portal',
@@ -134,7 +134,7 @@ return [
     ],
 
     'portal_constancias' => [
-        'nombre' => 'Constancias (Portal)',
+        'nombre' => 'Constancias',
         'icono' => 'fas fa-file-alt',
         'ruta' => null,
         'grupo' => 'portal',
@@ -145,7 +145,7 @@ return [
     ],
 
     'portal_carga_academica' => [
-        'nombre' => 'Carga Académica (Portal)',
+        'nombre' => 'Carga Académica',
         'icono' => 'fas fa-book',
         'ruta' => null,
         'grupo' => 'portal',
@@ -208,7 +208,7 @@ return [
     'usuarios_accesos' => [
         'nombre' => 'Usuarios y Accesos',
         'icono' => 'fas fa-users-cog',
-        'ruta' => 'admin.roles.index',
+        'ruta' => 'admin.usuarios.index',
         'grupo' => 'seguridad',
         'permisos' => [
             'usuarios_accesos.ver',

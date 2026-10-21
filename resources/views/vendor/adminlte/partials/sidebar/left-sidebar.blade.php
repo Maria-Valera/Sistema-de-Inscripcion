@@ -19,30 +19,70 @@
                     data-accordion="false"
                 @endif>
                 {{-- Configured sidebar links --}}
-                @role('Representante')
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('portal-representante.index') ? 'active' : '' }}" href="{{ route('portal-representante.index') }}">
-                            <i class="nav-icon fas fa-fw fa-tachometer-alt"></i>
-                            <p>Panel Principal</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('portal-representante.prosecucion.*') ? 'active' : '' }}" href="{{ route('portal-representante.prosecucion.index') }}">
-                            <i class="nav-icon fas fa-fw fa-sync-alt"></i>
-                            <p>Inscripción por Prosecución</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('portal-representante.carnet.*') ? 'active' : '' }}" href="{{ route('portal-representante.carnet.index') }}">
-                            <i class="nav-icon fas fa-fw fa-id-card"></i>
-                            <p>Mi Carnet</p>
-                        </a>
-                    </li>
-                @else
-                    @each('adminlte::partials.sidebar.menu-item', $adminlte->menu('sidebar'), 'item')
-                @endrole
+                @php
+                    // Crear una instancia de AdminLte para que compile el menú según los permisos del usuario actual en esta request
+                    $freshAdminLte = new \JeroenNoten\LaravelAdminLte\AdminLte(config('adminlte.filters', []));
+                    $sidebarMenu = $freshAdminLte->menu('sidebar');
+
+                    if (auth()->check()) {
+                        $dashboardUrl = auth()->user()->rutaDashboard();
+                        foreach ($sidebarMenu as &$menuItem) {
+                            if (isset($menuItem['text']) && $menuItem['text'] === 'Panel Principal') {
+                                $menuItem['href'] = $dashboardUrl;
+                                $menuItem['url'] = $dashboardUrl;
+                            }
+                        }
+                        unset($menuItem);
+                    }
+
+                    // Función para limpiar headers huérfanos y submenús vacíos recursivamente
+                    if (!function_exists('sanitizarMenuAdminLte')) {
+                        function sanitizarMenuAdminLte(array $menu): array {
+                            // 1. Filtrar recursivamente submenús
+                            foreach ($menu as $key => &$item) {
+                                if (isset($item['submenu']) && is_array($item['submenu'])) {
+                                    $item['submenu'] = sanitizarMenuAdminLte($item['submenu']);
+                                    if (empty($item['submenu'])) {
+                                        unset($menu[$key]);
+                                    }
+                                }
+                            }
+                            unset($item);
+
+                            $menu = array_values($menu);
+
+                            // 2. Eliminar headers que se hayan quedado sin ítems interactivos debajo
+                            $cleaned = [];
+                            $count = count($menu);
+                            for ($i = 0; $i < $count; $i++) {
+                                $item = $menu[$i];
+                                if (isset($item['header'])) {
+                                    $hasChild = false;
+                                    for ($j = $i + 1; $j < $count; $j++) {
+                                        if (isset($menu[$j]['header'])) {
+                                            break;
+                                        }
+                                        $hasChild = true;
+                                        break;
+                                    }
+                                    if ($hasChild) {
+                                        $cleaned[] = $item;
+                                    }
+                                } else {
+                                    $cleaned[] = $item;
+                                }
+                            }
+
+                            return $cleaned;
+                        }
+                    }
+
+                    $sidebarMenu = sanitizarMenuAdminLte($sidebarMenu);
+                @endphp
+                @each('adminlte::partials.sidebar.menu-item', $sidebarMenu, 'item')
             </ul>
         </nav>
     </div>
 
 </aside>
+

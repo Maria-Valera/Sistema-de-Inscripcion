@@ -258,6 +258,7 @@ class DocenteController extends Controller
                     ->first();
 
                 if ($docenteExistente) {
+                    DB::rollBack();
                     return back()
                         ->withInput()
                         ->with('error', 'Este docente ya está registrado.');

@@ -141,6 +141,34 @@
         .feature-btn.carnet:hover {
             background: #059669;
         }
+
+        @media (max-width: 576px) {
+            .portal-container {
+                padding: 0.75rem;
+            }
+
+            .portal-header {
+                padding: 1.5rem 1rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .portal-title {
+                font-size: 1.35rem;
+            }
+
+            .portal-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+
+            .feature-card {
+                padding: 1.25rem 1rem;
+            }
+        }
     </style>
 @stop
 
