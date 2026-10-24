@@ -327,6 +327,7 @@
                      <td>Edad</td>
                     <td>{{ \Carbon\Carbon::parse($alumno->persona->fecha_nacimiento)->age }}</td>
                 </tr>
+                @if(!auth()->user()?->esSoloDocente())
                 <tr>
                     <td>Lugar de Nacimiento</td>
                     <td>
@@ -336,6 +337,7 @@
                         <strong>Localidad:</strong> {{ $alumno->persona->localidad->nombre_localidad ?? 'N/A' }}
                     </td>
                 </tr>
+                @endif
                 <tr>
                     <td>Género</td>
                     <td>{{ $alumno->persona->genero->genero ?? 'N/A' }}</td>
@@ -356,6 +358,7 @@
                         @endif
                     </td>
                 </tr>
+                @if(!auth()->user()?->esSoloDocente())
                 <tr>
                     <td>Etnia</td>
                     <td>{{ $alumno->etniaIndigena->nombre ?? 'No pertenece a ninguna etnia indígena' }}</td>
@@ -388,6 +391,7 @@
                     <td>Talla de zapatos</td>
                     <td>{{ $alumno->talla_zapato ?? 'N/A' }}</td>
                 </tr>
+                @endif
             </table>
         </div>
 

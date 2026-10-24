@@ -44,7 +44,7 @@ class RepresentanteController extends Controller
 
     private function obtenerTipoCuenta($tipo)
     {
-        return $tipo === 'ahorro' ? 'Ahorro' : 'Corriente';
+        return strtolower((string)$tipo) === 'ahorro' ? 'Ahorro' : 'Corriente';
     }
 
     public function index()
@@ -255,18 +255,95 @@ class RepresentanteController extends Controller
         );
     }
 
-    public function mostrarFormularioEditar(Request $request, $id)
+    public function mostrarFormularioEditar(Request $request, $id = null)
     {
-        $representante = Representante::with([
-            'persona.prefijo',
-            'estado',
-            'municipios',
-            'localidads',
-            'legal' => function ($query) {
-                $query->with(['banco', 'prefijo']);
-            }
-        ])->findOrFail($id);
+        $representante = null;
 
+        // 1. Si se recibe un ID, intentar buscar por ID de representante
+        if ($id && is_numeric($id)) {
+            $representante = Representante::with([
+                'persona.prefijo',
+                'estado',
+                'municipios',
+                'localidads',
+                'legal' => function ($query) {
+                    $query->with(['banco', 'prefijo']);
+                }
+            ])->find($id);
+        }
+
+        // 2. Si no se encontró por ID de representante, intentar buscar si el parámetro es persona_id
+        if (!$representante) {
+            $personaId = $request->query('persona_id', $id);
+            if ($personaId && is_numeric($personaId)) {
+                $representante = Representante::with([
+                    'persona.prefijo',
+                    'estado',
+                    'municipios',
+                    'localidads',
+                    'legal' => function ($query) {
+                        $query->with(['banco', 'prefijo']);
+                    }
+                ])->where('persona_id', $personaId)->first();
+            }
+
+            // Si aún no existe pero la Persona sí existe, crear el registro base defensivamente
+            if (!$representante && !empty($personaId)) {
+                $persona = Persona::find($personaId);
+                if ($persona) {
+                    $representante = Representante::withTrashed()->where('persona_id', $persona->id)->first();
+                    if ($representante && $representante->trashed()) {
+                        $representante->restore();
+                    }
+
+                    if (!$representante) {
+                        $ocupacionDefecto = Ocupacion::firstOrCreate(
+                            ['nombre_ocupacion' => 'Comerciante'],
+                            ['status' => 1]
+                        );
+
+                        $localidadDefecto = Localidad::with('municipio.estado')->first();
+                        $parroquiaId = $localidadDefecto ? $localidadDefecto->id : 1;
+                        $municipioId = ($localidadDefecto && $localidadDefecto->municipio_id) ? $localidadDefecto->municipio_id : 1;
+                        $estadoId = ($localidadDefecto && $localidadDefecto->municipio && $localidadDefecto->municipio->estado_id)
+                            ? $localidadDefecto->municipio->estado_id
+                            : (Estado::value('id') ?? 1);
+                        $paisId = ($localidadDefecto && $localidadDefecto->municipio && $localidadDefecto->municipio->estado && $localidadDefecto->municipio->estado->pais_id)
+                            ? $localidadDefecto->municipio->estado->pais_id
+                            : (Pais::value('id') ?? 1);
+
+                        $representante = Representante::firstOrCreate(
+                            ['persona_id' => $persona->id],
+                            [
+                                'pais_id'                             => $paisId,
+                                'estado_id'                           => $estadoId,
+                                'municipio_id'                        => $municipioId,
+                                'parroquia_id'                        => $parroquiaId,
+                                'ocupacion_representante'             => $ocupacionDefecto->id,
+                                'convivenciaestudiante_representante' => 'Si',
+                                'status'                              => 1,
+                            ]
+                        );
+                    }
+
+                    $representante->load([
+                        'persona.prefijo',
+                        'estado',
+                        'municipios',
+                        'localidads',
+                        'legal' => function ($query) {
+                            $query->with(['banco', 'prefijo']);
+                        }
+                    ]);
+                }
+            }
+        }
+
+        // 3. Manejo defensivo: si no se encontró ni se pudo crear, redirigir amigablemente con mensaje de error
+        if (!$representante) {
+            return redirect()->route('representante.index')
+                ->with('error', 'El representante solicitado no fue encontrado en el sistema.');
+        }
 
         $paises = Pais::where('status', true)->orderBy('nameES', 'ASC')->get();
         $estados = Estado::where('status', true)
@@ -311,6 +388,9 @@ class RepresentanteController extends Controller
         $from = $request->query('from');
         $inscripcion_id = $request->query('inscripcion_id');
 
+        // Determinar si la ficha es nueva o incompleta (creada automáticamente desde el gestor de usuarios)
+        $esFichaNueva = empty($representante->persona->direccion) && empty($representante->persona->telefono);
+
         return view("admin.representante.modales.editarModal", compact(
             'representante',
             'paises',
@@ -323,7 +403,8 @@ class RepresentanteController extends Controller
             'tipoDocumentos',
             'parroquias_cargadas',
             'from',
-            'inscripcion_id'
+            'inscripcion_id',
+            'esFichaNueva'
         ));
     }
 
@@ -434,8 +515,8 @@ class RepresentanteController extends Controller
                 'max:20',
                 Rule::unique('personas', 'numero_documento')->ignore($persona->id),
                 function ($attribute, $value, $fail) {
-                    if (!preg_match('/^\d{6,8}$/', $value)) {
-                        $fail('El número de cédula debe contener entre 6 y 8 dígitos.');
+                    if (!preg_match('/^\d{6,9}$/', $value)) {
+                        $fail('El número de cédula debe contener entre 6 y 9 dígitos.');
                     }
                 },
             ],
@@ -571,15 +652,30 @@ class RepresentanteController extends Controller
             $representante->update($representanteData);
             if ($isLegalRepresentative) {
                 $perteneceOrganizacion = $request->boolean('pertenece_organizacion');
-                $legalData = [
-                    'banco_id' => $request->input('banco_id'),
-                    'pertenece_a_organizacion_representante' => $perteneceOrganizacion,
-                    'cual_organizacion_representante' => $perteneceOrganizacion ? $request->input('cual_organizacion_representante') : ''
-                ];
+                $tipoCuenta = $request->filled('tipo_cuenta')
+                    ? $this->obtenerTipoCuenta($request->input('tipo_cuenta'))
+                    : ($this->obtenerTipoCuenta($request->input('tipo-cuenta', 'Corriente')));
 
-                if (!$perteneceOrganizacion) {
-                    unset($legalData['cual_organizacion_representante']);
+                $carnetAfiliado = $request->input('carnet_patria_afiliado');
+                if (is_numeric($carnetAfiliado)) {
+                    $carnetAfiliado = (int) $carnetAfiliado;
+                } else {
+                    $carnetAfiliado = $this->mapearCarnetPatriaAfiliado($carnetAfiliado);
                 }
+
+                $legalData = [
+                    'banco_id'                              => $request->input('banco_id') ?: null,
+                    'tipo_cuenta'                           => $tipoCuenta ?: 'Corriente',
+                    'parentesco'                            => $request->input('parentesco') ?: ($request->input('parentesco_hidden') ?: 'Madre/Padre/Tutor'),
+                    'correo_representante'                  => $request->input('correo-representante') ?: ($request->input('correo_representante') ?: ($persona->email ?: '')),
+                    'pertenece_a_organizacion_representante'=> $perteneceOrganizacion,
+                    'cual_organizacion_representante'       => $perteneceOrganizacion ? ($request->input('cual_organizacion_representante') ?: '') : '',
+                    'carnet_patria_afiliado'                => $carnetAfiliado,
+                    'serial_carnet_patria_representante'    => substr((string)($request->input('serial_carnet') ?: ($request->input('serial-patria') ?: ($request->input('serial') ?: ''))), 0, 20),
+                    'codigo_carnet_patria_representante'    => substr((string)($request->input('codigo_carnet') ?: ($request->input('codigo-patria') ?: ($request->input('codigo') ?: ''))), 0, 20),
+                    'direccion_representante'               => $request->input('direccion_habitacion') ?: ($persona->direccion ?: ''),
+                    'estados_representante'                 => (string)$request->input('estado_id', ''),
+                ];
 
                 if ($representante->legal) {
                     $representante->legal()->update($legalData);
@@ -1345,6 +1441,14 @@ class RepresentanteController extends Controller
                 if ($persona) {
                     $isUpdate = true;
                 }
+            } elseif (!empty($request->input('numero_documento-representante'))) {
+                // Si la cédula ya existe en personas (por ejemplo es Docente o Alumno), reutilizar su ID
+                $persona = Persona::with(['representante', 'representante.legal'])
+                    ->where('numero_documento', $request->input('numero_documento-representante'))
+                    ->first();
+                if ($persona) {
+                    $isUpdate = true;
+                }
             }
 
             if ($isUpdate && !$esProgenitorRepresentante) {
@@ -1933,13 +2037,41 @@ class RepresentanteController extends Controller
 
         $personaExistente = $query->first();
 
+        // 1. Si la persona existe Y ya tiene representante activo:
         if ($personaExistente) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Esta cédula ya está registrada en el sistema',
+                'message' => 'Este representante ya está registrado en el sistema',
             ], 409);
         }
 
+        // 2. Si la persona existe en el sistema (por ejemplo, es Docente o Alumno) pero NO es representante activo:
+        $personaGeneral = Persona::where('numero_documento', $numero_documento)->first();
+        if ($personaGeneral) {
+            return response()->json([
+                'status' => 'persona_existente',
+                'message' => 'Persona encontrada en el sistema. Los datos personales han sido bloqueados.',
+                'persona' => [
+                    'id' => $personaGeneral->id,
+                    'primer_nombre' => $personaGeneral->primer_nombre,
+                    'segundo_nombre' => $personaGeneral->segundo_nombre,
+                    'tercer_nombre' => $personaGeneral->tercer_nombre,
+                    'primer_apellido' => $personaGeneral->primer_apellido,
+                    'segundo_apellido' => $personaGeneral->segundo_apellido,
+                    'fecha_nacimiento' => $personaGeneral->fecha_nacimiento ? substr($personaGeneral->fecha_nacimiento, 0, 10) : '',
+                    'genero_id' => $personaGeneral->genero_id,
+                    'tipo_documento_id' => $personaGeneral->tipo_documento_id,
+                    'email' => $personaGeneral->email,
+                    'direccion' => $personaGeneral->direccion,
+                    'telefono' => $personaGeneral->telefono,
+                    'telefono_dos' => $personaGeneral->telefono_dos,
+                    'prefijo_id' => $personaGeneral->prefijo_id,
+                    'prefijo_dos_id' => $personaGeneral->prefijo_dos_id,
+                ]
+            ], 200);
+        }
+
+        // 3. Si pertenecía a un representante eliminado:
         $registroEliminado = Persona::where('numero_documento', $numero_documento)
             ->whereHas('representante', function ($q) {
                 $q->where('status', 0)

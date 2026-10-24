@@ -22,6 +22,10 @@
             background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), 
                         url('{{ asset("HomePage/vidaEstudiantil/Bievenida_img.jpg") }}') no-repeat center center fixed;
             background-size: cover;
+            min-height: 100vh;
+            height: auto !important;
+            overflow-y: auto;
+            padding: 20px 0;
         }
         
         /* Ajustes adicionales */
@@ -81,18 +85,57 @@
             <div class="card-body register-card-body">
                 <p class="login-box-msg">Registrar una nueva cuenta</p>
 
+                <div class="alert alert-info py-2 px-3 mb-3 text-sm" role="alert">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Debes tener tu cédula registrada previamente en el sistema para crear una cuenta. Si no puedes registrarte, contacta a la institución.
+                </div>
+
+                @if ($errors->any())
+                    <div class="alert alert-danger py-2 px-3 mb-3 text-sm">
+                        <ul class="mb-0 pl-3">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form action="{{ route('register') }}" method="post">
                     @csrf
 
                     <div class="input-group mb-3">
-                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" 
-                               placeholder="Nombre completo" value="{{ old('name') }}" maxlength="255" required autofocus>
+                        <select name="tipo_documento_id" class="form-control @error('tipo_documento_id') is-invalid @enderror" required autofocus>
+                            <option value="">Tipo de documento</option>
+                            @php
+                                $tipos = isset($tipoDocumentos) ? $tipoDocumentos : \App\Models\TipoDocumento::where('status', 1)->get();
+                            @endphp
+                            @foreach ($tipos as $tipo)
+                                <option value="{{ $tipo->id }}" {{ old('tipo_documento_id') == $tipo->id ? 'selected' : '' }}>
+                                    {{ $tipo->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
                         <div class="input-group-append">
                             <div class="input-group-text">
-                                <span class="fas fa-user"></span>
+                                <span class="fas fa-id-card"></span>
                             </div>
                         </div>
-                        @error('name')
+                        @error('tipo_documento_id')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <input type="text" name="numero_documento" class="form-control @error('numero_documento') is-invalid @enderror" 
+                               placeholder="Número de documento" value="{{ old('numero_documento') }}" maxlength="20" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-hashtag"></span>
+                            </div>
+                        </div>
+                        @error('numero_documento')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -116,7 +159,7 @@
 
                     <div class="input-group mb-3">
                         <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" 
-                               placeholder="Contraseña (8-16 caracteres)" maxlength="16" required>
+                               placeholder="Contraseña (mínimo 8 caracteres, letras y números)" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
@@ -131,7 +174,7 @@
 
                     <div class="input-group mb-3">
                         <input type="password" name="password_confirmation" class="form-control" 
-                               placeholder="Repetir contraseña (8-16 caracteres)" maxlength="16" required>
+                               placeholder="Confirmar contraseña" required>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
@@ -141,12 +184,12 @@
 
                     <div class="row">
                         <div class="col-12">
-                            <button type="submit" class="btn btn-primary btn-block">Registrar</button>
+                            <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
                         </div>
                     </div>
                 </form>
 
-<p class="mb-0 text-center">
+                <p class="mt-3 mb-0 text-center">
                     <a href="{{ route('login') }}" class="text-center">¿Ya tengo una cuenta? Iniciar sesión</a>
                 </p>
                 
@@ -175,7 +218,8 @@
     $(document).ready(function() {
         let emailTimeout;
         let validationResults = {
-            name: false,
+            tipo_documento_id: false,
+            numero_documento: false,
             email: false,
             password: false,
             password_confirmation: false
@@ -191,36 +235,45 @@
             }
         }
         
-        // Validación del nombre
-        $('input[name="name"]').on('input', function() {
-            const name = $(this).val();
+        // Validación del tipo de documento
+        $('select[name="tipo_documento_id"]').on('change', function() {
+            const val = $(this).val();
             const $inputGroup = $(this).closest('.input-group');
-            
-            // Eliminar mensajes anteriores
             $inputGroup.find('.validation-message').remove();
             $(this).removeClass('is-valid is-invalid');
-            
-            if (name.length === 0) {
-                validationResults.name = false;
-                return;
-            }
-            
-            if (name.length < 3) {
+
+            if (!val) {
                 $(this).addClass('is-invalid');
-                $inputGroup.append('<div class="validation-message invalid-feedback">El nombre debe tener al menos 3 caracteres.</div>');
-                validationResults.name = false;
-                scrollToBottomIfNeeded();
-            } else if (name.length > 255) {
-                $(this).addClass('is-invalid');
-                $inputGroup.append('<div class="validation-message invalid-feedback">El nombre no puede tener más de 255 caracteres.</div>');
-                validationResults.name = false;
-                scrollToBottomIfNeeded();
+                $inputGroup.append('<div class="validation-message invalid-feedback">Seleccione un tipo de documento.</div>');
+                validationResults.tipo_documento_id = false;
             } else {
                 $(this).addClass('is-valid');
-                validationResults.name = true;
+                validationResults.tipo_documento_id = true;
             }
         });
-        
+
+        // Validación del número de documento
+        $('input[name="numero_documento"]').on('input', function() {
+            const val = $(this).val().trim();
+            const $inputGroup = $(this).closest('.input-group');
+            $inputGroup.find('.validation-message').remove();
+            $(this).removeClass('is-valid is-invalid');
+
+            if (val.length === 0) {
+                validationResults.numero_documento = false;
+                return;
+            }
+
+            if (val.length > 20) {
+                $(this).addClass('is-invalid');
+                $inputGroup.append('<div class="validation-message invalid-feedback">El número de documento no puede superar 20 caracteres.</div>');
+                validationResults.numero_documento = false;
+            } else {
+                $(this).addClass('is-valid');
+                validationResults.numero_documento = true;
+            }
+        });
+
         // Validación del email
         $('input[name="email"]').on('input', function() {
             const email = $(this).val();
@@ -254,30 +307,14 @@
                 return;
             }
             
-            // Verificar si el email ya existe (con debounce)
-            emailTimeout = setTimeout(function() {
-                $.get('/check-email?email=' + encodeURIComponent(email))
-                    .done(function(data) {
-                        if (data.exists) {
-                            $('input[name="email"]').addClass('is-invalid');
-                            $inputGroup.append('<div class="validation-message invalid-feedback">Este correo electrónico ya está registrado.</div>');
-                            validationResults.email = false;
-                            scrollToBottomIfNeeded();
-                        } else {
-                            $('input[name="email"]').removeClass('is-invalid').addClass('is-valid');
-                            validationResults.email = true;
-                        }
-                        scrollToBottomIfNeeded();
-                    })
-                    .fail(function() {
-                        $('input[name="email"]').removeClass('is-invalid').addClass('is-valid');
-                        validationResults.email = true;
-                        scrollToBottomIfNeeded();
-                    });
-            }, 500);
+            // Correo con formato válido
+            $('input[name="email"]').removeClass('is-invalid').addClass('is-valid');
+            validationResults.email = true;
+            scrollToBottomIfNeeded();
         });
+
         
-        // Validación de la contraseña
+        // Validación de la contraseña (mínimo 8 caracteres, con letras y números)
         $('input[name="password"]').on('input', function() {
             const password = $(this).val();
             const $inputGroup = $(this).closest('.input-group');
@@ -291,14 +328,17 @@
                 return;
             }
             
+            const hasLetter = /[a-zA-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+
             if (password.length < 8) {
                 $(this).addClass('is-invalid');
                 $inputGroup.append('<div class="validation-message invalid-feedback">La contraseña debe tener al menos 8 caracteres.</div>');
                 validationResults.password = false;
                 scrollToBottomIfNeeded();
-            } else if (password.length > 16) {
+            } else if (!hasLetter || !hasNumber) {
                 $(this).addClass('is-invalid');
-                $inputGroup.append('<div class="validation-message invalid-feedback">La contraseña no puede tener más de 16 caracteres.</div>');
+                $inputGroup.append('<div class="validation-message invalid-feedback">La contraseña debe contener al menos una letra y un número.</div>');
                 validationResults.password = false;
                 scrollToBottomIfNeeded();
             } else {
@@ -339,22 +379,21 @@
             }
         });
         
-        // Prevenir envío si hay errores
+        // Comprobar estado inicial en selects con old()
+        if ($('select[name="tipo_documento_id"]').val()) {
+            validationResults.tipo_documento_id = true;
+        }
+        if ($('input[name="numero_documento"]').val()) {
+            validationResults.numero_documento = true;
+        }
+
+        // Permitir envío nativo normal
         $('form').on('submit', function(e) {
-            // Forzar validación de todos los campos
-            $('input[name="name"]').trigger('input');
-            $('input[name="email"]').trigger('input');
-            $('input[name="password"]').trigger('input');
-            $('input[name="password_confirmation"]').trigger('input');
-            
-            // Esperar un momento para que se complete la validación
-            setTimeout(function() {
-                const allValid = Object.values(validationResults).every(result => result === true);
-                if (!allValid) {
-                    e.preventDefault();
-                    alert('Por favor, corrija los errores en el formulario antes de continuar.');
-                }
-            }, 100);
+            if (!$('select[name="tipo_documento_id"]').val()) {
+                e.preventDefault();
+                $('select[name="tipo_documento_id"]').addClass('is-invalid');
+                return false;
+            }
         });
     });
     </script>

@@ -69,6 +69,7 @@
                                     </span>
                                 </div>
                             </div>
+                            @if(!auth()->user()?->esSoloDocente())
                             <div class="col-md-4">
                                 <div class="detail-item">
                                     <span class="detail-label">
@@ -94,7 +95,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-4">
                                 <div class="detail-item">
                                     <span class="detail-label">
@@ -105,10 +105,11 @@
                                     </span>
                                 </div>
                             </div>
+                            @endif
 
                         </div>
                         <div class="row">
-                            @if ($alumno?->etniaIndigena)
+                            @if (!auth()->user()?->esSoloDocente() && $alumno?->etniaIndigena)
                                 <div class="col-md-6 mt-3">
                                     <div class="detail-item">
                                         <span class="detail-label">
@@ -150,6 +151,7 @@
                     </div>
                 </div>
 
+                @if(!auth()->user()?->esSoloDocente())
                 <hr class="my-4" style="border-top: 2px dashed #e5e7eb;">
 
                 <div class="mb-4">
@@ -222,6 +224,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
             <div class="modal-footer modal-footer-view">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

@@ -95,6 +95,8 @@ class InstitucionProcedenciaCreate extends Component
 
     public function store()
     {
+        abort_unless(auth()->user()?->can('instituciones.gestionar') || auth()->user()?->can('inscripciones.gestionar'), 403);
+
         $anioEscolarActivo = AnioEscolar::activos()
             ->where('cierre_anio_escolar', '>=', now())
             ->exists();

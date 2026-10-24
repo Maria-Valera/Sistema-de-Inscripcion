@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Concerns\Auditable;
 
 class AnioEscolar extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'anio_escolars';
 

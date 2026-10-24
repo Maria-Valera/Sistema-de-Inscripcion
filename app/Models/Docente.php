@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\ConvierteAMayusculas;
+use App\Models\Concerns\Auditable;
 
 class Docente extends Model
 {
     use HasFactory;
     use ConvierteAMayusculas;
+    use Auditable;
 
     protected $table = 'docentes';
 
@@ -91,14 +93,7 @@ class Docente extends Model
 
     public function docenteAreaGrado()
     {
-        return $this->hasManyThrough(
-            DocenteAreaGrado::class,
-            DetalleDocenteEstudio::class,
-            'docente_id',
-            'docente_estudio_realizado_id',
-            'id',
-            'id'
-        );
+        return $this->asignacionesAreas();
     }
 
 

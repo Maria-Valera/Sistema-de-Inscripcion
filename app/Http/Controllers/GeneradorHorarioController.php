@@ -536,6 +536,13 @@ class GeneradorHorarioController extends Controller
             $asignacionesGuardadas = 0;
             $errores = [];
 
+            // Precarga aulas y secciones en 2 consultas (antes eran 2 consultas por asignación)
+            $coleccion = collect($validado['asignaciones']);
+            $aulasPorId = \App\Models\Aula::whereIn('id_aula', $coleccion->pluck('aula_id')->filter()->unique())
+                ->get()->keyBy('id_aula');
+            $seccionesPorId = \App\Models\Seccion::whereIn('id', $coleccion->pluck('seccion_id')->filter()->unique())
+                ->get()->keyBy('id');
+
             foreach ($validado['asignaciones'] as $asignacion) {
                 try {
                     // Validar que aula_id no sea 0
@@ -553,8 +560,8 @@ class GeneradorHorarioController extends Controller
 
                     // Validar capacidad del aula si se asigna
                     if ($aulaId) {
-                        $aula = \App\Models\Aula::find($aulaId);
-                        $seccion = \App\Models\Seccion::find($asignacion['seccion_id']);
+                        $aula = $aulasPorId->get($aulaId);
+                        $seccion = $seccionesPorId->get($asignacion['seccion_id']);
                         
                         if ($aula && $seccion && $aula->capacidad_maxima !== null) {
                             if ($seccion->cantidad_actual > $aula->capacidad_maxima) {

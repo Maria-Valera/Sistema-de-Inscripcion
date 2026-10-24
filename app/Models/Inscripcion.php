@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\DB;
 use App\Models\EntradasPercentil;
 use App\Models\Seccion;
 use App\Models\AnioEscolar;
+use App\Models\Concerns\Auditable;
 
 class Inscripcion extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Auditable;
 
     protected $table = 'inscripcions';
     protected $fillable = [

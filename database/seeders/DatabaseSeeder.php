@@ -14,6 +14,7 @@ use App\Models\RepresentanteLegal;
 use App\Models\Inscripcion;
 use App\Models\InscripcionNuevoIngreso;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
@@ -23,13 +24,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Iniciando seeders...');
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('12345678'),
-        ]);
 
         $this->call([
+            SeguridadSeeder::class, // Ejecuta PermisosSeeder, RoleSeeder y Administrador
             PaisSeeder::class,
             AnioEscolarSeeder::class,
             GradoSeeder::class,
@@ -47,7 +44,6 @@ class DatabaseSeeder extends Seeder
             ExpresionLiterariaSeeder::class,
             BancoSeeder::class,
             PrefijoTelefonoSeeder::class,
-            RoleSeeder::class,
             InstitucionProcedenciaSeeder::class,
             GeneroSeeder::class,
             LateralidadSeeder::class,
@@ -81,12 +77,6 @@ class DatabaseSeeder extends Seeder
             ProsecucionAreaSeeder::class,  */
         ]);
 
-        // Asignar rol al usuario Admin ya existente
-        $adminUser = User::where('email', 'admin@example.com')->first();
-        if ($adminUser) {
-            $adminUser->assignRole('Admin');
-        }
-
         /* 
         |--------------------------------------------------------------------------
         | GENERACIÓN DINÁMICA DE USUARIOS PARA REPRESENTANTES
@@ -94,24 +84,47 @@ class DatabaseSeeder extends Seeder
         | Recorremos todos los representantes que fueron registrados por los seeders.
         | Para cada uno, creamos una cuenta en la tabla 'users' utilizando su email
         | y le asignamos el rol 'Representante' para que puedan loguearse.
+        | Solo se ejecuta en entorno local.
         */
-        $representantes = \App\Models\Representante::with('persona')->get();
-        
-        foreach ($representantes as $rep) {
-            // Verificamos que el representante tenga datos personales y una dirección de correo válida
-            if ($rep->persona && $rep->persona->email) {
-                // Buscamos o creamos el usuario correspondiente con contraseña por defecto '12345678'
-                $user = User::firstOrCreate(
-                    ['email' => $rep->persona->email],
-                    [
-                        'name' => $rep->persona->primer_nombre . ' ' . $rep->persona->primer_apellido,
-                        'password' => bcrypt('12345678'), // Encriptación bcrypt de la contraseña por defecto
-                    ]
-                );
-                
-                // Asignamos el rol 'Representante' usando Spatie Laravel-Permission
-                $user->assignRole('Representante');
+        $entorno = app()->environment();
+        if ($entorno === 'local') {
+            $representantes = \App\Models\Representante::with('persona')->get();
+            $passwordDev = config('seguridad.password_desarrollo', '12345678');
+            
+            foreach ($representantes as $rep) {
+                // Verificamos que el representante tenga datos personales y una dirección de correo válida
+                if ($rep->persona && $rep->persona->email) {
+                    $user = User::firstOrCreate(
+                        ['email' => $rep->persona->email],
+                        [
+                            'name' => $rep->persona->primer_nombre . ' ' . $rep->persona->primer_apellido,
+                            'password' => Hash::make($passwordDev),
+                            'rol_principal' => 'Representante',
+                            'activo' => true,
+                            'debe_cambiar_password' => false,
+                            'email_verified_at' => now(),
+                        ]
+                    );
+                    
+                    if (!$user->rol_principal || $user->rol_principal !== 'Representante') {
+                        $user->update(['rol_principal' => 'Representante']);
+                    }
+                    if (!$user->activo) {
+                        $user->update(['activo' => true]);
+                    }
+                    if ($user->debe_cambiar_password) {
+                        $user->update(['debe_cambiar_password' => false]);
+                    }
+                    if (empty($user->email_verified_at)) {
+                        $user->update(['email_verified_at' => now()]);
+                    }
+                    
+                    // Asignamos el rol 'Representante' usando syncRoles
+                    $user->syncRoles(['Representante']);
+                }
             }
+        } else {
+            $this->command->info("[DatabaseSeeder] Entorno '{$entorno}' detectado. Saltando creación de usuarios de prueba.");
         }
 
         $this->command->info('¡Base de datos poblada con éxito!');

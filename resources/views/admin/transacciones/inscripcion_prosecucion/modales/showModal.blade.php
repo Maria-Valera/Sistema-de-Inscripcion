@@ -93,6 +93,7 @@
                                     </span>
                                 </div>
                             </div>
+                            @if(!auth()->user()?->esSoloDocente())
                             <div class="col-md-6">
                                 <div class="detail-item">
                                     <span class="detail-label">
@@ -200,6 +201,7 @@
                                         @endif
                                     </div>
                                 </div>
+                            @endif
                             @endif
                             @if ($datos->inscripcion->alumno->discapacidades)
                                 <div class="col-md-4">
@@ -473,6 +475,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
+                                                @if(!auth()->user()?->esSoloDocente())
                                                 <div class="col-md-12">
                                                     <div class="detail-item">
                                                         <span class="detail-label">Lugar de nacimiento</span>
@@ -515,6 +518,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -593,6 +597,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
+                                                @if(!auth()->user()?->esSoloDocente())
                                                 <div class="col-md-12">
                                                     <div class="detail-item">
                                                         <span class="detail-label">Lugar de nacimiento</span>
@@ -635,6 +640,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -705,6 +711,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
+                                                @if(!auth()->user()?->esSoloDocente())
                                                 <div class="col-md-4">
                                                     <div class="detail-item">
                                                         <span class="detail-label">Lugar de nacimiento</span>
@@ -747,6 +754,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
+                                                @endif
                                             </div>
                                             <hr class="my-2" style="border-top: 2px dashed #e5e7eb;">
                                             <div class="row">

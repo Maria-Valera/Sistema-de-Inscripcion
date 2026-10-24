@@ -240,34 +240,83 @@ class DocenteController extends Controller
 
         try {
             $anioEscolar = $this->obtenerAnioEscolarActivo();
-            $persona = Persona::create([
-                'primer_nombre' => $request->primer_nombre,
-                'segundo_nombre' => $request->segundo_nombre,
-                'tercer_nombre' => $request->tercer_nombre,
-                'primer_apellido' => $request->primer_apellido,
-                'segundo_apellido' => $request->segundo_apellido,
-                'numero_documento' => $request->numero_documento,
-                'fecha_nacimiento' => $request->fecha_nacimiento,
-                'direccion' => $request->direccion,
-                'email' => $request->correo,
-                'telefono' => $request->primer_telefono,
-                'telefono_dos' => $request->telefono_dos,
-                'prefijo_id' => $request->prefijo_id,
-                'prefijo_dos_id' => $request->prefijo_dos_id,
-                'tipo_documento_id' => $request->tipo_documento_id,
-                'genero_id' => $request->genero,
-                'status' => true,
-            ]);
 
-            $docente = Docente::create([
-                'anio_escolar_id' => $anioEscolar->id,
-                'codigo' => $request->codigo,
-                'dependencia' => $request->dependencia,
-                'persona_id' => $persona->id,
-                'horas_academicas' => $request->horas_academicas,
-                'status' => true,
-            ]);
+            // Verificar si la Persona ya existe en el sistema (por ejemplo, es Representante o Alumno)
+            $persona = Persona::where('tipo_documento_id', $request->tipo_documento_id)
+                ->where('numero_documento', $request->numero_documento)
+                ->first();
 
+            if (!$persona) {
+                // Fallback por si la cédula coincide aunque varíe el tipo_documento_id
+                $persona = Persona::where('numero_documento', $request->numero_documento)->first();
+            }
+
+            if ($persona) {
+                // Validar que no exista ya un registro en docentes para ese persona_id
+                $docenteExistente = Docente::where('persona_id', $persona->id)
+                    ->where('status', '!=', 0)
+                    ->first();
+
+                if ($docenteExistente) {
+                    DB::rollBack();
+                    return back()
+                        ->withInput()
+                        ->with('error', 'Este docente ya está registrado.');
+                }
+
+                // Si existe un registro eliminado de docente para esta persona, se puede reactivar o actualizar
+                $docenteInactivo = Docente::where('persona_id', $persona->id)
+                    ->where('status', 0)
+                    ->first();
+
+                if ($docenteInactivo) {
+                    $docenteInactivo->update([
+                        'anio_escolar_id'  => $anioEscolar->id,
+                        'codigo'           => $request->codigo,
+                        'dependencia'      => $request->dependencia,
+                        'horas_academicas' => $request->horas_academicas,
+                        'status'           => true,
+                    ]);
+                    $docente = $docenteInactivo;
+                } else {
+                    $docente = Docente::create([
+                        'anio_escolar_id'  => $anioEscolar->id,
+                        'codigo'           => $request->codigo,
+                        'dependencia'      => $request->dependencia,
+                        'persona_id'       => $persona->id,
+                        'horas_academicas' => $request->horas_academicas,
+                        'status'           => true,
+                    ]);
+                }
+            } else {
+                $persona = Persona::create([
+                    'primer_nombre'     => $request->primer_nombre,
+                    'segundo_nombre'    => $request->segundo_nombre,
+                    'tercer_nombre'     => $request->tercer_nombre,
+                    'primer_apellido'   => $request->primer_apellido,
+                    'segundo_apellido'  => $request->segundo_apellido,
+                    'numero_documento'  => $request->numero_documento,
+                    'fecha_nacimiento'  => $request->fecha_nacimiento,
+                    'direccion'         => $request->direccion,
+                    'email'             => $request->correo,
+                    'telefono'          => $request->primer_telefono,
+                    'telefono_dos'      => $request->telefono_dos,
+                    'prefijo_id'        => $request->prefijo_id,
+                    'prefijo_dos_id'    => $request->prefijo_dos_id,
+                    'tipo_documento_id' => $request->tipo_documento_id,
+                    'genero_id'         => $request->genero,
+                    'status'            => true,
+                ]);
+
+                $docente = Docente::create([
+                    'anio_escolar_id'  => $anioEscolar->id,
+                    'codigo'           => $request->codigo,
+                    'dependencia'      => $request->dependencia,
+                    'persona_id'       => $persona->id,
+                    'horas_academicas' => $request->horas_academicas,
+                    'status'           => true,
+                ]);
+            }
 
             DB::commit();
 
@@ -845,13 +894,41 @@ class DocenteController extends Controller
 
             $personaExistente = $query->first();
 
+            // 1. Si la persona existe Y ya es docente activo:
             if ($personaExistente) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Esta cédula ya está registrada en el sistema',
+                    'message' => 'Este docente ya está registrado en el sistema',
                 ], 409);
             }
 
+            // 2. Si la persona existe en el sistema (por ejemplo, es Representante o Alumno) pero NO es docente activo:
+            $personaGeneral = Persona::where('numero_documento', $numero_documento)->first();
+            if ($personaGeneral) {
+                return response()->json([
+                    'status' => 'persona_existente',
+                    'message' => 'Persona encontrada en el sistema. Los datos personales han sido bloqueados.',
+                    'persona' => [
+                        'id' => $personaGeneral->id,
+                        'primer_nombre' => $personaGeneral->primer_nombre,
+                        'segundo_nombre' => $personaGeneral->segundo_nombre,
+                        'tercer_nombre' => $personaGeneral->tercer_nombre,
+                        'primer_apellido' => $personaGeneral->primer_apellido,
+                        'segundo_apellido' => $personaGeneral->segundo_apellido,
+                        'fecha_nacimiento' => $personaGeneral->fecha_nacimiento ? substr($personaGeneral->fecha_nacimiento, 0, 10) : '',
+                        'genero_id' => $personaGeneral->genero_id,
+                        'tipo_documento_id' => $personaGeneral->tipo_documento_id,
+                        'email' => $personaGeneral->email,
+                        'direccion' => $personaGeneral->direccion,
+                        'telefono' => $personaGeneral->telefono,
+                        'telefono_dos' => $personaGeneral->telefono_dos,
+                        'prefijo_id' => $personaGeneral->prefijo_id,
+                        'prefijo_dos_id' => $personaGeneral->prefijo_dos_id,
+                    ]
+                ], 200);
+            }
+
+            // 3. Si la persona pertenecía a un docente eliminado:
             $registroEliminado = Persona::where('numero_documento', $numero_documento)
                 ->whereHas('docente', function ($q) {
                     $q->where('status', 0);

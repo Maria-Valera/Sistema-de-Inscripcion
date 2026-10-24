@@ -21,19 +21,24 @@
                 </div>
             </div>
             <div class="quick-actions">
+                @can('justificaciones.ver')
                 <button class="quick-action-btn">
                     <a href="{{ route('admin.inasistencia.justificacion') }}">
                         <i class="fas fa-plus-circle"></i>
                         <span>Inasistencias diarias</span>
                     </a>
                 </button>
+                @endcan
+                @can('actas.generar')
                 <button class="quick-action-btn">
                     <a href="{{ route('admin.acta.create') }}">
                         <i class="fas fa-file-alt"></i>
                         <span>Acta de Entrevista</span>
                     </a>
                 </button>
+                @endcan
             </div>
+
         </div>
     </div>
 @stop

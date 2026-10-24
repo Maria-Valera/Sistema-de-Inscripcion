@@ -11,11 +11,12 @@ use App\Models\Discapacidad;
 use App\Models\Lateralidad;
 use App\Models\EtniaIndigena;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Models\Concerns\Auditable;
 
 class Alumno extends Model
 
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'alumnos';
 
@@ -254,6 +255,101 @@ class Alumno extends Model
                     ->orWhere('numero_documento', 'LIKE', "%{$buscar}%");
             });
         }
+        return $query;
+    }
+
+    /**
+     * Scope para filtrar alumnos visibles para el representante autenticado
+     */
+    public function scopeVisiblesParaRepresentante($query, $user = null)
+    {
+        $user = $user ?? auth()->user();
+        $representante = $user?->representante;
+        $representanteId = $representante?->id;
+
+        if (!$representanteId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas('inscripciones', function ($q) use ($representanteId) {
+            $q->where(function ($sub) use ($representanteId) {
+                $sub->where('padre_id', $representanteId)
+                    ->orWhere('madre_id', $representanteId)
+                    ->orWhere('representante_legal_id', $representanteId)
+                    ->orWhereHas('representanteLegal', function ($rl) use ($representanteId) {
+                        $rl->where('representante_id', $representanteId);
+                    });
+            });
+        });
+    }
+
+    /**
+     * Scope para filtrar alumnos visibles para el docente autenticado según sus secciones asignadas
+     */
+    public function scopeVisiblesParaDocente($query, $user = null)
+    {
+        $user = $user ?? auth()->user();
+        $docente = $user?->docente;
+
+        if (!$docente) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // Obtener IDs de secciones asignadas en Carga Académica (docente_area_grados)
+        $seccionesCarga = $docente->docenteAreaGrado()
+            ->where('docente_area_grados.status', true)
+            ->whereNotNull('seccion_id')
+            ->pluck('seccion_id')
+            ->toArray();
+
+        // Obtener IDs de secciones asignadas en Horarios (horario_asignaciones)
+        $seccionesHorario = DB::table('horario_asignaciones')
+            ->where('docente_id', $docente->id)
+            ->pluck('seccion_id')
+            ->toArray();
+
+        $secciones = array_values(array_unique(array_filter(array_merge($seccionesCarga, $seccionesHorario))));
+
+        if (empty($secciones)) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas('inscripciones', function ($q) use ($secciones) {
+            $q->where(function ($sub) use ($secciones) {
+                $sub->whereIn('seccion_id', $secciones)
+                    ->orWhereHas('prosecucion', function ($pros) use ($secciones) {
+                        $pros->whereIn('seccion_id', $secciones);
+                    })
+                    ->orWhereHas('entradaPercentil', function ($ep) use ($secciones) {
+                        $ep->whereIn('seccion_id', $secciones);
+                    });
+            });
+        });
+    }
+
+    /**
+     * Scope para aplicar filtro contextual según el rol del usuario
+     */
+    public function scopeVisiblesPara($query, $user = null)
+    {
+        $user = $user ?? auth()->user();
+
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($user->hasRole('Admin') || $user->hasRole('Subdirectora')) {
+            return $query;
+        }
+
+        if ($user->hasRole('Representante')) {
+            return $query->visiblesParaRepresentante($user);
+        }
+
+        if ($user->hasRole('Docente')) {
+            return $query->visiblesParaDocente($user);
+        }
+
         return $query;
     }
 
