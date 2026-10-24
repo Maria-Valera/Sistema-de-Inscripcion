@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class AnioEscolar extends Model
 {
@@ -153,4 +154,9 @@ class AnioEscolar extends Model
             'error' => null
         ];
     }
+
+    public function calendarioAcademico(): HasOne
+{
+    return $this->hasOne(CalendarioAcademico::class, 'anio_escolar_id');
+}
 }

@@ -336,7 +336,7 @@
                         <div class="stat-label">Prosecuciones</div>
                     </div>
                     <div class="stat-icon info">
-                        <i class="fas fa-sync-alt"></i>
+                        <i class="fas fa-fw fa-user-graduate"></i>
                     </div>
                 </div>
             </div>
@@ -374,7 +374,7 @@
                         <div class="stat-label">Calendario Escolar</div>
                     </div>
                     <div class="stat-icon info">
-                        <i class="fas fa-calendar-alt"></i>
+                        <i class="fas fa-calendar-check"></i>
                     </div>
                 </div>
             </div>
@@ -443,7 +443,7 @@
             </a>
             <a href="{{ url('admin/transacciones/inscripcion_prosecucion') }}" class="action-card">
                 <div class="action-icon">
-                    <i class="fas fa-sync-alt"></i>
+                    <i class="fas fa-fw fa-user-graduate"></i>
                 </div>
                 <p class="action-title">Nueva Prosecucion</p>
             </a>
@@ -456,7 +456,7 @@
 
             <a href="{{ route('admin.docente.create') }}" class="action-card">
                 <div class="action-icon">
-                    <i class="fas fa-user-tie"></i>
+                    <i class="fas fa-chalkboard-teacher"></i>
                 </div>
                 <p class="action-title">Nuevo Docente</p>
             </a>
@@ -470,9 +470,9 @@
 
             <a href="{{ route('admin.historico.index') }}" class="action-card">
                 <div class="action-icon">
-                    <i class="fas fa-clipboard-list"></i>
+                    <i class="fas fa-history"></i>
                 </div>
-                <p class="action-title">Historico</p>
+                <p class="action-title">Histórico</p>
             </a>
 
             <a href="{{ route('admin.acta.create') }}" class="action-card">
@@ -501,7 +501,7 @@
         <div class="quick-actions">
             <a href="{{ route('admin.grado.index') }}" class="action-card">
                 <div class="action-icon">
-                    <i class="fas fa-graduation-cap"></i>
+                    <i class="fas fa-fw fa-layer-group"></i>
                 </div>
                 <p class="action-title">Niveles Academicos</p>
             </a>
@@ -515,14 +515,14 @@
 
             <a href="{{ route('admin.area_formacion.index') }}" class="action-card">
                 <div class="action-icon">
-                    <i class="fas fa-book"></i>
+                    <i class="fas fa-fw fa-book-open"></i>
                 </div>
                 <p class="action-title">Áreas de Formación</p>
             </a>
 
             <a href="{{ route('admin.transacciones.grado_area_formacion.index') }}" class="action-card">
                 <div class="action-icon">
-                    <i class="fas fa-project-diagram"></i>
+                    <i class="fas fa-university"></i>
                 </div>
                 <p class="action-title">Grado - Área Formación</p>
             </a>

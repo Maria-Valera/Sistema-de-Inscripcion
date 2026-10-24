@@ -236,6 +236,15 @@ return [
             'icon' => 'fas fa-calendar-check',
         ],
 
+        // ---------------------------
+            [
+            'text' => 'Calendario Académico',
+            'url'  => 'admin/calendario_academico',
+            'icon' => 'fas fa-calendar-alt',
+            'active' => ['admin/calendario_academico*'],
+        ],
+        // ---------------------------
+
         [
             'text' => 'Histórico',
             'url'  => 'admin/historico',

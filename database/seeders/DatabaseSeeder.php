@@ -69,8 +69,12 @@ class DatabaseSeeder extends Seeder
             InscripcionNuevoIngresoSeeder::class,
             DiasSemanaSeeder::class,
             BloqueHorarioSeeder::class,
+<<<<<<< HEAD
             DocenteAreaGradoSeeder::class,
             SeccionAulaSeeder::class,
+=======
+            CalendarioPalabraClaveSeeder::class,
+>>>>>>> 44b19faea20431d4e2455e7a1733a421341b6a17
 
 
             /*InscripcionProsecucionSeeder::class,
