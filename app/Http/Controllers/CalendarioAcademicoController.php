@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ConfianzaDia;
+use App\Enums\EstadoCalendario;
 use App\Models\AnioEscolar;
 use App\Models\CalendarioAcademico;
 use App\Models\CalendarioDia;
-use App\Services\CalendarioPdfExtractorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,11 +14,6 @@ use Illuminate\View\View;
 
 class CalendarioAcademicoController extends Controller
 {
-    public function __construct(
-        private readonly CalendarioPdfExtractorService $extractorService,
-    ) {
-    }
-
     /**
      * Lista todos los calendarios cargados, con su año escolar y estado.
      */
@@ -34,28 +29,10 @@ class CalendarioAcademicoController extends Controller
 
 
 
-    // aqui tenemos la entrada de una pantalla de decision : o el usuario se va por el camino de extraer el calendario por pdf o hacerlo de manera manual
-    // para cargar un calendario nuevo
-
-    public function create(): View {
-        $hayAniosDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->exists();
-
-        return view('calendario_academico.create', compact('hayAniosDisponibles'));
-    }
-
-
     /**
-     * Muestra el formulario para subir el PDF de un año escolar.
+     * Muestra el formulario para empezar un calendario 100% manual
+     * — solo pide el año escolar, el resto se construye evento por evento.
      */
-    public function createPdf(): View
-    {
-        // Solo se ofrecen años escolares que todavía no tienen un calendario asociado,
-        // porque la relación es de uno a uno ( ANIO_ESCOLARS ||--o| CALENDARIOS_ACADEMICOS).
-        $aniosEscolaresDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->get();
-
-        return view('calendario_academico.create-pdf', compact('aniosEscolaresDisponibles'));
-    }
-
     public function createManual(): View{
         $aniosEscolaresDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->get();
 
@@ -63,34 +40,8 @@ class CalendarioAcademicoController extends Controller
     }
 
     /**
-     * Recibe el PDF y redirige a la
-     * pantalla de revisión con los candidatos generados.
+     *  Entrega los días ya registrados para las vistas de Calendario y Semana.
      */
-    public function store(Request $request): RedirectResponse
-    {
-        $validado = $request->validate([
-            'anio_escolar_id' => ['required', 'exists:anio_escolars,id'],
-            'archivo_pdf' => ['required', 'file', 'mimes:pdf', 'max:20480'], // 20 MB máx.
-        ]);
-
-        $anioEscolar = AnioEscolar::findOrFail($validado['anio_escolar_id']);
-
-        $calendario = $this->extractorService->procesarPdf(
-            archivo: $request->file('archivo_pdf'),
-            anioEscolar: $anioEscolar,
-        );
-
-        return redirect()
-            ->route('admin.calendario_academico.show', $calendario)
-            ->with('exito', 'PDF procesado. Revisa los candidatos antes de confirmar el calendario.');
-    }
-
-    /**
-     *  se muestran los candidatos agrupados por mes,
-     * con los de confianza "alta" pre-marcados y los "dudosos" sin marcar.
-     */
-
-
     public function show(CalendarioAcademico $calendarioAcademico):View{
 
         $calendarioAcademico->load('anioEscolar');
@@ -138,47 +89,11 @@ class CalendarioAcademicoController extends Controller
     }
 
     /**
-     * (confirmar): marca como confirmados
-     * los candidatos que la subdirectora aprobó desde los checkboxes.
+     * Crea un calendario_academico para un año escolar que todavía no tiene
+     * ninguno. Como ya no existe revisión de candidatos de PDF, el
+     * calendario nace directamente confirmado: cada evento manual se
+     * confirma por su cuenta en el momento en que se registra.
      */
-    public function confirmar(Request $request, CalendarioAcademico $calendarioAcademico): RedirectResponse
-    {
-        $validado = $request->validate([
-            'ids_aprobados' => ['array'],
-            'ids_aprobados.*' => ['integer', 'exists:calendario_dias,id'],
-        ]);
-
-        $this->extractorService->confirmar(
-            calendario: $calendarioAcademico,
-            idsAprobados: $validado['ids_aprobados'] ?? [],
-        );
-
-        return redirect()
-            ->route('admin.calendario_academico.index')
-            ->with('exito', 'Calendario confirmado correctamente.');
-    }
-
-
-    //  se confirma ( o se revierte ) Un solo dia ( no mas ) desde la vista del calendario, lo hacemos por via AJAX
-    // esta funcion en especifico no usa la funcion confirmar por completo,por que ese cierra todo el calendario a la vez ; esto como tal
-    // es solo una confirmacion puntual nada mas, mucho mas rapida para cuando el usuario este revisando visualmente dia por dia
-    public function confirmarDia(Request $request,CalendarioAcademico $calendarioAcademico, CalendarioDia $calendarioDia): JsonResponse{
-
-
-        abort_if($calendarioDia->calendario_id !==  $calendarioAcademico->id,404);
-
-        $validado = $request->validate([
-            'confirmado' => ['required', 'boolean'],
-        ]);
-
-        $calendarioDia->update(['confirmado' => $validado['confirmado']]);
-
-        return response()->json([
-            'id' => $calendarioDia->id,
-            'confirmado' => $calendarioDia->confirmado,
-        ]);
-    }
-
     public function storeManual(Request $request) : RedirectResponse {
         $validado = $request->validate([
             'anio_escolar_id' => ['required','exists:anio_escolars,id'],
@@ -186,17 +101,13 @@ class CalendarioAcademicoController extends Controller
 
         $calendario = CalendarioAcademico::create([
             'anio_escolar_id' => $validado['anio_escolar_id'],
-            'origen' => \App\Enums\OrigenCalendario::Manual,
-            'pdf_original' => null,
-            'estado' => \App\Enums\EstadoCalendario::PendienteRevision,
+            'estado' => EstadoCalendario::Confirmado,
+            'fecha_confirmacion' => now(),
         ]);
 
         return redirect()
             ->route('admin.calendario_academico.show',$calendario)
             ->with('exito','Calendario creado de manera manual. Ahora puedes agregar los días uno por uno.');
-
-
-
     }
 
     // funcio 8 : aqui se crea un envento manual, si es un rango de dias , genera  UNA fila por cada dia del rango

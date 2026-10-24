@@ -140,8 +140,15 @@
             color: #2c3e50;
             margin-bottom: 8px;
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
+            row-gap: 6px;
+            column-gap: 8px;
+        }
+
+        .palette-title > span:first-child {
+            white-space: nowrap;
         }
 
         .palette-items-container {
@@ -207,6 +214,32 @@
             border: 1px dashed #cbd5e1;
             border-radius: 8px;
             padding: 12px;
+        }
+
+        .form-group-badge .badge-form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+
+        .form-group-badge .badge-form-radio-label {
+            font-size: 0.78rem;
+        }
+
+        .selector-colores-sm {
+            grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+            gap: 5px;
+        }
+
+        .selector-colores-sm .swatch {
+            width: 20px;
+            height: 20px;
+        }
+
+        .selector-colores-sm .swatch.seleccionado::after {
+            font-size: 10px;
         }
 
         /* Target Drop Cell */
@@ -352,11 +385,6 @@
 
             {{-- Pestañas --}}
             <ul class="nav nav-tabs" id="tabs-revision" role="tablist">
-                {{-- <li class="nav-item">
-                    <a class="nav-link active" id="tab-lista-link" data-toggle="tab" href="#tab-lista" role="tab">
-                        <i class="fas fa-list mr-1"></i> Lista
-                    </a>
-                </li> --}}
                 <li class="nav-item">
                     <a class="nav-link" id="tab-calendario-link" data-toggle="tab" href="#tab-calendario" role="tab">
                         <i class="fas fa-calendar-alt mr-1"></i> Calendario
@@ -371,35 +399,12 @@
             </ul>
 
             <div class="tab-content">
-                {{-- VISTA DE LISTA  --}}
-                {{-- <div class="tab-pane fade show active" id="tab-lista" role="tabpanel">
-                    <form action="{{ route('admin.calendario_academico.confirmar', $calendario) }}" method="POST" id="form-confirmar-calendario">
-    @csrf
-    <div id="lista-dias-contenedor">
-
-    </div>
-
-    <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between m-4 p-2">
-                            @unless ($calendario->estaConfirmado())
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-check-circle btn-md "></i> Confirmar calendario
-                                </button>
-                            @endunless
-                            <a href="{{ route('admin.calendario_academico.index') }}" class="btn btn-secondary btn-md ">
-                                <i class="fas fa-arrow-left"></i> Volver al listado
-                            </a>
-                        </div>
-</form>
-
-                </div> --}}
-
-
                 {{--  VISTA DE CALENDARIO   --}}
                 <div class="tab-pane fade show active" id="tab-calendario" role="tabpanel">
                     <div class="card-body">
-                        <div class="row">
-                            {{-- Panel lateral: Paleta de Eventos --}}
-                            <div class="col-lg-3 col-md-4 mb-3">
+                        <div class="row align-items-start">
+                            {{-- Panel lateral: Paleta de Eventos (a la derecha) --}}
+                            <div class="col-lg-3 col-md-4 mb-3 order-2">
                                 <div class="palette-card">
                                     <div class="palette-title">
                                         <span><i class="fas fa-grip-vertical text-primary mr-1"></i> Paleta de Eventos</span>
@@ -415,20 +420,57 @@
                                         <label class="form-label text-muted font-weight-bold mb-1" style="font-size: 0.78rem;">
                                             <i class="fas fa-plus-circle mr-1"></i> Crear Badge Personalizado
                                         </label>
+
                                         <div class="input-group input-group-sm mb-2">
                                             <input type="text" id="input-badge-nombre-mes" class="form-control" placeholder="Ej: Entrega de Notas" maxlength="40">
                                         </div>
-                                        <div class="form-group mb-2">
-                                            <select id="select-badge-color-mes" class="form-control form-control-sm" style="font-size: 0.78rem;">
-                                                <option value="" data-hex="#dc3545" data-cat="no_laborable">🔴 Asueto / No laborable</option>
-                                                <option value="eucalipto" data-hex="#6EAE8A" data-cat="laborable">🟢 Examen / Evaluación</option>
-                                                <option value="arandano" data-hex="#4F86C6" data-cat="laborable" selected>🔵 Entrega de Notas / Académico</option>
-                                                <option value="" data-hex="#dc3545" data-cat="no_laborable">🟡 Feriado / Festivo</option>
-                                                <option value="" data-hex="#117A8B" data-cat="laborable" data-efemeride="true">🌐 Efeméride</option>
-                                                <option value="achicoria" data-hex="#6F5A9E" data-cat="laborable">🟣 Reunión Docente</option>
-                                                <option value="calabaza" data-hex="#FF7518" data-cat="laborable">🟠 Taller / Actividad</option>
-                                            </select>
+
+                                        <div class="form-group-badge mb-2">
+                                            <label class="badge-form-label">¿Es efeméride?</label>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-efemeride-mes" id="badge-efemeride-si-mes" value="1">
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-efemeride-si-mes">Sí</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-efemeride-mes" id="badge-efemeride-no-mes" value="0" checked>
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-efemeride-no-mes">No</label>
+                                            </div>
                                         </div>
+
+                                        <div class="form-group-badge mb-2">
+                                            <label class="badge-form-label">Tipo de día</label>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-tipo-mes" id="badge-tipo-laborable-mes" value="0" checked>
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-tipo-laborable-mes">Laborable</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-tipo-mes" id="badge-tipo-no-laborable-mes" value="1">
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-tipo-no-laborable-mes">No laborable</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group-badge mb-2 d-none" id="grupo-badge-aplica-a-mes">
+                                            <label class="badge-form-label">Aplica a</label>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-aplica-a-mes" id="badge-aplica-ambos-mes" value="ambos" checked>
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-aplica-ambos-mes">Ambos</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-aplica-a-mes" id="badge-aplica-docentes-mes" value="docentes">
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-aplica-docentes-mes">Docentes</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-aplica-a-mes" id="badge-aplica-estudiantes-mes" value="estudiantes">
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-aplica-estudiantes-mes">Estudiantes</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group-badge mb-2" id="grupo-badge-color-mes">
+                                            <label class="badge-form-label">Color</label>
+                                            <div id="selector-colores-badge-mes" class="selector-colores selector-colores-sm"></div>
+                                            <input type="hidden" id="badge-color-mes" value="gris">
+                                        </div>
+
                                         <button type="button" id="btn-crear-badge-mes" class="btn btn-sm btn-outline-primary btn-block" style="font-size: 0.78rem;">
                                             <i class="fas fa-plus mr-1"></i> Agregar a paleta
                                         </button>
@@ -436,8 +478,8 @@
                                 </div>
                             </div>
 
-                            {{-- Matriz del Calendario --}}
-                            <div class="col-lg-9 col-md-8">
+                            {{-- Matriz del Calendario (a la izquierda) --}}
+                            <div class="col-lg-9 col-md-8 order-1">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <button type="button" id="btn-mes-anterior" class="btn btn-outline-secondary btn-sm">
                                         <i class="fas fa-chevron-left"></i> Mes anterior
@@ -473,9 +515,9 @@
                 {{--  VISTA SEMANAL  --}}
                 <div class="tab-pane fade" id="tab-semana" role="tabpanel">
                     <div class="card-body">
-                        <div class="row">
-                            {{-- Panel lateral: Paleta de Eventos para Semana --}}
-                            <div class="col-lg-3 col-md-4 mb-3">
+                        <div class="row align-items-start">
+                            {{-- Panel lateral: Paleta de Eventos para Semana (a la derecha) --}}
+                            <div class="col-lg-3 col-md-4 mb-3 order-2">
                                 <div class="palette-card">
                                     <div class="palette-title">
                                         <span><i class="fas fa-grip-vertical text-primary mr-1"></i> Paleta de Eventos</span>
@@ -494,17 +536,53 @@
                                         <div class="input-group input-group-sm mb-2">
                                             <input type="text" id="input-badge-nombre-semana" class="form-control" placeholder="Ej: Entrega de Notas" maxlength="40">
                                         </div>
-                                        <div class="form-group mb-2">
-                                            <select id="select-badge-color-semana" class="form-control form-control-sm" style="font-size: 0.78rem;">
-                                                <option value="" data-hex="#dc3545" data-cat="no_laborable">🔴 Asueto / No laborable</option>
-                                                <option value="eucalipto" data-hex="#6EAE8A" data-cat="laborable">🟢 Examen / Evaluación</option>
-                                                <option value="arandano" data-hex="#4F86C6" data-cat="laborable" selected>🔵 Entrega de Notas / Académico</option>
-                                                <option value="" data-hex="#dc3545" data-cat="no_laborable">🟡 Feriado / Festivo</option>
-                                                <option value="" data-hex="#117A8B" data-cat="laborable" data-efemeride="true">🌐 Efeméride</option>
-                                                <option value="achicoria" data-hex="#6F5A9E" data-cat="laborable">🟣 Reunión Docente</option>
-                                                <option value="calabaza" data-hex="#FF7518" data-cat="laborable">🟠 Taller / Actividad</option>
-                                            </select>
+
+                                        <div class="form-group-badge mb-2">
+                                            <label class="badge-form-label">¿Es efeméride?</label>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-efemeride-semana" id="badge-efemeride-si-semana" value="1">
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-efemeride-si-semana">Sí</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-efemeride-semana" id="badge-efemeride-no-semana" value="0" checked>
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-efemeride-no-semana">No</label>
+                                            </div>
                                         </div>
+
+                                        <div class="form-group-badge mb-2">
+                                            <label class="badge-form-label">Tipo de día</label>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-tipo-semana" id="badge-tipo-laborable-semana" value="0" checked>
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-tipo-laborable-semana">Laborable</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-tipo-semana" id="badge-tipo-no-laborable-semana" value="1">
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-tipo-no-laborable-semana">No laborable</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group-badge mb-2 d-none" id="grupo-badge-aplica-a-semana">
+                                            <label class="badge-form-label">Aplica a</label>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-aplica-a-semana" id="badge-aplica-ambos-semana" value="ambos" checked>
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-aplica-ambos-semana">Ambos</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-aplica-a-semana" id="badge-aplica-docentes-semana" value="docentes">
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-aplica-docentes-semana">Docentes</label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input type="radio" class="custom-control-input" name="badge-aplica-a-semana" id="badge-aplica-estudiantes-semana" value="estudiantes">
+                                                <label class="custom-control-label badge-form-radio-label" for="badge-aplica-estudiantes-semana">Estudiantes</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group-badge mb-2" id="grupo-badge-color-semana">
+                                            <label class="badge-form-label">Color</label>
+                                            <div id="selector-colores-badge-semana" class="selector-colores selector-colores-sm"></div>
+                                            <input type="hidden" id="badge-color-semana" value="gris">
+                                        </div>
+
                                         <button type="button" id="btn-crear-badge-semana" class="btn btn-sm btn-outline-primary btn-block" style="font-size: 0.78rem;">
                                             <i class="fas fa-plus mr-1"></i> Agregar a paleta
                                         </button>
@@ -512,8 +590,8 @@
                                 </div>
                             </div>
 
-                            {{-- Matriz Semanal --}}
-                            <div class="col-lg-9 col-md-8">
+                            {{-- Matriz Semanal (a la izquierda) --}}
+                            <div class="col-lg-9 col-md-8 order-1">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <button type="button" id="btn-semana-anterior" class="btn btn-outline-secondary btn-sm">
                                         <i class="fas fa-chevron-left"></i> Semana anterior
@@ -806,17 +884,25 @@
 
         //  Funciones de Drag & Drop y Paleta de Eventos  --}}
 
-        //  Funciones de Drag & Drop y Paleta de Eventos  --}}
+        // Colores fijos que el sistema asigna solo (coherentes con
+        // CalendarioDia::determinarColor en el backend), usados para que el
+        // badge se vea con el color correcto en la paleta sin que el
+        // usuario tenga que elegirlo cuando no aplica.
+        const COLOR_FIJO_NO_LABORABLE_AMBOS = '#E53935';
+        const COLOR_FIJO_NO_LABORABLE_DOCENTES = '#0047AB';
+        const COLOR_FIJO_NO_LABORABLE_ESTUDIANTES = '#B57EDC';
+        const COLOR_FIJO_EFEMERIDE = '#117A8B';
+        const COLOR_GRIS_DEFECTO = '#9E9E9E';
 
-        const BADGES_PREDEFINIDOS = [
-            { texto: 'Asueto', colorHex: '#E53935', colorValue: null, categoria: 'no_laborable', esEfemeride: false },
-            { texto: 'Examen / Evaluación', colorHex: '#6EAE8A', colorValue: 'eucalipto', categoria: 'laborable', esEfemeride: false },
-            { texto: 'Feriado Nacional', colorHex: '#E53935', colorValue: null, categoria: 'no_laborable', esEfemeride: false },
-            { texto: 'Entrega de Notas', colorHex: '#4F86C6', colorValue: 'arandano', categoria: 'laborable', esEfemeride: false },
-            { texto: 'Reunión Docente', colorHex: '#6F5A9E', colorValue: 'achicoria', categoria: 'laborable', esEfemeride: false },
-            { texto: 'Efeméride', colorHex: '#117A8B', colorValue: null, categoria: 'laborable', esEfemeride: true },
-            { texto: 'Taller / Actividad', colorHex: '#FF7518', colorValue: 'calabaza', categoria: 'laborable', esEfemeride: false }
-        ];
+        function colorFijoDeBadge(categoria, esEfemeride, aplicaA) {
+            if (categoria === 'no_laborable') {
+                if (aplicaA === 'docentes') return COLOR_FIJO_NO_LABORABLE_DOCENTES;
+                if (aplicaA === 'estudiantes') return COLOR_FIJO_NO_LABORABLE_ESTUDIANTES;
+                return COLOR_FIJO_NO_LABORABLE_AMBOS;
+            }
+            if (esEfemeride) return COLOR_FIJO_EFEMERIDE;
+            return null; // laborable sin efeméride: el color lo elige el usuario
+        }
 
         function obtenerCustomBadges() {
             try {
@@ -833,7 +919,7 @@
             } catch (e) {}
         }
 
-        function crearBadgeElemento(texto, colorHex, colorValue, categoria, esEfemeride, esRemovible, containerId) {
+        function crearBadgeElemento(texto, colorHex, colorValue, categoria, esEfemeride, aplicaA, esRemovible, containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
 
@@ -846,6 +932,7 @@
             item.dataset.colorValue = colorValue || '';
             item.dataset.categoria = categoria;
             item.dataset.esEfemeride = esEfemeride ? 'true' : 'false';
+            item.dataset.aplicaA = aplicaA || '';
 
             const handle = document.createElement('i');
             handle.className = 'fas fa-grip-vertical drag-handle';
@@ -877,7 +964,8 @@
                     colorHex: item.dataset.colorHex,
                     colorValue: item.dataset.colorValue || null,
                     categoria: item.dataset.categoria,
-                    esEfemeride: item.dataset.esEfemeride === 'true'
+                    esEfemeride: item.dataset.esEfemeride === 'true',
+                    aplicaA: item.dataset.aplicaA || null
                 };
                 const jsonStr = JSON.stringify(draggedEventPayload);
                 try {
@@ -901,46 +989,118 @@
                 const container = document.getElementById(containerId);
                 if (!container) return;
                 container.innerHTML = '';
-                BADGES_PREDEFINIDOS.forEach(b => {
-                    crearBadgeElemento(b.texto, b.colorHex, b.colorValue, b.categoria, b.esEfemeride, false, containerId);
-                });
+
                 const customBadges = obtenerCustomBadges();
+
+                if (customBadges.length === 0) {
+                    const vacio = document.createElement('p');
+                    vacio.className = 'text-muted mb-0';
+                    vacio.style.fontSize = '0.78rem';
+                    vacio.textContent = 'Aún no has creado ningún badge. Créalo abajo y luego arrástralo.';
+                    container.appendChild(vacio);
+                    return;
+                }
+
                 customBadges.forEach(b => {
-                    crearBadgeElemento(b.texto, b.colorHex, b.colorValue, b.categoria, b.esEfemeride, true, containerId);
+                    crearBadgeElemento(b.texto, b.colorHex, b.colorValue, b.categoria, b.esEfemeride, b.aplicaA, true, containerId);
                 });
             });
         }
 
+        // Selector de color para el formulario de creación de badges
+        // (uno independiente por panel: mes y semana).
+        const colorBadgeSeleccionado = { mes: 'gris', semana: 'gris' };
+
+        function renderizarSelectorColoresBadge(suffix) {
+            const contenedor = document.getElementById('selector-colores-badge-' + suffix);
+            if (!contenedor) return;
+            contenedor.innerHTML = '';
+
+            COLORES_SELECCIONABLES.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'swatch' + (color.valor === colorBadgeSeleccionado[suffix] ? ' seleccionado' : '');
+                swatch.style.backgroundColor = color.hex;
+                swatch.title = color.etiqueta;
+                swatch.addEventListener('click', () => {
+                    colorBadgeSeleccionado[suffix] = color.valor;
+                    document.getElementById('badge-color-' + suffix).value = color.valor;
+                    renderizarSelectorColoresBadge(suffix);
+                });
+                contenedor.appendChild(swatch);
+            });
+        }
+
+        // Muestra/oculta "Aplica a" y "Color" según el tipo de día y si es
+        // efeméride, igual que en el formulario de evento manual.
+        function actualizarVisibilidadFormularioBadge(suffix) {
+            const esNoLaborable = document.getElementById('badge-tipo-no-laborable-' + suffix).checked;
+            const esEfemeride = document.getElementById('badge-efemeride-si-' + suffix).checked;
+
+            document.getElementById('grupo-badge-aplica-a-' + suffix).classList.toggle('d-none', !esNoLaborable);
+            document.getElementById('grupo-badge-color-' + suffix).classList.toggle('d-none', esNoLaborable || esEfemeride);
+        }
+
+        function limpiarFormularioBadge(suffix) {
+            document.getElementById('input-badge-nombre-' + suffix).value = '';
+            document.getElementById('badge-efemeride-no-' + suffix).checked = true;
+            document.getElementById('badge-tipo-laborable-' + suffix).checked = true;
+            document.getElementById('badge-aplica-ambos-' + suffix).checked = true;
+            colorBadgeSeleccionado[suffix] = 'gris';
+            document.getElementById('badge-color-' + suffix).value = 'gris';
+            renderizarSelectorColoresBadge(suffix);
+            actualizarVisibilidadFormularioBadge(suffix);
+        }
+
         function setupPaletaHandlers(suffix) {
             const input = document.getElementById('input-badge-nombre-' + suffix);
-            const select = document.getElementById('select-badge-color-' + suffix);
             const btn = document.getElementById('btn-crear-badge-' + suffix);
 
             if (!btn || !input) return;
 
+            renderizarSelectorColoresBadge(suffix);
+            actualizarVisibilidadFormularioBadge(suffix);
+
+            document.querySelectorAll(
+                `input[name="badge-tipo-${suffix}"], input[name="badge-efemeride-${suffix}"]`
+            ).forEach(radio => {
+                radio.addEventListener('change', () => actualizarVisibilidadFormularioBadge(suffix));
+            });
+
             const handler = () => {
                 const texto = input.value.trim();
-                if (!texto) return;
-
-                const opt = select.options[select.selectedIndex];
-                const colorVal = opt.value || null;
-                const colorHex = opt.dataset.hex || '#4F86C6';
-                const categoria = opt.dataset.cat || 'laborable';
-                const esEfemeride = opt.dataset.efemeride === 'true';
-
-                const nuevoBadge = { texto, colorHex, colorValue: colorVal, categoria, esEfemeride };
-                const customBadges = obtenerCustomBadges();
-                if (!customBadges.some(b => b.texto.toLowerCase() === texto.toLowerCase())) {
-                    customBadges.push(nuevoBadge);
-                    guardarCustomBadges(customBadges);
+                if (!texto) {
+                    mostrarNotificacion('Escribe un nombre para el badge.', 'error');
+                    return;
                 }
 
-                inicializarPaletas();
+                const esNoLaborable = document.getElementById('badge-tipo-no-laborable-' + suffix).checked;
+                const esEfemeride = document.getElementById('badge-efemeride-si-' + suffix).checked;
+                const categoria = esNoLaborable ? 'no_laborable' : 'laborable';
+                const aplicaA = esNoLaborable
+                    ? (document.querySelector(`input[name="badge-aplica-a-${suffix}"]:checked`)?.value ?? 'ambos')
+                    : null;
 
-                const inputMes = document.getElementById('input-badge-nombre-mes');
-                const inputSemana = document.getElementById('input-badge-nombre-semana');
-                if (inputMes) inputMes.value = '';
-                if (inputSemana) inputSemana.value = '';
+                // El color solo aplica si es laborable y no es efeméride;
+                // en los demás casos el sistema asigna un color fijo.
+                const colorAplica = !esNoLaborable && !esEfemeride;
+                const colorVal = colorAplica ? document.getElementById('badge-color-' + suffix).value : null;
+                const colorHex = colorFijoDeBadge(categoria, esEfemeride, aplicaA)
+                    || (colorAplica
+                        ? (COLORES_SELECCIONABLES.find(c => c.valor === colorVal)?.hex || COLOR_GRIS_DEFECTO)
+                        : COLOR_GRIS_DEFECTO);
+
+                const nuevoBadge = { texto, colorHex, colorValue: colorVal, categoria, esEfemeride, aplicaA };
+                const customBadges = obtenerCustomBadges();
+                if (customBadges.some(b => b.texto.toLowerCase() === texto.toLowerCase())) {
+                    mostrarNotificacion(`Ya existe un badge llamado "${texto}".`, 'error');
+                    return;
+                }
+
+                customBadges.push(nuevoBadge);
+                guardarCustomBadges(customBadges);
+                inicializarPaletas();
+                limpiarFormularioBadge(suffix);
+                mostrarNotificacion('Badge creado. Ya puedes arrastrarlo al calendario.', 'exito');
             };
 
             btn.addEventListener('click', handler);
@@ -1011,6 +1171,7 @@
                 const esNoLaborable = data.categoria === 'no_laborable';
                 const esEfemeride = !!data.esEfemeride;
                 const colorAplica = !esNoLaborable && !esEfemeride;
+                const aplicaA = esNoLaborable ? (data.aplicaA || 'ambos') : null;
 
                 let colorVal = null;
                 if (colorAplica) {
@@ -1033,8 +1194,8 @@
                     esEfemeride: esEfemeride,
                     colorHex: data.colorHex || '#4F86C6',
                     colorValue: colorVal,
-                    aplica_personal: true,
-                    aplica_estudiantes: true
+                    aplica_personal: !esNoLaborable || aplicaA === 'docentes' || aplicaA === 'ambos',
+                    aplica_estudiantes: !esNoLaborable || aplicaA === 'estudiantes' || aplicaA === 'ambos'
                 };
 
                 DIAS.push(eventoTemp);
@@ -1048,7 +1209,7 @@
                     fecha_fin: fechaDestino,
                     es_no_laborable: esNoLaborable ? 1 : 0,
                     es_efemeride: esEfemeride ? 1 : 0,
-                    aplica_a: esNoLaborable ? 'ambos' : null,
+                    aplica_a: aplicaA,
                     color: colorVal
                 };
 
@@ -1574,36 +1735,28 @@ function renderizarLista() {
                 const accion = document.createElement('div');
                 accion.className = 'fila-evento-accion';
 
-                if (evento.esManual) {
-                    const acciones = document.createElement('div');
-                    acciones.className = 'action-buttons';
+                // Todo evento es manual ahora (ya no existe el camino PDF),
+                // así que siempre se ofrecen Editar/Eliminar.
+                const acciones = document.createElement('div');
+                acciones.className = 'action-buttons';
 
-                    const btnEditar = document.createElement('button');
-                    btnEditar.type = 'button';
-                    btnEditar.className = 'action-btn btn-edit';
-                    btnEditar.title = 'Editar';
-                    btnEditar.innerHTML = '<i class="fas fa-pen"></i>';
-                    btnEditar.addEventListener('click', () => abrirModalEditarEvento(evento));
+                const btnEditar = document.createElement('button');
+                btnEditar.type = 'button';
+                btnEditar.className = 'action-btn btn-edit';
+                btnEditar.title = 'Editar';
+                btnEditar.innerHTML = '<i class="fas fa-pen"></i>';
+                btnEditar.addEventListener('click', () => abrirModalEditarEvento(evento));
 
-                    const btnEliminar = document.createElement('button');
-                    btnEliminar.type = 'button';
-                    btnEliminar.className = 'action-btn btn-delete';
-                    btnEliminar.title = 'Eliminar';
-                    btnEliminar.innerHTML = '<i class="fas fa-trash-alt"></i>';
-                    btnEliminar.addEventListener('click', () => abrirModalEliminarEvento(evento));
+                const btnEliminar = document.createElement('button');
+                btnEliminar.type = 'button';
+                btnEliminar.className = 'action-btn btn-delete';
+                btnEliminar.title = 'Eliminar';
+                btnEliminar.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                btnEliminar.addEventListener('click', () => abrirModalEliminarEvento(evento));
 
-                    acciones.appendChild(btnEditar);
-                    acciones.appendChild(btnEliminar);
-                    accion.appendChild(acciones);
-                } else {
-                    const boton = document.createElement('button');
-                    boton.type = 'button';
-                    boton.className = 'btn btn-sm ' + (evento.confirmado ? 'btn-outline-secondary' : 'btn-success');
-                    boton.textContent = evento.confirmado ? 'Quitar confirmación' : 'Confirmar';
-                    boton.disabled = CALENDARIO_CONFIRMADO;
-                    boton.addEventListener('click', () => alternarConfirmacion(evento, boton));
-                    accion.appendChild(boton);
-                }
+                acciones.appendChild(btnEditar);
+                acciones.appendChild(btnEliminar);
+                accion.appendChild(acciones);
 
                 fila.appendChild(info);
                 fila.appendChild(accion);
@@ -1611,28 +1764,6 @@ function renderizarLista() {
             });
 
             $('#modal-dia').modal('show');
-        }
-
-        function alternarConfirmacion(evento, boton) {
-            const nuevoValor = !evento.confirmado;
-            boton.disabled = true;
-
-            fetch(`${URL_BASE}/dias/${evento.id}/confirmar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
-                body: JSON.stringify({ confirmado: nuevoValor }),
-            })
-                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-                .then(datos => {
-                    evento.confirmado = datos.confirmado;
-                    boton.textContent = datos.confirmado ? 'Quitar confirmación' : 'Confirmar';
-                    boton.className = 'btn btn-sm ' + (datos.confirmado ? 'btn-outline-secondary' : 'btn-success');
-                    boton.disabled = false;
-                    renderizarCalendario();
-                    renderizarSemana();
-                    renderizarLista();
-                })
-                .catch(() => { boton.disabled = false; alert('Ocurrió un error al actualizar. Intenta de nuevo.'); });
         }
 
         //  Formulario de evento manual (crear  y editar)
