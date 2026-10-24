@@ -220,7 +220,7 @@ Breadcrumbs::for('admin.alumnos.edit', function (Trail $trail, Alumno $alumno) {
 // Historico
 Breadcrumbs::for('admin.historico.index', function (Trail $trail) {
     $trail->parent('home');
-    $trail->push('Historico', route('admin.historico.index'));
+    $trail->push('Histórico de Inscripciones Estudiantil', route('admin.historico.index'));
 });
 
 // Historial del percentil

@@ -216,13 +216,15 @@ return [
             'usuarios_accesos.permisos',
             'usuarios_accesos.usuarios',
             'usuarios.gestionar_modulos',
+            'roles.gestionar',
+            'roles.ver',
         ],
     ],
 
     'auditoria' => [
         'nombre' => 'Auditoría',
         'icono' => 'fas fa-history',
-        'ruta' => null,
+        'ruta' => 'admin.auditoria.index',
         'grupo' => 'seguridad',
         'permisos' => [
             'auditoria.ver',
@@ -267,6 +269,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'alumnos.ver',
+            'alumnos.gestionar',
             'alumnos.crear',
             'alumnos.editar',
             'alumnos.eliminar',
@@ -367,7 +370,7 @@ return [
     ],
 
     'historico' => [
-        'nombre' => 'Histórico',
+        'nombre' => 'Histórico de Inscripciones Estudiantil',
         'icono' => 'fas fa-archive',
         'ruta' => 'admin.historico.index',
         'grupo' => 'academico',

@@ -1,22 +1,28 @@
 <div>
     <style>
-        /* Estilos alineados con la identidad visual y Calendarios Escolares */
+        /* Estilos alineados con la identidad visual moderna y minimalista */
+        .table-modern tbody td {
+            padding-top: 0.9rem !important;
+            padding-bottom: 0.9rem !important;
+            vertical-align: middle;
+        }
         .badge-role-pill {
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             font-weight: 500;
-            padding: 0.25rem 0.65rem;
+            padding: 0.2rem 0.55rem;
             border-radius: 9999px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
         }
         .badge-role-admin {
-            background-color: #eef2ff;
-            color: #4338ca;
-            border: 1px solid #c7d2fe;
+            background-color: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
         }
         .badge-role-docente {
-            background-color: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
         }
         .badge-role-subdirectora {
             background-color: #fffbeb;
@@ -24,22 +30,38 @@
             border: 1px solid #fde68a;
         }
         .badge-role-representante {
-            background-color: #f1f5f9;
-            color: #334155;
-            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
         }
         .badge-role-default {
-            background-color: #f3f4f6;
-            color: #4b5563;
-            border: 1px solid #e5e7eb;
+            background-color: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
         }
-        .badge-modulo-pill {
-            font-size: 0.72rem;
-            font-weight: 500;
-            padding: 0.2rem 0.5rem;
-            border-radius: 9999px;
+        .status-badge-soft-success {
             display: inline-flex;
             align-items: center;
+            gap: 6px;
+            padding: 0.2rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #dcfce7;
+        }
+        .status-badge-soft-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.2rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+            background-color: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
         }
         .user-dropdown-menu {
             min-width: 190px;
@@ -73,9 +95,35 @@
             color: #1e293b;
             border-color: #cbd5e1;
         }
+        /* Contenedor equilibrado para monitores grandes */
+        .user-view-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .table-modern {
+            min-width: 840px;
+            width: 100%;
+        }
+        .table-modern thead th {
+            padding: 0.85rem 0.75rem !important;
+            font-size: 0.76rem !important;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .table-modern tbody td {
+            padding-top: 0.85rem !important;
+            padding-bottom: 0.85rem !important;
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+            vertical-align: middle;
+        }
     </style>
 
-    {{-- Header idéntico a Calendarios Escolares --}}
+    {{-- Contenedor con ancho máximo para pantallas grandes --}}
+    <div class="user-view-container">
+
+    {{-- Header de sección --}}
     <div class="content-header-modern">
         <div class="header-content">
             <div class="header-title">
@@ -166,7 +214,7 @@
         </div>
     @endif
 
-    {{-- Tarjeta Principal idéntica a card-modern de Calendarios --}}
+    {{-- Tarjeta Principal --}}
     <div class="card-modern">
         <div class="card-header-modern">
             <div class="header-left">
@@ -211,18 +259,17 @@
         </div>
 
         <div class="card-body-modern">
-            <div class="table-wrapper">
+            <div class="table-wrapper table-responsive">
                 <table class="table-modern overflow-hidden align-middle">
                     <thead>
                         <tr>
-                            <th style="min-width: 170px;">Nombre / Cédula</th>
-                            <th style="min-width: 180px;">Email</th>
-                            <th>Roles</th>
-                            <th>Rol Principal</th>
-                            <th>Módulos por Defecto</th>
-                            <th class="text-center">Módulos Extra</th>
-                            <th class="text-center">Estado</th>
-                            <th class="text-center" width="70">Acciones</th>
+                            <th style="width: 20%;" class="text-nowrap">Nombre / Cédula</th>
+                            <th style="width: 20%;" class="text-nowrap">Email</th>
+                            <th style="width: 18%;" class="text-nowrap">Roles</th>
+                            <th style="width: 22%;">Módulos por Defecto</th>
+                            <th style="width: 10%;" class="text-center text-nowrap">Módulos Extra</th>
+                            <th class="text-center text-nowrap" style="width: 5%;">Estado</th>
+                            <th class="text-center text-nowrap" style="width: 5%;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -258,32 +305,36 @@
                                         }
                                     }
                                 }
+                                $rp = $u->rolPrincipalEfectivo();
+                                $esAdmin = $u->roles->contains('name', 'Admin');
                             @endphp
                             <tr>
-                                <td>
-                                    <div class="fw-semibold text-dark">{{ $u->name }}</div>
-                                    <small class="text-muted">
-                                        <i class="far fa-id-card me-1 text-primary"></i>{{ $u->persona?->tipoDocumento?->siglas ?? 'V' }}-{{ $u->persona?->numero_documento ?? 'S/C' }}
-                                    </small>
+                                {{-- 1. Nombre / Cédula: Jerarquía limpia (20%) --}}
+                                <td style="width: 20%;">
+                                    <div class="fw-bold text-dark" style="font-size: 0.92rem;">{{ $u->name }}</div>
+                                    <div class="text-muted small" style="font-size: 0.78rem;">
+                                        <i class="far fa-id-card me-1 text-secondary"></i>{{ $u->persona?->tipoDocumento?->siglas ?? 'V' }}-{{ $u->persona?->numero_documento ?? 'S/C' }}
+                                    </div>
                                 </td>
-                                <td>
-                                    <div class="fw-medium text-dark">{{ $u->email }}</div>
-                                    @if ($u->email_verified_at)
-                                        <span class="status-badge status-active mt-1" style="padding: 0.15rem 0.55rem; font-size: 0.72rem;">
-                                            <span class="status-dot"></span>
-                                            Verificado
-                                        </span>
-                                    @else
-                                        <span class="status-badge status-pending mt-1" style="padding: 0.15rem 0.55rem; font-size: 0.72rem;">
-                                            <span class="status-dot"></span>
-                                            Pendiente
-                                        </span>
-                                    @endif
+
+                                {{-- 2. Email: Verificación discreta (20%) --}}
+                                <td style="width: 20%;">
+                                    <div class="d-flex align-items-center flex-wrap gap-1">
+                                        <span class="text-dark" style="font-size: 0.88rem;">{{ $u->email }}</span>
+                                        @if (! $u->email_verified_at)
+                                            <span class="text-muted d-inline-flex align-items-center ms-1 text-nowrap" style="font-size: 0.72rem;" title="Pendiente de verificación">
+                                                <i class="fas fa-clock text-secondary me-1" style="font-size: 0.7rem;"></i> Pendiente
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
-                                <td>
-                                    <div class="d-flex flex-wrap gap-1">
+
+                                {{-- 3. Roles: Fusión horizontal con flexbox gap (18%) --}}
+                                <td style="width: 18%; min-width: 140px;">
+                                    <div class="d-flex flex-wrap align-items-center gap-1" style="flex-direction: row;">
                                         @forelse ($u->roles as $r)
                                             @php
+                                                $esPrincipal = ($r->name === $rp);
                                                 $roleClass = match(strtolower($r->name)) {
                                                     'admin' => 'badge-role-admin',
                                                     'docente' => 'badge-role-docente',
@@ -292,62 +343,79 @@
                                                     default => 'badge-role-default'
                                                 };
                                             @endphp
-                                            <span class="badge-role-pill {{ $roleClass }}">{{ $r->name }}</span>
+                                            <span class="badge-role-pill {{ $roleClass }} text-nowrap" title="{{ $esPrincipal ? 'Rol Principal' : '' }}">
+                                                @if ($esPrincipal && $u->roles->count() > 1)
+                                                    <i class="fas fa-star text-warning me-1" style="font-size: 0.65rem;"></i>
+                                                @endif
+                                                {{ $r->name }}
+                                            </span>
                                         @empty
-                                            <span class="text-muted small">Sin rol</span>
+                                            <span class="text-muted small text-nowrap">Sin rol</span>
                                         @endforelse
                                     </div>
                                 </td>
-                                <td>
-                                    @php
-                                        $rp = $u->rolPrincipalEfectivo();
-                                    @endphp
-                                    @if($rp)
-                                        <span class="badge-role-pill badge-role-admin">
-                                            <i class="fas fa-star me-1 text-warning" style="font-size: 0.65rem;"></i>{{ $rp }}
+
+                                {{-- 4. Módulos por defecto: Admin Acceso Total o Truncado con Tooltip (22%) --}}
+                                <td style="width: 22%;">
+                                    @if ($esAdmin)
+                                        <span class="text-primary fw-bold small text-nowrap" style="font-size: 0.82rem;">
+                                            <i class="fas fa-infinity me-1"></i> Acceso Total al Sistema
                                         </span>
+                                    @elseif (count($modulosDefecto) > 0)
+                                        @php
+                                            $primerosModulos = array_slice($modulosDefecto, 0, 3);
+                                            $restantesModulos = array_slice($modulosDefecto, 3);
+                                            $cantRestantes = count($restantesModulos);
+                                        @endphp
+                                        <div class="d-flex align-items-center flex-wrap gap-1">
+                                            <span class="text-secondary small" style="font-size: 0.8rem; line-height: 1.35;">
+                                                {{ implode(', ', $primerosModulos) }}
+                                            </span>
+                                            @if ($cantRestantes > 0)
+                                                <span class="badge bg-light text-muted border user-select-none" 
+                                                      style="font-size: 0.7rem; font-weight: 500; cursor: pointer;"
+                                                      data-bs-toggle="tooltip"
+                                                      data-toggle="tooltip" 
+                                                      data-bs-placement="top"
+                                                      title="{{ implode(', ', $restantesModulos) }}">
+                                                    +{{ $cantRestantes }} más
+                                                </span>
+                                            @endif
+                                        </div>
                                     @else
-                                        <span class="text-muted small">Ninguno</span>
+                                        <span class="text-muted small">-</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <div style="max-width: 190px; display: flex; flex-wrap: wrap; gap: 4px;">
-                                        @forelse (array_slice($modulosDefecto, 0, 2) as $mDef)
-                                            <span class="badge-modulo-pill bg-light text-dark border" title="{{ $mDef }}">{{ $mDef }}</span>
-                                        @empty
-                                            <small class="text-muted">Ninguno</small>
-                                        @endforelse
-                                        @if (count($modulosDefecto) > 2)
-                                            <span class="badge-modulo-pill bg-secondary text-white" title="{{ implode(', ', array_slice($modulosDefecto, 2)) }}">
-                                                +{{ count($modulosDefecto) - 2 }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="text-center">
+
+                                {{-- 5. Módulos Extra: Sin "0 extra" innecesario (10%) --}}
+                                <td class="text-center text-nowrap" style="width: 10%;">
                                     @if(count($modulosExtra) > 0)
-                                        <span class="status-badge status-parent" style="padding: 0.2rem 0.65rem; font-size: 0.75rem;">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 9999px;">
                                             {{ count($modulosExtra) }} extra
                                         </span>
                                     @else
-                                        <span class="text-muted small">0 extra</span>
+                                        <span class="text-muted small">-</span>
                                     @endif
                                 </td>
-                                <td class="text-center">
+
+                                {{-- 6. Estado: Ajustado a contenido con text-nowrap --}}
+                                <td class="text-center text-nowrap" style="width: 5%;">
                                     @if ($u->activo)
-                                        <span class="status-badge status-active">
-                                            <span class="status-dot"></span>
+                                        <span class="status-badge-soft-success text-nowrap">
+                                            <span class="status-dot" style="width: 6px; height: 6px; background-color: #16a34a; border-radius: 50%;"></span>
                                             Activo
                                         </span>
                                     @else
-                                        <span class="status-badge status-inactive">
-                                            <span class="status-dot"></span>
+                                        <span class="status-badge-soft-secondary text-nowrap">
+                                            <span class="status-dot" style="width: 6px; height: 6px; background-color: #94a3b8; border-radius: 50%;"></span>
                                             Inactivo
                                         </span>
                                     @endif
                                 </td>
-                                <td class="text-center">
-                                    <div class="action-buttons">
+
+                                {{-- 7. Acciones: Ajustado a contenido con text-nowrap --}}
+                                <td class="text-center text-nowrap" style="width: 5%;">
+                                    <div class="action-buttons d-inline-block">
                                         <div class="dropdown dropstart text-center">
                                             <button class="btn btn-light btn-sm rounded-circle shadow-sm action-dropdown-btn"
                                                 type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Opciones">
@@ -402,7 +470,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="7" class="text-center py-5 text-muted">
                                     <i class="fas fa-users-slash fa-3x mb-3 text-secondary"></i>
                                     <h5>No se encontraron usuarios</h5>
                                     <p class="small mb-0">Intenta cambiar los términos de búsqueda o filtros aplicados.</p>
@@ -413,103 +481,135 @@
                 </table>
             </div>
 
-            {{-- Paginación idéntica --}}
+            {{-- Paginación --}}
             <div class="pagination-wrapper mt-3">
                 {{ $usuarios->links() }}
             </div>
         </div>
     </div>
+    </div> {{-- Fin .user-view-container --}}
 
-    {{-- MODAL GESTIONAR MÓDULOS EXTRA (Diseño idéntico a modales modernos) --}}
+    {{-- MODAL GESTIONAR MÓDULOS Y PERMISOS GRANULARES --}}
     @if ($modalModulosAbierto)
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);">
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content modal-modern shadow-lg">
                     <div class="modal-header-view" style="position: relative;">
                         <h4 class="modal-title-view">
                             <i class="fas fa-cubes me-2"></i>
-                            Módulos del Usuario: {{ $usuarioSeleccionadoNombre }}
+                            Gestión Granular de Permisos: {{ $usuarioSeleccionadoNombre }}
                         </h4>
                         <button type="button" class="btn-close-modal" wire:click="cerrarModalModulos" aria-label="Close">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
 
-                    <div class="modal-body p-4" style="background: #ffffff;">
-                        <div class="alert alert-light border mb-3 py-2 px-3 small text-muted d-flex align-items-center gap-2" style="border-radius: var(--radius);">
-                            <i class="fas fa-info-circle text-primary"></i>
+                    <div class="modal-body p-4" style="background: #ffffff; max-height: 70vh; overflow-y: auto;">
+                        <div class="alert alert-light border mb-3 py-2 px-3 small text-muted d-flex align-items-center gap-2" style="border-radius: var(--radius); border-color: #e2e8f0 !important;">
+                            <i class="fas fa-info-circle text-primary fa-lg"></i>
                             <div>
-                                Los módulos otorgados por <strong>roles</strong> están bloqueados por seguridad. Puedes asignar o retirar <strong>módulos extra</strong> como permisos directos.
+                                Los permisos <strong>Por Rol</strong> aparecen deshabilitados por herencia de perfil. Marca o desmarca los permisos disponibles para asignarlos como <strong>permisos extra</strong> directos.
                             </div>
                         </div>
 
-                        <div class="table-wrapper">
-                            <table class="table-modern w-100 align-middle">
-                                <thead>
-                                    <tr>
-                                        <th style="text-align: left;">Módulo</th>
-                                        <th style="text-align: left;">Grupo</th>
-                                        <th style="text-align: center;">Origen</th>
-                                        <th style="text-align: center;">Estado</th>
-                                        <th style="text-align: center;">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($infoModulos as $claveMod => $datosMod)
-                                        <tr>
-                                            <td class="fw-semibold text-dark">{{ $datosMod['nombre'] }}</td>
-                                            <td>
-                                                <span class="badge-modulo-pill bg-light text-dark border">{{ ucfirst($datosMod['grupo']) }}</span>
-                                            </td>
-                                            <td class="text-center">
-                                                @if ($datosMod['tiene_por_rol'])
-                                                    <span class="badge-role-pill badge-role-default">
-                                                        <i class="fas fa-lock me-1"></i> Por Rol
-                                                    </span>
-                                                @elseif ($datosMod['tiene_directo'])
-                                                    <span class="badge-role-pill badge-role-docente">
-                                                        <i class="fas fa-plus-circle me-1"></i> Extra
-                                                    </span>
-                                                @else
-                                                    <span class="text-muted small">Sin asignar</span>
-                                                @endif
-                                            </td>
-                                            <td class="text-center">
-                                                @if ($datosMod['activo'])
-                                                    <span class="status-badge status-active" style="padding: 0.15rem 0.5rem; font-size: 0.72rem;">
-                                                        <span class="status-dot"></span> Habilitado
-                                                    </span>
-                                                @else
-                                                    <span class="status-badge status-inactive" style="padding: 0.15rem 0.5rem; font-size: 0.72rem;">
-                                                        <span class="status-dot"></span> Inactivo
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td class="text-center">
-                                                @if ($datosMod['tiene_por_rol'])
-                                                    <button class="btn btn-sm btn-light border text-muted" disabled style="font-size: 0.75rem; border-radius: 6px;">
-                                                        <i class="fas fa-lock me-1"></i> Bloqueado
-                                                    </button>
-                                                @elseif ($datosMod['tiene_directo'])
-                                                    <button class="btn btn-sm btn-danger text-white" wire:click="retirarModulo('{{ $claveMod }}')" style="font-size: 0.75rem; border-radius: 6px;">
-                                                        <i class="fas fa-trash-alt me-1"></i> Retirar
-                                                    </button>
-                                                @else
-                                                    <button class="btn btn-sm btn-outline-primary" wire:click="asignarModulo('{{ $claveMod }}')" style="font-size: 0.75rem; border-radius: 6px;">
-                                                        <i class="fas fa-plus me-1"></i> Asignar Extra
-                                                    </button>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                        <div class="accordion" id="accordionModulosPermisos">
+                            @php $modulosConfig = config('modulos', []); @endphp
+                            @foreach ($modulosConfig as $claveModulo => $moduloData)
+                                @php
+                                    $permisosDelModulo = $moduloData['permisos'] ?? [];
+                                    $cantPorRol = count(array_intersect($permisosDelModulo, $permisosPorRol));
+                                    $cantDirectos = count(array_intersect($permisosDelModulo, array_diff($permisosSeleccionados, $permisosPorRol)));
+                                @endphp
+                                <div class="accordion-item mb-2 border rounded overflow-hidden" style="border-color: #e2e8f0 !important;">
+                                    <h2 class="accordion-header" id="heading_{{ $claveModulo }}">
+                                        <button class="accordion-button collapsed py-2 px-3 bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ $claveModulo }}" aria-expanded="false" aria-controls="collapse_{{ $claveModulo }}">
+                                            <div class="d-flex align-items-center justify-content-between w-100 me-3">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="{{ $moduloData['icono'] ?? 'fas fa-cube' }} text-secondary" style="width: 18px;"></i>
+                                                    <span class="fw-semibold text-dark">{{ $moduloData['nombre'] ?? ucfirst($claveModulo) }}</span>
+                                                    <span class="text-muted small" style="font-size: 0.72rem;">· {{ ucfirst($moduloData['grupo'] ?? 'general') }}</span>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    @if ($cantPorRol > 0)
+                                                        <span class="badge bg-light text-secondary border small" style="font-size: 0.68rem; font-weight: normal;"><i class="fas fa-lock me-1"></i>{{ $cantPorRol }} por rol</span>
+                                                    @endif
+                                                    @if ($cantDirectos > 0)
+                                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle small" style="font-size: 0.68rem;"><i class="fas fa-plus-circle me-1"></i>{{ $cantDirectos }} extra</span>
+                                                    @endif
+                                                    <span class="text-muted small" style="font-size: 0.72rem;">({{ count($permisosDelModulo) }})</span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse_{{ $claveModulo }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ $claveModulo }}" data-bs-parent="#accordionModulosPermisos">
+                                        <div class="accordion-body p-3 bg-white">
+                                            {{-- Grilla limpia sin cajas internas pesadas --}}
+                                            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-2">
+                                                @foreach ($permisosDelModulo as $permiso)
+                                                    @php
+                                                        $esDeRol = in_array($permiso, $permisosPorRol);
+                                                        $partes = explode('.', $permiso);
+                                                        $accionRaw = end($partes);
+                                                        $nombresAcciones = [
+                                                            'ver' => 'Ver',
+                                                            'crear' => 'Crear',
+                                                            'editar' => 'Editar',
+                                                            'eliminar' => 'Eliminar',
+                                                            'gestionar' => 'Gestionar',
+                                                            'gestionar_modulos' => 'Gestionar Módulos',
+                                                            'reporte' => 'Reportes',
+                                                            'descargar' => 'Descargar',
+                                                            'exportar' => 'Exportar',
+                                                            'importar' => 'Importar',
+                                                            'auditar' => 'Auditar',
+                                                            'generar' => 'Generar',
+                                                            'asignar' => 'Asignar',
+                                                            'inscribir' => 'Inscribir',
+                                                            'prosecucion' => 'Prosecución',
+                                                            'secciones' => 'Secciones',
+                                                            'carnet' => 'Carnets',
+                                                        ];
+                                                        $verboLegible = $nombresAcciones[strtolower($accionRaw)] ?? ucfirst(str_replace('_', ' ', $accionRaw));
+                                                    @endphp
+                                                    <div class="col">
+                                                        <div class="form-check d-flex align-items-center gap-2 py-1 mb-0">
+                                                            @if ($esDeRol)
+                                                                <input class="form-check-input mt-0" type="checkbox" checked disabled id="p_rol_{{ md5($permiso) }}">
+                                                                <label class="form-check-label text-muted small user-select-none" for="p_rol_{{ md5($permiso) }}" title="{{ $permiso }}">
+                                                                    {{ $verboLegible }}
+                                                                    <span class="badge bg-light text-secondary border ms-1" style="font-size: 0.65rem; font-weight: normal;">Por Rol</span>
+                                                                </label>
+                                                            @else
+                                                                <input class="form-check-input mt-0" type="checkbox" value="{{ $permiso }}" wire:model="permisosSeleccionados" id="p_chk_{{ md5($permiso) }}">
+                                                                <label class="form-check-label small text-dark user-select-none" for="p_chk_{{ md5($permiso) }}" title="{{ $permiso }}">
+                                                                    {{ $verboLegible }}
+                                                                    @if (in_array($permiso, $permisosSeleccionados))
+                                                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" style="font-size: 0.65rem;">Extra</span>
+                                                                    @endif
+                                                                </label>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 
-                    <div class="modal-footer-view">
+                    <div class="modal-footer-view d-flex justify-content-between align-items-center">
                         <button type="button" class="btn btn-secondary px-4" wire:click="cerrarModalModulos" style="border-radius: var(--radius);">
-                            Cerrar
+                            Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary px-4 shadow-sm" wire:click="guardarPermisosModulos" wire:loading.attr="disabled" style="border-radius: var(--radius);">
+                            <span wire:loading.remove wire:target="guardarPermisosModulos">
+                                <i class="fas fa-save me-1"></i> Guardar Permisos
+                            </span>
+                            <span wire:loading wire:target="guardarPermisosModulos">
+                                <i class="fas fa-spinner fa-spin me-1"></i> Guardando...
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -517,7 +617,7 @@
         </div>
     @endif
 
-    {{-- MODAL CORREGIR CORREO --}}
+    {{-- MODAL CORREGIR CORREO: Minimalista, sin input deshabilitado innecesario --}}
     @if ($modalCorreoAbierto)
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);">
             <div class="modal-dialog modal-dialog-centered">
@@ -533,20 +633,20 @@
                     </div>
 
                     <div class="modal-body p-4" style="background: #ffffff;">
-                        <div class="mb-3 p-3 bg-light border rounded">
-                            <label class="text-muted small mb-1 d-block">Correo Electrónico Actual:</label>
-                            <span class="fw-bold text-dark font-monospace" style="font-size: 0.95rem;">{{ $corregirCorreoActual }}</span>
-                        </div>
+                        {{-- Correo actual como texto simple --}}
+                        <p class="text-muted small mb-3">
+                            Correo actual: <span class="fw-semibold text-dark font-monospace">{{ $corregirCorreoActual }}</span>
+                        </p>
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold text-dark">Nuevo Correo Electrónico:</label>
-                            <input type="email" class="form-control @error('nuevoCorreo') is-invalid @enderror" wire:model="nuevoCorreo" placeholder="correo.nuevo@ejemplo.com" style="border-radius: 8px;">
+                            <label class="form-label fw-semibold text-dark small">Nuevo Correo Electrónico:</label>
+                            <input type="email" class="form-control @error('nuevoCorreo') is-invalid @enderror" wire:model="nuevoCorreo" placeholder="ejemplo@correo.com" style="border-radius: 8px;">
                             @error('nuevoCorreo')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="small text-muted mt-2 d-flex align-items-start gap-1">
-                                <i class="fas fa-info-circle text-primary mt-1"></i>
-                                <span>Al guardar, se actualizará en la persona y el usuario vinculado, invalidando la verificación previa (deberá verificar el nuevo email).</span>
+                            <div class="small text-muted mt-2 d-flex align-items-start gap-1" style="font-size: 0.78rem;">
+                                <i class="fas fa-info-circle text-secondary mt-1"></i>
+                                <span>Al guardar, se actualizará en la persona y el usuario vinculado, invalidando la verificación previa.</span>
                             </div>
                         </div>
                     </div>
@@ -693,4 +793,25 @@
             </div>
         </div>
     @endif
+
+    {{-- Script para inicialización de tooltips de Bootstrap --}}
+    <script>
+        function initUserTooltips() {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                document.querySelectorAll('[data-bs-toggle="tooltip"], [data-toggle="tooltip"]').forEach(function (el) {
+                    new bootstrap.Tooltip(el);
+                });
+            } else if (window.$ && typeof $.fn.tooltip === 'function') {
+                $('[data-toggle="tooltip"], [data-bs-toggle="tooltip"]').tooltip();
+            }
+        }
+        document.addEventListener('DOMContentLoaded', initUserTooltips);
+        document.addEventListener('livewire:initialized', function () {
+            if (window.Livewire && Livewire.hook) {
+                Livewire.hook('morph.updated', () => {
+                    initUserTooltips();
+                });
+            }
+        });
+    </script>
 </div>

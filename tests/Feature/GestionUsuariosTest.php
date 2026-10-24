@@ -153,10 +153,11 @@ class GestionUsuariosTest extends TestCase
         $this->assertFalse(in_array('horarios', $usuario->modulosEfectivos()));
 
         $action = new GestionarModulosUsuarioAction();
-        $action->asignar($usuario, 'horarios');
+        $action->asignar($usuario, ['horarios.ver', 'horarios.crear']);
 
         $this->assertTrue(in_array('horarios', $usuario->fresh()->modulosEfectivos()));
         $this->assertTrue($usuario->hasDirectPermission('horarios.ver'));
+        $this->assertTrue($usuario->hasDirectPermission('horarios.crear'));
 
         // Auditar acción
         $auditoria = Auditoria::where('accion', 'modulo_asignado')
@@ -164,7 +165,7 @@ class GestionUsuariosTest extends TestCase
             ->latest('id')
             ->first();
         $this->assertNotNull($auditoria);
-        $this->assertStringContainsString('horarios', $auditoria->descripcion);
+        $this->assertStringContainsString('horarios.ver', $auditoria->descripcion);
     }
 
     /**
@@ -188,10 +189,10 @@ class GestionUsuariosTest extends TestCase
         $usuario->assignRole('Representante');
 
         $action = new GestionarModulosUsuarioAction();
-        $action->asignar($usuario, 'horarios');
+        $action->asignar($usuario, ['horarios.ver', 'horarios.crear']);
         $this->assertTrue(in_array('horarios', $usuario->modulosEfectivos()));
 
-        $conserva = $action->retirar($usuario, 'horarios');
+        $conserva = $action->retirar($usuario, ['horarios.ver', 'horarios.crear']);
         $this->assertFalse($conserva);
         $this->assertFalse(in_array('horarios', $usuario->fresh()->modulosEfectivos()));
 
@@ -200,7 +201,7 @@ class GestionUsuariosTest extends TestCase
             ->latest('id')
             ->first();
         $this->assertNotNull($auditoria);
-        $this->assertStringContainsString('horarios', $auditoria->descripcion);
+        $this->assertStringContainsString('horarios.ver', $auditoria->descripcion);
     }
 
     /**

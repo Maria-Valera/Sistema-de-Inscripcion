@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use App\Models\Concerns\Auditable;
 
 class Representante extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use Auditable;
 
     protected $table = "representantes";
 

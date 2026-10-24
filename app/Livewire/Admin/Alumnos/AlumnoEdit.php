@@ -75,11 +75,6 @@ class AlumnoEdit extends Component
     public $enModoEdicion = false;
     public bool $soloEdicion = false;
 
-    public function mount()
-    {
-        abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
-    }
-
     protected function rules()
 
     {
@@ -299,6 +294,8 @@ class AlumnoEdit extends Component
 
     public function mount($alumnoId,  $soloEdicion = false)
     {
+        abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
+
         $this->alumnoId = $alumnoId;
         $this->cargarDatosIniciales();
         $this->soloEdicion = $soloEdicion;

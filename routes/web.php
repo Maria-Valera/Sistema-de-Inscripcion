@@ -304,6 +304,12 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
     })->middleware('permission:usuarios.gestionar_modulos')
       ->name('usuarios.index');
 
+    // ===== AUDITORÍA DEL SISTEMA (SOLO LECTURA) =====
+    Route::get('auditoria', function () {
+        return view('admin.auditoria.index');
+    })->middleware('permission:auditoria.ver')
+      ->name('auditoria.index');
+
     Route::middleware(['verificar.anio.escolar', 'permission:usuarios_accesos.gestionar'])->group(function () {
         Route::post('roles/modales/store', [RoleController::class, 'store'])->name('roles.modales.store');
         Route::post('roles/{id}/update', [RoleController::class, 'update'])->name('roles.modales.update');
@@ -370,15 +376,16 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
     Route::get('alumnos',  [AlumnoController::class, 'index'])->middleware('permission:alumnos.ver')->name('alumnos.index');
     Route::get('alumnos/reporte/{id}', [AlumnoController::class, 'reportePDF'])->middleware('permission:alumnos.ver')->name('alumnos.reporte.individual');
     Route::get('alumnos/reportes/general', [AlumnoController::class, 'reporteGeneralPDF'])->middleware('permission:alumnos.ver')->name('alumnos.reporteGeneralPDF');
-    Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->middleware('role_or_permission:alumnos.ver|Representante|Docente')->name('alumnos.show');
 
     Route::middleware(['verificar.anio.escolar', 'permission:alumnos.gestionar'])->group(function () {
         Route::get('alumnos/create', [AlumnoController::class, 'create'])->name('alumnos.create');
         Route::post('alumnos/store', [AlumnoController::class, 'store'])->name('alumnos.store');
-        Route::get('alumnos/{alumno}/edit', [AlumnoController::class, 'edit'])->name('alumnos.edit');
-        Route::post('alumnos/{alumno}/update', [AlumnoController::class, 'update'])->name('alumnos.update');
+        Route::get('alumnos/{alumno}/edit', [AlumnoController::class, 'edit'])->whereNumber('alumno')->name('alumnos.edit');
+        Route::post('alumnos/{alumno}/update', [AlumnoController::class, 'update'])->whereNumber('alumno')->name('alumnos.update');
         Route::delete('alumnos/{id}', [AlumnoController::class, 'destroy'])->name('alumnos.destroy');
     });
+
+    Route::get('alumnos/{alumno}', [AlumnoController::class, 'show'])->whereNumber('alumno')->middleware('role_or_permission:alumnos.ver|Representante|Docente')->name('alumnos.show');
 
     // ================== TRANSACCIONES ==================
     Route::prefix('transacciones')->name('transacciones.')->group(function () {

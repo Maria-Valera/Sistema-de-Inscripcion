@@ -163,6 +163,7 @@
                             <tr style="text-align: center">
                                 <th style="text-align: center">#</th>
                                 <th style="text-align: center">Nombre</th>
+                                <th style="text-align: center">Permisos Asignados</th>
                                 <th style="text-align: center">Acciones</th>
                             </tr>
                         </thead>
@@ -186,6 +187,11 @@
                                     <tr class="  row-12" style="text-align: center">
                                         <td>{{ $index + 1 }}</td>
                                         <td class="title-main">{{ $datos->name }}</td>
+                                        <td>
+                                            <span class="badge bg-primary rounded-pill px-3 py-1">
+                                                <i class="fas fa-key me-1"></i> {{ $datos->permissions->count() }} permisos
+                                            </span>
+                                        </td>
 
                                         <td>
                                             <div class="action-buttons">

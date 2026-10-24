@@ -413,5 +413,65 @@ class ControlAccesoTest extends TestCase
         $auditoriasDespues = Auditoria::where('accion', 'acceso_denegado')->count();
         $this->assertGreaterThan($auditoriasAntes, $auditoriasDespues);
     }
+
+    /**
+     * 12. God Mode para el rol Admin:
+     * - El Admin pasa cualquier Gate::allows(), $user->can(), Policy o middleware permission sin 403.
+     * - Usuarios no Admin son evaluados normalmente y reciben 403 cuando no tienen permisos.
+     */
+    public function test_admin_god_mode_accede_a_rutas_administrativas_y_salta_validaciones()
+    {
+        $admin = $this->crearUsuarioConRol('Admin');
+        $docente = $this->crearUsuarioConRol('Docente');
+        $representante = $this->crearUsuarioConRol('Representante');
+
+        // 1. Verificación directa de Gate::before: Admin tiene acceso a cualquier habilidad (existente o arbitraria)
+        $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($admin)->allows('permiso.totalmente.inventado'));
+        $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($admin)->allows('alumnos.gestionar'));
+        $this->assertTrue(\Illuminate\Support\Facades\Gate::forUser($admin)->allows('alumnos.editar'));
+        $this->assertTrue($admin->can('alumnos.gestionar'));
+        $this->assertTrue($admin->can('habilidad.inexistente'));
+
+        // 2. Otros roles NO tienen God Mode
+        $this->assertFalse(\Illuminate\Support\Facades\Gate::forUser($docente)->allows('permiso.totalmente.inventado'));
+        $this->assertFalse(\Illuminate\Support\Facades\Gate::forUser($representante)->allows('permiso.totalmente.inventado'));
+
+        // 3. Crear año escolar activo para rutas que usan middleware verificar.anio.escolar
+        \App\Models\AnioEscolar::create([
+            'inicio_anio_escolar' => now()->subMonth(),
+            'cierre_anio_escolar' => now()->addMonths(10),
+            'status' => 'Activo',
+        ]);
+
+        // 4. Admin accede a todas las rutas administrativas sin recibir 403
+        $rutasAdmin = [
+            route('admin.alumnos.index'),
+            route('admin.alumnos.create'),
+            route('aulas.index'),
+            route('admin.docente.index'),
+            route('admin.area_formacion.index'),
+            route('admin.auditoria.index'),
+            route('admin.usuarios.index'),
+            route('admin.horario.index'),
+            route('admin.seccion_aula.index'),
+            route('admin.grado.index'),
+            route('admin.anio_escolar.index'),
+        ];
+
+        foreach ($rutasAdmin as $url) {
+            $response = $this->actingAs($admin)->get($url);
+            $this->assertNotEquals(
+                403,
+                $response->status(),
+                "El Admin recibió 403 Acceso Denegado inesperado en la ruta: {$url}"
+            );
+        }
+
+        // 5. Los roles sin acceso administrativo siguen recibiendo 403 donde corresponde
+        $this->actingAs($docente)->get(route('admin.alumnos.index'))->assertForbidden();
+        $this->actingAs($docente)->get(route('admin.alumnos.create'))->assertForbidden();
+        $this->actingAs($representante)->get(route('admin.alumnos.index'))->assertForbidden();
+        $this->actingAs($representante)->get(route('admin.alumnos.create'))->assertForbidden();
+    }
 }
 

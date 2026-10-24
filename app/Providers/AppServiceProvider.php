@@ -23,6 +23,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // God Mode: El Admin ignora todas las Policies y permisos
+        Gate::before(function ($user, $ability) {
+            if ($user->hasRole('Admin')) {
+                return true;
+            }
+        });
+
         Paginator::useBootstrapFive();
         Livewire::component('admin.institucion-procedencia-index', InstitucionProcedenciaIndex::class);
 

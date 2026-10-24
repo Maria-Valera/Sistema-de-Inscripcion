@@ -269,7 +269,7 @@ return [
                 ],
 
                 [
-                    'text' => 'Histórico de Inscripciones',
+                    'text' => 'Histórico de Inscripciones Estudiantil',
                     'url'  => 'admin/historico',
                     'icon' => 'fas fa-history',
                     'can'  => 'historico.ver',
@@ -564,10 +564,23 @@ return [
         ['header' => 'SEGURIDAD Y ACCESOS'],
 
         [
+            'text' => 'Roles y Permisos',
+            'route' => 'admin.roles.index',
+            'icon' => 'fas fa-user-shield',
+            'active' => ['admin/roles', 'admin/roles/*'],
+            'can'  => 'roles.gestionar',
+        ],
+        [
             'text' => 'Gestión de Usuarios',
             'route' => 'admin.usuarios.index',
             'icon' => 'fas fa-users-cog',
             'can'  => 'usuarios.gestionar_modulos',
+        ],
+        [
+            'text' => 'Auditoría',
+            'route' => 'admin.auditoria.index',
+            'icon' => 'fas fa-history',
+            'can'  => 'auditoria.ver',
         ],
     ],
 

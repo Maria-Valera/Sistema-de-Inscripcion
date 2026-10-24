@@ -6,34 +6,40 @@ use App\Models\Auditoria;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
-use InvalidArgumentException;
+use Spatie\Permission\Models\Permission;
 
 class GestionarModulosUsuarioAction
 {
     /**
-     * Asigna los permisos de un módulo como permisos directos a un usuario.
+     * Asigna permisos específicos como permisos directos a un usuario.
      *
      * @param User $user
-     * @param string $modulo
+     * @param array|string $permisos Array de nombres de permisos (o nombre de módulo por retrocompatibilidad)
      * @return void
      * @throws AuthorizationException
-     * @throws InvalidArgumentException
      */
-    public function asignar(User $user, string $modulo): void
+    public function asignar(User $user, array|string $permisos): void
     {
         $this->autorizar();
 
-        $permisosModulo = config("modulos.{$modulo}.permisos");
+        if (is_string($permisos)) {
+            $permisos = config("modulos.{$permisos}.permisos", [$permisos]);
+        }
 
-        if (!is_array($permisosModulo)) {
-            throw new InvalidArgumentException("El módulo '{$modulo}' no existe o no tiene permisos definidos en config/modulos.php.");
+        $permisos = array_filter(array_unique((array) $permisos));
+
+        if (empty($permisos)) {
+            return;
+        }
+
+        // Asegurar que los permisos existan en la base de datos
+        foreach ($permisos as $p) {
+            Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
         }
 
         $directosAntes = $this->obtenerPermisosDirectos($user);
 
-        if (!empty($permisosModulo)) {
-            $user->givePermissionTo($permisosModulo);
-        }
+        $user->givePermissionTo($permisos);
 
         $directosDespues = $this->obtenerPermisosDirectos($user);
 
@@ -42,35 +48,38 @@ class GestionarModulosUsuarioAction
             $user,
             ['permisos_directos' => $directosAntes],
             ['permisos_directos' => $directosDespues],
-            "Módulo '{$modulo}' asignado al usuario {$user->email}"
+            "Permisos asignados al usuario {$user->email}: " . implode(', ', $permisos)
         );
     }
 
     /**
-     * Retira los permisos directos de un módulo a un usuario.
-     * Devuelve true si el usuario aún conserva acceso al módulo (por ejemplo, vía roles),
-     * o false si perdió totalmente el acceso a dicho módulo.
+     * Retira permisos directos a un usuario.
+     * Devuelve true si el usuario aún conserva acceso a alguno de esos permisos (ej. vía roles),
+     * o false si perdió totalmente dichos permisos.
      *
      * @param User $user
-     * @param string $modulo
+     * @param array|string $permisos Array de nombres de permisos (o nombre de módulo por retrocompatibilidad)
      * @return bool
      * @throws AuthorizationException
-     * @throws InvalidArgumentException
      */
-    public function retirar(User $user, string $modulo): bool
+    public function retirar(User $user, array|string $permisos): bool
     {
         $this->autorizar();
 
-        $permisosModulo = config("modulos.{$modulo}.permisos");
+        if (is_string($permisos)) {
+            $permisos = config("modulos.{$permisos}.permisos", [$permisos]);
+        }
 
-        if (!is_array($permisosModulo)) {
-            throw new InvalidArgumentException("El módulo '{$modulo}' no existe o no tiene permisos definidos en config/modulos.php.");
+        $permisos = array_filter(array_unique((array) $permisos));
+
+        if (empty($permisos)) {
+            return false;
         }
 
         $directosAntes = $this->obtenerPermisosDirectos($user);
 
-        // Retirar solo los permisos que el usuario tenga asignados directamente de este módulo
-        $permisosARetirar = array_values(array_intersect($directosAntes, $permisosModulo));
+        // Retirar solo los permisos que el usuario tenga asignados directamente
+        $permisosARetirar = array_values(array_intersect($directosAntes, $permisos));
 
         if (!empty($permisosARetirar)) {
             $user->revokePermissionTo($permisosARetirar);
@@ -83,11 +92,11 @@ class GestionarModulosUsuarioAction
             $user,
             ['permisos_directos' => $directosAntes],
             ['permisos_directos' => $directosDespues],
-            "Módulo '{$modulo}' retirado al usuario {$user->email}"
+            "Permisos retirados al usuario {$user->email}: " . implode(', ', $permisosARetirar)
         );
 
-        // Comprobar si el usuario aún conserva el módulo (por ejemplo, por roles o permisos remanentes)
-        return $this->usuarioConservaModulo($user, $permisosModulo);
+        // Comprobar si el usuario aún conserva acceso a alguno de los permisos evaluados vía roles
+        return $this->usuarioConservaPermisos($user, $permisos);
     }
 
     /**
@@ -123,15 +132,15 @@ class GestionarModulosUsuarioAction
     }
 
     /**
-     * Verifica si el usuario conserva acceso al módulo (cualquier permiso del módulo).
+     * Verifica si el usuario conserva acceso a cualquiera de los permisos indicados (vía roles o permisos remanentes).
      *
      * @param User $user
-     * @param array $permisosModulo
+     * @param array $permisos
      * @return bool
      */
-    protected function usuarioConservaModulo(User $user, array $permisosModulo): bool
+    protected function usuarioConservaPermisos(User $user, array $permisos): bool
     {
-        if (empty($permisosModulo)) {
+        if (empty($permisos)) {
             return false;
         }
 
@@ -142,7 +151,7 @@ class GestionarModulosUsuarioAction
             ->pluck('name')
             ->flip();
 
-        foreach ($permisosModulo as $permiso) {
+        foreach ($permisos as $permiso) {
             if (isset($todosPermisos[$permiso])) {
                 return true;
             }

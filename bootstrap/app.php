@@ -25,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Se ejecutará en TODAS las rutas autenticadas
         $middleware->append(\App\Http\Middleware\VerificarAniosVencidos::class);
 
+        // Cabeceras de seguridad HTTP en todas las peticiones
+        $middleware->append(\App\Http\Middleware\SecurityHeadersMiddleware::class);
+
         $middleware->appendToGroup('web', \App\Http\Middleware\ForzarCambioPassword::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {

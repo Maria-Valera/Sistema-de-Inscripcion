@@ -11,11 +11,12 @@ use App\Models\Discapacidad;
 use App\Models\Lateralidad;
 use App\Models\EtniaIndigena;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Models\Concerns\Auditable;
 
 class Alumno extends Model
 
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'alumnos';
 

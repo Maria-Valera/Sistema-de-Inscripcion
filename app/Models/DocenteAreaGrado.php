@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Models\Concerns\Auditable;
 
 class DocenteAreaGrado extends Model
 {
+    use Auditable;
     protected $table = 'docente_area_grados';
 
     protected $fillable = [

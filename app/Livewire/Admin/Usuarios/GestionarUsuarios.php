@@ -36,6 +36,8 @@ class GestionarUsuarios extends Component
     public $usuarioSeleccionadoId = null;
     public $usuarioSeleccionadoNombre = '';
     public $usuarioSeleccionadoEmail = '';
+    public $permisosSeleccionados = [];
+    public $permisosPorRol = [];
 
     // Estado para corregir correo
     public $corregirPersonaId = null;
@@ -258,54 +260,93 @@ class GestionarUsuarios extends Component
     }
 
     /**
-     * Abrir modal para gestionar módulos extra.
+     * Abrir modal para gestionar módulos extra con permisos granulares.
      */
-    public function abrirModalModulos(int $userId): void
-    {
-        $this->verificarPermiso();
-
-        $user = User::findOrFail($userId);
-        $this->usuarioSeleccionadoId = $user->id;
-        $this->usuarioSeleccionadoNombre = $user->name;
-        $this->usuarioSeleccionadoEmail = $user->email;
-        $this->modalModulosAbierto = true;
-    }
-
-    public function cerrarModalModulos(): void
-    {
-        $this->modalModulosAbierto = false;
-        $this->usuarioSeleccionadoId = null;
-    }
-
-    /**
-     * Asignar módulo extra.
-     */
-    public function asignarModulo(string $claveModulo, GestionarModulosUsuarioAction $action): void
-    {
-        $this->verificarPermiso();
-
-        $user = User::findOrFail($this->usuarioSeleccionadoId);
-        $action->asignar($user, $claveModulo);
-
-        session()->flash('success', "Módulo '{$claveModulo}' asignado exitosamente como extra.");
-    }
-
-    /**
-     * Retirar módulo extra.
-     */
-    public function retirarModulo(string $claveModulo, GestionarModulosUsuarioAction $action): void
-    {
-        $this->verificarPermiso();
-
-        $user = User::findOrFail($this->usuarioSeleccionadoId);
-        $conserva = $action->retirar($user, $claveModulo);
-
-        if ($conserva) {
-            session()->flash('info', "Se retiraron los permisos directos, pero el usuario aún conserva el módulo '{$claveModulo}' a través de sus roles.");
-        } else {
-            session()->flash('success', "Módulo '{$claveModulo}' retirado exitosamente.");
-        }
-    }
+     public function abrirModalModulos(int $userId): void
+     {
+         $this->verificarPermiso();
+ 
+         $user = User::with(['roles', 'permissions'])->findOrFail($userId);
+         $this->usuarioSeleccionadoId = $user->id;
+         $this->usuarioSeleccionadoNombre = $user->name;
+         $this->usuarioSeleccionadoEmail = $user->email;
+         $this->permisosPorRol = $user->getPermissionsViaRoles()->pluck('name')->toArray();
+         $this->permisosSeleccionados = $user->getDirectPermissions()->pluck('name')->toArray();
+         $this->modalModulosAbierto = true;
+     }
+ 
+     public function cerrarModalModulos(): void
+     {
+         $this->modalModulosAbierto = false;
+         $this->usuarioSeleccionadoId = null;
+         $this->permisosSeleccionados = [];
+         $this->permisosPorRol = [];
+     }
+ 
+     /**
+      * Guarda la selección granular de permisos para el usuario.
+      */
+     public function guardarPermisosModulos(GestionarModulosUsuarioAction $action): void
+     {
+         $this->verificarPermiso();
+ 
+         if (!$this->usuarioSeleccionadoId) {
+             return;
+         }
+ 
+         $user = User::findOrFail($this->usuarioSeleccionadoId);
+ 
+         // Permisos que se desean tener de forma directa (excluyendo los que ya tiene por rol)
+         $nuevosDirectosDeseados = array_values(array_diff($this->permisosSeleccionados, $this->permisosPorRol));
+         $directosActuales = $user->getDirectPermissions()->pluck('name')->toArray();
+ 
+         $aAsignar = array_values(array_diff($nuevosDirectosDeseados, $directosActuales));
+         $aRetirar = array_values(array_diff($directosActuales, $nuevosDirectosDeseados));
+ 
+         if (!empty($aAsignar)) {
+             $action->asignar($user, $aAsignar);
+         }
+ 
+         if (!empty($aRetirar)) {
+             $action->retirar($user, $aRetirar);
+         }
+ 
+         session()->flash('success', "Permisos del usuario {$user->name} actualizados exitosamente.");
+         $this->cerrarModalModulos();
+     }
+ 
+     /**
+      * Asignar módulo completo extra (retrocompatibilidad).
+      */
+     public function asignarModulo(string $claveModulo, GestionarModulosUsuarioAction $action): void
+     {
+         $this->verificarPermiso();
+ 
+         $user = User::findOrFail($this->usuarioSeleccionadoId);
+         $action->asignar($user, $claveModulo);
+ 
+         $this->permisosSeleccionados = $user->getDirectPermissions()->pluck('name')->toArray();
+         session()->flash('success', "Módulo '{$claveModulo}' asignado exitosamente como extra.");
+     }
+ 
+     /**
+      * Retirar módulo completo extra (retrocompatibilidad).
+      */
+     public function retirarModulo(string $claveModulo, GestionarModulosUsuarioAction $action): void
+     {
+         $this->verificarPermiso();
+ 
+         $user = User::findOrFail($this->usuarioSeleccionadoId);
+         $conserva = $action->retirar($user, $claveModulo);
+ 
+         $this->permisosSeleccionados = $user->getDirectPermissions()->pluck('name')->toArray();
+ 
+         if ($conserva) {
+             session()->flash('info', "Se retiraron los permisos directos, pero el usuario aún conserva el módulo '{$claveModulo}' a través de sus roles.");
+         } else {
+             session()->flash('success', "Módulo '{$claveModulo}' retirado exitosamente.");
+         }
+     }
 
     /**
      * Abrir modal para corregir correo.

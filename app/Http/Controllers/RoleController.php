@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
-        /**
+    /**
      * Verifica si hay un Calendario Escolar activo
      */
     private function verificarAnioEscolar()
@@ -22,13 +23,17 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::orderBy('name', 'asc')
+        $roles = Role::with('permissions')
+            ->orderBy('name', 'asc')
             ->paginate(10);
 
         // Verificar si hay Calendario Escolar activo
         $anioEscolarActivo = $this->verificarAnioEscolar();
 
-        return view('admin.roles.index', compact('roles', 'anioEscolarActivo'));
+        // Cargar módulos configurados del sistema
+        $modulos = config('modulos', []);
+
+        return view('admin.roles.index', compact('roles', 'anioEscolarActivo', 'modulos'));
     }
 
     /**
@@ -37,42 +42,34 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|unique:roles|max:255',
+            'name' => 'required|unique:roles,name|max:255',
+            'permisos_seleccionados' => 'nullable|array',
+            'permisos_seleccionados.*' => 'string',
         ]);
 
-        // Verificar si ya existe una discapacidad con el mismo nombre
-        // Si existe uno con "status = true", no se permite crear un duplicado.
-        /* $existe = Role::where('name', $validated['name_rol'])
-            ->where('status', true)
-            ->exists();
-
-        // Si ya existe un registro activo con el mismo prefijo, se muestra un mensaje de error.
-        if ($existe) {
-            return redirect()
-                ->route('admin.roles.index')
-                ->with('error', 'Esta rol ya está registrado.');
-        } */
-
         try {
-            // Crear nueva discapacidad
-            $role = new Role();
-            $role->name = $validated['name'];
-            $role->guard_name = 'web';
-            $role->save();
+            $role = Role::create([
+                'name' => $validated['name'],
+                'guard_name' => 'web',
+            ]);
 
-            // Retornar mensaje de éxito
+            $permisos = $request->input('permisos_seleccionados', []);
+            if (!empty($permisos)) {
+                foreach ($permisos as $permiso) {
+                    Permission::firstOrCreate(['name' => $permiso, 'guard_name' => 'web']);
+                }
+                $role->syncPermissions($permisos);
+            }
+
             return redirect()
                 ->route('admin.roles.index')
-                ->with('success', 'Rol creado correctamente.');
+                ->with('success', 'Rol creado correctamente con sus permisos.');
         } catch (\Exception $e) {
-            // Manejo de errores durante la inserción
             return redirect()
                 ->route('admin.roles.index')
                 ->with('error', 'Error al crear el rol: ' . $e->getMessage());
         }    
     }
-
-
 
     /**
      * Update the specified resource in storage.
@@ -80,22 +77,28 @@ class RoleController extends Controller
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'name' => 'required|unique:roles,name,' . $id,
+            'name' => 'required|max:255|unique:roles,name,' . $id,
+            'permisos_seleccionados' => 'nullable|array',
+            'permisos_seleccionados.*' => 'string',
         ]);
 
         try {
-            // Crear nueva discapacidad
             $role = Role::findOrFail($id);
             $role->name = $validated['name'];
-            $role->guard_name = 'web';
             $role->save();
 
-            // Retornar mensaje de éxito
+            $permisos = $request->input('permisos_seleccionados', []);
+            if (!empty($permisos)) {
+                foreach ($permisos as $permiso) {
+                    Permission::firstOrCreate(['name' => $permiso, 'guard_name' => 'web']);
+                }
+            }
+            $role->syncPermissions($permisos);
+
             return redirect()
                 ->route('admin.roles.index')
                 ->with('success', 'Rol actualizado correctamente.');
         } catch (\Exception $e) {
-            // Manejo de errores durante la inserción
             return redirect()
                 ->route('admin.roles.index')
                 ->with('error', 'Error al actualizar el rol: ' . $e->getMessage());
@@ -108,16 +111,21 @@ class RoleController extends Controller
     public function destroy(string $id)
     {
         try {
-            // Crear nueva discapacidad
-            $role = Role::find($id);
+            $role = Role::findOrFail($id);
+
+            // Prevenir eliminar el rol Admin por seguridad del sistema
+            if ($role->name === 'Admin') {
+                return redirect()
+                    ->route('admin.roles.index')
+                    ->with('error', 'El rol principal Admin no puede ser eliminado.');
+            }
+
             $role->delete();
 
-            // Retornar mensaje de éxito
             return redirect()
                 ->route('admin.roles.index')
                 ->with('success', 'Rol eliminado correctamente.');
         } catch (\Exception $e) {
-            // Manejo de errores durante la inserción
             return redirect()
                 ->route('admin.roles.index')
                 ->with('error', 'Error al eliminar el rol: ' . $e->getMessage());

@@ -67,11 +67,6 @@ class AlumnoCreate extends Component
     public $etnia_indigena_id;
     public $anioEscolarActivo = false;
 
-    public function mount()
-    {
-        abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
-    }
-
     protected function rules()
 
     {
@@ -242,6 +237,8 @@ class AlumnoCreate extends Component
 
     public function mount($alumno_id = null)
     {
+        abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
+
         $this->verificarAnioEscolar();
         $this->alumno_id = $alumno_id;
         $this->cargarDatosIniciales();

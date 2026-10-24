@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ConvierteAMayusculas;
 use App\Traits\Capitalizar;
+use App\Models\Concerns\Auditable;
 
 class Persona extends Model
 {
     use HasFactory;
     use ConvierteAMayusculas;
     use Capitalizar;
+    use Auditable;
     protected $table = 'personas';
     protected $fillable = [
         'primer_nombre',
