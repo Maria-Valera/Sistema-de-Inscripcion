@@ -67,25 +67,24 @@
                     <table class="table-modern">
                         <thead>
                             <tr>
-                                {{-- <th style="width: 60px">#</th> --}}
-                                <th>Año escolar</th>
-                                <th>Estado</th>
-                                <th style="text-align: center">Días detectados</th>
-                                <th style="text-align: center">Días confirmados</th>
+                                <th style="width: 60px">#</th>
+                                <th style="text-align: center">Año escolar</th>
+                                <th style="text-align: center">Estado</th>
+                                <th style="text-align: center">Días registrados</th>
                                 <th style="text-align: center; width: 120px">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($calendarios as $index => $calendario)
                                 <tr>
-                                    {{-- <td>{{ $calendarios->firstItem() + $index }}</td> --}}
+                                    <td style="text-align: center">{{ $calendarios->firstItem() + $index }}</td>
                                     <td style="text-align: center">
                                         <strong>
                                             {{ \Carbon\Carbon::parse($calendario->anioEscolar->inicio_anio_escolar)->format('Y') }} -
                                             {{ \Carbon\Carbon::parse($calendario->anioEscolar->cierre_anio_escolar)->format('Y') }}
                                         </strong>
                                     </td>
-                                    <td>
+                                    <td style="text-align: center">
                                         @if ($calendario->estaConfirmado())
                                             <span class="status-badge status-active">
                                                 <span class="status-dot"></span> Confirmado
@@ -97,7 +96,6 @@
                                         @endif
                                     </td>
                                     <td style="text-align: center">{{ $calendario->dias_count }}</td>
-                                    <td style="text-align: center">{{ $calendario->dias_confirmados_count }}</td>
                                     <td style="text-align: center">
                                         <div class="action-buttons">
                                             <div class="dropdown dropstart text-center">
@@ -120,7 +118,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="5">
                                         <div class="empty-state">
                                             <div class="empty-icon">
                                                 <i class="fas fa-calendar-plus"></i>

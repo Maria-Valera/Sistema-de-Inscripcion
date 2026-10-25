@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\CategoriaDia;
 use App\Enums\ColorEvento;
-use App\Enums\ConfianzaDia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,12 +13,8 @@ class CalendarioDia extends Model
     protected $fillable = [
         'calendario_id',
         'texto_extraido',
-        'mes_pagina',
         'fecha',
         'categoria',
-        'confianza',
-        'es_mes_completo',
-        'confirmado',
         'aplica_personal',
         'aplica_estudiantes',
         'es_efemeride',
@@ -29,9 +24,6 @@ class CalendarioDia extends Model
     protected $casts = [
         'fecha' => 'date',
         'categoria' => CategoriaDia::class,
-        'confianza' => ConfianzaDia::class,
-        'es_mes_completo' => 'boolean',
-        'confirmado' => 'boolean',
         'aplica_personal' => 'boolean',
         'aplica_estudiantes' => 'boolean',
         'es_efemeride' => 'boolean',
@@ -77,24 +69,7 @@ class CalendarioDia extends Model
     }
 
     /**
-     * Scope: solo días ya confirmados.
-     * Uso: CalendarioDia::confirmados()->get();
-     */
-    public function scopeConfirmados(Builder $query): Builder
-    {
-        return $query->where('confirmado', true);
-    }
-
-    /**
-     * Scope: solo días pendientes de revisión (los candidatos que salieron del PDF).
-     */
-    public function scopePendientes(Builder $query): Builder
-    {
-        return $query->where('confirmado', false);
-    }
-
-    /**
-     * Scope: solo los que son efectivamente no laborables (no los "dudosos").
+     * Scope: solo los que son efectivamente no laborables (los que no hay clases/trabajo).
      */
     public function scopeNoLaborables(Builder $query): Builder
     {
@@ -138,7 +113,6 @@ class CalendarioDia extends Model
         return static::query()
             ->where('calendario_id', $calendarioId)
             ->where('fecha', $fecha)
-            ->confirmados()
             ->noLaborables()
             ->aplicaPersonal()
             ->exists();

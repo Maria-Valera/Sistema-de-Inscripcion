@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ConfianzaDia;
 use App\Enums\EstadoCalendario;
 use App\Models\AnioEscolar;
 use App\Models\CalendarioAcademico;
@@ -20,7 +19,7 @@ class CalendarioAcademicoController extends Controller
     public function index(): View
     {
         $calendarios = CalendarioAcademico::with('anioEscolar')
-            ->withCount(['dias', 'diasConfirmados'])
+            ->withCount('dias')
             ->latest()
             ->paginate(15);
 
@@ -47,14 +46,10 @@ class CalendarioAcademicoController extends Controller
         $calendarioAcademico->load('anioEscolar');
 
         $dias = $calendarioAcademico->dias()
-        ->orderBy('mes_pagina')
         ->orderBy('fecha')
         ->get();
 
-        $candidatosPorMes = $dias->groupBy('mes_pagina');
-
-        // solo los que tienen una fecha real (ejemplo los manuales) se excluye en este caso por el momento "mes completo"
-        // ya que no tiene un dia puntual y no puede ubicarse en una celda sola del calendario ( en el camino pdf tengo que arreglar bug de "sin mes" por este mismo detalle)
+        // solo los que tienen una fecha real (todos los eventos manuales la tienen)
 
         $diasParaCalendario = $dias
         ->whereNotNull('fecha')
@@ -64,22 +59,16 @@ class CalendarioAcademicoController extends Controller
             'texto' => $dia->texto_extraido,
             'categoria' => $dia->categoria->value,
             'categoriaLabel' => $dia->categoria->label(),
-            'confianza' => $dia->confianza->value,
-            'confianzaLabel' => $dia->confianza->label(),
-            'confirmado' => $dia->confirmado,
             'esEfemeride' => $dia->es_efemeride,
             'colorHex' => $dia->color?->hex(),
             'colorValue'      => $dia->color?->value,
-            'esManual' => $dia->confianza === \App\Enums\ConfianzaDia::Manual,
             'aplica_personal'    => $dia->aplica_personal,      // <-- nuevo
         'aplica_estudiantes' => $dia->aplica_estudiantes,   // <-- nuevo
-        'mesPagina'          => $dia->mes_pagina,
         ])
         ->values();
 
         return view('calendario_academico.show',[
             'calendario' =>$calendarioAcademico,
-            'candidatosPorMes' => $candidatosPorMes,
             'diasParaCalendarioJson' => $diasParaCalendario->toJson(),
             'inicioAnioEscolar' => $calendarioAcademico->anioEscolar->inicio_anio_escolar,
             'cierreAnioEscolar' => $calendarioAcademico->anioEscolar->cierre_anio_escolar,
@@ -144,13 +133,10 @@ class CalendarioAcademicoController extends Controller
                 'fecha' => $fecha,
                 'texto_extraido' => $datos['nombre'],
                 'categoria' => $datos['categoria']->value,
-                'confianza' => \App\Enums\ConfianzaDia::Manual->value,
-                'confirmado' => true,
                 'aplica_personal' => $datos['aplica_personal'],
                 'aplica_estudiantes' => $datos['aplica_estudiantes'],
                 'es_efemeride' => $datos['es_efemeride'],
                 'color' => $datos['color']?->value,
-                'mes_pagina' => (int) \Carbon\Carbon::parse($fecha)->format('n'),
             ]);
 
         }
@@ -194,12 +180,10 @@ class CalendarioAcademicoController extends Controller
             'texto_extraido' => $datos['nombre'],
             'fecha' => $datos['fecha_inicio'],
             'categoria' => $datos['categoria']->value,
-            'confianza' => \App\Enums\ConfianzaDia::Manual->value,
             'aplica_personal' => $datos['aplica_personal'],
             'aplica_estudiantes' => $datos['aplica_estudiantes'],
             'es_efemeride' => $datos['es_efemeride'],
             'color' => $datos['color']?->value,
-            'mes_pagina' => (int) \Carbon\Carbon::parse($datos['fecha_inicio'])->format('n'),
         ]);
 
         return response()->json($this->serializarDia($calendarioDia));
@@ -324,16 +308,11 @@ class CalendarioAcademicoController extends Controller
         'texto' => $dia->texto_extraido,
         'categoria' => $dia->categoria->value,
         'categoriaLabel' => $dia->categoria->label(),
-        'confianza' => $dia->confianza->value,
-        'confianzaLabel' => $dia->confianza->label(),
-        'confirmado' => $dia->confirmado,
         'esEfemeride' => $dia->es_efemeride,
         'colorHex' => $dia->color?->hex(),
         'colorValue'       => $dia->color?->value,
-        'esManual' => true,
         'aplica_personal'    => $dia->aplica_personal,
         'aplica_estudiantes' => $dia->aplica_estudiantes,
-        'mesPagina'          => $dia->mes_pagina,
     ];
     }
 
