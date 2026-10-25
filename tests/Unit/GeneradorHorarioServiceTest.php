@@ -388,4 +388,214 @@ class GeneradorHorarioServiceTest extends TestCase
             'id' => $noFijada->id,
         ]);
     }
+
+    public function test_determinar_tipo_conflicto_devuelve_una_por_dia(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 25, 'status' => 1]);
+
+        $clase = [
+            'docente_id' => 1,
+            'docente_nombre' => 'Docente Prueba',
+            'docente_horas_academicas' => 36,
+            'area_id' => 10,
+            'area_nombre' => 'Historia',
+            'seccion_id' => $seccion->id,
+            'seccion_nombre' => 'A',
+            'bloques_restantes' => 1,
+            'area_aula' => null,
+        ];
+
+        // Docente y sección libres, pero materia ya asignada en todos los días evaluados
+        $matrices = [
+            'docenteOcupado' => [],
+            'seccionOcupado' => [],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [1 => 2],
+            'reservado' => [],
+            'materiaDia' => [
+                '10_' . $seccion->id . '_1' => true,
+                '10_' . $seccion->id . '_2' => true,
+            ],
+        ];
+
+        $conflicto = $this->service->determinarTipoConflicto($clase, $matrices, totalDias: 2, totalBloques: 2);
+
+        $this->assertEquals('una_por_dia', $conflicto['tipo']);
+        $this->assertStringContainsString('ya tiene un bloque asignado', $conflicto['motivo']);
+    }
+
+    public function test_determinar_tipo_conflicto_devuelve_bloque_reservado(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 25, 'status' => 1]);
+
+        $clase = [
+            'docente_id' => 1,
+            'docente_nombre' => 'Docente Prueba',
+            'docente_horas_academicas' => 36,
+            'area_id' => 10,
+            'area_nombre' => 'Historia',
+            'seccion_id' => $seccion->id,
+            'seccion_nombre' => 'A',
+            'bloques_restantes' => 1,
+            'area_aula' => null,
+        ];
+
+        // Docente y sección coinciden libres SOLO en 1_1 y 2_1, pero ambos están reservados globalmente
+        $matrices = [
+            'docenteOcupado' => [
+                '1_1_2' => true,
+                '1_2_2' => true,
+            ],
+            'seccionOcupado' => [
+                $seccion->id . '_1_2' => true,
+                $seccion->id . '_2_2' => true,
+            ],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [1 => 2],
+            'reservado' => [
+                '1_1' => true,
+                '2_1' => true,
+            ],
+            'materiaDia' => [],
+        ];
+
+        $conflicto = $this->service->determinarTipoConflicto($clase, $matrices, totalDias: 2, totalBloques: 2);
+
+        $this->assertEquals('bloque_reservado', $conflicto['tipo']);
+        $this->assertStringContainsString('reservaciones globales', $conflicto['motivo']);
+    }
+
+    public function test_identificar_espacios_fallidos_lista_razones_y_usa_labels_de_dia(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 25, 'status' => 1]);
+
+        $clase = [
+            'docente_id' => 1,
+            'docente_horas_academicas' => 36,
+            'area_id' => 10,
+            'seccion_id' => $seccion->id,
+            'area_aula' => null,
+        ];
+
+        $matrices = [
+            'docenteOcupado' => [
+                '1_1_1' => true, // Día 1 Bloque 1: docente ocupado
+            ],
+            'seccionOcupado' => [
+                $seccion->id . '_1_2' => true, // Día 1 Bloque 2: sección ocupada
+            ],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [1 => 0],
+            'reservado' => [
+                '2_1' => true, // Día 2 Bloque 1: bloque reservado globalmente
+            ],
+            'materiaDia' => [
+                '10_' . $seccion->id . '_2' => true, // Día 2: materia ya asignada
+            ],
+        ];
+
+        $fallidos = $this->service->identificarEspaciosFallidos($clase, $matrices, totalDias: 2, totalBloques: 2);
+
+        $this->assertNotEmpty($fallidos);
+
+        // Mapear por clave dia_bloque
+        $mapaFallidos = [];
+        foreach ($fallidos as $f) {
+            $mapaFallidos[$f['dia'] . '_' . $f['bloque']] = $f['razones'];
+        }
+
+        // Día 1 (Lunes), Bloque 1: docente ocupado
+        $this->assertArrayHasKey('Lunes_1', $mapaFallidos);
+        $this->assertContains('docente ocupado', $mapaFallidos['Lunes_1']);
+
+        // Día 1 (Lunes), Bloque 2: sección ocupada
+        $this->assertArrayHasKey('Lunes_2', $mapaFallidos);
+        $this->assertContains('sección ocupada', $mapaFallidos['Lunes_2']);
+
+        // Día 2 (Martes), Bloque 1: reservado y materia ya asignada
+        $this->assertArrayHasKey('Martes_1', $mapaFallidos);
+        $this->assertContains('bloque reservado globalmente', $mapaFallidos['Martes_1']);
+        $this->assertContains('materia ya asignada ese día', $mapaFallidos['Martes_1']);
+
+        // Día 2 (Martes), Bloque 2: materia ya asignada ese día
+        $this->assertArrayHasKey('Martes_2', $mapaFallidos);
+        $this->assertContains('materia ya asignada ese día', $mapaFallidos['Martes_2']);
+    }
+
+    public function test_determinar_tipo_conflicto_docente_saturado(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 25, 'status' => 1]);
+
+        $clase = [
+            'docente_id' => 1,
+            'docente_nombre' => 'Docente Saturado',
+            'docente_horas_academicas' => 36, // max 18 bloques
+            'area_id' => 10,
+            'area_nombre' => 'Historia',
+            'seccion_id' => $seccion->id,
+            'seccion_nombre' => 'A',
+            'bloques_restantes' => 1,
+            'area_aula' => null,
+        ];
+
+        // Docente ya tiene 18 bloques asignados
+        $matrices = [
+            'docenteOcupado' => [],
+            'seccionOcupado' => [],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [1 => 18],
+            'reservado' => [],
+            'materiaDia' => [],
+        ];
+
+        $conflicto = $this->service->determinarTipoConflicto($clase, $matrices, totalDias: 2, totalBloques: 2);
+        $this->assertEquals('docente_saturado', $conflicto['tipo']);
+    }
+
+    public function test_determinar_tipo_conflicto_seccion_saturada(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 25, 'status' => 1]);
+
+        $clase = [
+            'docente_id' => 1,
+            'docente_nombre' => 'Docente Libre',
+            'docente_horas_academicas' => 36,
+            'area_id' => 10,
+            'area_nombre' => 'Historia',
+            'seccion_id' => $seccion->id,
+            'seccion_nombre' => 'A',
+            'bloques_restantes' => 1,
+            'area_aula' => null,
+        ];
+
+        // Sección ocupada en todos los bloques (2 días x 2 bloques)
+        $matrices = [
+            'docenteOcupado' => [],
+            'seccionOcupado' => [
+                $seccion->id . '_1_1' => true,
+                $seccion->id . '_1_2' => true,
+                $seccion->id . '_2_1' => true,
+                $seccion->id . '_2_2' => true,
+            ],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [1 => 0],
+            'reservado' => [],
+            'materiaDia' => [],
+        ];
+
+        $conflicto = $this->service->determinarTipoConflicto($clase, $matrices, totalDias: 2, totalBloques: 2);
+        $this->assertEquals('seccion_saturada', $conflicto['tipo']);
+    }
 }
+
+
