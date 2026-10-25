@@ -16,13 +16,31 @@ class HorarioAsignacion extends Model
         'aula_id',
         'dia_id',
         'bloque_id',
+        'dia',
+        'bloque',
+        'fijada',
         'conflicto_manual',
         'motivo_conflicto',
     ];
 
     protected $casts = [
         'conflicto_manual' => 'boolean',
+        'fijada' => 'boolean',
+        'dia' => 'integer',
+        'bloque' => 'integer',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->dia_id) && !empty($model->dia)) {
+                $model->dia_id = $model->dia;
+            }
+            if (empty($model->bloque_id) && !empty($model->bloque)) {
+                $model->bloque_id = $model->bloque;
+            }
+        });
+    }
 
     public function anioEscolar()
     {

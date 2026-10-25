@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocenteNoDisponibilidad extends Model
 {
-    protected $table = '_docente__no_disponibilidad';
+    protected $table = 'docente_indisponibilidad';
 
     protected $fillable = [
         'docente_id',
