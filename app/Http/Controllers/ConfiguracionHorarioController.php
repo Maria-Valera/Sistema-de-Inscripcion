@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Dia;
 use App\Models\AnioEscolar;
+use App\Models\BloqueReservado;
 use App\Models\ConfiguracionHorario;
 use App\Services\ConfiguracionHorarioService;
 use Illuminate\Http\RedirectResponse;
@@ -55,6 +57,23 @@ class ConfiguracionHorarioController extends Controller
             ];
         })->values()->all();
 
+        $reservados = BloqueReservado::where('anio_escolar_id', $anioActivo->id)
+            ->orderBy('dia')
+            ->orderBy('bloque')
+            ->get();
+
+        $reservadosArray = $reservados->map(function ($r) {
+            $bloqueVal = (int) $r->bloque;
+            return [
+                'dia' => $r->dia instanceof Dia ? $r->dia->value : (int) $r->dia,
+                'desde' => $bloqueVal,
+                'hasta' => $bloqueVal,
+                'bloque' => $bloqueVal,
+            ];
+        })->values()->all();
+
+        $dias = Dia::cases();
+
         return view('admin.horario.configuracion', compact(
             'anioActivo',
             'configuracion',
@@ -63,12 +82,15 @@ class ConfiguracionHorarioController extends Controller
             'recesosArray',
             'numeroBloques',
             'minutosLectivos',
-            'minutosReceso'
+            'minutosReceso',
+            'reservados',
+            'reservadosArray',
+            'dias'
         ));
     }
 
     /**
-     * Guarda y actualiza la configuración de horario y recesos.
+     * Guarda y actualiza la configuración de horario, recesos y bloques reservados.
      */
     public function update(Request $request): RedirectResponse
     {
@@ -86,6 +108,11 @@ class ConfiguracionHorarioController extends Controller
             'recesos' => ['nullable', 'array'],
             'recesos.*.despues_de_bloque' => ['nullable', 'integer', 'min:1'],
             'recesos.*.duracion_min' => ['nullable', 'integer', 'min:1', 'max:120'],
+            'reservados' => ['nullable', 'array'],
+            'reservados.*.dia' => ['nullable', 'integer', 'min:1', 'max:5'],
+            'reservados.*.desde' => ['nullable', 'integer', 'min:1'],
+            'reservados.*.hasta' => ['nullable', 'integer', 'min:1'],
+            'reservados.*.bloque' => ['nullable', 'integer', 'min:1'],
         ], [
             'hora_inicio.required' => 'La hora de inicio es obligatoria.',
             'numero_bloques.required' => 'El número de bloques por día es obligatorio.',
@@ -98,7 +125,7 @@ class ConfiguracionHorarioController extends Controller
             $this->configuracionService->guardar($anioActivo->id, $request->all());
 
             return redirect()->route('admin.horario.configuracion')
-                ->with('success', 'Configuración de bloques y descansos actualizada correctamente.');
+                ->with('success', 'Configuración de horario, recesos y bloques reservados actualizada correctamente.');
         } catch (\InvalidArgumentException $e) {
             return redirect()->back()
                 ->withInput()

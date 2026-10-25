@@ -86,8 +86,12 @@
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 0.75rem 1rem;
-            margin-bottom: 0.6rem;
-            align-items: center;
+        }
+        .reservado-row {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
         }
         .badge-kpi {
             background: #eff6ff;
@@ -110,7 +114,7 @@
                 <div>
                     <h1 class="title-main">Configuración de Bloques Horarios</h1>
                     <p class="title-subtitle">
-                        Marco horario institucional (estilo GHC) &bull; Año Escolar: 
+                        Marco horario institucional y bloques reservados &bull; Año Escolar: 
                         <strong>{{ $anioActivo->nombre_completo ?? 'Año Escolar Activo' }}</strong>
                     </p>
                 </div>
@@ -156,13 +160,15 @@
             </div>
         @endif
 
+        {{-- Formulario Unificado Vertical --}}
         <form action="{{ route('admin.horario.configuracion.update') }}" method="POST" id="configHorarioForm">
             @csrf
             @method('PUT')
 
             <div class="row g-4">
-                {{-- Columna Izquierda: Formulario de Parámetros --}}
+                {{-- Columna Izquierda: Parámetros, Recesos y Bloques Reservados --}}
                 <div class="col-lg-6 col-xl-5">
+                    {{-- 1. Parámetros de la Jornada --}}
                     <div class="config-card mb-4">
                         <div class="config-card-header">
                             <h2 class="section-title">
@@ -250,7 +256,7 @@
                         </div>
                     </div>
 
-                    {{-- Card de Recesos / Descansos --}}
+                    {{-- 2. Descansos y Recesos --}}
                     <div class="config-card mb-4">
                         <div class="config-card-header">
                             <h2 class="section-title">
@@ -267,7 +273,7 @@
                             </p>
 
                             <div id="recesosContainer">
-                                {{-- Filas dinámicas generadas con JS / Blade --}}
+                                {{-- Filas dinámicas generadas con JS --}}
                             </div>
 
                             <div id="sinRecesosAlert" class="text-center py-3 text-muted" style="display: none;">
@@ -277,11 +283,38 @@
                         </div>
                     </div>
 
-                    {{-- Botón Guardar --}}
+                    {{-- 3. Bloques Reservados (Grupos Estables) --}}
+                    <div class="config-card mb-4">
+                        <div class="config-card-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-lock text-warning"></i> Bloques Reservados (Grupos Estables)
+                            </h2>
+                            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold d-inline-flex align-items-center gap-1" id="btnAgregarReservado" style="border-radius: 6px;">
+                                <i class="fas fa-plus"></i>
+                                <span>+ Agregar Bloque Reservado</span>
+                            </button>
+                        </div>
+                        <div class="config-card-body">
+                            <p class="text-muted small mb-3">
+                                Franjas horarias bloqueadas para todas las secciones, como actos o reuniones (ej. Grupos Estables). Ninguna materia regular podrá asignarse en estos espacios.
+                            </p>
+
+                            <div id="reservadosContainer">
+                                {{-- Filas dinámicas generadas con JS --}}
+                            </div>
+
+                            <div id="sinReservadosAlert" class="text-center py-3 text-muted" style="display: none;">
+                                <i class="fas fa-unlock-alt fa-2x mb-2 text-black-50"></i>
+                                <p class="mb-0 small">No hay bloques reservados. Todos los bloques están disponibles para clases regulares.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Botón Guardar Todo --}}
                     <div class="d-grid mb-4">
                         <button type="submit" class="btn btn-primary btn-lg shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px;">
                             <i class="fas fa-save"></i>
-                            <span>Guardar Configuración de Bloques</span>
+                            <span>Guardar Configuración de Horario</span>
                         </button>
                     </div>
                 </div>
@@ -294,7 +327,7 @@
                                 <h2 class="section-title">
                                     <i class="fas fa-eye text-info"></i> Vista Previa en Vivo (Marco Horario)
                                 </h2>
-                                <small class="text-muted">Cálculo dinámico en tiempo real de la distribución horaria</small>
+                                <small class="text-muted">Cálculo dinámico en tiempo real de la distribución horaria diaria</small>
                             </div>
                             <span class="badge bg-primary px-3 py-2" id="kpiTotalHoras" style="border-radius: 20px; font-size: 0.85rem;">
                                 07:00 - 13:20
@@ -323,7 +356,7 @@
                             <h3 class="h6 fw-bold text-secondary text-uppercase mb-3" style="letter-spacing: 0.5px;">
                                 Distribución de la Jornada Diaria:
                             </h3>
-                            <div id="previewTimeline" class="pe-1" style="max-height: 520px; overflow-y: auto;">
+                            <div id="previewTimeline" class="pe-1" style="max-height: 540px; overflow-y: auto;">
                                 {{-- Renderizado reactivo en JS --}}
                             </div>
                         </div>
@@ -337,11 +370,23 @@
 @section('js')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Datos iniciales precargados desde el servidor
-            const initialRecesos = @json(old('recesos', $recesosArray ?? []));
+            // Opciones de Días de la semana desde el Enum
+            const diasList = [
+                @foreach ($dias as $dia)
+                    { val: {{ $dia->value }}, label: @json($dia->label()) },
+                @endforeach
+            ];
 
-            const container = document.getElementById('recesosContainer');
-            const btnAgregar = document.getElementById('btnAgregarReceso');
+            // ==========================================================
+            // 1. RECESOS DINÁMICOS
+            // ==========================================================
+            const initialRecesosRaw = @json(old('recesos', $recesosArray ?? []));
+            const initialRecesos = Array.isArray(initialRecesosRaw) 
+                ? initialRecesosRaw 
+                : (initialRecesosRaw && typeof initialRecesosRaw === 'object' ? Object.values(initialRecesosRaw) : []);
+
+            const recesosContainer = document.getElementById('recesosContainer');
+            const btnAgregarReceso = document.getElementById('btnAgregarReceso');
             const sinRecesosAlert = document.getElementById('sinRecesosAlert');
             
             const inputHoraInicio = document.getElementById('hora_inicio');
@@ -351,13 +396,14 @@
 
             const previewTimeline = document.getElementById('previewTimeline');
             const kpiTotalHoras = document.getElementById('kpiTotalHoras');
-            const statTotalBloques = document.getElementById('resumen-bloques') || document.getElementById('statTotalBloques');
-            const statMinLectivos = document.getElementById('resumen-minutos') || document.getElementById('statMinLectivos');
-            const statMinReceso = document.getElementById('resumen-receso') || document.getElementById('statMinReceso');
+            const statTotalBloques = document.getElementById('resumen-bloques');
+            const statMinLectivos = document.getElementById('resumen-minutos');
+            const statMinReceso = document.getElementById('resumen-receso');
 
             let recesoIndex = 0;
 
             function agregarFilaReceso(despuesDe = 2, duracion = 20) {
+                if (!recesosContainer) return;
                 const numBloques = parseInt(inputNumeroBloques.value, 10) || 4;
                 const index = recesoIndex++;
 
@@ -368,27 +414,27 @@
                 }
 
                 const fila = document.createElement('div');
-                fila.className = 'row g-2 receso-row';
+                fila.className = 'd-flex flex-row align-items-end gap-2 mb-2 receso-row';
                 fila.id = `receso_row_${index}`;
                 fila.innerHTML = `
-                    <div class="col-sm-6">
+                    <div class="flex-grow-1" style="min-width: 0;">
                         <label class="form-label small text-muted mb-1">Después del Bloque:</label>
                         <select name="recesos[${index}][despues_de_bloque]" class="form-select form-select-sm select-despues-de">
                             ${opcionesSelect}
                         </select>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="flex-grow-1" style="min-width: 0;">
                         <label class="form-label small text-muted mb-1">Duración (min):</label>
                         <input type="number" name="recesos[${index}][duracion_min]" min="5" max="120" step="5" value="${duracion}" class="form-control form-control-sm input-duracion-receso">
                     </div>
-                    <div class="col-sm-2 text-end d-flex align-items-end justify-content-end">
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-receso" title="Eliminar receso">
+                    <div class="flex-shrink-0">
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-receso" title="Eliminar receso" style="height: 31px; display: inline-flex; align-items: center; justify-content: center;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 `;
 
-                container.appendChild(fila);
+                recesosContainer.appendChild(fila);
 
                 fila.querySelector('.btn-eliminar-receso').addEventListener('click', function () {
                     fila.remove();
@@ -404,13 +450,15 @@
             }
 
             function actualizarEstadoRecesos() {
-                const filas = container.querySelectorAll('.receso-row');
+                if (!recesosContainer || !sinRecesosAlert) return;
+                const filas = recesosContainer.querySelectorAll('.receso-row');
                 sinRecesosAlert.style.display = filas.length === 0 ? 'block' : 'none';
             }
 
             function actualizarOpcionesDespuesDe() {
+                if (!recesosContainer) return;
                 const numBloques = parseInt(inputNumeroBloques.value, 10) || 4;
-                const selects = container.querySelectorAll('.select-despues-de');
+                const selects = recesosContainer.querySelectorAll('.select-despues-de');
 
                 selects.forEach(sel => {
                     const valorActual = parseInt(sel.value, 10);
@@ -423,16 +471,147 @@
                 });
             }
 
-            // Formateador de minutos a 'HH:MM'
+            // ==========================================================
+            // 2. BLOQUES RESERVADOS DINÁMICOS (GRUPOS ESTABLES)
+            // ==========================================================
+            const initialReservadosRaw = @json(old('reservados', $reservadosArray ?? []));
+            const initialReservados = Array.isArray(initialReservadosRaw) 
+                ? initialReservadosRaw 
+                : (initialReservadosRaw && typeof initialReservadosRaw === 'object' ? Object.values(initialReservadosRaw) : []);
+
+            const reservadosContainer = document.getElementById('reservadosContainer');
+            const btnAgregarReservado = document.getElementById('btnAgregarReservado');
+            const sinReservadosAlert = document.getElementById('sinReservadosAlert');
+
+            let reservadoIndex = 0;
+
+            function agregarFilaReservado(dia = 1, desde = 1, hasta = 1) {
+                if (!reservadosContainer) return;
+                const numBloques = parseInt(inputNumeroBloques.value, 10) || 4;
+                const index = reservadoIndex++;
+
+                const vDia = parseInt(dia, 10) || 1;
+                const vDesde = Math.min(numBloques, Math.max(1, parseInt(desde, 10) || 1));
+                const vHasta = Math.min(numBloques, Math.max(vDesde, parseInt(hasta, 10) || vDesde));
+
+                let opcionesDias = '';
+                diasList.forEach(d => {
+                    const selected = (d.val === vDia) ? 'selected' : '';
+                    opcionesDias += `<option value="${d.val}" ${selected}>${d.label}</option>`;
+                });
+
+                let opcionesDesde = '';
+                let opcionesHasta = '';
+                for (let b = 1; b <= numBloques; b++) {
+                    const selDesde = (b === vDesde) ? 'selected' : '';
+                    opcionesDesde += `<option value="${b}" ${selDesde}>Bloque ${b}</option>`;
+
+                    const selHasta = (b === vHasta) ? 'selected' : '';
+                    const disHasta = (b < vDesde) ? 'disabled' : '';
+                    opcionesHasta += `<option value="${b}" ${selHasta} ${disHasta}>Bloque ${b}</option>`;
+                }
+
+                const fila = document.createElement('div');
+                fila.className = 'd-flex flex-row align-items-end gap-2 mb-2 reservado-row';
+                fila.id = `reservado_row_${index}`;
+                fila.innerHTML = `
+                    <div class="flex-grow-1" style="min-width: 0; flex-basis: 38%;">
+                        <label class="form-label small text-muted mb-1">Día de la Semana:</label>
+                        <select name="reservados[${index}][dia]" class="form-select form-select-sm select-reservado-dia">
+                            ${opcionesDias}
+                        </select>
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 0; flex-basis: 27%;">
+                        <label class="form-label small text-muted mb-1">Desde Bloque:</label>
+                        <select name="reservados[${index}][desde]" class="form-select form-select-sm select-reservado-desde">
+                            ${opcionesDesde}
+                        </select>
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 0; flex-basis: 27%;">
+                        <label class="form-label small text-muted mb-1">Hasta Bloque:</label>
+                        <select name="reservados[${index}][hasta]" class="form-select form-select-sm select-reservado-hasta">
+                            ${opcionesHasta}
+                        </select>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-reservado" title="Eliminar bloque reservado" style="height: 31px; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+
+                reservadosContainer.appendChild(fila);
+
+                const selectDesde = fila.querySelector('.select-reservado-desde');
+                const selectHasta = fila.querySelector('.select-reservado-hasta');
+
+                function sincronizarHasta() {
+                    const curDesde = parseInt(selectDesde.value, 10) || 1;
+                    const curHasta = parseInt(selectHasta.value, 10) || curDesde;
+
+                    if (curHasta < curDesde) {
+                        selectHasta.value = curDesde;
+                    }
+
+                    Array.from(selectHasta.options).forEach(opt => {
+                        const val = parseInt(opt.value, 10);
+                        opt.disabled = (val < curDesde);
+                    });
+                }
+
+                selectDesde.addEventListener('change', sincronizarHasta);
+
+                fila.querySelector('.btn-eliminar-reservado').addEventListener('click', function () {
+                    fila.remove();
+                    actualizarEstadoReservados();
+                });
+
+                actualizarEstadoReservados();
+            }
+
+            function actualizarEstadoReservados() {
+                if (!reservadosContainer || !sinReservadosAlert) return;
+                const filas = reservadosContainer.querySelectorAll('.reservado-row');
+                sinReservadosAlert.style.display = filas.length === 0 ? 'block' : 'none';
+            }
+
+            function actualizarOpcionesBloquesReservados() {
+                if (!reservadosContainer) return;
+                const numBloques = parseInt(inputNumeroBloques.value, 10) || 4;
+                const filas = reservadosContainer.querySelectorAll('.reservado-row');
+
+                filas.forEach(fila => {
+                    const selDesde = fila.querySelector('.select-reservado-desde');
+                    const selHasta = fila.querySelector('.select-reservado-hasta');
+                    if (!selDesde || !selHasta) return;
+
+                    const curDesde = Math.min(numBloques, parseInt(selDesde.value, 10) || 1);
+                    const curHasta = Math.min(numBloques, Math.max(curDesde, parseInt(selHasta.value, 10) || curDesde));
+
+                    let optDesde = '';
+                    let optHasta = '';
+                    for (let b = 1; b <= numBloques; b++) {
+                        optDesde += `<option value="${b}" ${b === curDesde ? 'selected' : ''}>Bloque ${b}</option>`;
+                        const dis = (b < curDesde) ? 'disabled' : '';
+                        optHasta += `<option value="${b}" ${b === curHasta ? 'selected' : ''} ${dis}>Bloque ${b}</option>`;
+                    }
+
+                    selDesde.innerHTML = optDesde;
+                    selHasta.innerHTML = optHasta;
+                });
+            }
+
+            // ==========================================================
+            // 3. CÁLCULO Y VISTA PREVIA EN VIVO (MARCO HORARIO)
+            // ==========================================================
             function formatTime(totalMinutes) {
                 const h = Math.floor(totalMinutes / 60) % 24;
                 const m = totalMinutes % 60;
                 return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
             }
 
-            // Parseador de 'HH:MM' a minutos desde la medianoche
             function parseTimeToMinutes(timeStr) {
-                if (!timeStr) return 7 * 60; // 07:00
+                if (!timeStr) return 7 * 60;
                 const parts = timeStr.split(':');
                 const h = parseInt(parts[0], 10) || 0;
                 const m = parseInt(parts[1], 10) || 0;
@@ -440,16 +619,17 @@
             }
 
             function recalcularVistaPrevia() {
+                if (!previewTimeline || !inputHoraInicio) return;
+
                 const horaInicioMin = parseTimeToMinutes(inputHoraInicio.value);
                 const numBloques = Math.max(1, parseInt(inputNumeroBloques.value, 10) || 1);
                 const duracionBloque = Math.max(1, parseInt(inputDuracionBloque.value, 10) || 90);
                 const minEntreBloques = Math.max(0, parseInt(inputMinEntreBloques.value, 10) || 0);
 
-                // Mapa de recesos activos
                 const recesosMap = {};
                 let totalMinRecesos = 0;
 
-                const filas = container.querySelectorAll('.receso-row');
+                const filas = recesosContainer ? recesosContainer.querySelectorAll('.receso-row') : [];
                 filas.forEach(fila => {
                     const despuesDe = parseInt(fila.querySelector('.select-despues-de')?.value, 10);
                     const duracion = parseInt(fila.querySelector('.input-duracion-receso')?.value, 10) || 0;
@@ -493,36 +673,61 @@
 
                 previewTimeline.innerHTML = htmlTimeline;
 
-                // Actualizar métricas
                 const horaFinJornada = currentMin - minEntreBloques;
-                kpiTotalHoras.textContent = `${formatTime(horaInicioMin)} - ${formatTime(horaFinJornada)}`;
+                if (kpiTotalHoras) kpiTotalHoras.textContent = `${formatTime(horaInicioMin)} - ${formatTime(horaFinJornada)}`;
                 if (statTotalBloques) statTotalBloques.textContent = numBloques;
                 if (statMinLectivos) statMinLectivos.textContent = `${numBloques * duracionBloque}`;
                 if (statMinReceso) statMinReceso.textContent = `${totalMinRecesos}`;
             }
 
-            // Inicializar recesos existentes
+            // ==========================================================
+            // INICIALIZACIÓN
+            // ==========================================================
+            // Precargar Recesos
             if (Array.isArray(initialRecesos) && initialRecesos.length > 0) {
                 initialRecesos.forEach(r => agregarFilaReceso(r.despues_de_bloque, r.duracion_min));
             } else {
                 actualizarEstadoRecesos();
             }
 
-            // Event Listeners
-            btnAgregar.addEventListener('click', function () {
-                agregarFilaReceso(2, 20);
-            });
+            // Precargar Reservados
+            if (Array.isArray(initialReservados) && initialReservados.length > 0) {
+                initialReservados.forEach(r => {
+                    if (r && (r.dia || r.bloque || r.desde)) {
+                        const d = r.dia || 1;
+                        const bDesde = r.desde || r.bloque || 1;
+                        const bHasta = r.hasta || r.bloque || bDesde;
+                        agregarFilaReservado(d, bDesde, bHasta);
+                    }
+                });
+            } else {
+                actualizarEstadoReservados();
+            }
 
-            inputNumeroBloques.addEventListener('input', function () {
-                actualizarOpcionesDespuesDe();
-                recalcularVistaPrevia();
-            });
+            if (btnAgregarReceso) {
+                btnAgregarReceso.addEventListener('click', function () {
+                    agregarFilaReceso(2, 20);
+                });
+            }
 
-            inputHoraInicio.addEventListener('input', recalcularVistaPrevia);
-            inputDuracionBloque.addEventListener('input', recalcularVistaPrevia);
-            inputMinEntreBloques.addEventListener('input', recalcularVistaPrevia);
+            if (btnAgregarReservado) {
+                btnAgregarReservado.addEventListener('click', function () {
+                    agregarFilaReservado(1, 1, 1);
+                });
+            }
 
-            // Primer renderizado
+            if (inputNumeroBloques) {
+                inputNumeroBloques.addEventListener('input', function () {
+                    actualizarOpcionesDespuesDe();
+                    actualizarOpcionesBloquesReservados();
+                    recalcularVistaPrevia();
+                });
+            }
+
+            if (inputHoraInicio) inputHoraInicio.addEventListener('input', recalcularVistaPrevia);
+            if (inputDuracionBloque) inputDuracionBloque.addEventListener('input', recalcularVistaPrevia);
+            if (inputMinEntreBloques) inputMinEntreBloques.addEventListener('input', recalcularVistaPrevia);
+
             recalcularVistaPrevia();
         });
     </script>

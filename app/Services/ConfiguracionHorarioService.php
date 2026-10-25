@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\Dia;
+use App\Models\BloqueReservado;
 use App\Models\ConfiguracionHorario;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -140,7 +142,77 @@ class ConfiguracionHorarioService
             $bloquesConReceso[] = $despuesDe;
         }
 
-        return DB::transaction(function () use ($anioEscolarId, $datos, $horaInicio, $numeroBloques, $duracionBloqueMin, $recesosData) {
+        // Validación de bloques reservados (soporta bloque único o rangos desde..hasta)
+        $reservadosRaw = $datos['reservados'] ?? [];
+        $paresReservados = [];
+        foreach ($reservadosRaw as $item) {
+            $dia = null;
+            $desde = null;
+            $hasta = null;
+
+            if (is_string($item) && str_contains($item, '_')) {
+                [$diaStr, $bloqueStr] = explode('_', $item, 2);
+                $dia = (int) $diaStr;
+                $desde = (int) $bloqueStr;
+                $hasta = $desde;
+            } elseif (is_array($item)) {
+                if (isset($item['dia'])) {
+                    $dia = (int) $item['dia'];
+                }
+                if (isset($item['desde'])) {
+                    $desde = (int) $item['desde'];
+                    $hasta = isset($item['hasta']) ? (int) $item['hasta'] : $desde;
+                } elseif (isset($item['bloque'])) {
+                    $desde = (int) $item['bloque'];
+                    $hasta = $desde;
+                }
+            }
+
+            if ($dia === null || $desde === null || $hasta === null) {
+                continue;
+            }
+
+            if ($dia < 1 || $dia > 5) {
+                throw new \InvalidArgumentException("El día {$dia} es inválido. Debe ser de lunes (1) a viernes (5).");
+            }
+
+            if ($desde > $hasta) {
+                throw new \InvalidArgumentException("El bloque inicial ({$desde}) no puede ser mayor al bloque final ({$hasta}).");
+            }
+
+            if ($desde < 1 || $hasta > $numeroBloques) {
+                $bloqueErroneo = $hasta > $numeroBloques ? $hasta : $desde;
+                throw new \InvalidArgumentException("No se puede reservar el bloque {$bloqueErroneo}. El máximo de bloques configurado para la jornada es {$numeroBloques}.");
+            }
+
+            for ($b = $desde; $b <= $hasta; $b++) {
+                $paresReservados["{$dia}_{$b}"] = ['dia' => $dia, 'bloque' => $b];
+            }
+        }
+
+        // Validación: verificar si algún bloque a reservar ya tiene clases asignadas en horario_asignaciones
+        if (!empty($paresReservados)) {
+            $conflictos = [];
+            foreach ($paresReservados as $par) {
+                $asignaciones = DB::table('horario_asignaciones')
+                    ->where('anio_escolar_id', $anioEscolarId)
+                    ->where('dia', $par['dia'])
+                    ->where('bloque', $par['bloque'])
+                    ->count();
+
+                if ($asignaciones > 0) {
+                    $nombreDia = Dia::tryFrom($par['dia'])?->label() ?? "Día {$par['dia']}";
+                    $conflictos[] = "{$nombreDia} Bloque {$par['bloque']} ({$asignaciones} clase(s))";
+                }
+            }
+
+            if (!empty($conflictos)) {
+                $mensajeConflictos = implode(', ', $conflictos);
+                throw new \InvalidArgumentException("No se pueden guardar los bloques reservados porque existen clases asignadas en: {$mensajeConflictos}. Desasigna las clases antes de reservar estos bloques.");
+            }
+        }
+
+        return DB::transaction(function () use ($anioEscolarId, $datos, $horaInicio, $numeroBloques, $duracionBloqueMin, $recesosData, $paresReservados) {
             $config = ConfiguracionHorario::updateOrCreate(
                 ['anio_escolar_id' => $anioEscolarId],
                 [
@@ -169,7 +241,53 @@ class ConfiguracionHorarioService
                 }
             }
 
+            // Sincronizar bloques reservados si se envió la clave en $datos
+            if (array_key_exists('reservados', $datos)) {
+                BloqueReservado::where('anio_escolar_id', $anioEscolarId)->delete();
+
+                foreach ($paresReservados as $par) {
+                    BloqueReservado::create([
+                        'anio_escolar_id' => $anioEscolarId,
+                        'dia' => $par['dia'],
+                        'bloque' => $par['bloque'],
+                    ]);
+                }
+            }
+
             return $config->load('recesos');
         });
+    }
+
+    /**
+     * Retorna el mapa de bloques reservados para un año escolar [ "dia_bloque" => true ].
+     */
+    public function reservadosMapa(int $anioEscolarId): array
+    {
+        return BloqueReservado::mapaPorAnio($anioEscolarId);
+    }
+
+    /**
+     * Guarda los bloques reservados (grupos estables) para un año escolar.
+     *
+     * @param int $anioEscolarId
+     * @param array $reservadosRaw Lista de cadenas "dia_bloque" o arrays ['dia' => d, 'bloque' => b]
+     * @throws \InvalidArgumentException Si un bloque supera el número de bloques configurado o tiene asignaciones
+     */
+    public function guardarReservados(int $anioEscolarId, array $reservadosRaw): void
+    {
+        $config = $this->actual($anioEscolarId);
+        $datos = [
+            'hora_inicio' => $config?->hora_inicio ?? '07:00:00',
+            'numero_bloques' => $config?->numero_bloques ?? 4,
+            'duracion_bloque_min' => $config?->duracion_bloque_min ?? 90,
+            'minutos_entre_bloques' => $config?->minutos_entre_bloques ?? 0,
+            'recesos' => $config?->recesos->map(fn($r) => [
+                'despues_de_bloque' => (int) $r->despues_de_bloque,
+                'duracion_min' => (int) $r->duracion_min,
+            ])->all() ?? [],
+            'reservados' => $reservadosRaw,
+        ];
+
+        $this->guardar($anioEscolarId, $datos);
     }
 }
