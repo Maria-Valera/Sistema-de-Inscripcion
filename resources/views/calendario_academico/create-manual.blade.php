@@ -1,5 +1,3 @@
-
-
 @extends('adminlte::page')
 
 @section('title', 'Crear calendario manual')
@@ -103,7 +101,7 @@
                     <button type="submit" class="btn-primary-modern">
                         <i class="fas fa-calendar-plus"></i> Crear calendario manual
                     </button>
-                    <a href="{{ route('admin.calendario_academico.create') }}" class="btn-cancel-modern">
+                    <a href="{{ route('admin.calendario_academico.index') }}" class="btn-cancel-modern">
                         <i class="fas fa-arrow-left"></i> Volver
                     </a>
                 </div>

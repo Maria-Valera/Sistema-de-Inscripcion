@@ -3,21 +3,18 @@
 namespace App\Models;
 
 use App\Enums\CategoriaDia;
-use App\Enums\ConfianzaDia;
 use App\Enums\ColorEvento;
+use App\Enums\ConfianzaDia;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CalendarioDia extends Model
 {
-    //
-
     protected $fillable = [
         'calendario_id',
         'texto_extraido',
         'mes_pagina',
-        'dia_extraido',
         'fecha',
         'categoria',
         'confianza',
@@ -27,7 +24,6 @@ class CalendarioDia extends Model
         'aplica_estudiantes',
         'es_efemeride',
         'color',
-
     ];
 
     protected $casts = [
@@ -42,116 +38,109 @@ class CalendarioDia extends Model
         'color' => ColorEvento::class,
     ];
 
-    /*
-    aqui se implementa el arbol de decisiones de color
-    no laborable siempre gana sobre si es efemeride (ya lo que se quiere es saber si hay clases si o no no si es historicamente importante)
-
-    no laborable + ambos -> rojo
-    no laborable + docentes -> cobalto
-    no laborable + estudiantes -> lavanda
-    laborable + efemeride -> pavo real (fijo)
-    laborable + no efemeride -> el color que elija el usuario, o simplemente el gris
-    */
+    /**
+     * Implementa el árbol de decisión de color acordado:
+     * no laborable siempre gana sobre efeméride (lo operativamente
+     * relevante es si hay clases o no, no si es históricamente importante).
+     *
+     *   No laborable + ambos       -> Rojo
+     *   No laborable + docentes    -> Cobalto
+     *   No laborable + estudiantes -> Lavanda
+     *   Laborable + efeméride      -> Pavo real (fijo)
+     *   Laborable + no efeméride   -> el color que eligió el usuario, o Gris
+     */
     public static function determinarColor(
         bool $esNoLaborable,
         bool $aplicaPersonal,
         bool $aplicaEstudiantes,
         bool $esEfemeride,
         ?ColorEvento $colorElegido,
-    ): ColorEvento{
-        if($esNoLaborable){
-            if($aplicaPersonal && $aplicaEstudiantes){
+    ): ColorEvento {
+        if ($esNoLaborable) {
+            if ($aplicaPersonal && $aplicaEstudiantes) {
                 return ColorEvento::Rojo;
-
             }
 
             return $aplicaPersonal ? ColorEvento::Cobalto : ColorEvento::Lavanda;
-
         }
 
-        if($esEfemeride){
+        if ($esEfemeride) {
             return ColorEvento::PavoReal;
         }
 
         return $colorElegido ?? ColorEvento::Gris;
     }
 
-
-
-
     public function calendarioAcademico(): BelongsTo
     {
         return $this->belongsTo(CalendarioAcademico::class, 'calendario_id');
     }
 
-    /*
-    scope : solo dias ya confirmados
-    su uso : calendarioDia::confirmados()->get()
-    */
-
+    /**
+     * Scope: solo días ya confirmados.
+     * Uso: CalendarioDia::confirmados()->get();
+     */
     public function scopeConfirmados(Builder $query): Builder
     {
         return $query->where('confirmado', true);
     }
 
-    /*
-    scope : solo dias pendientes de revision (los candidatos que salieron del pdf)
-    */
-
+    /**
+     * Scope: solo días pendientes de revisión (los candidatos que salieron del PDF).
+     */
     public function scopePendientes(Builder $query): Builder
     {
         return $query->where('confirmado', false);
     }
 
-    /*
-    scope : solo los que son efectivamente no laborables (no los "dudosos")
-    */
-
+    /**
+     * Scope: solo los que son efectivamente no laborables (no los "dudosos").
+     */
     public function scopeNoLaborables(Builder $query): Builder
     {
         return $query->where('categoria', CategoriaDia::NoLaborable);
     }
 
-    /*
-    scope: dias que afectan al personal (docentes,administrativos y obreros)
-    Este es el que usara el modulo de inasistencias para calcular dias habiles
-    */
-
+    /**
+     * Scope: días que afectan al personal (docentes, administrativos, obreros).
+     * Este es el que usará el módulo de inasistencias para calcular días hábiles.
+     */
     public function scopeAplicaPersonal(Builder $query): Builder
     {
         return $query->where('aplica_personal', true);
     }
 
-    /*
-    scope: dias que afectan a los estudiantes
-    */
+    /**
+     * Scope: días que afectan a los estudiantes.
+     */
     public function scopeAplicaEstudiantes(Builder $query): Builder
     {
         return $query->where('aplica_estudiantes', true);
     }
 
-    /*
-    scope: dias dentro de un rango de fechas (util para el modulo de proceso administrativo, al calcular
-    dias habiles entre dos fechas)
-    */
-
+    /**
+     * Scope: días dentro de un rango de fechas (útil para el módulo de
+     * proceso administrativo, al calcular días hábiles entre dos fechas).
+     */
     public function scopeEntreFechas(Builder $query, string $desde, string $hasta): Builder
     {
         return $query->whereBetween('fecha', [$desde, $hasta]);
     }
 
-    /*
-    es un helper estatico : responde directamente "¿es esta fecha un  dia no laborable confirmado para el personal,
-    dentro de este año escolar?" Pensando para que otros modulos (inasistencias) lo usen sin tener que escribir la consulta completa a cada rato
-    */
-
-    public function esNoLaborablePersonal( string $fecha, int $calendarioId): bool{
+    /**
+     * Helper estático: responde directamente "¿es esta fecha un día no
+     * laborable confirmado para el personal, dentro de este año escolar?"
+     * Pensado para que otros módulos (inasistencias) lo usen sin tener que
+     * escribir la consulta completa cada vez.
+     */
+    public static function esNoLaborablePersonal(string $fecha, int $calendarioId): bool
+    {
         return static::query()
-        ->where('calendario_id', $calendarioId)
-        ->where('fecha', $fecha)
-        ->confirmados()
-        ->noLaborables()
-        ->exists();
+            ->where('calendario_id', $calendarioId)
+            ->where('fecha', $fecha)
+            ->confirmados()
+            ->noLaborables()
+            ->aplicaPersonal()
+            ->exists();
     }
-
 }

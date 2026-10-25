@@ -1,5 +1,3 @@
-
-
 @extends('adminlte::page')
 
 @section('title', 'Calendarios académicos')
@@ -19,11 +17,11 @@
                 </div>
                 <div>
                     <h1 class="title-main">Calendarios académicos</h1>
-                    <p class="title-subtitle">Gestión de calendarios cargados desde PDF</p>
+                    <p class="title-subtitle">Gestión de calendarios académicos</p>
                 </div>
             </div>
-            <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create') }}'">
-                <i class="fas fa-upload"></i> <span>Cargar nuevo calendario</span>
+            <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create_manual') }}'">
+                <i class="fas fa-calendar-plus"></i> <span>Crear nuevo calendario</span>
             </button>
         </div>
     </div>
@@ -71,7 +69,6 @@
                             <tr>
                                 {{-- <th style="width: 60px">#</th> --}}
                                 <th>Año escolar</th>
-                                <th>Origen</th>
                                 <th>Estado</th>
                                 <th style="text-align: center">Días detectados</th>
                                 <th style="text-align: center">Días confirmados</th>
@@ -88,7 +85,6 @@
                                             {{ \Carbon\Carbon::parse($calendario->anioEscolar->cierre_anio_escolar)->format('Y') }}
                                         </strong>
                                     </td>
-                                    <td>{{ $calendario->origen->label() }}</td>
                                     <td>
                                         @if ($calendario->estaConfirmado())
                                             <span class="status-badge status-active">
@@ -124,13 +120,13 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7">
+                                    <td colspan="6">
                                         <div class="empty-state">
                                             <div class="empty-icon">
                                                 <i class="fas fa-calendar-plus"></i>
                                             </div>
                                             <h4>No hay calendarios cargados</h4>
-                                            <p>Carga un nuevo calendario académico desde un archivo PDF.</p>
+                                            <p>Crea un nuevo calendario académico de forma manual.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -150,4 +146,3 @@
         </div>
     </div>
 @stop
-
