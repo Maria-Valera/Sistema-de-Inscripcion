@@ -21,10 +21,18 @@
                     <p class="title-subtitle">Administración de horarios académicos</p>
                 </div>
             </div>
-            <a href="{{ route('admin.horario.create') }}" class="btn-create">
-                <i class="fas fa-plus"></i>
-                <span>Nuevo Horario</span>
-            </a>
+            <div class="d-flex align-items-center gap-2">
+                @can('horarios.gestionar')
+                    <a href="{{ route('admin.horario.configuracion') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px; font-weight: 500;">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Configurar Bloques</span>
+                    </a>
+                @endcan
+                <a href="{{ route('admin.horario.create') }}" class="btn-create">
+                    <i class="fas fa-plus"></i>
+                    <span>Nuevo Horario</span>
+                </a>
+            </div>
         </div>
     </div>
 @stop

@@ -130,21 +130,19 @@ return new class extends Migration
             ->orderByDesc('id')
             ->first();
 
-        if (!$anioActivo) {
-            throw new \RuntimeException('No se encontró un año escolar activo para inicializar configuracion_horario.');
+        if ($anioActivo) {
+            DB::table('configuracion_horario')->updateOrInsert(
+                ['anio_escolar_id' => $anioActivo->id],
+                [
+                    'hora_inicio' => '07:00:00',
+                    'numero_bloques' => 4,
+                    'duracion_bloque_min' => 90,
+                    'minutos_entre_bloques' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
         }
-
-        DB::table('configuracion_horario')->updateOrInsert(
-            ['anio_escolar_id' => $anioActivo->id],
-            [
-                'hora_inicio' => '07:00:00',
-                'numero_bloques' => 4,
-                'duracion_bloque_min' => 90,
-                'minutos_entre_bloques' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        );
     }
 
     /**

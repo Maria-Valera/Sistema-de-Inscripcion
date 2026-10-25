@@ -241,9 +241,23 @@ return [
         // ============================================================
         [
             'text' => 'Horarios',
-            'url' => 'admin/horario',
             'icon' => 'fas fa-clock',
-            'can' => ['horarios.ver', 'portal_horarios.ver_docente'],
+            'submenu' => [
+                [
+                    'text' => 'Gestión de Horarios',
+                    'url' => 'admin/horario',
+                    'icon' => 'fas fa-calendar-alt',
+                    'active' => ['admin/horario', 'admin/horario/create', 'admin/horario/*/edit'],
+                    'can' => ['horarios.ver', 'portal_horarios.ver_docente'],
+                ],
+                [
+                    'text' => 'Configuración de Bloques',
+                    'url' => 'admin/horario/configuracion',
+                    'icon' => 'fas fa-cogs',
+                    'active' => ['admin/horario/configuracion*'],
+                    'can' => 'horarios.gestionar',
+                ],
+            ],
         ],
 
         ['header' => 'INSCRIPCIONES'],
@@ -389,10 +403,10 @@ return [
 
                 [
                     'text' => 'Bloques Horarios',
-                    'url' => 'admin/bloque_horario',
+                    'url' => 'admin/horario/configuracion',
                     'icon' => 'fas fa-fw fa-clock',
-                    'active' => ['admin/bloque_horario', 'admin/bloque_horario/*'],
-                    'can'  => 'bloques_horarios.ver',
+                    'active' => ['admin/horario/configuracion*', 'admin/bloque_horario*'],
+                    'can'  => 'horarios.gestionar',
                 ],
 
                 [

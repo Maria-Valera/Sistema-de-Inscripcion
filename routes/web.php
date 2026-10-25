@@ -41,6 +41,7 @@ use App\Http\Controllers\Permisos_RepososController;
 use App\Http\Controllers\ActaEntrevistaController;
 use App\Http\Controllers\Seccion_AulaController;
 use App\Http\Controllers\DocenteNoDisponibilidadController;
+use App\Http\Controllers\ConfiguracionHorarioController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -465,6 +466,8 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
     Route::get('horario/{grado_id}/{seccion_id}/show-api', [HorarioController::class, 'showApi'])->middleware('permission:horarios.ver')->name('horario.show-api');
 
     Route::middleware(['permission:horarios.gestionar'])->group(function () {
+        Route::get('horario/configuracion', [ConfiguracionHorarioController::class, 'index'])->name('horario.configuracion');
+        Route::put('horario/configuracion', [ConfiguracionHorarioController::class, 'update'])->name('horario.configuracion.update');
         Route::get('horario/create', [HorarioController::class, 'create'])->name('horario.create');
         Route::get('horario/{grado_id}/{seccion_id}/edit', [HorarioController::class, 'edit'])->name('horario.edit');
         Route::put('horario/{grado_id}/{seccion_id}', [HorarioController::class, 'update'])->name('horario.update');

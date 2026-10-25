@@ -339,6 +339,12 @@ Breadcrumbs::for('admin.horario.create', function (Trail $trail) {
     $trail->push('Nuevo Horario', route('admin.horario.create'));
 });
 
+// Horario configuración
+Breadcrumbs::for('admin.horario.configuracion', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Configuración de Bloques', route('admin.horario.configuracion'));
+});
+
 // Inasistencia
 Breadcrumbs::for('admin.inasistencia.index', function (Trail $trail) {
     $trail->parent('home');
