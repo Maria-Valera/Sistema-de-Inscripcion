@@ -6,11 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ConvierteAMayusculas;
 use App\Traits\Capitalizar;
-<<<<<<< HEAD
 use Illuminate\Database\Eloquent\Relations\HasMany;
-=======
 use App\Models\Concerns\Auditable;
->>>>>>> Steph
 
 class Persona extends Model
 {
