@@ -695,137 +695,378 @@ Class GeneradorHorarioService
             ];
         }
 
-    public function generar(int $anioEscolar, int $totalDias, int $totalBloques, ?int $gradoId = null, ?int $areaFormacionId = null): array
-        {
-            //recorre todo dentro de una transacion
-            return \DB::transaction(function() use ($anioEscolar, $totalDias, $totalBloques, $gradoId, $areaFormacionId) {
-                //borra solo lo que se va a regenerar (todo el año, solo el grado y/o solo el área), respetando clases fijadas
-                $aBorrar = HorarioAsignacion::where('anio_escolar_id', $anioEscolar)
-                    ->where('fijada', false);
-                if ($gradoId !== null) {
-                    $aBorrar->whereHas('cargaAcademica.seccion', function ($q) use ($gradoId) {
-                        $q->where('grado_id', $gradoId);
-                    });
+    /**
+     * Realiza un intento de generación en memoria sin escribir en la base de datos.
+     *
+     * @param int $anio ID del año escolar
+     * @param int|null $gradoId Filtro opcional por grado
+     * @param int|null $areaId Filtro opcional por área de formación
+     * @param bool $aleatorizar Si es true, permuta aleatoriamente clases con misma disponibilidad y tamaño
+     * @param int $totalDias Total de días lectivos semanales (def: 5)
+     * @param int $totalBloques Total de bloques por día (def: 8)
+     * @return array{asignaciones: array, conflictos: array, matrices: array}
+     */
+    public function intentarGenerar(
+        int $anio,
+        ?int $gradoId = null,
+        ?int $areaId = null,
+        bool $aleatorizar = false,
+        int $totalDias = 5,
+        int $totalBloques = 8
+    ): array {
+        // Cargar datos, restricciones y prioridades
+        $clases = $this->PreparasDatos($gradoId, $areaId, $anio);
+        $matrices = $this->InicializarMatrices($anio);
+
+        // Las asignaciones conservadas (fijadas o fuera del alcance) ocupan docente, sección y aula
+        $conservadas = HorarioAsignacion::where('anio_escolar_id', $anio)
+            ->with('cargaAcademica.seccion')
+            ->get();
+
+        foreach ($conservadas as $c) {
+            $estaEnAlcance = true;
+            if ($gradoId !== null && $c->cargaAcademica?->seccion?->grado_id != $gradoId) {
+                $estaEnAlcance = false;
+            }
+            if ($areaId !== null && $c->cargaAcademica?->area_formacion_id != $areaId) {
+                $estaEnAlcance = false;
+            }
+
+            // Si es fijada o está fuera del alcance, se mantiene ocupando celda
+            if ($c->fijada || !$estaEnAlcance) {
+                $cDia = $c->dia ?? $c->dia_id;
+                $cBloque = $c->bloque ?? $c->bloque_id;
+                $cDocenteId = $c->cargaAcademica?->docente_id;
+                $cSeccionId = $c->cargaAcademica?->seccion_id;
+                $cMateriaId = $c->cargaAcademica?->area_formacion_id;
+
+                if ($cDocenteId && $cDia && $cBloque) {
+                    $matrices['docenteOcupado'][$cDocenteId . '_' . $cDia . '_' . $cBloque] = true;
+                    $matrices['bloquesPorDocente'][$cDocenteId] = ($matrices['bloquesPorDocente'][$cDocenteId] ?? 0) + 1;
+                    $matrices['docenteDia'][$cDocenteId . '_' . $cDia] = ($matrices['docenteDia'][$cDocenteId . '_' . $cDia] ?? 0) + 1;
                 }
-                if ($areaFormacionId !== null) {
-                    $aBorrar->whereHas('cargaAcademica', function ($q) use ($areaFormacionId) {
-                        $q->where('area_formacion_id', $areaFormacionId);
-                    });
+                if ($cSeccionId && $cDia && $cBloque) {
+                    $matrices['seccionOcupado'][$cSeccionId . '_' . $cDia . '_' . $cBloque] = true;
                 }
-                $aBorrar->delete();
-
-                //cargar los datos, las restricciones y las prioridades
-                $clases = $this->PreparasDatos($gradoId, $areaFormacionId, $anioEscolar);
-                $matrices = $this->InicializarMatrices($anioEscolar);
-
-                //las asignaciones que se conservan (fuera del alcance o fijadas) ocupan docente, sección y aula
-                $conservadas = HorarioAsignacion::where('anio_escolar_id', $anioEscolar)
-                    ->with('cargaAcademica')
-                    ->get();
-                foreach ($conservadas as $c) {
-                    $cDia = $c->dia ?? $c->dia_id;
-                    $cBloque = $c->bloque ?? $c->bloque_id;
-                    $cDocenteId = $c->cargaAcademica?->docente_id;
-                    $cSeccionId = $c->cargaAcademica?->seccion_id;
-                    $cMateriaId = $c->cargaAcademica?->area_formacion_id;
-
-                    if ($cDocenteId && $cDia && $cBloque) {
-                        $matrices['docenteOcupado'][$cDocenteId . '_' . $cDia . '_' . $cBloque] = true;
-                        $matrices['bloquesPorDocente'][$cDocenteId] = ($matrices['bloquesPorDocente'][$cDocenteId] ?? 0) + 1;
-                        $matrices['docenteDia'][$cDocenteId . '_' . $cDia] = ($matrices['docenteDia'][$cDocenteId . '_' . $cDia] ?? 0) + 1;
-                    }
-                    if ($cSeccionId && $cDia && $cBloque) {
-                        $matrices['seccionOcupado'][$cSeccionId . '_' . $cDia . '_' . $cBloque] = true;
-                    }
-                    if ($c->aula_id && $cDia && $cBloque) {
-                        $matrices['aulaEspecialOcupada'][$c->aula_id . '_' . $cDia . '_' . $cBloque] = true;
-                    }
-                    if ($cMateriaId && $cSeccionId && $cDia) {
-                        $matrices['materiaDia'][$cMateriaId . '_' . $cSeccionId . '_' . $cDia] = true;
-                    }
+                if ($c->aula_id && $cDia && $cBloque) {
+                    $matrices['aulaEspecialOcupada'][$c->aula_id . '_' . $cDia . '_' . $cBloque] = true;
                 }
-
-                $clasesOrdenadas = $this->ordenarClasesPendientes($clases, $matrices['docenteOcupado'], $totalDias, $totalBloques);
-
-                $todasLasAsignaciones = [];
-                $todosLosConflictos = [];
-                
-                $bloquesPorDiaGlobal = [];
-
-                $clasesPendientes = [];
-                foreach ($clasesOrdenadas as $clase) {
-                    $claseArray = $clase;
-                    $claseArray['bloques_restantes'] = $clase['area_bloque'];
-                    $clasesPendientes[] = $claseArray;
+                if ($cMateriaId && $cSeccionId && $cDia) {
+                    $matrices['materiaDia'][$cMateriaId . '_' . $cSeccionId . '_' . $cDia] = true;
                 }
-
-                
-                //bucle asigna un bloque por clase en cada ronda
-                do {
-                    $huboAvanceEnRonda = false;
-
-                    foreach ($clasesPendientes as &$clase) {
-                        //solo procesa clases que aún necesitan bloques
-                        if ($clase['bloques_restantes'] <= 0) {
-                            continue;
-                        }
-
-                        $maxBloques = $this->calcularMaxBloques($clase['docente_horas_academicas'] ?? 36);
-
-                        //intenta asignar un bloque para esta clase
-                        $asignacion = $this->asignarUnBloque($clase, $matrices, $totalDias, $totalBloques, $maxBloques, $bloquesPorDiaGlobal);
-
-                        if ($asignacion !== null) {
-                            $aulaId = $asignacion['aula_id'] > 0 ? $asignacion['aula_id'] : null;
-                            
-                            //guarda la asignación en la base de datos
-                            HorarioAsignacion::create([
-                                'anio_escolar_id' => $anioEscolar,
-                                'carga_academica_id' => $clase['carga_academica_id'],
-                                'aula_id' => $aulaId,
-                                'dia' => $asignacion['dia'],
-                                'bloque' => $asignacion['bloque'],
-                                'conflicto_manual' => false,
-                            ]);
-
-                            $todasLasAsignaciones[] = $asignacion;
-                            $clase['bloques_restantes']--;
-                            $huboAvanceEnRonda = true;
-                        }
-                    }
-                    unset($clase);
-
-                } while ($huboAvanceEnRonda && $this->hayClasesPendientes($clasesPendientes));
-
-                //genera conflictos para las clases que no se pudieron asignar completamente
-                foreach ($clasesPendientes as $clase) {
-                    if ($clase['bloques_restantes'] > 0) {
-                        $tipoConflicto = $this->determinarTipoConflicto($clase, $matrices, $totalDias, $totalBloques, $bloquesPorDiaGlobal);
-                        
-                        $diasBloquesFallidos = $this->identificarEspaciosFallidos($clase, $matrices, $totalDias, $totalBloques, $bloquesPorDiaGlobal);
-                        
-                        $todosLosConflictos[] = [
-                            'docente_id' => $clase['docente_id'],
-                            'docente_nombre' => $clase['docente_nombre'],
-                            'materia_id' => $clase['area_id'],
-                            'materia_nombre' => $clase['area_nombre'],
-                            'seccion_id' => $clase['seccion_id'],
-                            'seccion_nombre' => $clase['seccion_nombre'],
-                            'bloques_pendientes' => $clase['bloques_restantes'],
-                            'tipo_conflicto' => $tipoConflicto['tipo'],
-                            'motivo' => $tipoConflicto['motivo'],
-                            'sugerencias' => $tipoConflicto['sugerencias'],
-                            'dias_bloques_fallidos' => $diasBloquesFallidos,
-                        ];
-                    }
-                }
-
-                return [
-                    'asignaciones' => $todasLasAsignaciones,
-                    'conflictos' => $todosLosConflictos,
-                ];
-            });
+            }
         }
+
+        // Calcular disponibilidad docente para cada clase
+        $clasesConDisp = $clases->map(function ($clase) use ($matrices, $totalDias, $totalBloques) {
+            $clase['disponibilidad_docente'] = $this->calcularDisponibilidad(
+                $clase['docente_id'],
+                $matrices['docenteOcupado'],
+                $totalDias,
+                $totalBloques
+            );
+            return $clase;
+        });
+
+        // Ordenar y opcionalmente mezclar clases con la misma disponibilidad y tamaño
+        if ($aleatorizar) {
+            $grupos = $clasesConDisp->groupBy(function ($item) {
+                return $item['disponibilidad_docente'] . '_' . $item['area_bloque'];
+            });
+
+            $gruposOrdenados = $grupos->sort(function ($a, $b) {
+                $pA = $a->first();
+                $pB = $b->first();
+                if ($pA['disponibilidad_docente'] !== $pB['disponibilidad_docente']) {
+                    return $pA['disponibilidad_docente'] <=> $pB['disponibilidad_docente'];
+                }
+                return $pB['area_bloque'] <=> $pA['area_bloque'];
+            });
+
+            $clasesOrdenadas = collect();
+            foreach ($gruposOrdenados as $grupo) {
+                $items = $grupo->values()->all();
+                // Fisher-Yates shuffle determinista basado en mt_rand()
+                for ($j = count($items) - 1; $j > 0; $j--) {
+                    $k = mt_rand(0, $j);
+                    $temp = $items[$j];
+                    $items[$j] = $items[$k];
+                    $items[$k] = $temp;
+                }
+                foreach ($items as $item) {
+                    $clasesOrdenadas->push($item);
+                }
+            }
+        } else {
+            $clasesOrdenadas = $clasesConDisp->sortBy([
+                ['disponibilidad_docente', 'asc'],
+                ['area_bloque', 'desc'],
+            ])->values();
+        }
+
+        $todasLasAsignaciones = [];
+        $todosLosConflictos = [];
+        $bloquesPorDiaGlobal = [];
+
+        $clasesPendientes = [];
+        foreach ($clasesOrdenadas as $clase) {
+            $claseArray = $clase;
+            $claseArray['bloques_restantes'] = $clase['area_bloque'];
+            $clasesPendientes[] = $claseArray;
+        }
+
+        // Bucle asigna un bloque por clase en cada ronda
+        do {
+            $huboAvanceEnRonda = false;
+
+            foreach ($clasesPendientes as &$clase) {
+                if ($clase['bloques_restantes'] <= 0) {
+                    continue;
+                }
+
+                $maxBloques = $this->calcularMaxBloques($clase['docente_horas_academicas'] ?? 36);
+
+                $asignacion = $this->asignarUnBloque($clase, $matrices, $totalDias, $totalBloques, $maxBloques, $bloquesPorDiaGlobal);
+
+                if ($asignacion !== null) {
+                    $aulaId = $asignacion['aula_id'] > 0 ? $asignacion['aula_id'] : null;
+
+                    // Acumular en memoria, sin escribir en BD
+                    $todasLasAsignaciones[] = [
+                        'anio_escolar_id' => $anio,
+                        'carga_academica_id' => $clase['carga_academica_id'],
+                        'docente_id' => $clase['docente_id'],
+                        'seccion_id' => $clase['seccion_id'],
+                        'materia_id' => $clase['area_id'],
+                        'aula_id' => $aulaId,
+                        'dia' => $asignacion['dia'],
+                        'bloque' => $asignacion['bloque'],
+                        'dia_id' => $asignacion['dia'],
+                        'bloque_id' => $asignacion['bloque'],
+                        'fijada' => false,
+                        'conflicto_manual' => false,
+                    ];
+
+                    $clase['bloques_restantes']--;
+                    $huboAvanceEnRonda = true;
+                }
+            }
+            unset($clase);
+
+        } while ($huboAvanceEnRonda && $this->hayClasesPendientes($clasesPendientes));
+
+        // Detectar conflictos para clases no asignadas completamente
+        foreach ($clasesPendientes as $clase) {
+            if ($clase['bloques_restantes'] > 0) {
+                $tipoConflicto = $this->determinarTipoConflicto($clase, $matrices, $totalDias, $totalBloques, $bloquesPorDiaGlobal);
+                $diasBloquesFallidos = $this->identificarEspaciosFallidos($clase, $matrices, $totalDias, $totalBloques, $bloquesPorDiaGlobal);
+
+                $todosLosConflictos[] = [
+                    'docente_id' => $clase['docente_id'],
+                    'docente_nombre' => $clase['docente_nombre'],
+                    'materia_id' => $clase['area_id'],
+                    'materia_nombre' => $clase['area_nombre'],
+                    'seccion_id' => $clase['seccion_id'],
+                    'seccion_nombre' => $clase['seccion_nombre'],
+                    'bloques_pendientes' => $clase['bloques_restantes'],
+                    'tipo_conflicto' => $tipoConflicto['tipo'],
+                    'motivo' => $tipoConflicto['motivo'],
+                    'sugerencias' => $tipoConflicto['sugerencias'],
+                    'dias_bloques_fallidos' => $diasBloquesFallidos,
+                ];
+            }
+        }
+
+        return [
+            'asignaciones' => $todasLasAsignaciones,
+            'conflictos' => $todosLosConflictos,
+            'matrices' => $matrices,
+        ];
+    }
+
+    /**
+     * Calcula la suma de (máx - mín) de bloques por día de cada docente.
+     */
+    public function calcularDesbalanceDocentes(array $asignaciones, int $totalDias): int
+    {
+        $asignacionesPorDocente = [];
+        foreach ($asignaciones as $asig) {
+            $docId = $asig['docente_id'] ?? null;
+            if ($docId) {
+                $asignacionesPorDocente[$docId][] = $asig;
+            }
+        }
+
+        $desbalanceTotal = 0;
+        foreach ($asignacionesPorDocente as $docId => $docAsigs) {
+            $bloquesPorDia = array_fill(1, $totalDias, 0);
+            foreach ($docAsigs as $asig) {
+                $dia = (int) ($asig['dia'] ?? 0);
+                if (isset($bloquesPorDia[$dia])) {
+                    $bloquesPorDia[$dia]++;
+                }
+            }
+            $max = max($bloquesPorDia);
+            $min = min($bloquesPorDia);
+            $desbalanceTotal += ($max - $min);
+        }
+
+        return $desbalanceTotal;
+    }
+
+    /**
+     * Ejecuta múltiples intentos aleatorizados en memoria, selecciona el de menor puntaje
+     * y guarda el resultado en la base de datos bajo una única transacción.
+     *
+     * @param int $anioEscolar ID del año escolar
+     * @param int $totalDias Total de días lectivos (def: 5)
+     * @param int $totalBloques Total de bloques por día (def: 8)
+     * @param int|null $gradoId Filtro opcional por grado
+     * @param int|null $areaFormacionId Filtro opcional por área
+     * @param int $intentos Número de intentos en memoria (def: 20)
+     * @return array
+     */
+    public function generar(
+        int $anioEscolar,
+        $totalDias = 5,
+        $totalBloques = 8,
+        ?int $gradoId = null,
+        ?int $areaFormacionId = null,
+        int $intentos = 20
+    ): array {
+        $tiempoInicio = microtime(true);
+
+        // Soporte de compatibilidad si se llama con firma posicional (anio, gradoId, areaId, intentos)
+        if ($totalDias === null || (!is_numeric($totalDias) && is_null($totalDias))) {
+            $intentos = is_numeric($gradoId) ? (int)$gradoId : 20;
+            $areaFormacionId = $totalBloques;
+            $gradoId = $totalDias;
+            $totalDias = 5;
+            $config = \App\Models\ConfiguracionHorario::where('anio_escolar_id', $anioEscolar)->first();
+            $totalBloques = $config ? (int)$config->numero_bloques : 8;
+        }
+
+        $totalDias = (int) ($totalDias ?? 5);
+        $totalBloques = (int) ($totalBloques ?? 8);
+        $intentos = max(1, (int) ($intentos ?? 20));
+
+        $mejorIntento = null;
+        $menorPuntaje = PHP_INT_MAX;
+        $intentosEjecutados = 0;
+
+        for ($i = 1; $i <= $intentos; $i++) {
+            $intentosEjecutados++;
+            mt_srand($i);
+
+            $intento = $this->intentarGenerar(
+                anio: $anioEscolar,
+                gradoId: $gradoId,
+                areaId: $areaFormacionId,
+                aleatorizar: true,
+                totalDias: $totalDias,
+                totalBloques: $totalBloques
+            );
+
+            $asignaciones = $intento['asignaciones'];
+            $conflictos = $intento['conflictos'];
+            $matrices = $intento['matrices'];
+
+            $seccionIds = array_values(array_unique(array_filter(array_column($asignaciones, 'seccion_id'))));
+            $huecos = $this->contarHuecos($asignaciones, $matrices['reservado'] ?? [], $seccionIds);
+            $desbalance = $this->calcularDesbalanceDocentes($asignaciones, $totalDias);
+
+            // Fórmula: (count($conflictos) * 1000) + ($this->contarHuecos(...) * 10) + $desbalanceCargaDocentes
+            $puntaje = (count($conflictos) * 1000) + ($huecos * 10) + $desbalance;
+
+            if ($puntaje < $menorPuntaje || $mejorIntento === null) {
+                $menorPuntaje = $puntaje;
+                $mejorIntento = [
+                    'numero_intento' => $i,
+                    'asignaciones' => $asignaciones,
+                    'conflictos' => $conflictos,
+                    'puntaje' => $puntaje,
+                    'huecos' => $huecos,
+                    'desbalance' => $desbalance,
+                ];
+            }
+
+            // Si el puntaje es 0, es perfecto, rompe el bucle
+            if ($puntaje === 0) {
+                break;
+            }
+        }
+
+        if ($mejorIntento === null) {
+            $mejorIntento = [
+                'numero_intento' => 1,
+                'asignaciones' => [],
+                'conflictos' => [],
+                'puntaje' => 0,
+                'huecos' => 0,
+                'desbalance' => 0,
+            ];
+        }
+
+        // Guardado final en base de datos bajo transacción única
+        \DB::transaction(function () use ($anioEscolar, $gradoId, $areaFormacionId, $mejorIntento) {
+            // Borra solo lo que se va a regenerar respetando clases fijadas
+            $aBorrar = HorarioAsignacion::where('anio_escolar_id', $anioEscolar)
+                ->where('fijada', false);
+
+            if ($gradoId !== null) {
+                $aBorrar->whereHas('cargaAcademica.seccion', function ($q) use ($gradoId) {
+                    $q->where('grado_id', $gradoId);
+                });
+            }
+
+            if ($areaFormacionId !== null) {
+                $aBorrar->whereHas('cargaAcademica', function ($q) use ($areaFormacionId) {
+                    $q->where('area_formacion_id', $areaFormacionId);
+                });
+            }
+
+            $aBorrar->delete();
+
+            // Inserta en lote las asignaciones del intento ganador
+            if (!empty($mejorIntento['asignaciones'])) {
+                $ahora = now();
+                $filasAInsertar = [];
+                foreach ($mejorIntento['asignaciones'] as $asig) {
+                    $filasAInsertar[] = [
+                        'anio_escolar_id' => $anioEscolar,
+                        'carga_academica_id' => $asig['carga_academica_id'],
+                        'aula_id' => $asig['aula_id'] ?? null,
+                        'dia' => $asig['dia'],
+                        'bloque' => $asig['bloque'],
+                        'dia_id' => $asig['dia_id'] ?? $asig['dia'],
+                        'bloque_id' => $asig['bloque_id'] ?? $asig['bloque'],
+                        'fijada' => false,
+                        'conflicto_manual' => false,
+                        'motivo_conflicto' => null,
+                        'created_at' => $ahora,
+                        'updated_at' => $ahora,
+                    ];
+                }
+
+                foreach (array_chunk($filasAInsertar, 500) as $chunk) {
+                    HorarioAsignacion::insert($chunk);
+                }
+            }
+        });
+
+        $tiempoFin = microtime(true);
+        $tiempoMs = round(($tiempoFin - $tiempoInicio) * 1000, 2);
+
+        return [
+            'asignaciones' => $mejorIntento['asignaciones'],
+            'conflictos' => $mejorIntento['conflictos'],
+            'intento_ganador' => $mejorIntento['numero_intento'],
+            'puntaje' => $mejorIntento['puntaje'],
+            'intentos_ejecutados' => $intentosEjecutados,
+            'huecos' => $mejorIntento['huecos'],
+            'tiempo_ms' => $tiempoMs,
+        ];
+    }
 
         //recorre el array de clases y busca si hay alguna vacia para la iteracion de asignaciones
 

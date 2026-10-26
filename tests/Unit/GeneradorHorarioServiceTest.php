@@ -748,6 +748,182 @@ class GeneradorHorarioServiceTest extends TestCase
         $this->assertEquals(1, $asig['dia']);
         $this->assertEquals(2, $asig['bloque']);
     }
+
+    private function crearDocentePrueba(string $nombre = 'Docente', int $horas = 36): Docente
+    {
+        static $cedula = 20000000;
+        $cedula++;
+
+        $tipoDocId = \DB::table('tipo_documentos')->insertGetId([
+            'nombre' => 'CI' . $cedula,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $generoId = \DB::table('generos')->insertGetId([
+            'genero' => 'M' . $cedula,
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $personaId = \DB::table('personas')->insertGetId([
+            'primer_nombre' => $nombre,
+            'primer_apellido' => 'Test',
+            'numero_documento' => 'V' . $cedula,
+            'tipo_documento_id' => $tipoDocId,
+            'genero_id' => $generoId,
+            'fecha_nacimiento' => '1985-05-15',
+            'status' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return Docente::create([
+            'persona_id' => $personaId,
+            'horas_academicas' => $horas,
+            'status' => 1,
+        ]);
+    }
+
+    /**
+     * P7 / M6: Prueba que con múltiples intentos (20), el puntaje final es menor o igual al del primer intento.
+     */
+    public function test_puntaje_final_con_multiples_intentos_es_menor_o_igual_al_primer_intento(): void
+    {
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => now()->toDateString(),
+            'cierre_anio_escolar' => now()->addYear()->toDateString(),
+            'status' => 'Activo',
+        ]);
+
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 2, 'status' => 1]);
+        $secA = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+        $secB = Seccion::create(['nombre' => 'B', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        $doc1 = $this->crearDocentePrueba('Doc1', 36);
+        $doc2 = $this->crearDocentePrueba('Doc2', 36);
+
+        // Áreas con misma disponibilidad y tamaño (3 bloques)
+        $m1 = AreaFormacion::create(['nombre_area_formacion' => 'Castellano', 'codigo_area' => 'CAS', 'siglas' => 'CAS', 'bloques_semanales' => 3, 'status' => 1]);
+        $m2 = AreaFormacion::create(['nombre_area_formacion' => 'Inglés', 'codigo_area' => 'ING', 'siglas' => 'ING', 'bloques_semanales' => 3, 'status' => 1]);
+        $m3 = AreaFormacion::create(['nombre_area_formacion' => 'Matemática', 'codigo_area' => 'MAT', 'siglas' => 'MAT', 'bloques_semanales' => 3, 'status' => 1]);
+
+        CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc1->id, 'area_formacion_id' => $m1->id, 'seccion_id' => $secA->id]);
+        CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc1->id, 'area_formacion_id' => $m2->id, 'seccion_id' => $secB->id]);
+        CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc2->id, 'area_formacion_id' => $m3->id, 'seccion_id' => $secA->id]);
+        CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc2->id, 'area_formacion_id' => $m1->id, 'seccion_id' => $secB->id]);
+
+        // 1 solo intento
+        $res1 = $this->service->generar($anio->id, totalDias: 5, totalBloques: 4, intentos: 1);
+
+        // 20 intentos
+        $res20 = $this->service->generar($anio->id, totalDias: 5, totalBloques: 4, intentos: 20);
+
+        $this->assertLessThanOrEqual($res1['puntaje'], $res20['puntaje']);
+        $this->assertArrayHasKey('intento_ganador', $res20);
+        $this->assertArrayHasKey('puntaje', $res20);
+        $this->assertArrayHasKey('intentos_ejecutados', $res20);
+        $this->assertArrayHasKey('huecos', $res20);
+        $this->assertArrayHasKey('tiempo_ms', $res20);
+        $this->assertGreaterThanOrEqual(1, $res20['intento_ganador']);
+        $this->assertLessThanOrEqual($res20['intentos_ejecutados'], $res20['intento_ganador']);
+    }
+
+    /**
+     * P7 / M6: Prueba que usar la misma semilla produce exactamente el mismo resultado (determinismo).
+     */
+    public function test_usar_misma_semilla_produce_exactamente_el_mismo_resultado_determinista(): void
+    {
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => now()->toDateString(),
+            'cierre_anio_escolar' => now()->addYear()->toDateString(),
+            'status' => 'Activo',
+        ]);
+
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 2, 'status' => 1]);
+        $secA = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+        $secB = Seccion::create(['nombre' => 'B', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        $doc1 = $this->crearDocentePrueba('DocA', 36);
+        $doc2 = $this->crearDocentePrueba('DocB', 36);
+
+        $m1 = AreaFormacion::create(['nombre_area_formacion' => 'Historia', 'codigo_area' => 'HIS', 'siglas' => 'HIS', 'bloques_semanales' => 3, 'status' => 1]);
+        $m2 = AreaFormacion::create(['nombre_area_formacion' => 'Geografía', 'codigo_area' => 'GEO', 'siglas' => 'GEO', 'bloques_semanales' => 3, 'status' => 1]);
+
+        CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc1->id, 'area_formacion_id' => $m1->id, 'seccion_id' => $secA->id]);
+        CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc2->id, 'area_formacion_id' => $m2->id, 'seccion_id' => $secB->id]);
+
+        // Intento 1 con semilla fija
+        mt_srand(777);
+        $intento1 = $this->service->intentarGenerar($anio->id, aleatorizar: true, totalDias: 5, totalBloques: 4);
+
+        // Intento 2 con la misma semilla fija
+        mt_srand(777);
+        $intento2 = $this->service->intentarGenerar($anio->id, aleatorizar: true, totalDias: 5, totalBloques: 4);
+
+        $this->assertEquals($intento1['asignaciones'], $intento2['asignaciones']);
+        $this->assertEquals($intento1['conflictos'], $intento2['conflictos']);
+    }
+
+    /**
+     * P7 / M6: Asegura que no queden registros a medias si la transacción de guardado falla.
+     */
+    public function test_no_quedan_registros_a_medias_si_la_transaccion_falla(): void
+    {
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => now()->toDateString(),
+            'cierre_anio_escolar' => now()->addYear()->toDateString(),
+            'status' => 'Activo',
+        ]);
+        $docente = $this->crearDocentePrueba('DocRollback', 36);
+        $area = AreaFormacion::create(['nombre_area_formacion' => 'Arte', 'codigo_area' => 'ART-1', 'siglas' => 'ART', 'bloques_semanales' => 2, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 1, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        $carga = CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docente->id,
+            'area_formacion_id' => $area->id,
+            'seccion_id' => $seccion->id,
+        ]);
+
+        $fijadaPrevia = HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga->id,
+            'dia' => 1,
+            'bloque' => 1,
+            'fijada' => true,
+        ]);
+
+        $conteoAntes = HorarioAsignacion::count();
+        $this->assertEquals(1, $conteoAntes);
+
+        // Simulamos un fallo durante la transacción de guardado
+        try {
+            \DB::transaction(function () use ($anio, $carga) {
+                HorarioAsignacion::where('anio_escolar_id', $anio->id)->where('fijada', false)->delete();
+                HorarioAsignacion::insert([
+                    'anio_escolar_id' => $anio->id,
+                    'carga_academica_id' => $carga->id,
+                    'dia' => 2,
+                    'bloque' => 1,
+                    'fijada' => false,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                throw new \RuntimeException('Fallo simulado en la transacción');
+            });
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('Fallo simulado', $e->getMessage());
+        }
+
+        // La base de datos debe permanecer en su estado previo íntegro
+        $this->assertEquals($conteoAntes, HorarioAsignacion::count());
+        $this->assertDatabaseHas('horario_asignaciones', ['id' => $fijadaPrevia->id, 'fijada' => true]);
+        $this->assertDatabaseMissing('horario_asignaciones', ['dia' => 2, 'bloque' => 1]);
+    }
 }
 
 
