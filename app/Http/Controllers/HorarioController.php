@@ -215,7 +215,46 @@ class HorarioController extends Controller
         // Paginar los resultados
         $horariosPaginados = $this->paginateCollection($horariosAsignados, 10);
 
-        return view('admin.horario.index', compact('grados', 'areasFormacion', 'secciones', 'bloquesHorarios', 'horariosPaginados'));
+        // Verificar si existen errores críticos que impidan la creación de horarios
+        $hayErroresCriticos = false;
+        $erroresCriticos = [];
+
+        if ($anioEscolarActivo) {
+            $configuracion = ConfiguracionHorario::where('anio_escolar_id', $anioEscolarActivo->id)->first();
+            if (!$configuracion) {
+                $hayErroresCriticos = true;
+                $erroresCriticos = [
+                    [
+                        'mensaje' => 'Configuración de marco horario pendiente',
+                        'detalle' => 'Debes configurar el marco horario (bloques y recesos) antes de crear un horario.'
+                    ]
+                ];
+            } else {
+                $diagnostico = $this->validador->validar($anioEscolarActivo->id);
+                if (!empty($diagnostico['errores'])) {
+                    $hayErroresCriticos = true;
+                    $erroresCriticos = $diagnostico['errores'];
+                }
+            }
+        } else {
+            $hayErroresCriticos = true;
+            $erroresCriticos = [
+                [
+                    'mensaje' => 'Sin año escolar activo',
+                    'detalle' => 'Debe existir un año escolar con estado Activo para crear y gestionar horarios.'
+                ]
+            ];
+        }
+
+        return view('admin.horario.index', compact(
+            'grados',
+            'areasFormacion',
+            'secciones',
+            'bloquesHorarios',
+            'horariosPaginados',
+            'hayErroresCriticos',
+            'erroresCriticos'
+        ));
     }
 
     // Método auxiliar para paginar colecciones

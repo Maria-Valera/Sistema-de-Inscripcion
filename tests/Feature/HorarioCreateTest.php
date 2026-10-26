@@ -246,4 +246,72 @@ class HorarioCreateTest extends TestCase
             return $docenteItem !== null && count($docenteItem['secciones']) >= 1;
         });
     }
+
+    /**
+     * UX: Verifica que en el index el botón "+ Nuevo Horario" aparece deshabilitado
+     * con el mensaje explicativo si hay errores críticos en la carga académica.
+     */
+    public function test_index_horario_muestra_boton_deshabilitado_con_explicacion_si_hay_errores_criticos(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        ConfiguracionHorario::create([
+            'anio_escolar_id' => $anio->id,
+            'hora_inicio' => '07:00:00',
+            'numero_bloques' => 8,
+            'duracion_bloque_min' => 90,
+            'minutos_entre_bloques' => 0,
+        ]);
+
+        // Crear una sección sin aula (error crítico)
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => 1]);
+        Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        $response = $this->actingAs($admin)->get(route('admin.horario.index'));
+
+        $response->assertOk();
+        // Botón deshabilitado presente
+        $response->assertSee('disabled', false);
+        // Explicación visible bajo el botón
+        $response->assertSee('No puedes crear un horario porque hay errores en la carga académica.');
+        $response->assertSee('Corrige los errores en el panel inferior para habilitar este botón.');
+        // Panel de errores visible
+        $response->assertSee('Creación de Horarios Bloqueada');
+        $response->assertSee('Errores críticos que deben solucionarse para habilitar la creación:');
+    }
+
+    /**
+     * UX: Verifica que en el index el botón "+ Nuevo Horario" está habilitado si todo es válido.
+     */
+    public function test_index_horario_muestra_boton_habilitado_cuando_no_hay_errores_criticos(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        ConfiguracionHorario::create([
+            'anio_escolar_id' => $anio->id,
+            'hora_inicio' => '07:00:00',
+            'numero_bloques' => 8,
+            'duracion_bloque_min' => 90,
+            'minutos_entre_bloques' => 0,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.horario.index'));
+
+        $response->assertOk();
+        // El enlace a create está activo
+        $response->assertSee(route('admin.horario.create'), false);
+        $response->assertDontSee('No puedes crear un horario porque hay errores en la carga académica.');
+    }
 }

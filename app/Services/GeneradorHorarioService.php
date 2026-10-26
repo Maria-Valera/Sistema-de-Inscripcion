@@ -74,6 +74,8 @@ Class GeneradorHorarioService
         $bloquesPorDocente = [];
         $reservado = [];
         $materiaDia = [];
+        $docenteDia = [];
+        $docenteNoPreferente = [];
 
         //busca los dias y bloques de hora que el docente no puede ser asignado (solo aprobadas y prohibidas)
         $noDisponible = DocenteIndisponibilidad::where('anio_escolar_id', $anioEscolar)
@@ -84,6 +86,17 @@ Class GeneradorHorarioService
             $dia = $nd->dia instanceof Dia ? $nd->dia->value : (int) $nd->dia;
             $clave = $nd->docente_id . '_' . $dia . '_' . $nd->bloque;
             $docenteOcupado[$clave] = true;
+        }
+
+        //busca indisponibilidades no_preferente aprobadas (para costoPosicion en M5/P6)
+        $noPreferente = DocenteIndisponibilidad::where('anio_escolar_id', $anioEscolar)
+            ->where('estado', 'aprobada')
+            ->where('tipo', 'no_preferente')
+            ->get();
+        foreach ($noPreferente as $np) {
+            $dia = $np->dia instanceof Dia ? $np->dia->value : (int) $np->dia;
+            $clave = $np->docente_id . '_' . $dia . '_' . $np->bloque;
+            $docenteNoPreferente[$clave] = true;
         }
 
         //bloques reservados (ej. grupos estables)
@@ -100,6 +113,8 @@ Class GeneradorHorarioService
             'bloquesPorDocente' => $bloquesPorDocente,
             'reservado' => $reservado,
             'materiaDia' => $materiaDia,
+            'docenteDia' => $docenteDia,
+            'docenteNoPreferente' => $docenteNoPreferente,
         ];
     }
 
@@ -206,7 +221,7 @@ Class GeneradorHorarioService
     }
 
 
-    //asigna un bloque al primer hueco que cumpla los requisitos
+    //asigna un bloque al hueco con menor costo que cumpla los requisitos (M5 / P6)
     public function asignarUnBloque(array &$clase, array &$matrices, int $totalDias, int $totalBloques, int $maxBloquesDocente, array &$bloquesPorDiaGlobal = []): ?array
     {
         $docenteId = $clase['docente_id'];
@@ -215,11 +230,14 @@ Class GeneradorHorarioService
             $matrices['bloquesPorDocente'][$docenteId] = 0;
         }
 
-        //busca si el area necesita un aula especializada(ejem. Edu fisica)
+        //busca si el area necesita un aula especializada (ejem. Edu fisica)
         $aulaFijaMateria = $clase['area_aula'] ?? null;
         $esEspecializada = $aulaFijaMateria && !Aula::esTipoRegular($aulaFijaMateria->tipo_aula);
 
-        //por cada dia y bloque busca un espacio disponible
+        $mejorOpcion = null;
+        $menorCosto = PHP_INT_MAX;
+
+        //recorre todas las celdas válidas (dia, bloque) y calcula el costo para cada una
         for ($dia = 1; $dia <= $totalDias; $dia++) {
             // Regla: si ya existe una asignación de esa misma materia en esa sección en ese día, saltar al siguiente día
             $claveMateriaDia = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
@@ -256,30 +274,144 @@ Class GeneradorHorarioService
                     if ($aulaAsignada === null) continue;
                 }
 
-                //asigna marcando todo como ocupado para las siguientes iteraciones
-                $asignacion = [
-                    'docente_id' => $docenteId,
-                    'materia_id' => $clase['area_id'],
-                    'seccion_id' => $clase['seccion_id'],
-                    'dia' => $dia,
-                    'bloque' => $bloque,
-                    'aula_id' => $aulaAsignada,
-                ];
-
-                $matrices['docenteOcupado'][$claveDocente] = true;
-                $matrices['seccionOcupado'][$claveSeccion] = true;
-                $matrices['bloquesPorDocente'][$docenteId]++;
-                $matrices['materiaDia'][$claveMateriaDia] = true;
-
-                if ($esEspecializada) {
-                    $matrices['aulaEspecialOcupada'][$aulaAsignada . '_' . $dia . '_' . $bloque] = true;
+                // ===== CÁLCULO DE COSTO (M5) =====
+                // 1. costoPosicion: 0 por ahora (punto de extensión P11). Si indisponibilidad no_preferente, suma 1.
+                $costoPosicion = 0;
+                if (isset($matrices['docenteNoPreferente'][$claveDocente])) {
+                    $costoPosicion += 1;
                 }
 
-                return $asignacion;
+                // 2. costoHueco: 2 si colocar la clase deja un hueco en la sección ese día.
+                // Un hueco es un bloque libre no reservado entre dos bloques ocupados.
+                $bloquesOcupados = [$bloque];
+                for ($b = 1; $b <= $totalBloques; $b++) {
+                    if ($b === $bloque) continue;
+                    if (isset($matrices['seccionOcupado'][$clase['seccion_id'] . '_' . $dia . '_' . $b]) ||
+                        isset($matrices['reservado'][$dia . '_' . $b])) {
+                        $bloquesOcupados[] = $b;
+                    }
+                }
+                $costoHueco = 0;
+                if (count($bloquesOcupados) > 1) {
+                    $min = min($bloquesOcupados);
+                    $max = max($bloquesOcupados);
+                    if (($max - $min + 1) - count($bloquesOcupados) > 0) {
+                        $costoHueco = 2;
+                    }
+                }
+
+                // 3. cargaDelDocenteEseDia: cantidad de bloques ya asignados a ese docente en ese día (para balancear)
+                $cargaDelDocenteEseDia = $matrices['docenteDia'][$docenteId . '_' . $dia] ?? 0;
+
+                $costoTotal = $costoPosicion + $costoHueco + $cargaDelDocenteEseDia;
+
+                // Elige la celda con el menor costo total.
+                // En caso de empate, la condición estricta (<) preserva la primera celda evaluada (orden ascendente de día y bloque).
+                if ($costoTotal < $menorCosto) {
+                    $menorCosto = $costoTotal;
+                    $mejorOpcion = [
+                        'dia' => $dia,
+                        'bloque' => $bloque,
+                        'aula_id' => $aulaAsignada,
+                    ];
+                }
             }
         }
 
-        return null;
+        if ($mejorOpcion === null) {
+            return null;
+        }
+
+        $dia = $mejorOpcion['dia'];
+        $bloque = $mejorOpcion['bloque'];
+        $aulaAsignada = $mejorOpcion['aula_id'];
+
+        $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
+        $claveSeccion = $clase['seccion_id'] . '_' . $dia . '_' . $bloque;
+        $claveMateriaDia = $clase['area_id'] . '_' . $clase['seccion_id'] . '_' . $dia;
+
+        //asigna marcando todo como ocupado para las siguientes iteraciones
+        $asignacion = [
+            'docente_id' => $docenteId,
+            'materia_id' => $clase['area_id'],
+            'seccion_id' => $clase['seccion_id'],
+            'dia' => $dia,
+            'bloque' => $bloque,
+            'aula_id' => $aulaAsignada,
+        ];
+
+        $matrices['docenteOcupado'][$claveDocente] = true;
+        $matrices['seccionOcupado'][$claveSeccion] = true;
+        $matrices['bloquesPorDocente'][$docenteId]++;
+        $matrices['docenteDia'][$docenteId . '_' . $dia] = ($matrices['docenteDia'][$docenteId . '_' . $dia] ?? 0) + 1;
+        $matrices['materiaDia'][$claveMateriaDia] = true;
+
+        if ($esEspecializada) {
+            $matrices['aulaEspecialOcupada'][$aulaAsignada . '_' . $dia . '_' . $bloque] = true;
+        }
+
+        return $asignacion;
+    }
+
+    /**
+     * Cuenta el total de huecos en un conjunto de asignaciones para las secciones dadas (M5 / P6).
+     * Un hueco se define como: (último bloque ocupado - primer bloque ocupado + 1) - cantidad de bloques ocupados.
+     * Las celdas reservadas cuentan como ocupadas.
+     */
+    public function contarHuecos(array $asignaciones, array $reservado, array $seccionIds): int
+    {
+        $totalHuecos = 0;
+
+        // Indexar bloques asignados por [seccion_id][dia][bloque]
+        $ocupadosPorSeccionDia = [];
+        foreach ($seccionIds as $secId) {
+            $ocupadosPorSeccionDia[$secId] = [];
+        }
+
+        foreach ($asignaciones as $asig) {
+            $secId = $asig['seccion_id'] ?? null;
+            $dia = $asig['dia'] ?? $asig['dia_id'] ?? null;
+            $bloque = $asig['bloque'] ?? $asig['bloque_id'] ?? null;
+
+            if ($secId !== null && in_array($secId, $seccionIds) && $dia !== null && $bloque !== null) {
+                $ocupadosPorSeccionDia[$secId][$dia][$bloque] = true;
+            }
+        }
+
+        // Días regulares de evaluación (días 1 a 5)
+        $dias = range(1, 5);
+
+        foreach ($seccionIds as $secId) {
+            foreach ($dias as $dia) {
+                $bloquesOcupados = isset($ocupadosPorSeccionDia[$secId][$dia])
+                    ? array_keys($ocupadosPorSeccionDia[$secId][$dia])
+                    : [];
+
+                // Celdas reservadas cuentan como ocupadas
+                foreach ($reservado as $clave => $val) {
+                    if ($val) {
+                        $partes = explode('_', (string) $clave);
+                        if (count($partes) === 2 && (int) $partes[0] === (int) $dia) {
+                            $bloquesOcupados[] = (int) $partes[1];
+                        }
+                    }
+                }
+
+                $bloquesOcupados = array_unique($bloquesOcupados);
+
+                if (count($bloquesOcupados) > 1) {
+                    $min = min($bloquesOcupados);
+                    $max = max($bloquesOcupados);
+                    $cant = count($bloquesOcupados);
+                    $huecos = ($max - $min + 1) - $cant;
+                    if ($huecos > 0) {
+                        $totalHuecos += $huecos;
+                    }
+                }
+            }
+        }
+
+        return $totalHuecos;
     }
 
     //reconstruye las matrices de ocupación a partir de las asignaciones ya guardadas en BD
@@ -592,6 +724,7 @@ Class GeneradorHorarioService
                     }
                     $matrices['bloquesPorDocente'][$c->docente_id] = ($matrices['bloquesPorDocente'][$c->docente_id] ?? 0) + 1;
                     $matrices['materiaDia'][$c->materia_id . '_' . $c->seccion_id . '_' . $cDia] = true;
+                    $matrices['docenteDia'][$c->docente_id . '_' . $cDia] = ($matrices['docenteDia'][$c->docente_id . '_' . $cDia] ?? 0) + 1;
                 }
 
                 $clasesOrdenadas = $this->ordenarClasesPendientes($clases, $matrices['docenteOcupado'], $totalDias, $totalBloques);

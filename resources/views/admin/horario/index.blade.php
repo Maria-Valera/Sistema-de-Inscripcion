@@ -28,10 +28,27 @@
                         <span>Configurar Bloques</span>
                     </a>
                 @endcan
-                <a href="{{ route('admin.horario.create') }}" class="btn-create">
-                    <i class="fas fa-plus"></i>
-                    <span>Nuevo Horario</span>
-                </a>
+
+                @if ($hayErroresCriticos ?? false)
+                    <div class="d-inline-flex flex-column align-items-end text-end">
+                        <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 text-white shadow-none" disabled style="border-radius: 6px; font-weight: 600; cursor: not-allowed; background-color: #94a3b8; border: none; opacity: 0.85;">
+                            <i class="fas fa-plus"></i>
+                            <span>Nuevo Horario</span>
+                        </button>
+                        <span class="text-danger fw-semibold mt-1 d-inline-flex align-items-center gap-1" style="font-size: 0.8rem; line-height: 1.2;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>⚠️ No puedes crear un horario porque hay errores en la carga académica.</span>
+                        </span>
+                        <span class="text-muted" style="font-size: 0.74rem; line-height: 1.2;">
+                            Corrige los errores en el panel inferior para habilitar este botón.
+                        </span>
+                    </div>
+                @else
+                    <a href="{{ route('admin.horario.create') }}" class="btn-create">
+                        <i class="fas fa-plus"></i>
+                        <span>Nuevo Horario</span>
+                    </a>
+                @endif
             </div>
         </div>
     </div>
@@ -39,7 +56,11 @@
 
 @section('content')
     <div class="main-container">
-        @if (session('success') || session('error') || session('warning'))
+        @php
+            $erroresMostrar = session('errores_validacion') ?? ($erroresCriticos ?? []);
+        @endphp
+
+        @if (session('success') || session('error') || session('warning') || (($hayErroresCriticos ?? false) && !empty($erroresMostrar)))
             <div class="alerts-container">
                 @if (session('success'))
                     <div class="alert-modern alert-success alert alert-dismissible fade show" role="alert">
@@ -56,30 +77,34 @@
                     </div>
                 @endif
 
-                @if (session('warning'))
-                    <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem 1.25rem;">
+                @if (session('warning') || (($hayErroresCriticos ?? false) && !empty($erroresMostrar)))
+                    <div class="alert alert-warning alert-dismissible fade show shadow-sm mb-4" role="alert" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 1.25rem;">
                         <div class="d-flex align-items-start gap-3">
                             <div style="color: #d97706; font-size: 1.5rem; margin-top: -2px;">
                                 <i class="fas fa-exclamation-triangle"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h5 class="fw-bold mb-1" style="color: #92400e;">Atención Requerida</h5>
-                                <p class="mb-0" style="color: #78350f;">{{ session('warning') }}</p>
-                                @if (session('errores_validacion'))
-                                    <div class="mt-3 p-3 bg-white rounded border border-warning">
+                                <h5 class="fw-bold mb-1" style="color: #92400e;">
+                                    <i class="fas fa-lock me-1"></i> Creación de Horarios Bloqueada
+                                </h5>
+                                <p class="mb-0" style="color: #78350f;">
+                                    {{ session('warning') ?? 'Hay inconsistencias en la carga académica o configuración que impiden crear el horario.' }}
+                                </p>
+                                @if (!empty($erroresMostrar))
+                                    <div class="mt-3 p-3 bg-white rounded border border-warning shadow-sm">
                                         <h6 class="fw-bold text-danger mb-2">
-                                            <i class="fas fa-times-circle me-1"></i> Errores críticos detectados en la carga académica:
+                                            <i class="fas fa-times-circle me-1"></i> Errores críticos que deben solucionarse para habilitar la creación:
                                         </h6>
                                         <ul class="mb-0 ps-3 text-danger small">
-                                            @foreach (session('errores_validacion') as $err)
+                                            @foreach ($erroresMostrar as $err)
                                                 <li class="mb-1"><strong>{{ $err['mensaje'] }}</strong>: {{ $err['detalle'] }}</li>
                                             @endforeach
                                         </ul>
                                     </div>
                                 @endif
                             </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                     </div>
                 @endif
 

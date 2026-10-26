@@ -596,6 +596,132 @@ class GeneradorHorarioServiceTest extends TestCase
         $conflicto = $this->service->determinarTipoConflicto($clase, $matrices, totalDias: 2, totalBloques: 2);
         $this->assertEquals('seccion_saturada', $conflicto['tipo']);
     }
+
+    /**
+     * M5 / P6: Demuestra que con un docente de 4 bloques en 5 días, el generador
+     * prefiere poner los bloques en días distintos antes que dos en el mismo día por cargaDelDocenteEseDia.
+     */
+    public function test_generador_prefiere_dias_distintos_por_carga_del_docente_ese_dia(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 4, 'status' => 1]);
+
+        $seccion1 = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+        $seccion2 = Seccion::create(['nombre' => 'B', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+        $seccion3 = Seccion::create(['nombre' => 'C', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+        $seccion4 = Seccion::create(['nombre' => 'D', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        $docenteId = 99;
+
+        $matrices = [
+            'docenteOcupado' => [],
+            'seccionOcupado' => [],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [$docenteId => 0],
+            'reservado' => [],
+            'materiaDia' => [],
+            'docenteDia' => [],
+            'docenteNoPreferente' => [],
+        ];
+
+        // 4 clases para el mismo docente en 4 secciones distintas
+        $clase1 = ['docente_id' => $docenteId, 'area_id' => 10, 'seccion_id' => $seccion1->id, 'area_aula' => null];
+        $clase2 = ['docente_id' => $docenteId, 'area_id' => 11, 'seccion_id' => $seccion2->id, 'area_aula' => null];
+        $clase3 = ['docente_id' => $docenteId, 'area_id' => 12, 'seccion_id' => $seccion3->id, 'area_aula' => null];
+        $clase4 = ['docente_id' => $docenteId, 'area_id' => 13, 'seccion_id' => $seccion4->id, 'area_aula' => null];
+
+        $asig1 = $this->service->asignarUnBloque($clase1, $matrices, totalDias: 5, totalBloques: 8, maxBloquesDocente: 18);
+        $asig2 = $this->service->asignarUnBloque($clase2, $matrices, totalDias: 5, totalBloques: 8, maxBloquesDocente: 18);
+        $asig3 = $this->service->asignarUnBloque($clase3, $matrices, totalDias: 5, totalBloques: 8, maxBloquesDocente: 18);
+        $asig4 = $this->service->asignarUnBloque($clase4, $matrices, totalDias: 5, totalBloques: 8, maxBloquesDocente: 18);
+
+        $this->assertNotNull($asig1);
+        $this->assertNotNull($asig2);
+        $this->assertNotNull($asig3);
+        $this->assertNotNull($asig4);
+
+        $diasAsignados = [$asig1['dia'], $asig2['dia'], $asig3['dia'], $asig4['dia']];
+
+        // Cada bloque debe haberse asignado a un día diferente para balancear la carga diaria del docente
+        $this->assertCount(4, array_unique($diasAsignados));
+        $this->assertEquals([1, 2, 3, 4], $diasAsignados);
+    }
+
+    /**
+     * M5 / P6: Prueba que contarHuecos() devuelve 0 en una configuración ideal (clases pegadas desde el primer bloque).
+     */
+    public function test_contar_huecos_devuelve_cero_en_configuracion_ideal(): void
+    {
+        $seccionId = 1;
+        $asignaciones = [
+            ['seccion_id' => $seccionId, 'dia' => 1, 'bloque' => 1],
+            ['seccion_id' => $seccionId, 'dia' => 1, 'bloque' => 2],
+            ['seccion_id' => $seccionId, 'dia' => 1, 'bloque' => 3],
+            ['seccion_id' => $seccionId, 'dia' => 2, 'bloque' => 1],
+            ['seccion_id' => $seccionId, 'dia' => 2, 'bloque' => 2],
+        ];
+
+        $huecos = $this->service->contarHuecos($asignaciones, [], [$seccionId]);
+        $this->assertEquals(0, $huecos);
+    }
+
+    /**
+     * M5 / P6: Prueba que contarHuecos() detecta huecos reales y cuenta celdas reservadas como ocupadas.
+     */
+    public function test_contar_huecos_detecta_huecos_y_respeta_celdas_reservadas(): void
+    {
+        $seccionId = 1;
+
+        // Configuración con hueco en el bloque 2 del día 1
+        $asignaciones = [
+            ['seccion_id' => $seccionId, 'dia' => 1, 'bloque' => 1],
+            ['seccion_id' => $seccionId, 'dia' => 1, 'bloque' => 3],
+        ];
+
+        // 1 hueco detectado
+        $huecosSinReserva = $this->service->contarHuecos($asignaciones, [], [$seccionId]);
+        $this->assertEquals(1, $huecosSinReserva);
+
+        // Si el bloque intermedio está reservado (ej. grupos estables), cuenta como ocupado y el total de huecos es 0
+        $reservado = ['1_2' => true];
+        $huecosConReserva = $this->service->contarHuecos($asignaciones, $reservado, [$seccionId]);
+        $this->assertEquals(0, $huecosConReserva);
+    }
+
+    /**
+     * M5 / P6: Prueba que costoPosicion penaliza celdas no_preferente y prefiere celdas libres.
+     */
+    public function test_asignar_un_bloque_considera_costo_posicion_no_preferente(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 1, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        $docenteId = 77;
+
+        // El docente tiene indisponibilidad no_preferente en Día 1 Bloque 1
+        $matrices = [
+            'docenteOcupado' => [],
+            'seccionOcupado' => [],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [$docenteId => 0],
+            'reservado' => [],
+            'materiaDia' => [],
+            'docenteDia' => [],
+            'docenteNoPreferente' => [$docenteId . '_1_1' => true],
+        ];
+
+        $clase = ['docente_id' => $docenteId, 'area_id' => 10, 'seccion_id' => $seccion->id, 'area_aula' => null];
+
+        // En Día 1 Bloque 1 el costo es 1 (costoPosicion = 1).
+        // En Día 1 Bloque 2 el costo es 0 (no hay hueco previo, no es no_preferente, carga = 0).
+        $asig = $this->service->asignarUnBloque($clase, $matrices, totalDias: 2, totalBloques: 2, maxBloquesDocente: 18);
+
+        $this->assertNotNull($asig);
+        // Debe evitar el bloque 1 y elegir el bloque 2 por tener menor costo
+        $this->assertEquals(1, $asig['dia']);
+        $this->assertEquals(2, $asig['bloque']);
+    }
 }
 
 
