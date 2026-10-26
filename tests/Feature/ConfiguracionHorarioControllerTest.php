@@ -240,12 +240,19 @@ class ConfiguracionHorarioControllerTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        $cargaId = DB::table('cargas_academicas')->insertGetId([
+            'anio_escolar_id' => $this->anio->id,
+            'docente_id' => $docenteId,
+            'area_formacion_id' => $materiaId,
+            'seccion_id' => $seccionId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         // Simular una asignación en dia=3 (Miércoles), bloque=2
         DB::table('horario_asignaciones')->insert([
             'anio_escolar_id' => $this->anio->id,
-            'docente_id' => $docenteId,
-            'materia_id' => $materiaId,
-            'seccion_id' => $seccionId,
+            'carga_academica_id' => $cargaId,
             'aula_id' => null,
             'dia' => 3,
             'bloque' => 2,

@@ -33,6 +33,73 @@
             cursor: default;
         }
 
+        /* Estilos de Diagnóstico de Dificultad (M7 / P8) */
+        .diagnostico-cuellos-botella {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-left: 4px solid #0284c7;
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .diagnostico-cuellos-botella .diagnostico-header {
+            margin-bottom: 0.75rem;
+        }
+
+        .diagnostico-aclaratoria {
+            font-size: 0.8125rem;
+            color: #0369a1;
+            margin: 0.35rem 0 0 0;
+            line-height: 1.4;
+        }
+
+        .diagnostico-listas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .diagnostico-subtitulo {
+            font-size: 0.8125rem;
+            color: #0f172a;
+            display: block;
+            margin-bottom: 0.375rem;
+        }
+
+        .diagnostico-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .diagnostico-items li {
+            font-size: 0.8125rem;
+            color: #334155;
+            background: white;
+            padding: 0.4rem 0.65rem;
+            border-radius: 0.375rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .diagnostico-badge {
+            font-size: 0.75rem;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 600;
+            padding: 0.15rem 0.45rem;
+            border-radius: 0.25rem;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+        }
+
         /* Estilos específicos adicionales para modo selección */
         .btn-modo-seleccion {
             background: var(--horario-secondary);
@@ -801,8 +868,8 @@
                 });
             }
 
-            // Función para poblar el panel de conflictos con información detallada
-            function poblarPanelConflictos(conflictos) {
+            // Función para poblar el panel de conflictos con información detallada y diagnóstico de cuellos de botella
+            function poblarPanelConflictos(conflictos, diagnostico = null) {
                 const conflictosBody = document.getElementById('conflictosBody');
                 conflictosBody.innerHTML = '';
 
@@ -813,6 +880,53 @@
                         dz.classList.remove('tiene-conflicto');
                     });
                     return;
+                }
+
+                // Renderizar panel de diagnóstico (M7 / P8) si está presente
+                if (diagnostico && ((diagnostico.docentes && diagnostico.docentes.length > 0) || (diagnostico.secciones && diagnostico.secciones.length > 0))) {
+                    const docentesHTML = (diagnostico.docentes || []).map(d => `
+                        <li>
+                            <span><strong>Docente:</strong> ${escapeValidacionHtml(d.nombre)}</span>
+                            <span class="diagnostico-badge">${d.rechazos} rechazos (${d.porcentaje}% de las evaluaciones)</span>
+                        </li>
+                    `).join('') || '<li style="color: #94a3b8; font-style: italic;">Sin rechazos significativos</li>';
+
+                    const seccionesHTML = (diagnostico.secciones || []).map(s => `
+                        <li>
+                            <span><strong>Sección:</strong> ${escapeValidacionHtml(s.nombre)}</span>
+                            <span class="diagnostico-badge">${s.rechazos} rechazos (${s.porcentaje}% de las evaluaciones)</span>
+                        </li>
+                    `).join('') || '<li style="color: #94a3b8; font-style: italic;">Sin rechazos significativos</li>';
+
+                    const diagDiv = document.createElement('div');
+                    diagDiv.className = 'diagnostico-cuellos-botella';
+                    diagDiv.innerHTML = `
+                        <div class="diagnostico-header">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="fas fa-chart-line text-primary"></i>
+                                <h6 class="mb-0 fw-bold" style="color: #0369a1;">Diagnóstico de Dificultad (Cuellos de Botella)</h6>
+                            </div>
+                            <p class="diagnostico-aclaratoria">
+                                <i class="fas fa-info-circle me-1"></i>
+                                <em>Información orientativa para el coordinador:</em> Estos datos señalan los docentes y secciones que generaron más rechazos durante la asignación automática. Úselos para saber qué ajustar (ej. liberar carga docente o flexibilizar disponibilidades horarias).
+                            </p>
+                        </div>
+                        <div class="diagnostico-listas">
+                            <div class="diagnostico-col">
+                                <strong class="diagnostico-subtitulo"><i class="fas fa-user-clock me-1 text-primary"></i> Docentes con más rechazos:</strong>
+                                <ul class="diagnostico-items">
+                                    ${docentesHTML}
+                                </ul>
+                            </div>
+                            <div class="diagnostico-col">
+                                <strong class="diagnostico-subtitulo"><i class="fas fa-users-slash me-1 text-primary"></i> Secciones con más rechazos:</strong>
+                                <ul class="diagnostico-items">
+                                    ${seccionesHTML}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    conflictosBody.appendChild(diagDiv);
                 }
 
                 conflictos.forEach((conflicto, index) => {
@@ -2655,8 +2769,8 @@
                     // Marcar docentes con conflicto en la sidebar
                     marcarDocentesConConflicto(data.conflictos);
 
-                    // Poblar panel de conflictos con información detallada
-                    poblarPanelConflictos(data.conflictos);
+                    // Poblar panel de conflictos con información detallada y diagnóstico de cuellos de botella
+                    poblarPanelConflictos(data.conflictos, data.diagnostico);
 
                     // Mostrar panel de conflictos si existen
                     if (data.conflictos && data.conflictos.length > 0) {

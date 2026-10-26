@@ -924,6 +924,89 @@ class GeneradorHorarioServiceTest extends TestCase
         $this->assertDatabaseHas('horario_asignaciones', ['id' => $fijadaPrevia->id, 'fijada' => true]);
         $this->assertDatabaseMissing('horario_asignaciones', ['dia' => 2, 'bloque' => 1]);
     }
+
+    /**
+     * P8: Diagnóstico de dificultad (M7).
+     * Verifica que un docente sobrecargado a propósito aparezca en primer lugar de rechazos
+     * en el array diagnostico y que esto no altere la estructura ni el resultado del horario.
+     */
+    public function test_diagnostico_identifica_docente_cuello_de_botella(): void
+    {
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => now()->toDateString(),
+            'cierre_anio_escolar' => now()->addYear()->toDateString(),
+            'status' => 'Activo',
+        ]);
+
+        $aula = Aula::create(['nombre_aula' => 'Aula 101', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 35, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 1, 'status' => 1]);
+        $seccionA = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+        $seccionB = Seccion::create(['nombre' => 'B', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        // Docente normal con 36 horas (tope 18 bloques)
+        $docenteNormal = $this->crearDocentePrueba('DocenteNormal', 36);
+        $areaNormal = AreaFormacion::create([
+            'nombre_area_formacion' => 'Inglés',
+            'codigo_area' => 'ING-1',
+            'siglas' => 'ING',
+            'bloques_semanales' => 2,
+            'status' => 1,
+        ]);
+        CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docenteNormal->id,
+            'area_formacion_id' => $areaNormal->id,
+            'seccion_id' => $seccionA->id,
+        ]);
+
+        // Docente sobrecargado a propósito: solo 2 horas semanales (tope = 1 bloque), pero le asignamos materias con 4 bloques
+        // Además tiene indisponibilidades prohibidas en varios bloques
+        $docenteSobrecargado = $this->crearDocentePrueba('DocenteSobrecargado', 2);
+        $areaPesada = AreaFormacion::create([
+            'nombre_area_formacion' => 'Física Cuántica',
+            'codigo_area' => 'FIS-Q',
+            'siglas' => 'FIS',
+            'bloques_semanales' => 4,
+            'status' => 1,
+        ]);
+        CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docenteSobrecargado->id,
+            'area_formacion_id' => $areaPesada->id,
+            'seccion_id' => $seccionB->id,
+        ]);
+
+        // Ejecutamos generar
+        $resultado = $this->service->generar($anio->id, totalDias: 5, totalBloques: 4, intentos: 1);
+
+        // 1. Verificamos que diagnostico esté presente y bien estructurado
+        $this->assertArrayHasKey('diagnostico', $resultado);
+        $diagnostico = $resultado['diagnostico'];
+
+        $this->assertArrayHasKey('total_evaluaciones', $diagnostico);
+        $this->assertArrayHasKey('docentes', $diagnostico);
+        $this->assertArrayHasKey('secciones', $diagnostico);
+        $this->assertGreaterThan(0, $diagnostico['total_evaluaciones']);
+
+        // 2. El docente sobrecargado debe aparecer de primero en la lista de docentes cuello de botella
+        $this->assertNotEmpty($diagnostico['docentes']);
+        $primerDocente = $diagnostico['docentes'][0];
+        $this->assertEquals($docenteSobrecargado->id, $primerDocente['docente_id']);
+        $this->assertStringContainsString('DocenteSobrecargado', $primerDocente['nombre']);
+        $this->assertGreaterThan(0, $primerDocente['rechazos']);
+        $this->assertGreaterThan(0, $primerDocente['porcentaje']);
+
+        // 3. El diagnóstico no debe alterar el resultado del horario (deben existir asignaciones y estructura estándar)
+        $this->assertArrayHasKey('asignaciones', $resultado);
+        $this->assertArrayHasKey('conflictos', $resultado);
+        $this->assertArrayHasKey('puntaje', $resultado);
+        $this->assertArrayHasKey('huecos', $resultado);
+        $this->assertNotEmpty($resultado['asignaciones']);
+
+        // El docente normal fue asignado con éxito
+        $asignacionesDocNormal = array_filter($resultado['asignaciones'], fn($a) => $a['docente_id'] == $docenteNormal->id);
+        $this->assertNotEmpty($asignacionesDocNormal);
+    }
 }
 
 

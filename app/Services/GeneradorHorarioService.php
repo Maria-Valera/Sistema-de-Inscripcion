@@ -118,6 +118,12 @@ Class GeneradorHorarioService
             'materiaDia' => $materiaDia,
             'docenteDia' => $docenteDia,
             'docenteNoPreferente' => $docenteNoPreferente,
+            'rechazos' => [
+                'docente' => [],
+                'seccion' => [],
+                'aula' => [],
+                'evaluaciones' => 0,
+            ],
         ];
     }
 
@@ -229,6 +235,15 @@ Class GeneradorHorarioService
     {
         $docenteId = $clase['docente_id'];
 
+        if (!isset($matrices['rechazos'])) {
+            $matrices['rechazos'] = [
+                'docente' => [],
+                'seccion' => [],
+                'aula' => [],
+                'evaluaciones' => 0,
+            ];
+        }
+
         if (!isset($matrices['bloquesPorDocente'][$docenteId])) {
             $matrices['bloquesPorDocente'][$docenteId] = 0;
         }
@@ -254,14 +269,27 @@ Class GeneradorHorarioService
                     continue;
                 }
 
+                // Contador de evaluaciones
+                $matrices['rechazos']['evaluaciones'] = ($matrices['rechazos']['evaluaciones'] ?? 0) + 1;
+
                 $claveDocente = $docenteId . '_' . $dia . '_' . $bloque;
                 $claveSeccion = $clase['seccion_id'] . '_' . $dia . '_' . $bloque;
 
                 //verifica que el docente, la seccion no hayan roto alguna restriccion o si el docente ya agoto sus horas
-                if (isset($matrices['docenteOcupado'][$claveDocente])) continue;
-                if (isset($matrices['seccionOcupado'][$claveSeccion])) continue;
+                if (isset($matrices['docenteOcupado'][$claveDocente])) {
+                    $matrices['rechazos']['docente'][$docenteId] = ($matrices['rechazos']['docente'][$docenteId] ?? 0) + 1;
+                    continue;
+                }
 
-                if ($matrices['bloquesPorDocente'][$docenteId] >= $maxBloquesDocente) continue;
+                if (isset($matrices['seccionOcupado'][$claveSeccion])) {
+                    $matrices['rechazos']['seccion'][$clase['seccion_id']] = ($matrices['rechazos']['seccion'][$clase['seccion_id']] ?? 0) + 1;
+                    continue;
+                }
+
+                if ($matrices['bloquesPorDocente'][$docenteId] >= $maxBloquesDocente) {
+                    $matrices['rechazos']['docente'][$docenteId] = ($matrices['rechazos']['docente'][$docenteId] ?? 0) + 1;
+                    continue;
+                }
 
                 $aulaAsignada = null;
 
@@ -270,11 +298,17 @@ Class GeneradorHorarioService
                     $aulaLibre = $this->buscarAulaEspecialLibre(
                         $aulaFijaMateria->tipo_aula, $dia, $bloque, $matrices['aulaEspecialOcupada'], $clase['seccion_id']
                     );
-                    if ($aulaLibre === null) continue;
+                    if ($aulaLibre === null) {
+                        $matrices['rechazos']['aula'][$docenteId] = ($matrices['rechazos']['aula'][$docenteId] ?? 0) + 1;
+                        continue;
+                    }
                     $aulaAsignada = $aulaLibre;
                 } else {
                     $aulaAsignada = $this->obtenerAulaNormal($clase['seccion_id']);
-                    if ($aulaAsignada === null) continue;
+                    if ($aulaAsignada === null) {
+                        $matrices['rechazos']['aula'][$docenteId] = ($matrices['rechazos']['aula'][$docenteId] ?? 0) + 1;
+                        continue;
+                    }
                 }
 
                 // ===== CÁLCULO DE COSTO (M5) =====
@@ -987,6 +1021,7 @@ Class GeneradorHorarioService
                     'puntaje' => $puntaje,
                     'huecos' => $huecos,
                     'desbalance' => $desbalance,
+                    'matrices' => $matrices,
                 ];
             }
 
@@ -1004,6 +1039,14 @@ Class GeneradorHorarioService
                 'puntaje' => 0,
                 'huecos' => 0,
                 'desbalance' => 0,
+                'matrices' => [
+                    'rechazos' => [
+                        'docente' => [],
+                        'seccion' => [],
+                        'aula' => [],
+                        'evaluaciones' => 0,
+                    ]
+                ],
             ];
         }
 
@@ -1057,6 +1100,12 @@ Class GeneradorHorarioService
         $tiempoFin = microtime(true);
         $tiempoMs = round(($tiempoFin - $tiempoInicio) * 1000, 2);
 
+        $diagnostico = $this->construirDiagnostico(
+            $mejorIntento['matrices'] ?? [],
+            $anioEscolar,
+            $mejorIntento['conflictos'] ?? []
+        );
+
         return [
             'asignaciones' => $mejorIntento['asignaciones'],
             'conflictos' => $mejorIntento['conflictos'],
@@ -1065,6 +1114,116 @@ Class GeneradorHorarioService
             'intentos_ejecutados' => $intentosEjecutados,
             'huecos' => $mejorIntento['huecos'],
             'tiempo_ms' => $tiempoMs,
+            'diagnostico' => $diagnostico,
+        ];
+    }
+
+    /**
+     * Construye el diagnóstico de dificultad y cuellos de botella (M7 / P8).
+     *
+     * @param array $matrices Matrices de ocupación y contadores de rechazos
+     * @param int $anioEscolar ID del año escolar
+     * @param array $conflictos Conflictos detectados no asignados
+     * @return array
+     */
+    public function construirDiagnostico(array $matrices, int $anioEscolar, array $conflictos = []): array
+    {
+        $rechazos = $matrices['rechazos'] ?? [
+            'docente' => [],
+            'seccion' => [],
+            'aula' => [],
+            'evaluaciones' => 0,
+        ];
+
+        $totalEvaluaciones = (int) ($rechazos['evaluaciones'] ?? 0);
+        $divisor = max(1, $totalEvaluaciones);
+
+        // Mapeo de nombres de docentes
+        $docenteIds = array_keys($rechazos['docente'] ?? []);
+        if (!empty($rechazos['aula'])) {
+            $docenteIds = array_unique(array_merge($docenteIds, array_keys($rechazos['aula'])));
+        }
+        $docentes = !empty($docenteIds)
+            ? Docente::with('persona')->whereIn('id', $docenteIds)->get()->keyBy('id')
+            : collect();
+
+        // Mapeo de nombres de secciones
+        $seccionIds = array_keys($rechazos['seccion'] ?? []);
+        $secciones = !empty($seccionIds)
+            ? Seccion::with('grado')->whereIn('id', $seccionIds)->get()->keyBy('id')
+            : collect();
+
+        // Top 5 docentes con más rechazos
+        $rechazosDocente = $rechazos['docente'] ?? [];
+        arsort($rechazosDocente);
+        $topDocentes = [];
+        $count = 0;
+        foreach ($rechazosDocente as $docId => $cantidad) {
+            if ($count++ >= 5) break;
+            $docente = $docentes->get($docId);
+            $nombre = $docente && $docente->persona
+                ? trim($docente->persona->primer_nombre . ' ' . $docente->persona->primer_apellido)
+                : "Docente #{$docId}";
+
+            $porcentaje = round(($cantidad / $divisor) * 100, 1);
+            $topDocentes[] = [
+                'docente_id' => (int) $docId,
+                'nombre' => $nombre,
+                'rechazos' => (int) $cantidad,
+                'porcentaje' => $porcentaje,
+            ];
+        }
+
+        // Top 5 secciones con más rechazos
+        $rechazosSeccion = $rechazos['seccion'] ?? [];
+        arsort($rechazosSeccion);
+        $topSecciones = [];
+        $count = 0;
+        foreach ($rechazosSeccion as $secId => $cantidad) {
+            if ($count++ >= 5) break;
+            $seccion = $secciones->get($secId);
+            $nombreSeccion = 'Sección #' . $secId;
+            if ($seccion) {
+                $nombreGrado = $seccion->grado ? $seccion->grado->numero_grado . '° ' : '';
+                $nombreSeccion = trim($nombreGrado . $seccion->nombre);
+            }
+
+            $porcentaje = round(($cantidad / $divisor) * 100, 1);
+            $topSecciones[] = [
+                'seccion_id' => (int) $secId,
+                'nombre' => $nombreSeccion,
+                'rechazos' => (int) $cantidad,
+                'porcentaje' => $porcentaje,
+            ];
+        }
+
+        // Top 5 aulas con más rechazos
+        $rechazosAula = $rechazos['aula'] ?? [];
+        arsort($rechazosAula);
+        $topAulas = [];
+        $count = 0;
+        foreach ($rechazosAula as $key => $cantidad) {
+            if ($count++ >= 5) break;
+            $docente = $docentes->get($key);
+            $nombre = $docente && $docente->persona
+                ? trim($docente->persona->primer_nombre . ' ' . $docente->persona->primer_apellido)
+                : "Docente #{$key}";
+
+            $porcentaje = round(($cantidad / $divisor) * 100, 1);
+            $topAulas[] = [
+                'docente_id' => (int) $key,
+                'nombre' => $nombre,
+                'rechazos' => (int) $cantidad,
+                'porcentaje' => $porcentaje,
+            ];
+        }
+
+        return [
+            'total_evaluaciones' => $totalEvaluaciones,
+            'docentes' => $topDocentes,
+            'secciones' => $topSecciones,
+            'aulas' => $topAulas,
+            'conflictos' => $conflictos,
         ];
     }
 
