@@ -8,6 +8,7 @@ use App\Models\AreaEstudioRealizado;
 use App\Models\AreaFormacion;
 use App\Models\Aula;
 use App\Models\BloqueReservado;
+use App\Models\CargaAcademica;
 use App\Models\ConfiguracionHorario;
 use App\Models\DetalleDocenteEstudio;
 use App\Models\Docente;
@@ -183,7 +184,7 @@ class ValidadorHorarioServiceTest extends TestCase
         return $area;
     }
 
-    private function asignarCarga(Docente $docente, AreaFormacion $area, Seccion $seccion, Grado $grado): DocenteAreaGrado
+    private function asignarCarga(Docente $docente, AreaFormacion $area, Seccion $seccion, Grado $grado): CargaAcademica
     {
         $detalle = $docente->detalleDocenteEstudio()->first();
         $areaEstudio = AreaEstudioRealizado::where('area_formacion_id', $area->id)->first();
@@ -197,12 +198,23 @@ class ValidadorHorarioServiceTest extends TestCase
             ]);
         }
 
-        return DocenteAreaGrado::create([
-            'docente_estudio_realizado_id' => $detalle->id,
-            'area_estudio_realizado_id' => $areaEstudio->id,
-            'grado_id' => $grado->id,
+        if ($detalle && $areaEstudio) {
+            DocenteAreaGrado::firstOrCreate([
+                'docente_estudio_realizado_id' => $detalle->id,
+                'area_estudio_realizado_id' => $areaEstudio->id,
+                'grado_id' => $grado->id,
+                'seccion_id' => $seccion->id,
+                'status' => 1,
+            ]);
+        }
+
+        $anio = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first() ?? AnioEscolar::latest('id')->first();
+
+        return CargaAcademica::firstOrCreate([
+            'anio_escolar_id' => $anio?->id ?? 1,
+            'docente_id' => $docente->id,
+            'area_formacion_id' => $area->id,
             'seccion_id' => $seccion->id,
-            'status' => 1,
         ]);
     }
 

@@ -6,6 +6,7 @@ use App\Models\AnioEscolar;
 use App\Models\AreaEstudioRealizado;
 use App\Models\AreaFormacion;
 use App\Models\Aula;
+use App\Models\CargaAcademica;
 use App\Models\ConfiguracionHorario;
 use App\Models\DetalleDocenteEstudio;
 use App\Models\Docente;
@@ -228,6 +229,13 @@ class HorarioCreateTest extends TestCase
             'grado_id' => $grado->id,
             'seccion_id' => $seccion->id,
             'status' => 1,
+        ]);
+
+        CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docente->id,
+            'area_formacion_id' => $area->id,
+            'seccion_id' => $seccion->id,
         ]);
 
         $response = $this->actingAs($admin)->get(route('admin.horario.create'));

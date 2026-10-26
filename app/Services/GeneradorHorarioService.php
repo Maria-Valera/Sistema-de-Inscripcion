@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\Dia;
 use App\Models\BloqueReservado;
+use App\Models\CargaAcademica;
 use App\Models\DocenteAreaGrado;
 use App\Models\DocenteIndisponibilidad;
 use App\Models\DocenteNoDisponibilidad;
@@ -17,51 +18,53 @@ use Illuminate\Support\Collection;
 
 Class GeneradorHorarioService
 {
-    public function PreparasDatos(?int $gradoId = null, ?int $areaFormacionId = null): Collection
+    public function PreparasDatos(?int $gradoId = null, ?int $areaFormacionId = null, ?int $anioEscolarId = null): Collection
     {
-        //trae todas las relacciones del docente
-
-        $query = DocenteAreaGrado::with([
-            'detalleDocenteEstudio.docente.persona',
-            'areaEstudios.areaFormacion.aula', 
-            'grado',    
-            'seccion'
+        $query = CargaAcademica::with([
+            'docente.persona',
+            'areaFormacion.aula',
+            'seccion.grado',
         ]);
-        //filtro grado  y seccion
-        if ($gradoId !== null) {
-            $query->where('grado_id', $gradoId);
+
+        if ($anioEscolarId !== null) {
+            $query->where('anio_escolar_id', $anioEscolarId);
         }
-        //filtro area de dformacion
-        if ($areaFormacionId !== null) {
-            $query->whereHas('areaEstudios', function ($q) use ($areaFormacionId) {
-                $q->where('area_formacion_id', $areaFormacionId);
+
+        //filtro grado y seccion
+        if ($gradoId !== null) {
+            $query->whereHas('seccion', function ($q) use ($gradoId) {
+                $q->where('grado_id', $gradoId);
             });
         }
-        
+
+        //filtro area de formacion
+        if ($areaFormacionId !== null) {
+            $query->where('area_formacion_id', $areaFormacionId);
+        }
+
         $asignaciones = $query->get();
-        
-        return $asignaciones->map(function ($fila){
-            $detalle=$fila->detalleDocenteEstudio;
-            $docente= $detalle?->docente;
-            $area= $fila->areaEstudios;
-            $grado= $fila->grado;
-            $seccion= $fila->seccion;
-            
+
+        return $asignaciones->map(function ($fila) {
+            $docente = $fila->docente;
+            $area = $fila->areaFormacion;
+            $seccion = $fila->seccion;
+            $grado = $seccion?->grado;
+
             return [
+                'carga_academica_id' => $fila->id,
                 'docente_id' => $docente?->id,
-                'docente_nombre' => trim($docente?->persona?->primer_nombre . ' ' . $docente?->persona?->primer_apellido),
+                'docente_nombre' => trim(($docente?->persona?->primer_nombre ?? '') . ' ' . ($docente?->persona?->primer_apellido ?? '')),
                 'docente_horas_academicas' => $docente?->horas_academicas ?? 36,
-                'area_id' => $area?->areaFormacion?->id,
-                'area_nombre' => $area?->areaFormacion?->nombre_area_formacion,
-                'area_bloque' => $area?->areaFormacion?->bloques_semanales,
-                'area_aula' => $area?->areaFormacion?->aula,
+                'area_id' => $area?->id,
+                'area_nombre' => $area?->nombre_area_formacion,
+                'area_bloque' => $area?->bloques_semanales,
+                'area_aula' => $area?->aula,
                 'grado_id' => $grado?->id,
                 'grado_nombre' => $grado?->numero_grado,
                 'seccion_id' => $seccion?->id,
-                'seccion_nombre' => $seccion?->nombre
+                'seccion_nombre' => $seccion?->nombre,
             ];
         });
-    
     }
 
 
@@ -332,6 +335,7 @@ Class GeneradorHorarioService
 
         //asigna marcando todo como ocupado para las siguientes iteraciones
         $asignacion = [
+            'carga_academica_id' => $clase['carga_academica_id'] ?? null,
             'docente_id' => $docenteId,
             'materia_id' => $clase['area_id'],
             'seccion_id' => $clase['seccion_id'],
@@ -699,32 +703,46 @@ Class GeneradorHorarioService
                 $aBorrar = HorarioAsignacion::where('anio_escolar_id', $anioEscolar)
                     ->where('fijada', false);
                 if ($gradoId !== null) {
-                    $aBorrar->whereHas('seccion', function ($q) use ($gradoId) {
+                    $aBorrar->whereHas('cargaAcademica.seccion', function ($q) use ($gradoId) {
                         $q->where('grado_id', $gradoId);
                     });
                 }
                 if ($areaFormacionId !== null) {
-                    $aBorrar->where('materia_id', $areaFormacionId);
+                    $aBorrar->whereHas('cargaAcademica', function ($q) use ($areaFormacionId) {
+                        $q->where('area_formacion_id', $areaFormacionId);
+                    });
                 }
                 $aBorrar->delete();
 
-                //cargar los dato, las restricciones y las prioridades
-                $clases = $this->PreparasDatos($gradoId, $areaFormacionId);
+                //cargar los datos, las restricciones y las prioridades
+                $clases = $this->PreparasDatos($gradoId, $areaFormacionId, $anioEscolar);
                 $matrices = $this->InicializarMatrices($anioEscolar);
 
                 //las asignaciones que se conservan (fuera del alcance o fijadas) ocupan docente, sección y aula
-                $conservadas = HorarioAsignacion::where('anio_escolar_id', $anioEscolar)->get();
+                $conservadas = HorarioAsignacion::where('anio_escolar_id', $anioEscolar)
+                    ->with('cargaAcademica')
+                    ->get();
                 foreach ($conservadas as $c) {
                     $cDia = $c->dia ?? $c->dia_id;
                     $cBloque = $c->bloque ?? $c->bloque_id;
-                    $matrices['docenteOcupado'][$c->docente_id . '_' . $cDia . '_' . $cBloque] = true;
-                    $matrices['seccionOcupado'][$c->seccion_id . '_' . $cDia . '_' . $cBloque] = true;
-                    if ($c->aula_id) {
+                    $cDocenteId = $c->cargaAcademica?->docente_id;
+                    $cSeccionId = $c->cargaAcademica?->seccion_id;
+                    $cMateriaId = $c->cargaAcademica?->area_formacion_id;
+
+                    if ($cDocenteId && $cDia && $cBloque) {
+                        $matrices['docenteOcupado'][$cDocenteId . '_' . $cDia . '_' . $cBloque] = true;
+                        $matrices['bloquesPorDocente'][$cDocenteId] = ($matrices['bloquesPorDocente'][$cDocenteId] ?? 0) + 1;
+                        $matrices['docenteDia'][$cDocenteId . '_' . $cDia] = ($matrices['docenteDia'][$cDocenteId . '_' . $cDia] ?? 0) + 1;
+                    }
+                    if ($cSeccionId && $cDia && $cBloque) {
+                        $matrices['seccionOcupado'][$cSeccionId . '_' . $cDia . '_' . $cBloque] = true;
+                    }
+                    if ($c->aula_id && $cDia && $cBloque) {
                         $matrices['aulaEspecialOcupada'][$c->aula_id . '_' . $cDia . '_' . $cBloque] = true;
                     }
-                    $matrices['bloquesPorDocente'][$c->docente_id] = ($matrices['bloquesPorDocente'][$c->docente_id] ?? 0) + 1;
-                    $matrices['materiaDia'][$c->materia_id . '_' . $c->seccion_id . '_' . $cDia] = true;
-                    $matrices['docenteDia'][$c->docente_id . '_' . $cDia] = ($matrices['docenteDia'][$c->docente_id . '_' . $cDia] ?? 0) + 1;
+                    if ($cMateriaId && $cSeccionId && $cDia) {
+                        $matrices['materiaDia'][$cMateriaId . '_' . $cSeccionId . '_' . $cDia] = true;
+                    }
                 }
 
                 $clasesOrdenadas = $this->ordenarClasesPendientes($clases, $matrices['docenteOcupado'], $totalDias, $totalBloques);
@@ -763,9 +781,7 @@ Class GeneradorHorarioService
                             //guarda la asignación en la base de datos
                             HorarioAsignacion::create([
                                 'anio_escolar_id' => $anioEscolar,
-                                'docente_id' => $asignacion['docente_id'],
-                                'materia_id' => $asignacion['materia_id'],
-                                'seccion_id' => $asignacion['seccion_id'],
+                                'carga_academica_id' => $clase['carga_academica_id'],
                                 'aula_id' => $aulaId,
                                 'dia' => $asignacion['dia'],
                                 'bloque' => $asignacion['bloque'],

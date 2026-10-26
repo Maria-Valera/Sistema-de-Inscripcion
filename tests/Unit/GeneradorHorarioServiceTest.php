@@ -7,6 +7,7 @@ use App\Models\AnioEscolar;
 use App\Models\AreaFormacion;
 use App\Models\Aula;
 use App\Models\BloqueReservado;
+use App\Models\CargaAcademica;
 use App\Models\Docente;
 use App\Models\DocenteIndisponibilidad;
 use App\Models\HorarioAsignacion;
@@ -27,6 +28,22 @@ class GeneradorHorarioServiceTest extends TestCase
     {
         parent::setUp();
         $this->service = new GeneradorHorarioService();
+
+        \DB::table('dias_semana')->insertOrIgnore([
+            ['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1],
+            ['id' => 2, 'nombre_dia' => 'Martes', 'status' => 1],
+            ['id' => 3, 'nombre_dia' => 'Miercoles', 'status' => 1],
+            ['id' => 4, 'nombre_dia' => 'Jueves', 'status' => 1],
+            ['id' => 5, 'nombre_dia' => 'Viernes', 'status' => 1],
+        ]);
+
+        \DB::table('bloque_horarios')->insertOrIgnore([
+            ['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1],
+            ['id' => 2, 'hora_inicio' => '07:45:00', 'hora_fin' => '08:30:00', 'status' => 1],
+            ['id' => 3, 'hora_inicio' => '08:30:00', 'hora_fin' => '09:15:00', 'status' => 1],
+            ['id' => 4, 'hora_inicio' => '09:15:00', 'hora_fin' => '10:00:00', 'status' => 1],
+            ['id' => 5, 'hora_inicio' => '10:00:00', 'hora_fin' => '10:45:00', 'status' => 1],
+        ]);
     }
 
     public function test_calcular_max_bloques_usa_mitad_de_horas_y_tope_de_18(): void
@@ -117,12 +134,17 @@ class GeneradorHorarioServiceTest extends TestCase
             'status' => 1,
         ]);
 
-        \App\Models\DocenteAreaGrado::create([
-            'docente_estudio_realizado_id' => $detalleEstudio->id,
-            'area_estudio_realizado_id' => $areaEstudio->id,
-            'grado_id' => $grado->id,
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $carga = CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docente->id,
+            'area_formacion_id' => $area->id,
             'seccion_id' => $seccion->id,
-            'status' => 1,
         ]);
 
         $datos = $this->service->PreparasDatos($grado->id);
@@ -130,8 +152,9 @@ class GeneradorHorarioServiceTest extends TestCase
         $this->assertCount(1, $datos);
         $clase = $datos->first();
 
-        // Debe mapear bloques_semanales a 'area_bloque'
+        // Debe mapear bloques_semanales a 'area_bloque' y contener carga_academica_id
         $this->assertEquals(4, $clase['area_bloque']);
+        $this->assertEquals($carga->id, $clase['carga_academica_id']);
 
         // Claves viejas eliminadas
         $this->assertArrayNotHasKey('bloques_max_dia', $clase);
@@ -348,12 +371,17 @@ class GeneradorHorarioServiceTest extends TestCase
         ]);
         $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
 
+        $carga = CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docente->id,
+            'area_formacion_id' => $area->id,
+            'seccion_id' => $seccion->id,
+        ]);
+
         // Clase fijada
         $fijada = HorarioAsignacion::create([
             'anio_escolar_id' => $anio->id,
-            'docente_id' => $docente->id,
-            'materia_id' => $area->id,
-            'seccion_id' => $seccion->id,
+            'carga_academica_id' => $carga->id,
             'aula_id' => $aula->id_aula,
             'dia' => 1,
             'bloque' => 1,
@@ -363,9 +391,7 @@ class GeneradorHorarioServiceTest extends TestCase
         // Clase NO fijada (debe ser borrada al regenerar)
         $noFijada = HorarioAsignacion::create([
             'anio_escolar_id' => $anio->id,
-            'docente_id' => $docente->id,
-            'materia_id' => $area->id,
-            'seccion_id' => $seccion->id,
+            'carga_academica_id' => $carga->id,
             'aula_id' => $aula->id_aula,
             'dia' => 2,
             'bloque' => 1,

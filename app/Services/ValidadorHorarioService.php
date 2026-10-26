@@ -6,8 +6,8 @@ use App\Enums\Dia;
 use App\Models\AreaFormacion;
 use App\Models\Aula;
 use App\Models\BloqueReservado;
+use App\Models\CargaAcademica;
 use App\Models\ConfiguracionHorario;
-use App\Models\DocenteAreaGrado;
 use App\Models\DocenteIndisponibilidad;
 use App\Models\Grado;
 use App\Models\Seccion;
@@ -62,17 +62,16 @@ class ValidadorHorarioService
         }
         $secciones = $seccionesQuery->get();
 
-        // 3. Cargar asignaciones de carga académica (DocenteAreaGrado)
-        $dagQuery = DocenteAreaGrado::where('status', true)->with([
-            'detalleDocenteEstudio.docente.persona',
-            'areaEstudios.areaFormacion.aula',
-            'grado',
-            'seccion'
+        // 3. Cargar asignaciones de carga académica (CargaAcademica)
+        $cargasQuery = CargaAcademica::where('anio_escolar_id', $anio)->with([
+            'docente.persona',
+            'areaFormacion.aula',
+            'seccion.grado'
         ]);
         if ($gradoId !== null) {
-            $dagQuery->where('grado_id', $gradoId);
+            $cargasQuery->whereHas('seccion', fn($q) => $q->where('grado_id', $gradoId));
         }
-        $asignacionesDag = $dagQuery->get();
+        $cargasAcademicas = $cargasQuery->get();
 
         // 4. ÁREAS: Validar bloques_semanales (Errores y Avisos)
         $areasMap = [];
@@ -83,8 +82,8 @@ class ValidadorHorarioService
                 }
             }
         }
-        foreach ($asignacionesDag as $dag) {
-            $af = $dag->areaEstudios?->areaFormacion;
+        foreach ($cargasAcademicas as $carga) {
+            $af = $carga->areaFormacion;
             if ($af && $af->status) {
                 $areasMap[$af->id] = $af;
             }
@@ -113,11 +112,11 @@ class ValidadorHorarioService
         }
 
         // 5. SECCIONES: Validar aula regular, capacidad, exceso de bloques, huecos y áreas sin docente
-        $dagsPorSeccion = $asignacionesDag->groupBy('seccion_id');
+        $cargasPorSeccion = $cargasAcademicas->groupBy('seccion_id');
 
         foreach ($secciones as $seccion) {
             $gradoNombre = $seccion->grado ? "{$seccion->grado->numero_grado}° año" : "Grado {$seccion->grado_id}";
-            $dagsSeccion = $dagsPorSeccion->get($seccion->id, collect());
+            $cargasSeccion = $cargasPorSeccion->get($seccion->id, collect());
 
             // A) Validación de Aula Regular asignada y capacidad
             $seccionAula = $seccion->aulaFija;
@@ -148,12 +147,9 @@ class ValidadorHorarioService
                         continue;
                     }
 
-                    $dagMateria = $dagsSeccion->first(function ($d) use ($afCurricular) {
-                        return $d->areaEstudios?->area_formacion_id == $afCurricular->id;
-                    });
-
-                    $docente = $dagMateria?->detalleDocenteEstudio?->docente;
-                    if (!$dagMateria || !$docente || !$docente->status) {
+                    $cargaMateria = $cargasSeccion->firstWhere('area_formacion_id', $afCurricular->id);
+                    $docente = $cargaMateria?->docente;
+                    if (!$cargaMateria || !$docente || !$docente->status) {
                         $errores[] = [
                             'codigo' => 'area_sin_docente',
                             'mensaje' => "El área '{$afCurricular->nombre_area_formacion}' en la sección {$seccion->nombre} ({$gradoNombre}) no tiene docente asignado.",
@@ -162,9 +158,9 @@ class ValidadorHorarioService
                     }
                 }
             } else {
-                foreach ($dagsSeccion as $dag) {
-                    $docente = $dag->detalleDocenteEstudio?->docente;
-                    $af = $dag->areaEstudios?->areaFormacion;
+                foreach ($cargasSeccion as $carga) {
+                    $docente = $carga->docente;
+                    $af = $carga->areaFormacion;
                     $nombreMateria = $af?->nombre_area_formacion ?? 'Materia';
                     if (!$docente || !$docente->status) {
                         $errores[] = [
@@ -178,8 +174,8 @@ class ValidadorHorarioService
 
             // C) Suma de bloques de las áreas de la sección
             $areasSeccionUnicas = [];
-            foreach ($dagsSeccion as $dag) {
-                $af = $dag->areaEstudios?->areaFormacion;
+            foreach ($cargasSeccion as $carga) {
+                $af = $carga->areaFormacion;
                 if ($af && $af->status) {
                     $areasSeccionUnicas[$af->id] = (int) ($af->bloques_semanales ?? 0);
                 }
@@ -204,12 +200,12 @@ class ValidadorHorarioService
 
         // 6. DOCENTES: Validar bloques requeridos > 18, espacios libres y saturación (<10%)
         $docentesData = [];
-        foreach ($asignacionesDag as $dag) {
-            $docente = $dag->detalleDocenteEstudio?->docente;
+        foreach ($cargasAcademicas as $carga) {
+            $docente = $carga->docente;
             if (!$docente || !$docente->status) {
                 continue;
             }
-            $af = $dag->areaEstudios?->areaFormacion;
+            $af = $carga->areaFormacion;
             $bloques = $af ? (int) ($af->bloques_semanales ?? 0) : 0;
 
             if (!isset($docentesData[$docente->id])) {
@@ -291,8 +287,8 @@ class ValidadorHorarioService
 
         // 7. AULAS ESPECIALIZADAS: Demanda vs Oferta
         $demandaAulasEspeciales = [];
-        foreach ($asignacionesDag as $dag) {
-            $af = $dag->areaEstudios?->areaFormacion;
+        foreach ($cargasAcademicas as $carga) {
+            $af = $carga->areaFormacion;
             if (!$af || !$af->status) {
                 continue;
             }
@@ -331,11 +327,11 @@ class ValidadorHorarioService
             'codigo' => 'resumen_carga_secciones',
             'mensaje' => "Resumen de carga por sección: {$totalSecciones} sección(es) analizadas.",
             'detalle' => $totalSecciones > 0
-                ? $secciones->map(function ($s) use ($dagsPorSeccion, $bloquesDisponibles) {
-                    $dags = $dagsPorSeccion->get($s->id, collect());
+                ? $secciones->map(function ($s) use ($cargasPorSeccion, $bloquesDisponibles) {
+                    $cargas = $cargasPorSeccion->get($s->id, collect());
                     $areasUnicas = [];
-                    foreach ($dags as $d) {
-                        $af = $d->areaEstudios?->areaFormacion;
+                    foreach ($cargas as $c) {
+                        $af = $c->areaFormacion;
                         if ($af && $af->status) {
                             $areasUnicas[$af->id] = (int) ($af->bloques_semanales ?? 0);
                         }

@@ -92,25 +92,27 @@ class HorarioController extends Controller
         }
 
         $asignaciones = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
-            ->where('seccion_id', $seccion->id)
-            ->whereHas('seccion', function ($q) use ($grado_id) {
-                $q->where('grado_id', $grado_id);
+            ->whereHas('cargaAcademica', function ($q) use ($seccion, $grado_id) {
+                $q->where('seccion_id', $seccion->id);
             })
-            ->with(['docente.persona', 'materia', 'aula', 'dia', 'bloque'])
+            ->with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'aula', 'dia', 'bloque'])
             ->orderBy('dia_id')
             ->orderBy('bloque_id')
             ->get()
             ->map(function ($a) {
-                $persona = $a->docente?->persona;
+                $carga = $a->cargaAcademica;
+                $docente = $carga?->docente;
+                $persona = $docente?->persona;
+                $materia = $carga?->areaFormacion;
                 return [
                     'id' => $a->id,
                     'dia_id' => (int) $a->dia_id,
                     'dia_nombre' => $a->dia?->nombre_dia,
                     'bloque_id' => (int) $a->bloque_id,
-                    'docente_id' => $a->docente_id,
+                    'docente_id' => $docente?->id,
                     'docente_nombre' => $persona ? trim($persona->primer_nombre . ' ' . $persona->primer_apellido) : null,
-                    'materia_id' => $a->materia_id,
-                    'materia_nombre' => $a->materia?->nombre_area_formacion,
+                    'materia_id' => $materia?->id,
+                    'materia_nombre' => $materia?->nombre_area_formacion,
                     'aula_id' => $a->aula_id,
                     'aula_nombre' => $a->aula?->nombre_aula,
                     'conflicto_manual' => (bool) $a->conflicto_manual,
@@ -159,11 +161,11 @@ class HorarioController extends Controller
         $horariosAsignados = collect();
         if ($anioEscolarActivo) {
             $query = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
-                ->with(['docente.persona', 'materia', 'seccion.grado', 'aula', 'dia', 'bloque']);
+                ->with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula', 'dia', 'bloque']);
 
             // Aplicar filtros
             if ($request->filled('grado_id')) {
-                $query->whereHas('seccion', function($q) use ($request) {
+                $query->whereHas('cargaAcademica.seccion', function($q) use ($request) {
                     $q->where('grado_id', $request->grado_id);
                 });
             }
@@ -172,7 +174,7 @@ class HorarioController extends Controller
             // representativo: se filtra por el NOMBRE de la sección para abarcar todos los grados.
             if ($request->filled('seccion_id')) {
                 $nombreSeccion = Seccion::whereKey($request->seccion_id)->value('nombre');
-                $query->whereHas('seccion', function($q) use ($nombreSeccion) {
+                $query->whereHas('cargaAcademica.seccion', function($q) use ($nombreSeccion) {
                     $q->where('nombre', $nombreSeccion);
                 });
             }
@@ -180,31 +182,35 @@ class HorarioController extends Controller
             // El filtro de área solo decide QUÉ secciones mostrar; el conteo y las áreas
             // se calculan con todas las asignaciones de esas secciones.
             if ($request->filled('area_formacion_id')) {
-                $seccionesConArea = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
-                    ->where('materia_id', $request->area_formacion_id)
+                $seccionesConArea = \App\Models\CargaAcademica::where('anio_escolar_id', $anioEscolarActivo->id)
+                    ->where('area_formacion_id', $request->area_formacion_id)
+                    ->whereHas('horarioAsignaciones')
                     ->distinct()
                     ->pluck('seccion_id');
 
-                $query->whereIn('seccion_id', $seccionesConArea);
+                $query->whereHas('cargaAcademica', function($q) use ($seccionesConArea) {
+                    $q->whereIn('seccion_id', $seccionesConArea);
+                });
             }
 
             $asignaciones = $query->get();
 
             //agrupa asignaciones por grado y sección
             $horariosAsignados = $asignaciones->groupBy(function($asignacion) {
-                return $asignacion->seccion->grado->numero_grado . '-' . $asignacion->seccion->nombre;
+                $seccion = $asignacion->cargaAcademica?->seccion;
+                return ($seccion?->grado?->numero_grado ?? '') . '-' . ($seccion?->nombre ?? '');
             })->map(function($asignacionesGrupo, $key) {
                 $primeraAsignacion = $asignacionesGrupo->first();
-                $grado = $primeraAsignacion->seccion->grado;
-                $seccion = $primeraAsignacion->seccion;
-                $areasUnicas = $asignacionesGrupo->pluck('materia.nombre_area_formacion')->unique()->values();
+                $seccion = $primeraAsignacion->cargaAcademica?->seccion;
+                $grado = $seccion?->grado;
+                $areasUnicas = $asignacionesGrupo->map(fn($a) => $a->cargaAcademica?->areaFormacion?->nombre_area_formacion)->filter()->unique()->values();
 
                 return [
                     'id' => $key,
-                    'grado' => $grado->numero_grado,
-                    'grado_id' => $grado->id,
-                    'seccion' => $seccion->nombre,
-                    'seccion_id' => $seccion->id,
+                    'grado' => $grado?->numero_grado,
+                    'grado_id' => $grado?->id,
+                    'seccion' => $seccion?->nombre,
+                    'seccion_id' => $seccion?->id,
                     'areas' => $areasUnicas->implode(', '),
                     'total_asignaciones' => $asignacionesGrupo->count(),
                     'asignaciones' => $asignacionesGrupo
@@ -430,10 +436,10 @@ class HorarioController extends Controller
 
             //elimina asignaciones de horario para el grado y sección
             $asignacionesEliminadas = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
-                ->whereHas('seccion', function($query) use ($grado_id) {
-                    $query->where('grado_id', $grado_id);
+                ->whereHas('cargaAcademica', function($query) use ($grado_id, $seccion_id) {
+                    $query->where('seccion_id', $seccion_id)
+                          ->whereHas('seccion', fn($sq) => $sq->where('grado_id', $grado_id));
                 })
-                ->where('seccion_id', $seccion_id)
                 ->delete();
 
             if ($asignacionesEliminadas > 0) {
