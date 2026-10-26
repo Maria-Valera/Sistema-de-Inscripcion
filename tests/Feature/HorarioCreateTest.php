@@ -283,6 +283,13 @@ class HorarioCreateTest extends TestCase
         $response->assertSee('Corrige los errores en el panel inferior para habilitar este botón.');
         // Panel de errores visible
         $response->assertSee('Creación de Horarios Bloqueada');
+        // Botón para ver detalles de los errores (Bootstrap collapse)
+        $response->assertSee('Ver detalles de los errores');
+        $response->assertSee('data-bs-toggle="collapse"', false);
+        $response->assertSee('data-bs-target="#collapseErrores"', false);
+        // Contenedor colapsable (oculto por defecto, sin la clase 'show')
+        $response->assertSee('class="collapse mt-3" id="collapseErrores"', false);
+        $response->assertDontSee('class="collapse mt-3 show" id="collapseErrores"', false);
         $response->assertSee('Errores críticos que deben solucionarse para habilitar la creación:');
     }
 

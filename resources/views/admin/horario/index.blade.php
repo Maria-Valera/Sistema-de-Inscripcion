@@ -87,19 +87,46 @@
                                 <h5 class="fw-bold mb-1" style="color: #92400e;">
                                     <i class="fas fa-lock me-1"></i> Creación de Horarios Bloqueada
                                 </h5>
-                                <p class="mb-0" style="color: #78350f;">
-                                    {{ session('warning') ?? 'Hay inconsistencias en la carga académica o configuración que impiden crear el horario.' }}
+                                <p class="mb-2" style="color: #78350f;">
+                                    {{ session('warning') ?? 'Se han detectado ' . count($erroresMostrar) . ' inconsistencia(s) crítica(s) en la carga académica que impiden crear el horario.' }}
                                 </p>
                                 @if (!empty($erroresMostrar))
-                                    <div class="mt-3 p-3 bg-white rounded border border-warning shadow-sm">
-                                        <h6 class="fw-bold text-danger mb-2">
-                                            <i class="fas fa-times-circle me-1"></i> Errores críticos que deben solucionarse para habilitar la creación:
-                                        </h6>
-                                        <ul class="mb-0 ps-3 text-danger small">
-                                            @foreach ($erroresMostrar as $err)
-                                                <li class="mb-1"><strong>{{ $err['mensaje'] }}</strong>: {{ $err['detalle'] }}</li>
-                                            @endforeach
-                                        </ul>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-warning text-dark fw-semibold d-inline-flex align-items-center gap-2 mt-1 shadow-sm"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#collapseErrores"
+                                                aria-expanded="false"
+                                                aria-controls="collapseErrores"
+                                                id="btnToggleErrores"
+                                                style="border-color: #d97706; background-color: #fef3c7;">
+                                            <i class="fas fa-eye" id="iconoToggleErrores"></i>
+                                            <span id="textoToggleErrores">Ver detalles de los errores ({{ count($erroresMostrar) }})</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="collapse mt-3" id="collapseErrores">
+                                        <div class="p-3 bg-white rounded border border-warning shadow-sm" style="max-height: 380px; overflow-y: auto;">
+                                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                                <h6 class="fw-bold text-danger mb-0">
+                                                    <i class="fas fa-times-circle me-1"></i> Errores críticos que deben solucionarse para habilitar la creación:
+                                                </h6>
+                                                <span class="badge bg-danger rounded-pill">{{ count($erroresMostrar) }}</span>
+                                            </div>
+                                            <ul class="mb-0 ps-3 text-danger small">
+                                                @foreach ($erroresMostrar as $err)
+                                                    <li class="mb-2"><strong>{{ $err['mensaje'] }}</strong>: {{ $err['detalle'] }}</li>
+                                                @endforeach
+                                            </ul>
+                                            <div class="text-end mt-2 pt-2 border-top">
+                                                <button class="btn btn-sm btn-link text-muted p-0 text-decoration-none"
+                                                        type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#collapseErrores">
+                                                    <i class="fas fa-chevron-up me-1"></i> Ocultar detalles
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 @endif
                             </div>
@@ -332,6 +359,24 @@
             // Aquí implementar la generación de PDF
             alert('Función de generación de PDF para Grado ID: ' + gradoId + ', Sección ID: ' + seccionId);
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const collapseErrores = document.getElementById('collapseErrores');
+            const textoToggle = document.getElementById('textoToggleErrores');
+            const iconoToggle = document.getElementById('iconoToggleErrores');
+
+            if (collapseErrores && textoToggle && iconoToggle) {
+                const totalItems = collapseErrores.querySelectorAll('li').length;
+                collapseErrores.addEventListener('show.bs.collapse', function () {
+                    textoToggle.textContent = 'Ocultar detalles de los errores';
+                    iconoToggle.className = 'fas fa-eye-slash';
+                });
+                collapseErrores.addEventListener('hide.bs.collapse', function () {
+                    textoToggle.textContent = 'Ver detalles de los errores (' + totalItems + ')';
+                    iconoToggle.className = 'fas fa-eye';
+                });
+            }
+        });
     </script>
 @endsection
 
