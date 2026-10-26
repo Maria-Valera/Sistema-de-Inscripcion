@@ -319,13 +319,6 @@
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-outline-primary fw-semibold px-3 py-2 shadow-sm" id="btnValidarHorario" style="border-radius: 0.375rem; display: inline-flex; align-items: center; gap: 0.5rem; height: 2.625rem;">
-                    <span class="spinner-border spinner-border-sm d-none" id="spinnerValidar" role="status" aria-hidden="true"></span>
-                    <span class="btn-text">
-                        <i class="fas fa-clipboard-check"></i>
-                        Validar
-                    </span>
-                </button>
                 <button class="btn-generar-horario" id="btnGenerarHorario">
                     <span class="spinner"></span>
                     <span class="btn-text">
@@ -340,6 +333,15 @@
 
 @section('content')
     <div class="main-container">
+        <!-- Banner informativo de validación de entrada exitosa -->
+        <div class="alert alert-success d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm border-0" style="background-color: #ecfdf5; border-left: 5px solid #10b981 !important;">
+            <i class="fas fa-check-circle fs-4 text-success"></i>
+            <div>
+                <strong class="d-block text-success" style="font-size: 0.95rem;">Configuración validada correctamente. Puedes proceder a generar el horario.</strong>
+                <span class="text-muted small">El marco horario y la carga académica cumplen con los requisitos mínimos de viabilidad.</span>
+            </div>
+        </div>
+
         <!-- Parámetros de edición (ocultos) -->
         <input type="hidden" id="editGradoId" value="{{ $editGradoId ?? '' }}">
         <input type="hidden" id="editSeccionId" value="{{ $editSeccionId ?? '' }}">
@@ -591,26 +593,10 @@
                         </div>
                         <div id="listaInfo" class="list-group"></div>
                     </div>
-
-                    <!-- Opción para forzar generación si hay errores -->
-                    <div id="contenedorForzarGeneracion" class="p-3 bg-light rounded-3 border border-warning d-none">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="checkForzarGeneracion">
-                            <label class="form-check-label fw-bold text-dark" for="checkForzarGeneracion">
-                                Generar de todos modos (ignorar errores bajo mi responsabilidad)
-                            </label>
-                        </div>
-                        <div class="small text-muted mt-1 ms-4">
-                            Si marca esta casilla, el botón de "Generar Horario" se habilitará permitiéndole ejecutar el algoritmo aun con errores de configuración.
-                        </div>
-                    </div>
                 </div>
-                <div class="modal-footer bg-light d-flex justify-content-between">
+                <div class="modal-footer bg-light d-flex justify-content-end">
                     <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i> Cerrar
-                    </button>
-                    <button type="button" class="btn btn-success px-4" id="btnModalGenerar" style="display: none;">
-                        <i class="fas fa-magic me-1"></i> Generar Horario
                     </button>
                 </div>
             </div>
@@ -2458,9 +2444,7 @@
                 }
             };
 
-            // ===== LÓGICA DE VALIDACIÓN PREVIA (M4) =====
-            const btnValidar = document.getElementById('btnValidarHorario');
-            const spinnerValidar = document.getElementById('spinnerValidar');
+            // ===== LÓGICA DE VALIDACIÓN PREVIA (M4 / P6.5) =====
             const btnGenerar = document.getElementById('btnGenerarHorario');
             const modalValidacionEl = document.getElementById('modalValidacionHorario');
             let modalValidacionObj = null;
@@ -2470,51 +2454,6 @@
                     modalValidacionObj = bootstrap.Modal.getInstance(modalValidacionEl) || new bootstrap.Modal(modalValidacionEl);
                 }
                 return modalValidacionObj;
-            }
-
-            if (btnValidar) {
-                btnValidar.addEventListener('click', async function() {
-                    if (!anioEscolarActivo) {
-                        mostrarNotificacion('No hay año escolar activo. Configure uno antes de validar.', 'error');
-                        return;
-                    }
-
-                    const nivelSelect = document.getElementById('nivelAcademico');
-                    const gradoId = nivelSelect?.value || null;
-
-                    btnValidar.disabled = true;
-                    if (spinnerValidar) spinnerValidar.classList.remove('d-none');
-
-                    try {
-                        const response = await fetch('/api/horario/validar', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                            },
-                            body: JSON.stringify({
-                                anio_escolar_id: anioEscolarActivo.id,
-                                grado_id: gradoId
-                            })
-                        });
-
-                        const data = await response.json();
-
-                        if (!response.ok) {
-                            mostrarNotificacion(data.error || 'Error al validar viabilidad del horario', 'error');
-                            return;
-                        }
-
-                        renderizarResultadoValidacion(data);
-
-                    } catch (error) {
-                        console.error('Error al validar horario:', error);
-                        mostrarNotificacion('Error de conexión al servidor al ejecutar validación', 'error');
-                    } finally {
-                        btnValidar.disabled = false;
-                        if (spinnerValidar) spinnerValidar.classList.add('d-none');
-                    }
-                });
             }
 
             function renderizarResultadoValidacion(data) {
@@ -2534,10 +2473,6 @@
                 const seccionInfo = document.getElementById('seccionInfo');
                 const listaInfo = document.getElementById('listaInfo');
                 const countInfo = document.getElementById('countInfo');
-
-                const contenedorForzar = document.getElementById('contenedorForzarGeneracion');
-                const checkForzar = document.getElementById('checkForzarGeneracion');
-                const btnModalGenerar = document.getElementById('btnModalGenerar');
 
                 listaErrores.innerHTML = '';
                 listaAvisos.innerHTML = '';
@@ -2600,34 +2535,17 @@
                     seccionInfo.classList.add('d-none');
                 }
 
-                // 4. Bloqueo estricto del botón Generar si hay errores
+                // 4. Mensaje general de estado
                 if (errores.length > 0) {
                     alertaEstado.innerHTML = `
                         <div class="alert alert-danger d-flex align-items-center mb-0 shadow-sm border-0">
                             <i class="fas fa-ban me-3 fs-3"></i>
                             <div>
                                 <h6 class="mb-1 fw-bold">Se detectaron ${errores.length} inconsistencia(s) crítica(s)</h6>
-                                <p class="mb-0 small">El botón de "Generar Horario" ha sido deshabilitado para evitar colisiones insolubles.</p>
+                                <p class="mb-0 small">El proceso de generación automática ha sido bloqueado para evitar colisiones irresolubles. Debe corregir estos errores en la configuración y carga académica.</p>
                             </div>
                         </div>
                     `;
-                    btnGenerar.disabled = true;
-                    btnGenerar.title = "La generación está bloqueada por errores de validación previa.";
-                    contenedorForzar.classList.remove('d-none');
-                    checkForzar.checked = false;
-                    btnModalGenerar.style.display = 'none';
-
-                    checkForzar.onchange = function() {
-                        if (this.checked) {
-                            btnGenerar.disabled = false;
-                            btnGenerar.title = "Generación forzada bajo advertencia de errores.";
-                            btnModalGenerar.style.display = 'inline-block';
-                        } else {
-                            btnGenerar.disabled = true;
-                            btnGenerar.title = "La generación está bloqueada por errores de validación previa.";
-                            btnModalGenerar.style.display = 'none';
-                        }
-                    };
                 } else {
                     alertaEstado.innerHTML = `
                         <div class="alert alert-success d-flex align-items-center mb-0 shadow-sm border-0">
@@ -2638,21 +2556,7 @@
                             </div>
                         </div>
                     `;
-                    btnGenerar.disabled = false;
-                    btnGenerar.title = "";
-                    contenedorForzar.classList.add('d-none');
-                    btnModalGenerar.style.display = 'inline-block';
                 }
-
-                btnModalGenerar.onclick = function() {
-                    const modal = obtenerModalValidacion();
-                    if (modal) {
-                        modal.hide();
-                    } else if (typeof $ !== 'undefined') {
-                        $('#modalValidacionHorario').modal('hide');
-                    }
-                    btnGenerar.click();
-                };
 
                 const modal = obtenerModalValidacion();
                 if (modal) {
@@ -2669,7 +2573,7 @@
                 return p.innerHTML;
             }
 
-            // Función para generar horario automáticamente
+            // Función para generar horario automáticamente con validación como barrera de entrada
             document.getElementById('btnGenerarHorario').addEventListener('click', async function() {
                 const btn = this;
                 
@@ -2681,7 +2585,7 @@
                 // Mostrar indicador de carga
                 btn.classList.add('loading');
                 btn.disabled = true;
-                mostrarPantallaCarga('Generando horario, esto puede tardar unos segundos...');
+                mostrarPantallaCarga('Validando viabilidad de la carga académica...');
 
                 try {
                     // Obtener filtros seleccionados del Paso 1
@@ -2690,6 +2594,36 @@
                     
                     const gradoId = nivelSelect?.value || null;
                     const areaFormacionId = areaFormacionSelect?.value || null;
+
+                    // 1. Ejecutar validación previa
+                    const valResponse = await fetch('/api/horario/validar', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify({
+                            anio_escolar_id: anioEscolarActivo.id,
+                            grado_id: gradoId
+                        })
+                    });
+
+                    const valData = await valResponse.json();
+
+                    if (!valResponse.ok) {
+                        mostrarNotificacion(valData.error || 'Error al validar viabilidad del horario', 'error');
+                        return;
+                    }
+
+                    // Si se detectan errores críticos, abrir modal y detener el proceso por completo
+                    if (valData.errores && valData.errores.length > 0) {
+                        renderizarResultadoValidacion(valData);
+                        mostrarNotificacion('Generación cancelada: Se detectaron inconsistencias críticas en la carga académica.', 'error');
+                        return;
+                    }
+
+                    // 2. Si no hay errores críticos, proceder con la generación
+                    mostrarPantallaCarga('Generando horario, esto puede tardar unos segundos...');
 
                     const response = await fetch('/api/horario/generar', {
                         method: 'POST',

@@ -39,7 +39,7 @@
 
 @section('content')
     <div class="main-container">
-        @if (session('success') || session('error'))
+        @if (session('success') || session('error') || session('warning'))
             <div class="alerts-container">
                 @if (session('success'))
                     <div class="alert-modern alert-success alert alert-dismissible fade show" role="alert">
@@ -53,6 +53,33 @@
                         <button type="button" class="alert-close btn-close" data-bs-dismiss="alert" aria-label="Cerrar">
                             <i class="fas fa-times"></i>
                         </button>
+                    </div>
+                @endif
+
+                @if (session('warning'))
+                    <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem 1.25rem;">
+                        <div class="d-flex align-items-start gap-3">
+                            <div style="color: #d97706; font-size: 1.5rem; margin-top: -2px;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="fw-bold mb-1" style="color: #92400e;">Atención Requerida</h5>
+                                <p class="mb-0" style="color: #78350f;">{{ session('warning') }}</p>
+                                @if (session('errores_validacion'))
+                                    <div class="mt-3 p-3 bg-white rounded border border-warning">
+                                        <h6 class="fw-bold text-danger mb-2">
+                                            <i class="fas fa-times-circle me-1"></i> Errores críticos detectados en la carga académica:
+                                        </h6>
+                                        <ul class="mb-0 ps-3 text-danger small">
+                                            @foreach (session('errores_validacion') as $err)
+                                                <li class="mb-1"><strong>{{ $err['mensaje'] }}</strong>: {{ $err['detalle'] }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                     </div>
                 @endif
 

@@ -13,6 +13,7 @@ use App\Models\DocenteAreaGrado;
 use App\Models\Grado;
 use App\Models\Seccion;
 use App\Models\User;
+use App\Models\seccion_aula;
 use Database\Seeders\PermisosSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,7 +30,7 @@ class HorarioCreateTest extends TestCase
         $this->seed(RoleSeeder::class);
     }
 
-    public function test_create_horario_carga_sin_error_cuando_docente_tiene_multiples_estudios(): void
+    private function crearAdmin(): User
     {
         $admin = User::factory()->create([
             'email_verified_at' => now(),
@@ -37,13 +38,86 @@ class HorarioCreateTest extends TestCase
             'activo' => true,
         ]);
         $admin->assignRole('Admin');
+        return $admin;
+    }
 
-        // Año escolar activo
+    /**
+     * P6.5: Verifica que un usuario es redirigido a configuracion si intenta entrar a create sin configuracion_horario.
+     */
+    public function test_create_horario_redirige_si_no_existe_configuracion_horario(): void
+    {
+        $admin = $this->crearAdmin();
+
+        // Año escolar activo sin registro en configuracion_horarios
+        AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.horario.create'));
+
+        $response->assertRedirect(route('admin.horario.configuracion'));
+        $response->assertSessionHas('warning', 'Debes configurar el marco horario (bloques y recesos) antes de crear un horario.');
+    }
+
+    /**
+     * P6.5: Verifica que si hay errores críticos en el validador, redirige al dashboard de horarios.
+     */
+    public function test_create_horario_redirige_a_index_si_hay_errores_criticos_de_validacion(): void
+    {
+        $admin = $this->crearAdmin();
+
         $anio = AnioEscolar::create([
             'inicio_anio_escolar' => '2026-09-15',
             'cierre_anio_escolar' => '2027-07-15',
             'status' => 'Activo',
         ]);
+
+        ConfiguracionHorario::create([
+            'anio_escolar_id' => $anio->id,
+            'hora_inicio' => '07:00:00',
+            'numero_bloques' => 8,
+            'duracion_bloque_min' => 90,
+            'minutos_entre_bloques' => 0,
+        ]);
+
+        // Crear una sección sin aula regular asignada (produce error crítico de validación)
+        $grado = Grado::create([
+            'numero_grado' => '1',
+            'capacidad_max' => 35,
+            'min_seccion' => 1,
+            'max_seccion' => 3,
+            'status' => 1,
+        ]);
+
+        Seccion::create([
+            'nombre' => 'A',
+            'grado_id' => $grado->id,
+            'cantidad_actual' => 25,
+            'status' => 1,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.horario.create'));
+
+        $response->assertRedirect(route('admin.horario.index'));
+        $response->assertSessionHas('warning', 'Hay errores en la carga académica que impiden generar el horario. Por favor, revisa el diagnóstico.');
+        $response->assertSessionHas('errores_validacion');
+    }
+
+    /**
+     * P6.5 & Subquery test: Carga sin error 500 y muestra el banner verde cuando los datos son válidos.
+     */
+    public function test_create_horario_carga_exitosamente_cuando_cumple_prerrequisitos_y_no_muestra_boton_validar(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
         ConfiguracionHorario::create([
             'anio_escolar_id' => $anio->id,
             'hora_inicio' => '07:00:00',
@@ -121,6 +195,20 @@ class HorarioCreateTest extends TestCase
             'status' => 1,
         ]);
 
+        // Asignar aula regular activa con capacidad suficiente
+        $aula = Aula::create([
+            'nombre_aula' => 'Aula 101',
+            'tipo_aula' => Aula::TIPO_REGULAR,
+            'capacidad_maxima' => 35,
+            'status' => 1,
+        ]);
+
+        seccion_aula::create([
+            'id_seccion' => $seccion->id,
+            'id_aula' => $aula->id_aula,
+            'status' => 1,
+        ]);
+
         $area = AreaFormacion::create([
             'nombre_area_formacion' => 'Matemática',
             'codigo_area' => 'MAT-1',
@@ -142,12 +230,17 @@ class HorarioCreateTest extends TestCase
             'status' => 1,
         ]);
 
-        // Al acceder a /admin/horario/create no debe arrojar error 500 por subquery returns more than 1 row
         $response = $this->actingAs($admin)->get(route('admin.horario.create'));
 
         $response->assertOk();
         $response->assertSee('Crear Horario');
-        $response->assertSee('Validar');
+        // Banner verde de validación
+        $response->assertSee('Configuración validada correctamente. Puedes proceder a generar el horario.');
+        // Botón independiente de validar ya no debe existir
+        $response->assertDontSee('id="btnValidarHorario"', false);
+        // Checkbox de forzar generación ya no debe existir
+        $response->assertDontSee('checkForzarGeneracion');
+
         $response->assertViewHas('docentes', function ($docentes) use ($docente) {
             $docenteItem = $docentes->firstWhere('id', $docente->id);
             return $docenteItem !== null && count($docenteItem['secciones']) >= 1;

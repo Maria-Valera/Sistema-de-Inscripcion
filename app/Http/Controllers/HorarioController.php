@@ -13,10 +13,18 @@ use App\Models\Aula;
 use App\Models\AnioEscolar;
 use App\Models\BloqueHorario;
 use App\Models\Dias_semana;
+use App\Models\ConfiguracionHorario;
+use App\Services\ValidadorHorarioService;
 use Illuminate\Support\Facades\DB;
 
 class HorarioController extends Controller
 {
+    protected ValidadorHorarioService $validador;
+
+    public function __construct(ValidadorHorarioService $validador)
+    {
+        $this->validador = $validador;
+    }
 
     //muestra horarios en formato API
     public function IndexApi()
@@ -229,6 +237,28 @@ class HorarioController extends Controller
     //muestra la vista para crear horario con docentes, aulas y datos
     public function create(Request $request)
     {
+        $anioEscolarActivo = AnioEscolar::activos()->first();
+
+        if (!$anioEscolarActivo) {
+            return redirect()->route('admin.horario.index')
+                ->with('error', 'No hay un año escolar activo.');
+        }
+
+        // 1. Verificar si existe configuración de horario para el año activo
+        $configuracion = ConfiguracionHorario::where('anio_escolar_id', $anioEscolarActivo->id)->first();
+        if (!$configuracion) {
+            return redirect()->route('admin.horario.configuracion')
+                ->with('warning', 'Debes configurar el marco horario (bloques y recesos) antes de crear un horario.');
+        }
+
+        // 2. Ejecutar el validador previo para el año activo
+        $diagnostico = $this->validador->validar($anioEscolarActivo->id);
+        if (!empty($diagnostico['errores'])) {
+            return redirect()->route('admin.horario.index')
+                ->with('warning', 'Hay errores en la carga académica que impiden generar el horario. Por favor, revisa el diagnóstico.')
+                ->with('errores_validacion', $diagnostico['errores']);
+        }
+
         $grados = Grado::where('status', true)
             ->orderBy('numero_grado', 'asc')
             ->get();
@@ -313,8 +343,6 @@ class HorarioController extends Controller
                     'secciones' => $secciones
                 ];
             });
-
-        $anioEscolarActivo = AnioEscolar::activos()->first();
 
         //detecta modo de edición desde parametros
         $modoEdicion = $request->has('modo_edicion') && $request->modo_edicion === 'true';
