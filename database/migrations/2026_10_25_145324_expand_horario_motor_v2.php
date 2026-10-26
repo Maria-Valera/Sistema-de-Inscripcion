@@ -81,6 +81,10 @@ return new class extends Migration
             $table->renameColumn('horas_semanales', 'bloques_semanales');
         });
 
+        Schema::table('area_formacions', function (Blueprint $table) {
+            $table->integer('bloques_semanales')->nullable()->change();
+        });
+
         // ---------------------------------------------------------------------
         // 2. MIGRACIÓN DE DATOS
         // ---------------------------------------------------------------------

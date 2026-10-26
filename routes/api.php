@@ -45,6 +45,7 @@ Route::middleware(['web', 'throttle:60,1', 'auth', 'verified', 'forzar.cambio.pa
     // Operaciones de modificación de horarios
     Route::middleware(['permission:horarios.gestionar'])->group(function () {
         Route::post('/horario/guardar-asignaciones', [GeneradorHorarioController::class, 'guardarAsignaciones']);
+        Route::post('/horario/validar', [GeneradorHorarioController::class, 'validar'])->name('api.horario.validar');
         Route::post('/horario/generar', [GeneradorHorarioController::class, 'generar'])->name('api.horario.generar');
         Route::post('/horario/reacomodar', [GeneradorHorarioController::class, 'reacomodar'])->name('api.horario.reacomodar');
         Route::put('/horario/{id}/aula', [GeneradorHorarioController::class, 'actualizarAula']);

@@ -292,7 +292,7 @@ class HorarioController extends Controller
                 //obtiene secciones del docente
                 $secciones = DB::table('docente_area_grados as dag')
                     ->join('seccions as s', 'dag.seccion_id', '=', 's.id')
-                    ->where('dag.docente_estudio_realizado_id', function($query) use ($docente) {
+                    ->whereIn('dag.docente_estudio_realizado_id', function($query) use ($docente) {
                         $query->select('dde.id')
                             ->from('detalle_docente_estudios as dde')
                             ->where('dde.docente_id', $docente->id)
@@ -301,6 +301,7 @@ class HorarioController extends Controller
                     ->where('dag.status', true)
                     ->where('s.status', true)
                     ->select('s.id', 's.nombre')
+                    ->distinct()
                     ->get()
                     ->toArray();
 

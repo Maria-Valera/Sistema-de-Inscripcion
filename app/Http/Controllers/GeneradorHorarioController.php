@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\GeneradorHorarioService;
+use App\Services\ValidadorHorarioService;
 use App\Models\HorarioAsignacion;
 use App\Models\AnioEscolar;
 use App\Models\AreaFormacion;
@@ -11,10 +12,12 @@ use Illuminate\Http\Request;
 class GeneradorHorarioController extends Controller
 {
     protected GeneradorHorarioService $generador;
+    protected ValidadorHorarioService $validador;
 
-    public function __construct(GeneradorHorarioService $generador)
+    public function __construct(GeneradorHorarioService $generador, ValidadorHorarioService $validador)
     {
         $this->generador = $generador;
+        $this->validador = $validador;
     }
 
     private function getAnioEscolarActivo()
@@ -62,6 +65,27 @@ class GeneradorHorarioController extends Controller
             $validado['total_bloques'] ?? 8,
             $validado['grado_id'] ?? null,
             $validado['area_formacion_id'] ?? null
+        );
+
+        return response()->json($resultado);
+    }
+
+    public function validar(Request $request)
+    {
+        $validado = $request->validate([
+            'anio_escolar_id' => 'nullable|integer',
+            'grado_id' => 'nullable|integer',
+        ]);
+
+        $anioEscolarId = $validado['anio_escolar_id'] ?? $this->getAnioEscolarActivo()?->id;
+
+        if (!$anioEscolarId) {
+            return response()->json(['error' => 'No hay año escolar activo'], 400);
+        }
+
+        $resultado = $this->validador->validar(
+            (int) $anioEscolarId,
+            isset($validado['grado_id']) && $validado['grado_id'] !== '' ? (int) $validado['grado_id'] : null
         );
 
         return response()->json($resultado);

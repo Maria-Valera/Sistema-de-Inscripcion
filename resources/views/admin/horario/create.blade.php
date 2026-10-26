@@ -318,13 +318,22 @@
                     <p class="title-subtitle">{{ $modoEdicion ? 'Modificación de horarios académicos' : 'Asignación de horarios académicos' }}</p>
                 </div>
             </div>
-             <button class="btn-generar-horario" id="btnGenerarHorario">
-                <span class="spinner"></span>
-                <span class="btn-text">
-                    <i class="fas fa-magic"></i>
-                    {{ $modoEdicion ? 'Regenerar Horario' : 'Generar Horario' }}
-                </span>
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-outline-primary fw-semibold px-3 py-2 shadow-sm" id="btnValidarHorario" style="border-radius: 0.375rem; display: inline-flex; align-items: center; gap: 0.5rem; height: 2.625rem;">
+                    <span class="spinner-border spinner-border-sm d-none" id="spinnerValidar" role="status" aria-hidden="true"></span>
+                    <span class="btn-text">
+                        <i class="fas fa-clipboard-check"></i>
+                        Validar
+                    </span>
+                </button>
+                <button class="btn-generar-horario" id="btnGenerarHorario">
+                    <span class="spinner"></span>
+                    <span class="btn-text">
+                        <i class="fas fa-magic"></i>
+                        {{ $modoEdicion ? 'Regenerar Horario' : 'Generar Horario' }}
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
 @stop
@@ -531,6 +540,81 @@
             <i class="fas fa-trash"></i> Eliminar seleccionados
         </button>
         <button class="btn-cancelar-seleccion" id="btnCancelarSeleccion">Cancelar</button>
+    </div>
+
+    <!-- Modal de Validación Previa (M4) -->
+    <div class="modal fade" id="modalValidacionHorario" tabindex="-1" aria-labelledby="modalValidacionHorarioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="modalValidacionHorarioLabel">
+                        <i class="fas fa-clipboard-check text-primary me-2"></i>
+                        Diagnóstico y Validación Previa de Horarios
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Disclaimer estricto -->
+                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center rounded-3 border-0 shadow-sm" style="font-size: 0.875rem; background-color: #e0f2fe; color: #0369a1;">
+                        <i class="fas fa-info-circle me-2 fs-5 text-info"></i>
+                        <div>
+                            <em>Un validador sin errores NO garantiza que el horario se genere perfecto, solo que los datos son lógicamente posibles.</em>
+                        </div>
+                    </div>
+
+                    <!-- Resumen de estado de validación -->
+                    <div id="validacionEstadoAlerta" class="mb-3"></div>
+
+                    <!-- Sección Errores (Rojo) -->
+                    <div id="seccionErrores" class="mb-4 d-none">
+                        <div class="d-flex align-items-center text-danger mb-2">
+                            <i class="fas fa-times-circle me-2 fs-5"></i>
+                            <h6 class="mb-0 fw-bold">Errores Críticos (<span id="countErrores">0</span>) - Bloquean la generación</h6>
+                        </div>
+                        <div id="listaErrores" class="list-group"></div>
+                    </div>
+
+                    <!-- Sección Avisos (Amarillo) -->
+                    <div id="seccionAvisos" class="mb-4 d-none">
+                        <div class="d-flex align-items-center text-warning mb-2" style="color: #b45309 !important;">
+                            <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                            <h6 class="mb-0 fw-bold">Avisos y Advertencias (<span id="countAvisos">0</span>)</h6>
+                        </div>
+                        <div id="listaAvisos" class="list-group"></div>
+                    </div>
+
+                    <!-- Sección Info (Azul) -->
+                    <div id="seccionInfo" class="mb-4 d-none">
+                        <div class="d-flex align-items-center text-primary mb-2">
+                            <i class="fas fa-info-circle me-2 fs-5"></i>
+                            <h6 class="mb-0 fw-bold">Información de Carga y Contexto (<span id="countInfo">0</span>)</h6>
+                        </div>
+                        <div id="listaInfo" class="list-group"></div>
+                    </div>
+
+                    <!-- Opción para forzar generación si hay errores -->
+                    <div id="contenedorForzarGeneracion" class="p-3 bg-light rounded-3 border border-warning d-none">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkForzarGeneracion">
+                            <label class="form-check-label fw-bold text-dark" for="checkForzarGeneracion">
+                                Generar de todos modos (ignorar errores bajo mi responsabilidad)
+                            </label>
+                        </div>
+                        <div class="small text-muted mt-1 ms-4">
+                            Si marca esta casilla, el botón de "Generar Horario" se habilitará permitiéndole ejecutar el algoritmo aun con errores de configuración.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cerrar
+                    </button>
+                    <button type="button" class="btn btn-success px-4" id="btnModalGenerar" style="display: none;">
+                        <i class="fas fa-magic me-1"></i> Generar Horario
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -2373,6 +2457,217 @@
                     ocultarPantallaCarga();
                 }
             };
+
+            // ===== LÓGICA DE VALIDACIÓN PREVIA (M4) =====
+            const btnValidar = document.getElementById('btnValidarHorario');
+            const spinnerValidar = document.getElementById('spinnerValidar');
+            const btnGenerar = document.getElementById('btnGenerarHorario');
+            const modalValidacionEl = document.getElementById('modalValidacionHorario');
+            let modalValidacionObj = null;
+
+            function obtenerModalValidacion() {
+                if (!modalValidacionObj && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    modalValidacionObj = bootstrap.Modal.getInstance(modalValidacionEl) || new bootstrap.Modal(modalValidacionEl);
+                }
+                return modalValidacionObj;
+            }
+
+            if (btnValidar) {
+                btnValidar.addEventListener('click', async function() {
+                    if (!anioEscolarActivo) {
+                        mostrarNotificacion('No hay año escolar activo. Configure uno antes de validar.', 'error');
+                        return;
+                    }
+
+                    const nivelSelect = document.getElementById('nivelAcademico');
+                    const gradoId = nivelSelect?.value || null;
+
+                    btnValidar.disabled = true;
+                    if (spinnerValidar) spinnerValidar.classList.remove('d-none');
+
+                    try {
+                        const response = await fetch('/api/horario/validar', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                            },
+                            body: JSON.stringify({
+                                anio_escolar_id: anioEscolarActivo.id,
+                                grado_id: gradoId
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            mostrarNotificacion(data.error || 'Error al validar viabilidad del horario', 'error');
+                            return;
+                        }
+
+                        renderizarResultadoValidacion(data);
+
+                    } catch (error) {
+                        console.error('Error al validar horario:', error);
+                        mostrarNotificacion('Error de conexión al servidor al ejecutar validación', 'error');
+                    } finally {
+                        btnValidar.disabled = false;
+                        if (spinnerValidar) spinnerValidar.classList.add('d-none');
+                    }
+                });
+            }
+
+            function renderizarResultadoValidacion(data) {
+                const errores = data.errores || [];
+                const avisos = data.avisos || [];
+                const info = data.info || [];
+
+                const alertaEstado = document.getElementById('validacionEstadoAlerta');
+                const seccionErrores = document.getElementById('seccionErrores');
+                const listaErrores = document.getElementById('listaErrores');
+                const countErrores = document.getElementById('countErrores');
+
+                const seccionAvisos = document.getElementById('seccionAvisos');
+                const listaAvisos = document.getElementById('listaAvisos');
+                const countAvisos = document.getElementById('countAvisos');
+
+                const seccionInfo = document.getElementById('seccionInfo');
+                const listaInfo = document.getElementById('listaInfo');
+                const countInfo = document.getElementById('countInfo');
+
+                const contenedorForzar = document.getElementById('contenedorForzarGeneracion');
+                const checkForzar = document.getElementById('checkForzarGeneracion');
+                const btnModalGenerar = document.getElementById('btnModalGenerar');
+
+                listaErrores.innerHTML = '';
+                listaAvisos.innerHTML = '';
+                listaInfo.innerHTML = '';
+
+                // 1. Render Errores
+                countErrores.textContent = errores.length;
+                if (errores.length > 0) {
+                    seccionErrores.classList.remove('d-none');
+                    errores.forEach(err => {
+                        const item = document.createElement('div');
+                        item.className = 'list-group-item list-group-item-danger border-start border-danger border-4 mb-2 rounded shadow-sm';
+                        item.innerHTML = `
+                            <div class="fw-bold text-danger d-flex align-items-center">
+                                <i class="fas fa-times-circle me-2"></i> ${escapeValidacionHtml(err.mensaje)}
+                            </div>
+                            <div class="small text-muted mt-1 ps-4">${escapeValidacionHtml(err.detalle)}</div>
+                        `;
+                        listaErrores.appendChild(item);
+                    });
+                } else {
+                    seccionErrores.classList.add('d-none');
+                }
+
+                // 2. Render Avisos
+                countAvisos.textContent = avisos.length;
+                if (avisos.length > 0) {
+                    seccionAvisos.classList.remove('d-none');
+                    avisos.forEach(av => {
+                        const item = document.createElement('div');
+                        item.className = 'list-group-item list-group-item-warning border-start border-warning border-4 mb-2 rounded shadow-sm';
+                        item.innerHTML = `
+                            <div class="fw-bold text-dark d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle text-warning me-2"></i> ${escapeValidacionHtml(av.mensaje)}
+                            </div>
+                            <div class="small text-muted mt-1 ps-4">${escapeValidacionHtml(av.detalle)}</div>
+                        `;
+                        listaAvisos.appendChild(item);
+                    });
+                } else {
+                    seccionAvisos.classList.add('d-none');
+                }
+
+                // 3. Render Info
+                countInfo.textContent = info.length;
+                if (info.length > 0) {
+                    seccionInfo.classList.remove('d-none');
+                    info.forEach(inf => {
+                        const item = document.createElement('div');
+                        item.className = 'list-group-item list-group-item-info border-start border-info border-4 mb-2 rounded shadow-sm';
+                        item.innerHTML = `
+                            <div class="fw-bold text-primary d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2"></i> ${escapeValidacionHtml(inf.mensaje)}
+                            </div>
+                            <div class="small text-secondary mt-1 ps-4">${escapeValidacionHtml(inf.detalle)}</div>
+                        `;
+                        listaInfo.appendChild(item);
+                    });
+                } else {
+                    seccionInfo.classList.add('d-none');
+                }
+
+                // 4. Bloqueo estricto del botón Generar si hay errores
+                if (errores.length > 0) {
+                    alertaEstado.innerHTML = `
+                        <div class="alert alert-danger d-flex align-items-center mb-0 shadow-sm border-0">
+                            <i class="fas fa-ban me-3 fs-3"></i>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Se detectaron ${errores.length} inconsistencia(s) crítica(s)</h6>
+                                <p class="mb-0 small">El botón de "Generar Horario" ha sido deshabilitado para evitar colisiones insolubles.</p>
+                            </div>
+                        </div>
+                    `;
+                    btnGenerar.disabled = true;
+                    btnGenerar.title = "La generación está bloqueada por errores de validación previa.";
+                    contenedorForzar.classList.remove('d-none');
+                    checkForzar.checked = false;
+                    btnModalGenerar.style.display = 'none';
+
+                    checkForzar.onchange = function() {
+                        if (this.checked) {
+                            btnGenerar.disabled = false;
+                            btnGenerar.title = "Generación forzada bajo advertencia de errores.";
+                            btnModalGenerar.style.display = 'inline-block';
+                        } else {
+                            btnGenerar.disabled = true;
+                            btnGenerar.title = "La generación está bloqueada por errores de validación previa.";
+                            btnModalGenerar.style.display = 'none';
+                        }
+                    };
+                } else {
+                    alertaEstado.innerHTML = `
+                        <div class="alert alert-success d-flex align-items-center mb-0 shadow-sm border-0">
+                            <i class="fas fa-check-circle me-3 fs-3"></i>
+                            <div>
+                                <h6 class="mb-1 fw-bold">Validación lógicamente viable</h6>
+                                <p class="mb-0 small">No se detectaron errores críticos que impidan el armado del horario.</p>
+                            </div>
+                        </div>
+                    `;
+                    btnGenerar.disabled = false;
+                    btnGenerar.title = "";
+                    contenedorForzar.classList.add('d-none');
+                    btnModalGenerar.style.display = 'inline-block';
+                }
+
+                btnModalGenerar.onclick = function() {
+                    const modal = obtenerModalValidacion();
+                    if (modal) {
+                        modal.hide();
+                    } else if (typeof $ !== 'undefined') {
+                        $('#modalValidacionHorario').modal('hide');
+                    }
+                    btnGenerar.click();
+                };
+
+                const modal = obtenerModalValidacion();
+                if (modal) {
+                    modal.show();
+                } else if (typeof $ !== 'undefined') {
+                    $('#modalValidacionHorario').modal('show');
+                }
+            }
+
+            function escapeValidacionHtml(str) {
+                if (!str) return '';
+                const p = document.createElement('p');
+                p.textContent = str;
+                return p.innerHTML;
+            }
 
             // Función para generar horario automáticamente
             document.getElementById('btnGenerarHorario').addEventListener('click', async function() {
