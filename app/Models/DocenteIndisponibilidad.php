@@ -16,8 +16,6 @@ class DocenteIndisponibilidad extends Model
     protected $fillable = [
         'docente_id',
         'anio_escolar_id',
-        'dias_semana_id',
-        'id_bloque_hora',
         'dia',
         'bloque',
         'tipo',
@@ -38,15 +36,5 @@ class DocenteIndisponibilidad extends Model
     public function anioEscolar(): BelongsTo
     {
         return $this->belongsTo(AnioEscolar::class, 'anio_escolar_id');
-    }
-
-    public function diaSemana(): BelongsTo
-    {
-        return $this->belongsTo(Dias_semana::class, 'dias_semana_id');
-    }
-
-    public function bloqueHorario(): BelongsTo
-    {
-        return $this->belongsTo(BloqueHorario::class, 'id_bloque_hora');
     }
 }

@@ -39,7 +39,7 @@ class AnioEscolar extends Model
 
     public function noDisponibilidades()
     {
-        return $this->hasMany(DocenteNoDisponibilidad::class);
+        return $this->hasMany(DocenteIndisponibilidad::class);
     }
 
     public function configuracionHorario()

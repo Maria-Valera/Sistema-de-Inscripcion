@@ -14,10 +14,7 @@ class AreaFormacion extends Model
         'nombre_area_formacion',
         'codigo_area',
         'siglas',
-        'horas_semanales',
         'bloques_semanales',
-        'bloques_maximos_por_dia',
-        'dias_max_semana',
         'aula_id',
         'status',
     ];
@@ -51,16 +48,4 @@ class AreaFormacion extends Model
             : $this->aula()->value('tipo_aula');
         return $tipoAula !== 'Aula Regular';
     }
-
-    public function getHorasSemanalesAttribute()
-    {
-        return $this->attributes['bloques_semanales'] ?? null;
-    }
-
-    public function setHorasSemanalesAttribute($value)
-    {
-        $this->attributes['bloques_semanales'] = $value;
-    }
-
-
 }

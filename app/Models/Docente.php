@@ -120,11 +120,11 @@ class Docente extends Model
     }
 
     /**
-     * Relación con DocenteNoDisponibilidad
+     * Relación con DocenteIndisponibilidad
      */
     public function noDisponibilidades()
     {
-        return $this->hasMany(DocenteNoDisponibilidad::class, 'docente_id');
+        return $this->hasMany(DocenteIndisponibilidad::class, 'docente_id');
     }
 
 

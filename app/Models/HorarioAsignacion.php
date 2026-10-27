@@ -12,8 +12,6 @@ class HorarioAsignacion extends Model
         'anio_escolar_id',
         'carga_academica_id',
         'aula_id',
-        'dia_id',
-        'bloque_id',
         'dia',
         'bloque',
         'fijada',
@@ -27,18 +25,6 @@ class HorarioAsignacion extends Model
         'dia' => 'integer',
         'bloque' => 'integer',
     ];
-
-    protected static function booted()
-    {
-        static::creating(function ($model) {
-            if (empty($model->dia_id) && !empty($model->dia)) {
-                $model->dia_id = $model->dia;
-            }
-            if (empty($model->bloque_id) && !empty($model->bloque)) {
-                $model->bloque_id = $model->bloque;
-            }
-        });
-    }
 
     public function cargaAcademica()
     {
@@ -89,16 +75,6 @@ class HorarioAsignacion extends Model
     public function aula()
     {
         return $this->belongsTo(Aula::class, 'aula_id', 'id_aula');
-    }
-
-    public function dia()
-    {
-        return $this->belongsTo(Dias_semana::class, 'dia_id');
-    }
-
-    public function bloque()
-    {
-        return $this->belongsTo(BloqueHorario::class, 'bloque_id');
     }
 
     // Accesores para mantener retrocompatibilidad de atributos directos

@@ -7,7 +7,6 @@ use App\Models\BloqueReservado;
 use App\Models\CargaAcademica;
 use App\Models\DocenteAreaGrado;
 use App\Models\DocenteIndisponibilidad;
-use App\Models\DocenteNoDisponibilidad;
 use App\Models\AreaFormacion;
 use App\Models\AreaFormacionPosicion;
 use App\Models\seccion_aula;
@@ -563,12 +562,14 @@ Class GeneradorHorarioService
                 $bloquesPorDocente[$asignacion['docente_id']]++;
             }
 
-            $noDisponible = DocenteNoDisponibilidad::where('docente_id', $docenteId)
+            $noDisponible = DocenteIndisponibilidad::where('docente_id', $docenteId)
                 ->where('anio_escolar_id', $anioEscolar)
+                ->where('estado', 'aprobada')
+                ->where('tipo', 'prohibido')
                 ->get();
             foreach ($noDisponible as $nd) {
-                $diaNum = $nd->dia instanceof \App\Enums\Dia ? $nd->dia->value : ($nd->dia ?? $nd->dias_semana_id);
-                $bloqueNum = $nd->bloque ?? $nd->id_bloque_hora;
+                $diaNum = $nd->dia instanceof \App\Enums\Dia ? $nd->dia->value : (int) $nd->dia;
+                $bloqueNum = (int) $nd->bloque;
                 $clave = $nd->docente_id . '_' . $diaNum . '_' . $bloqueNum;
                 $docenteOcupado[$clave] = true;
             }
@@ -589,8 +590,8 @@ Class GeneradorHorarioService
                     if ($bloquesActuales >= $maxBloquesDocente) continue;
 
                     return [
-                        'dia_id' => $dia,
-                        'bloque_id' => $bloque,
+                        'dia' => $dia,
+                        'bloque' => $bloque,
                         'aula_id' => $aulaId,
                     ];
                 }
@@ -616,15 +617,18 @@ Class GeneradorHorarioService
             $bloquesPorDocente = [];
 
             foreach ($asignacionesExistentes as $asignacion) {
+                $asigDia = (int) ($asignacion['dia'] ?? 0);
+                $asigBloque = (int) ($asignacion['bloque'] ?? 0);
+
                 if ($asignacion['docente_id'] == $docenteId &&
                     $asignacion['seccion_id'] == $seccionId &&
-                    $asignacion['dia_id'] == $diaActual &&
-                    $asignacion['bloque_id'] == $bloqueActual) {
+                    $asigDia == $diaActual &&
+                    $asigBloque == $bloqueActual) {
                     continue;
                 }
 
-                $claveDocente = $asignacion['docente_id'] . '_' . $asignacion['dia_id'] . '_' . $asignacion['bloque_id'];
-                $claveSeccion = $asignacion['seccion_id'] . '_' . $asignacion['dia_id'] . '_' . $asignacion['bloque_id'];
+                $claveDocente = $asignacion['docente_id'] . '_' . $asigDia . '_' . $asigBloque;
+                $claveSeccion = $asignacion['seccion_id'] . '_' . $asigDia . '_' . $asigBloque;
 
                 $docenteOcupado[$claveDocente] = true;
                 $seccionOcupado[$claveSeccion] = true;
@@ -635,21 +639,26 @@ Class GeneradorHorarioService
                 $bloquesPorDocente[$asignacion['docente_id']]++;
             }
 
-            $noDisponible = DocenteNoDisponibilidad::where('docente_id', $docenteId)
+            $noDisponible = DocenteIndisponibilidad::where('docente_id', $docenteId)
                 ->where('anio_escolar_id', $anioEscolar)
+                ->where('estado', 'aprobada')
+                ->where('tipo', 'prohibido')
                 ->get();
             foreach ($noDisponible as $nd) {
-                $diaNum = $nd->dia instanceof \App\Enums\Dia ? $nd->dia->value : ($nd->dia ?? $nd->dias_semana_id);
-                $bloqueNum = $nd->bloque ?? $nd->id_bloque_hora;
+                $diaNum = $nd->dia instanceof \App\Enums\Dia ? $nd->dia->value : (int) $nd->dia;
+                $bloqueNum = (int) $nd->bloque;
                 $clave = $nd->docente_id . '_' . $diaNum . '_' . $bloqueNum;
                 $docenteOcupado[$clave] = true;
             }
 
             foreach ($asignacionesExistentes as $index => $otraAsignacion) {
+                $otroDia = (int) ($otraAsignacion['dia'] ?? 0);
+                $otroBloque = (int) ($otraAsignacion['bloque'] ?? 0);
+
                 if ($otraAsignacion['docente_id'] == $docenteId &&
                     $otraAsignacion['seccion_id'] == $seccionId &&
-                    $otraAsignacion['dia_id'] == $diaActual &&
-                    $otraAsignacion['bloque_id'] == $bloqueActual) {
+                    $otroDia == $diaActual &&
+                    $otroBloque == $bloqueActual) {
                     continue;
                 }
 
@@ -660,8 +669,6 @@ Class GeneradorHorarioService
 
                 $otroDocenteId = $otraAsignacion['docente_id'];
                 $otraSeccionId = $otraAsignacion['seccion_id'];
-                $otroDia = $otraAsignacion['dia_id'];
-                $otroBloque = $otraAsignacion['bloque_id'];
                 $otraAula = $otraAsignacion['aula_id'];
 
                 $maxBloquesOtroDocente = $this->calcularMaxBloques(36);
@@ -682,18 +689,21 @@ Class GeneradorHorarioService
                 $bloquesOtroDocente = 0;
                 
                 foreach ($asignacionesExistentes as $asignacion) {
+                    $curDia = (int) ($asignacion['dia'] ?? 0);
+                    $curBloque = (int) ($asignacion['bloque'] ?? 0);
+
                     if ($asignacion['docente_id'] == $docenteId &&
                         !($asignacion['docente_id'] == $docenteId &&
                           $asignacion['seccion_id'] == $seccionId &&
-                          $asignacion['dia_id'] == $diaActual &&
-                          $asignacion['bloque_id'] == $bloqueActual)) {
+                          $curDia == $diaActual &&
+                          $curBloque == $bloqueActual)) {
                         $bloquesDocenteActual++;
                     }
                     if ($asignacion['docente_id'] == $otroDocenteId &&
                         !($asignacion['docente_id'] == $otroDocenteId &&
                           $asignacion['seccion_id'] == $otraSeccionId &&
-                          $asignacion['dia_id'] == $otroDia &&
-                          $asignacion['bloque_id'] == $otroBloque)) {
+                          $curDia == $otroDia &&
+                          $curBloque == $otroBloque)) {
                         $bloquesOtroDocente++;
                     }
                 }
@@ -848,8 +858,8 @@ Class GeneradorHorarioService
 
             // Si es fijada o está fuera del alcance, se mantiene ocupando celda
             if ($c->fijada || !$estaEnAlcance) {
-                $cDia = $c->dia instanceof Dia ? $c->dia->value : (int) ($c->dia ?? $c->dia_id);
-                $cBloque = (int) ($c->bloque ?? $c->bloque_id);
+                $cDia = $c->dia instanceof Dia ? $c->dia->value : (int) $c->dia;
+                $cBloque = (int) $c->bloque;
                 $cDocenteId = $c->cargaAcademica?->docente_id;
                 $cSeccionId = $c->cargaAcademica?->seccion_id;
                 $cMateriaId = $c->cargaAcademica?->area_formacion_id;
@@ -971,8 +981,6 @@ Class GeneradorHorarioService
                         'aula_id' => $aulaId,
                         'dia' => $asignacion['dia'],
                         'bloque' => $asignacion['bloque'],
-                        'dia_id' => $asignacion['dia'],
-                        'bloque_id' => $asignacion['bloque'],
                         'fijada' => false,
                         'conflicto_manual' => false,
                     ];
@@ -1177,8 +1185,6 @@ Class GeneradorHorarioService
                         'aula_id' => $asig['aula_id'] ?? null,
                         'dia' => $asig['dia'],
                         'bloque' => $asig['bloque'],
-                        'dia_id' => $asig['dia_id'] ?? $asig['dia'],
-                        'bloque_id' => $asig['bloque_id'] ?? $asig['bloque'],
                         'fijada' => false,
                         'conflicto_manual' => false,
                         'motivo_conflicto' => null,
