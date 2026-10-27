@@ -6,6 +6,7 @@ use App\Enums\Dia;
 use App\Models\AnioEscolar;
 use App\Models\AreaEstudioRealizado;
 use App\Models\AreaFormacion;
+use App\Models\AreaFormacionPosicion;
 use App\Models\Aula;
 use App\Models\BloqueReservado;
 use App\Models\CargaAcademica;
@@ -528,5 +529,44 @@ class ValidadorHorarioServiceTest extends TestCase
         $this->assertArrayHasKey('info', $resultado);
 
         $this->assertLessThan(3.0, $duracion, "El validador tardó {$duracion}s, debe tardar menos de 3 segundos.");
+    }
+
+    /**
+     * M8 / P11: Verifica que el validador emite un aviso si las posiciones prohibidas
+     * dejan menos días válidos que los bloques semanales requeridos (imposible de cumplir).
+     */
+    public function test_aviso_posiciones_prohibidas_imposible_de_cumplir(): void
+    {
+        $anio = $this->crearAnioEscolar(4); // 4 bloques por día
+        $aula = $this->crearAula();
+        [$grado, $seccion] = $this->crearGradoYSeccion('1', 'A', 20, $aula);
+
+        $docente = $this->crearDocente('Carlos', 'Mendoza', 36);
+        $area = $this->crearArea('Química', 3); // 3 bloques semanales (necesita 3 días distintos)
+        $this->asignarCarga($docente, $area, $seccion, $grado);
+
+        // Prohibimos todos los bloques de los días 1, 2, 3 y 4 para esta materia
+        // Dejando disponible únicamente el día 5 (1 día válido < 3 bloques semanales)
+        for ($d = 1; $d <= 4; $d++) {
+            for ($b = 1; $b <= 4; $b++) {
+                AreaFormacionPosicion::create([
+                    'area_formacion_id' => $area->id,
+                    'grado_id' => null,
+                    'dia' => $d,
+                    'bloque' => $b,
+                    'tipo' => 'prohibido',
+                ]);
+            }
+        }
+
+        $resultado = $this->service->validar($anio->id);
+
+        $this->assertNotEmpty($resultado['avisos']);
+        $codigosAvisos = collect($resultado['avisos'])->pluck('codigo')->all();
+        $this->assertContains('area_posiciones_insuficientes', $codigosAvisos);
+
+        $aviso = collect($resultado['avisos'])->firstWhere('codigo', 'area_posiciones_insuficientes');
+        $this->assertStringContainsString('imposible de cumplir', $aviso['mensaje']);
+        $this->assertStringContainsString('Química', $aviso['mensaje']);
     }
 }

@@ -36,6 +36,11 @@ class AreaFormacion extends Model
         return $this->belongsTo(Aula::class, 'aula_id', 'id_aula');
     }
 
+    public function posiciones()
+    {
+        return $this->hasMany(AreaFormacionPosicion::class, 'area_formacion_id');
+    }
+
     public function getEsEspecializadaAttribute(): bool
     {
         if (!$this->aula_id) {

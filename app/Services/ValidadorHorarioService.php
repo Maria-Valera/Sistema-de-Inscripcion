@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\Dia;
 use App\Models\AreaFormacion;
+use App\Models\AreaFormacionPosicion;
 use App\Models\Aula;
 use App\Models\BloqueReservado;
 use App\Models\CargaAcademica;
@@ -94,6 +95,9 @@ class ValidadorHorarioService
             }
         }
 
+        $posicionesTodas = AreaFormacionPosicion::all();
+        $posicionesPorArea = $posicionesTodas->groupBy('area_formacion_id');
+
         foreach ($areasMap as $area) {
             $bloques = $area->bloques_semanales;
             if ($bloques === null) {
@@ -108,6 +112,73 @@ class ValidadorHorarioService
                     'mensaje' => "El área de formación '{$area->nombre_area_formacion}' tiene {$bloques} bloques semanales configurados.",
                     'detalle' => "Debe tener entre 1 y 5 bloques semanales (máximo 1 bloque por día lectivo).",
                 ];
+            } else {
+                // M8 / P11: Validar si las posiciones prohibidas dejan menos días válidos que los bloques semanales
+                $posArea = $posicionesPorArea->get($area->id, collect());
+                if ($posArea->isNotEmpty()) {
+                    $gradosAEvaluar = $gradoId !== null
+                        ? collect([$gradoId])
+                        : ($area->relationLoaded('grados') && $area->grados->isNotEmpty() ? $area->grados->pluck('id') : collect([null]));
+
+                    if ($gradosAEvaluar->isEmpty()) {
+                        $gradosAEvaluar = collect([null]);
+                    }
+
+                    foreach ($gradosAEvaluar as $gId) {
+                        $diasValidos = 0;
+
+                        for ($dia = 1; $dia <= $totalDias; $dia++) {
+                            $tieneBloqueLibre = false;
+
+                            for ($bloque = 1; $bloque <= $numeroBloques; $bloque++) {
+                                if (isset($reservadosMap[$dia . '_' . $bloque])) {
+                                    continue;
+                                }
+
+                                $posRegla = null;
+                                if ($gId !== null) {
+                                    $posRegla = $posArea->first(function ($p) use ($gId, $dia, $bloque) {
+                                        $dVal = $p->dia instanceof Dia ? $p->dia->value : (int) $p->dia;
+                                        return $p->grado_id == $gId && $dVal === $dia && (int) $p->bloque === $bloque;
+                                    });
+                                }
+
+                                if (!$posRegla) {
+                                    $posRegla = $posArea->first(function ($p) use ($dia, $bloque) {
+                                        $dVal = $p->dia instanceof Dia ? $p->dia->value : (int) $p->dia;
+                                        return $p->grado_id === null && $dVal === $dia && (int) $p->bloque === $bloque;
+                                    });
+                                }
+
+                                if (!$posRegla || $posRegla->tipo !== 'prohibido') {
+                                    $tieneBloqueLibre = true;
+                                    break;
+                                }
+                            }
+
+                            if ($tieneBloqueLibre) {
+                                $diasValidos++;
+                            }
+                        }
+
+                        if ($diasValidos < $bloques) {
+                            $gradoSufijo = '';
+                            if ($gId !== null) {
+                                $gradoObj = $grados->firstWhere('id', $gId);
+                                if ($gradoObj) {
+                                    $gradoSufijo = " en {$gradoObj->numero_grado}° año";
+                                }
+                            }
+
+                            $avisos[] = [
+                                'codigo' => 'area_posiciones_insuficientes',
+                                'mensaje' => "El área de formación '{$area->nombre_area_formacion}'{$gradoSufijo} requiere {$bloques} bloques semanales pero solo tiene {$diasValidos} día(s) válidos (imposible de cumplir).",
+                                'detalle' => "Las restricciones de posición prohibida dejan menos días disponibles que los bloques requeridos para esta materia.",
+                            ];
+                            break;
+                        }
+                    }
+                }
             }
         }
 

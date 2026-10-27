@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Enums\Dia;
 use App\Models\AnioEscolar;
 use App\Models\AreaFormacion;
+use App\Models\AreaFormacionPosicion;
 use App\Models\Aula;
 use App\Models\BloqueReservado;
 use App\Models\CargaAcademica;
@@ -1006,6 +1007,99 @@ class GeneradorHorarioServiceTest extends TestCase
         // El docente normal fue asignado con éxito
         $asignacionesDocNormal = array_filter($resultado['asignaciones'], fn($a) => $a['docente_id'] == $docenteNormal->id);
         $this->assertNotEmpty($asignacionesDocNormal);
+    }
+
+    /**
+     * M8 / P11: Verifica que una materia con un bloque prohibido nunca se asigna en ese día/bloque.
+     */
+    public function test_materia_con_bloque_prohibido_nunca_se_asigna_ahi(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 1, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        $docenteId = 101;
+        $areaId = 201;
+
+        // Regla: Materia prohibida en Día 1 Bloque 1
+        $matrices = [
+            'docenteOcupado' => [],
+            'seccionOcupado' => [],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [$docenteId => 0],
+            'reservado' => [],
+            'materiaDia' => [],
+            'docenteDia' => [],
+            'docenteNoPreferente' => [],
+            'posicionesMateria' => [
+                $areaId . '_0_1_1' => 'prohibido',
+            ],
+        ];
+
+        $clase = [
+            'docente_id' => $docenteId,
+            'area_id' => $areaId,
+            'grado_id' => $grado->id,
+            'seccion_id' => $seccion->id,
+            'area_aula' => null,
+        ];
+
+        // Se evalúan 1 día y 2 bloques
+        $asig = $this->service->asignarUnBloque($clase, $matrices, totalDias: 1, totalBloques: 2, maxBloquesDocente: 18);
+
+        $this->assertNotNull($asig);
+        // Debe descartar el bloque 1 (prohibido) y asignar en el bloque 2
+        $this->assertEquals(1, $asig['dia']);
+        $this->assertEquals(2, $asig['bloque']);
+
+        // Si ambos bloques están prohibidos, no debe poder asignarse
+        $matrices['posicionesMateria'][$areaId . '_0_1_2'] = 'prohibido';
+        $asigFalla = $this->service->asignarUnBloque($clase, $matrices, totalDias: 1, totalBloques: 2, maxBloquesDocente: 18);
+        $this->assertNull($asigFalla);
+    }
+
+    /**
+     * M8 / P11: Verifica que con no_preferente_fuerte, el generador evita la celda si hay otra opción disponible.
+     */
+    public function test_materia_con_no_preferente_fuerte_evita_celda_si_hay_otra_opcion(): void
+    {
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 1, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+
+        $docenteId = 102;
+        $areaId = 202;
+
+        // Día 1 Bloque 1 tiene no_preferente_fuerte (costo +3)
+        // Día 1 Bloque 2 está disponible (costo 0)
+        $matrices = [
+            'docenteOcupado' => [],
+            'seccionOcupado' => [],
+            'aulaEspecialOcupada' => [],
+            'bloquesPorDocente' => [$docenteId => 0],
+            'reservado' => [],
+            'materiaDia' => [],
+            'docenteDia' => [],
+            'docenteNoPreferente' => [],
+            'posicionesMateria' => [
+                $areaId . '_' . $grado->id . '_1_1' => 'no_preferente_fuerte',
+            ],
+        ];
+
+        $clase = [
+            'docente_id' => $docenteId,
+            'area_id' => $areaId,
+            'grado_id' => $grado->id,
+            'seccion_id' => $seccion->id,
+            'area_aula' => null,
+        ];
+
+        $asig = $this->service->asignarUnBloque($clase, $matrices, totalDias: 1, totalBloques: 2, maxBloquesDocente: 18);
+
+        $this->assertNotNull($asig);
+        // Debe evitar Bloque 1 (costo 3) y preferir Bloque 2 (costo 0)
+        $this->assertEquals(1, $asig['dia']);
+        $this->assertEquals(2, $asig['bloque']);
     }
 }
 

@@ -9,6 +9,7 @@ use App\Models\DocenteAreaGrado;
 use App\Models\DocenteIndisponibilidad;
 use App\Models\DocenteNoDisponibilidad;
 use App\Models\AreaFormacion;
+use App\Models\AreaFormacionPosicion;
 use App\Models\seccion_aula;
 use App\Models\Docente;
 use App\Models\HorarioAsignacion;
@@ -109,6 +110,16 @@ Class GeneradorHorarioService
             $reservado[$dia . '_' . $br->bloque] = true;
         }
 
+        //posiciones por materia (reglas pedagógicas M8 / P11)
+        $posicionesMateria = [];
+        $posiciones = AreaFormacionPosicion::all();
+        foreach ($posiciones as $pos) {
+            $dia = $pos->dia instanceof Dia ? $pos->dia->value : (int) $pos->dia;
+            $gradoKey = $pos->grado_id ?? 0;
+            $clave = $pos->area_formacion_id . '_' . $gradoKey . '_' . $dia . '_' . $pos->bloque;
+            $posicionesMateria[$clave] = $pos->tipo;
+        }
+
         return [
             'docenteOcupado' => $docenteOcupado,
             'seccionOcupado' => $seccionOcupado,
@@ -118,6 +129,7 @@ Class GeneradorHorarioService
             'materiaDia' => $materiaDia,
             'docenteDia' => $docenteDia,
             'docenteNoPreferente' => $docenteNoPreferente,
+            'posicionesMateria' => $posicionesMateria,
             'rechazos' => [
                 'docente' => [],
                 'seccion' => [],
@@ -230,6 +242,55 @@ Class GeneradorHorarioService
     }
 
 
+    /**
+     * Calcula el costo de posición para una materia según las reglas pedagógicas (M8 / P11).
+     *
+     * @param int $areaId ID del área de formación
+     * @param int|null $gradoId ID del grado específico (o null)
+     * @param int $dia Día de la semana (1-5)
+     * @param int $bloque Número del bloque (1-N)
+     * @param array $posicionesMateria Mapa de posiciones de materia
+     * @return int|null Retorna el costo adicional (0, 1, 3) o null si la posición está prohibida.
+     */
+    public function costoPosicion(int $areaId, ?int $gradoId, int $dia, int $bloque, array $posicionesMateria): ?int
+    {
+        $tipo = null;
+
+        // 1. Regla específica para el grado (gana sobre la general)
+        if ($gradoId !== null) {
+            $claveGrado = $areaId . '_' . $gradoId . '_' . $dia . '_' . $bloque;
+            if (isset($posicionesMateria[$claveGrado])) {
+                $tipo = $posicionesMateria[$claveGrado];
+            }
+        }
+
+        // 2. Si no hay regla específica de grado, buscar regla general (grado_id = null -> clave con 0)
+        if ($tipo === null) {
+            $claveGeneral = $areaId . '_0_' . $dia . '_' . $bloque;
+            if (isset($posicionesMateria[$claveGeneral])) {
+                $tipo = $posicionesMateria[$claveGeneral];
+            }
+        }
+
+        if ($tipo === null) {
+            return 0;
+        }
+
+        if ($tipo === 'prohibido') {
+            return null; // Descarta la celda inmediatamente
+        }
+
+        if ($tipo === 'no_preferente') {
+            return 1;
+        }
+
+        if ($tipo === 'no_preferente_fuerte') {
+            return 3;
+        }
+
+        return 0;
+    }
+
     //asigna un bloque al hueco con menor costo que cumpla los requisitos (M5 / P6)
     public function asignarUnBloque(array &$clase, array &$matrices, int $totalDias, int $totalBloques, int $maxBloquesDocente, array &$bloquesPorDiaGlobal = []): ?array
     {
@@ -311,9 +372,22 @@ Class GeneradorHorarioService
                     }
                 }
 
-                // ===== CÁLCULO DE COSTO (M5) =====
-                // 1. costoPosicion: 0 por ahora (punto de extensión P11). Si indisponibilidad no_preferente, suma 1.
-                $costoPosicion = 0;
+                // ===== CÁLCULO DE COSTO (M5 / M8 / P11) =====
+                // 1. costoPosicion: reglas pedagógicas de materia (M8 / P11) + indisponibilidad docente
+                $costoMateria = $this->costoPosicion(
+                    (int) $clase['area_id'],
+                    isset($clase['grado_id']) ? (int) $clase['grado_id'] : null,
+                    $dia,
+                    $bloque,
+                    $matrices['posicionesMateria'] ?? []
+                );
+
+                // Si la posición está prohibida para la materia, descartar la celda inmediatamente
+                if ($costoMateria === null) {
+                    continue;
+                }
+
+                $costoPosicion = $costoMateria;
                 if (isset($matrices['docenteNoPreferente'][$claveDocente])) {
                     $costoPosicion += 1;
                 }
@@ -1469,6 +1543,17 @@ Class GeneradorHorarioService
 
                     if (isset($matrices['materiaDia'][$claveMateriaDia])) {
                         $razones[] = 'materia ya asignada ese día';
+                    }
+
+                    $costoMat = $this->costoPosicion(
+                        (int) $clase['area_id'],
+                        isset($clase['grado_id']) ? (int) $clase['grado_id'] : null,
+                        $dia,
+                        $bloque,
+                        $matrices['posicionesMateria'] ?? []
+                    );
+                    if ($costoMat === null) {
+                        $razones[] = 'posición prohibida para la materia';
                     }
 
                     if ($esEspecializada) {

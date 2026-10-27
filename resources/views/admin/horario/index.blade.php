@@ -27,6 +27,10 @@
                         <i class="fas fa-sliders-h"></i>
                         <span>Configurar Bloques</span>
                     </a>
+                    <a href="{{ route('admin.horario.posiciones') }}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px; font-weight: 500;">
+                        <i class="fas fa-th"></i>
+                        <span>Posiciones por Materia</span>
+                    </a>
                 @endcan
 
                 @if ($hayErroresCriticos ?? false)
