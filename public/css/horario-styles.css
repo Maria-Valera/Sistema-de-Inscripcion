@@ -522,6 +522,47 @@
     cursor: default;
 }
 
+.drop-zone .assigned-docente.clase-fijada {
+    border: 1.5px solid #f59e0b;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+.drop-zone .assigned-docente.clase-fijada[draggable="false"] {
+    cursor: not-allowed;
+}
+
+.btn-lock-toggle {
+    background: transparent;
+    border: none;
+    padding: 2px 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    border-radius: 4px;
+    transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+.btn-lock-toggle:hover {
+    transform: scale(1.2);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-lock-toggle.text-warning {
+    color: #fbbf24 !important;
+}
+
+.btn-lock-toggle.text-muted {
+    color: #94a3b8 !important;
+}
+
+.btn-lock-toggle.text-muted:hover {
+    color: #f8fafc !important;
+}
+
 .drop-zone .assigned-docente .adm-mini {
     display: flex;
     align-items: center;

@@ -50,6 +50,7 @@ Route::middleware(['web', 'throttle:60,1', 'auth', 'verified', 'forzar.cambio.pa
         Route::post('/horario/reacomodar', [GeneradorHorarioController::class, 'reacomodar'])->name('api.horario.reacomodar');
         Route::put('/horario/{id}/aula', [GeneradorHorarioController::class, 'actualizarAula']);
         Route::put('/horario/{id}/posicion', [GeneradorHorarioController::class, 'actualizarPosicion']);
+        Route::match(['put', 'post'], '/horario/{id}/fijar', [GeneradorHorarioController::class, 'toggleFijar'])->name('api.horario.fijar');
         Route::put('/horario/intercambiar', [GeneradorHorarioController::class, 'intercambiar']);
         Route::delete('/horario/{id}', [GeneradorHorarioController::class, 'eliminarAsignacion']);
         Route::post('/horario/eliminar-multiples', [GeneradorHorarioController::class, 'eliminarAsignacionesMultiples']);

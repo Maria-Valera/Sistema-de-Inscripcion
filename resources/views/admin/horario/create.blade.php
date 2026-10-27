@@ -1742,21 +1742,34 @@
                         </select>`;
                 }
 
+                const esFijadaLocal = !!asignacion.fijada;
+                const lockIconLocalHtml = `
+                    <button type="button" class="btn-lock-toggle ${esFijadaLocal ? 'text-warning' : 'text-muted'}" 
+                            title="${esFijadaLocal ? 'Clase fijada (clic para desbloquear)' : 'Clase no fijada (clic para fijar)'}" 
+                            onclick="toggleFijarLocal('${key}', ${index}, event)">
+                        <i class="fas ${esFijadaLocal ? 'fa-lock' : 'fa-lock-open'}"></i>
+                    </button>
+                `;
+                const draggableAttrLocal = esFijadaLocal ? 'draggable="false"' : 'draggable="true"';
+                const fijadaClsLocal = esFijadaLocal ? ' clase-fijada' : '';
+
                 return `
-                    <div class="assigned-docente" draggable="true">
+                    <div class="assigned-docente${fijadaClsLocal}" ${draggableAttrLocal} data-fijada="${esFijadaLocal}">
                         <div class="adm-mini">
                             <span class="adm-mini-nombre">${asignacion.nombre}</span>
-                            <span class="adm-mini-seccion">${asignacion.secciones?.find(s => s.id == asignacion.seccionId)?.nombre || '?'}</span>
+                            <span class="adm-mini-seccion">${asignacion.secciones?.find(s => s.id == asignacion.seccionId)?.nombre || '?'} ${lockIconLocalHtml}</span>
                         </div>
                         <div class="adm-full">
-                            <span class="docente-nombre">${asignacion.nombre}</span>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="docente-nombre">${asignacion.nombre}</span>
+                                ${lockIconLocalHtml}
+                            </div>
                             <span class="docente-cedula">${asignacion.cedula || 'N/A'}</span>
                             <span class="docente-materia">${asignacion.area}</span>
                             ${seccionHtml}
                             ${aulaHtml}
                             <div class="aula-error-message"></div>
-                            <button class="btn-eliminar-docente"
-                                    onclick="eliminarAsignacion('${key}', ${index}, event)">×</button>
+                            ${!esFijadaLocal ? `<button class="btn-eliminar-docente" onclick="eliminarAsignacion('${key}', ${index}, event)">×</button>` : ''}
                         </div>
                     </div>`;
             }
@@ -1801,9 +1814,13 @@
                     }
                 }
 
-                const lockIconHtml = esFijada
-                    ? '<span class="ms-1 text-warning" title="Clase fijada (no se puede mover ni intercambiar)"><i class="fas fa-lock"></i></span>'
-                    : '';
+                const lockIconHtml = `
+                    <button type="button" class="btn-lock-toggle ${esFijada ? 'text-warning' : 'text-muted'}" 
+                            title="${esFijada ? 'Clase fijada (clic para desbloquear)' : 'Clase no fijada (clic para fijar)'}" 
+                            onclick="toggleFijarAsignacion(${asignacionId}, event)">
+                        <i class="fas ${esFijada ? 'fa-lock' : 'fa-lock-open'}"></i>
+                    </button>
+                `;
                 const draggableAttr = esFijada ? 'draggable="false"' : 'draggable="true"';
                 const fijadaCls = esFijada ? ' clase-fijada' : '';
 
@@ -1814,7 +1831,10 @@
                             <span class="adm-mini-seccion">${seccionNombre} ${lockIconHtml}</span>
                         </div>
                         <div class="adm-full">
-                            <span class="docente-nombre">${docenteNombre} ${lockIconHtml}</span>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="docente-nombre">${docenteNombre}</span>
+                                ${lockIconHtml}
+                            </div>
                             <span class="docente-cedula">${docenteCedula}</span>
                             <span class="docente-materia">${materiaNombre}</span>
                             <select class="pildora-selector" disabled>
@@ -1829,6 +1849,57 @@
                     </div>
                 `;
             }
+
+            // Alternar estado de fijación en asignación guardada
+            async function toggleFijarAsignacion(asignacionId, event) {
+                if (event) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                }
+
+                try {
+                    const response = await fetch(`/api/horario/${asignacionId}/fijar`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        }
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        mostrarNotificacion(data.error || 'Error al cambiar estado de fijación', 'error');
+                        return;
+                    }
+
+                    const idx = horarioData.findIndex(h => h.id == asignacionId);
+                    if (idx !== -1) {
+                        horarioData[idx].fijada = data.fijada;
+                    }
+
+                    mostrarNotificacion(data.mensaje || (data.fijada ? 'Clase fijada exitosamente' : 'Clase desbloqueada exitosamente'), 'success');
+                    renderizarCalendario();
+                } catch (error) {
+                    console.error('Error al fijar/desfijar asignación:', error);
+                    mostrarNotificacion('Error de conexión con el servidor', 'error');
+                }
+            }
+            window.toggleFijarAsignacion = toggleFijarAsignacion;
+
+            // Alternar estado de fijación en asignación local no guardada
+            function toggleFijarLocal(key, index, event) {
+                if (event) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                }
+                const arr = horarioAsignaciones[key];
+                if (Array.isArray(arr) && arr[index]) {
+                    arr[index].fijada = !arr[index].fijada;
+                    renderizarCalendario();
+                    mostrarNotificacion(arr[index].fijada ? 'Clase fijada localmente' : 'Clase desbloqueada localmente', 'info');
+                }
+            }
+            window.toggleFijarLocal = toggleFijarLocal;
 
             // Función para manejar el cambio de sección en una asignación
             function cambiarSeccionAsignacion(selectElement) {
@@ -2399,6 +2470,14 @@
 
                     // CASO C: ambas locales → mover el array
                     if (!origen.asignacionId && !destinoAsignacionId) {
+                        if (Array.isArray(origenArr) && origenArr.some(a => a.fijada)) {
+                            mostrarNotificacion('No se puede intercambiar una clase fijada (candado activo).', 'warning');
+                            return;
+                        }
+                        if (Array.isArray(destinoLocalArr) && destinoLocalArr.some(a => a.fijada)) {
+                            mostrarNotificacion('No se puede intercambiar una clase fijada (candado activo).', 'warning');
+                            return;
+                        }
                         if (!Array.isArray(horarioAsignaciones[destKey])) {
                             horarioAsignaciones[destKey] = destinoLocalArr.slice();
                         }
@@ -2465,6 +2544,10 @@
                     }
                 } else {
                     // Asignación solo local → mover el array en memoria
+                    if (Array.isArray(origenArr) && origenArr.some(a => a.fijada)) {
+                        mostrarNotificacion('Esta clase está fijada y no se puede mover', 'warning');
+                        return;
+                    }
                     const destArr = Array.isArray(horarioAsignaciones[destKey])
                         ? horarioAsignaciones[destKey]
                         : (horarioAsignaciones[destKey] ? [horarioAsignaciones[destKey]] : []);

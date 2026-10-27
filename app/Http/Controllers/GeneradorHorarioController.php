@@ -409,7 +409,22 @@ class GeneradorHorarioController extends Controller
             }
         }
 
-        // 4. Validar conflicto de docente
+        // 4. Validar unicidad de carga académica (misma clase en el mismo bloque)
+        $cargaId = $asignacion->carga_academica_id;
+        if ($cargaId) {
+            $conflictoCarga = HorarioAsignacion::where('anio_escolar_id', $asignacion->anio_escolar_id)
+                ->where('id', '!=', $id)
+                ->where('carga_academica_id', $cargaId)
+                ->where(fn($q) => $q->where('dia', $dia)->orWhere('dia_id', $dia))
+                ->where(fn($q) => $q->where('bloque', $bloque)->orWhere('bloque_id', $bloque))
+                ->exists();
+
+            if ($conflictoCarga) {
+                return response()->json(['error' => 'La clase ya está asignada en ese día y bloque'], 422);
+            }
+        }
+
+        // 5. Validar conflicto de docente
         if ($docenteId) {
             $conflictoDocente = HorarioAsignacion::where('anio_escolar_id', $asignacion->anio_escolar_id)
                 ->where('id', '!=', $id)
@@ -419,11 +434,11 @@ class GeneradorHorarioController extends Controller
                 ->exists();
 
             if ($conflictoDocente) {
-                return response()->json(['error' => 'El docente ya tiene una asignación en ese día y bloque'], 422);
+                return response()->json(['error' => 'El docente ya tiene clase en ese bloque'], 422);
             }
         }
 
-        // 5. Validar conflicto de sección
+        // 6. Validar conflicto de sección
         $seccionId = $asignacion->cargaAcademica?->seccion_id;
         if ($seccionId) {
             $conflictoSeccion = HorarioAsignacion::where('anio_escolar_id', $asignacion->anio_escolar_id)
@@ -434,7 +449,7 @@ class GeneradorHorarioController extends Controller
                 ->exists();
 
             if ($conflictoSeccion) {
-                return response()->json(['error' => 'La sección ya tiene una asignación en ese día y bloque'], 422);
+                return response()->json(['error' => 'La sección ya tiene clase en ese bloque'], 422);
             }
         }
 
@@ -452,17 +467,46 @@ class GeneradorHorarioController extends Controller
             }
         }
 
-        // Actualizar posición
-        $asignacion->dia = $dia;
-        $asignacion->bloque = $bloque;
-        $asignacion->dia_id = $dia;
-        $asignacion->bloque_id = $bloque;
-        $asignacion->save();
+        // Actualizar posición con captura de excepción de unicidad
+        try {
+            $asignacion->dia = $dia;
+            $asignacion->bloque = $bloque;
+            $asignacion->dia_id = $dia;
+            $asignacion->bloque_id = $bloque;
+            $asignacion->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() == 23000 || str_contains($e->getMessage(), 'unique_carga_bloque') || str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
+                return response()->json(['error' => 'La clase ya está asignada en ese día y bloque'], 422);
+            }
+            throw $e;
+        }
 
         // Recargar con relaciones para devolver datos completos
         $asignacion->load(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula']);
 
         return response()->json(['success' => true, 'asignacion' => $asignacion]);
+    }
+
+    public function toggleFijar(Request $request, int $id)
+    {
+        $asignacion = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula'])->find($id);
+        if (!$asignacion) {
+            return response()->json(['error' => 'Asignación no encontrada'], 404);
+        }
+
+        $nuevoEstado = $request->has('fijada') 
+            ? (bool) $request->input('fijada') 
+            : !$asignacion->fijada;
+
+        $asignacion->fijada = $nuevoEstado;
+        $asignacion->save();
+
+        return response()->json([
+            'success' => true,
+            'fijada' => (bool) $asignacion->fijada,
+            'mensaje' => $asignacion->fijada ? 'Clase fijada exitosamente' : 'Clase desbloqueada exitosamente',
+            'asignacion' => $asignacion
+        ]);
     }
 
     public function intercambiar(Request $request)
@@ -530,28 +574,98 @@ class GeneradorHorarioController extends Controller
             }
         }
 
-        $detallesConflicto = [];
-
-        // Validar: sección del registro1 no tenga otra clase en (dia2, bloque2), excluyendo registro2
-        $sec1 = $asignacion1->cargaAcademica?->seccion_id;
-        if ($sec1) {
-            $conflictoSeccion1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
-                ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec1))
-                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
-                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
+        // 4. Validar conflicto de docentes en destino
+        if ($doc1) {
+            $conflictoDocente1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
+                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
+                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
+                ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $doc1))
                 ->exists();
 
-            if ($conflictoSeccion1) {
-                $detallesConflicto[] = [
-                    'tipo' => 'seccion',
-                    'mensaje' => 'La sección de la primera asignación ya tiene otra clase en el horario destino'
-                ];
+            if ($conflictoDocente1) {
+                return response()->json(['error' => 'El docente ya tiene clase en ese bloque'], 422);
             }
         }
 
-        // Validar: aula del registro1 no esté ocupada en (dia2, bloque2), excluyendo registro2
+        if ($doc2) {
+            $conflictoDocente2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
+                ->where('id', '!=', $asignacion1->id)
+                ->where('id', '!=', $asignacion2->id)
+                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
+                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
+                ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $doc2))
+                ->exists();
+
+            if ($conflictoDocente2) {
+                return response()->json(['error' => 'El docente ya tiene clase en ese bloque'], 422);
+            }
+        }
+
+        // 5. Validar conflicto de secciones en destino
+        $sec1 = $asignacion1->cargaAcademica?->seccion_id;
+        if ($sec1) {
+            $conflictoSeccion1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
+                ->where('id', '!=', $asignacion1->id)
+                ->where('id', '!=', $asignacion2->id)
+                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
+                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
+                ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec1))
+                ->exists();
+
+            if ($conflictoSeccion1) {
+                return response()->json(['error' => 'La sección ya tiene clase en ese bloque'], 422);
+            }
+        }
+
+        $sec2 = $asignacion2->cargaAcademica?->seccion_id;
+        if ($sec2) {
+            $conflictoSeccion2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
+                ->where('id', '!=', $asignacion1->id)
+                ->where('id', '!=', $asignacion2->id)
+                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
+                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
+                ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec2))
+                ->exists();
+
+            if ($conflictoSeccion2) {
+                return response()->json(['error' => 'La sección ya tiene clase en ese bloque'], 422);
+            }
+        }
+
+        // 5b. Validar unicidad de carga académica en destino
+        $carga1 = $asignacion1->carga_academica_id;
+        $carga2 = $asignacion2->carga_academica_id;
+        if ($carga1) {
+            $conflictoCarga1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
+                ->where('id', '!=', $asignacion1->id)
+                ->where('id', '!=', $asignacion2->id)
+                ->where('carga_academica_id', $carga1)
+                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
+                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
+                ->exists();
+
+            if ($conflictoCarga1) {
+                return response()->json(['error' => 'La clase ya está asignada en ese día y bloque'], 422);
+            }
+        }
+
+        if ($carga2) {
+            $conflictoCarga2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
+                ->where('id', '!=', $asignacion1->id)
+                ->where('id', '!=', $asignacion2->id)
+                ->where('carga_academica_id', $carga2)
+                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
+                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
+                ->exists();
+
+            if ($conflictoCarga2) {
+                return response()->json(['error' => 'La clase ya está asignada en ese día y bloque'], 422);
+            }
+        }
+
+        // 6. Validar conflicto de aulas en destino
         if ($asignacion1->aula_id) {
             $conflictoAula1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
                 ->where('aula_id', $asignacion1->aula_id)
@@ -562,33 +676,10 @@ class GeneradorHorarioController extends Controller
                 ->exists();
 
             if ($conflictoAula1) {
-                $detallesConflicto[] = [
-                    'tipo' => 'aula',
-                    'mensaje' => 'El aula de la primera asignación ya está ocupada en el horario destino'
-                ];
+                return response()->json(['error' => 'El aula ya está ocupada en ese día y bloque'], 422);
             }
         }
 
-        // Validar: sección del registro2 no tenga otra clase en (dia1, bloque1), excluyendo registro1
-        $sec2 = $asignacion2->cargaAcademica?->seccion_id;
-        if ($sec2) {
-            $conflictoSeccion2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
-                ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec2))
-                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
-                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
-                ->where('id', '!=', $asignacion1->id)
-                ->where('id', '!=', $asignacion2->id)
-                ->exists();
-
-            if ($conflictoSeccion2) {
-                $detallesConflicto[] = [
-                    'tipo' => 'seccion',
-                    'mensaje' => 'La sección de la segunda asignación ya tiene otra clase en el horario destino'
-                ];
-            }
-        }
-
-        // Validar: aula del registro2 no esté ocupada en (dia1, bloque1), excluyendo registro1
         if ($asignacion2->aula_id) {
             $conflictoAula2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
                 ->where('aula_id', $asignacion2->aula_id)
@@ -599,69 +690,31 @@ class GeneradorHorarioController extends Controller
                 ->exists();
 
             if ($conflictoAula2) {
-                $detallesConflicto[] = [
-                    'tipo' => 'aula',
-                    'mensaje' => 'El aula de la segunda asignación ya está ocupada en el horario destino'
-                ];
+                return response()->json(['error' => 'El aula ya está ocupada en ese día y bloque'], 422);
             }
         }
 
-        // Validar: docentes no tengan otra clase en horario destino (en otra sección)
-        if ($doc1) {
-            $conflictoDocente1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
-                ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $doc1)->where('seccion_id', '!=', $sec2))
-                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
-                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
-                ->where('id', '!=', $asignacion1->id)
-                ->where('id', '!=', $asignacion2->id)
-                ->exists();
+        // Realizar intercambio en transacción con captura de unicidad
+        try {
+            \DB::transaction(function() use ($asignacion1, $asignacion2, $dia1, $bloque1, $dia2, $bloque2) {
+                $asignacion1->dia = $dia2;
+                $asignacion1->bloque = $bloque2;
+                $asignacion1->dia_id = $dia2;
+                $asignacion1->bloque_id = $bloque2;
+                $asignacion1->save();
 
-            if ($conflictoDocente1) {
-                $detallesConflicto[] = [
-                    'tipo' => 'docente',
-                    'mensaje' => 'El docente de la primera asignación ya tiene otra clase en ese horario'
-                ];
+                $asignacion2->dia = $dia1;
+                $asignacion2->bloque = $bloque1;
+                $asignacion2->dia_id = $dia1;
+                $asignacion2->bloque_id = $bloque1;
+                $asignacion2->save();
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() == 23000 || str_contains($e->getMessage(), 'unique_carga_bloque') || str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
+                return response()->json(['error' => 'La clase ya está asignada en ese día y bloque'], 422);
             }
+            throw $e;
         }
-
-        if ($doc2) {
-            $conflictoDocente2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
-                ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $doc2)->where('seccion_id', '!=', $sec1))
-                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
-                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
-                ->where('id', '!=', $asignacion1->id)
-                ->where('id', '!=', $asignacion2->id)
-                ->exists();
-
-            if ($conflictoDocente2) {
-                $detallesConflicto[] = [
-                    'tipo' => 'docente',
-                    'mensaje' => 'El docente de la segunda asignación ya tiene otra clase en ese horario'
-                ];
-            }
-        }
-
-        if (!empty($detallesConflicto)) {
-            return response()->json([
-                'error' => 'conflicto',
-                'detalles' => $detallesConflicto
-            ], 422);
-        }
-
-        // Realizar intercambio en transacción
-        \DB::transaction(function() use ($asignacion1, $asignacion2, $dia1, $bloque1, $dia2, $bloque2) {
-            $asignacion1->dia = $dia2;
-            $asignacion1->bloque = $bloque2;
-            $asignacion1->dia_id = $dia2;
-            $asignacion1->bloque_id = $bloque2;
-            $asignacion1->save();
-
-            $asignacion2->dia = $dia1;
-            $asignacion2->bloque = $bloque1;
-            $asignacion2->dia_id = $dia1;
-            $asignacion2->bloque_id = $bloque1;
-            $asignacion2->save();
-        });
 
         // Recargar relaciones para devolver datos completos
         $asignacion1->load(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula']);
@@ -789,7 +842,14 @@ class GeneradorHorarioController extends Controller
                         'fijada' => !empty($asignacion['fijada']),
                         'conflicto_manual' => false,
                     ]);
-                    $asignacionesGuardadas++;
+                } catch (\Illuminate\Database\QueryException $e) {
+                    $msg = ($e->getCode() == 23000 || str_contains($e->getMessage(), 'unique_carga_bloque') || str_contains($e->getMessage(), 'UNIQUE constraint failed'))
+                        ? 'La clase ya está asignada en ese día y bloque'
+                        : $e->getMessage();
+                    $errores[] = [
+                        'asignacion' => $asignacion,
+                        'error' => $msg
+                    ];
                 } catch (\Exception $e) {
                     $errores[] = [
                         'asignacion' => $asignacion,

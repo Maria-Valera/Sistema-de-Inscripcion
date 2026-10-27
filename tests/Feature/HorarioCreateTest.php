@@ -12,6 +12,7 @@ use App\Models\DetalleDocenteEstudio;
 use App\Models\Docente;
 use App\Models\DocenteAreaGrado;
 use App\Models\Grado;
+use App\Models\HorarioAsignacion;
 use App\Models\Persona;
 use App\Models\Seccion;
 use App\Models\User;
@@ -567,5 +568,301 @@ class HorarioCreateTest extends TestCase
             'docente_nombre' => 'Carlos Mendoza',
             'materia_nombre' => 'Biología',
         ]);
+    }
+
+    /**
+     * P10: Verifica que el endpoint /api/horario/{id}/fijar alterne correctamente el estado de fijación.
+     */
+    public function test_toggle_fijar_permite_fijar_y_desfijar_asignacion(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $tipoDocId = \DB::table('tipo_documentos')->insertGetId(['nombre' => 'CI', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $generoId = \DB::table('generos')->insertGetId(['genero' => 'M', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+
+        $persona = Persona::create([
+            'primer_nombre' => 'Carlos',
+            'primer_apellido' => 'Mendoza',
+            'tipo_documento_id' => $tipoDocId,
+            'numero_documento' => 'V87654322',
+            'fecha_nacimiento' => '1982-04-10',
+            'genero_id' => $generoId,
+            'status' => true,
+        ]);
+
+        $docente = Docente::create(['persona_id' => $persona->id, 'status' => true]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 35, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => true]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
+        $area = AreaFormacion::create(['nombre_area_formacion' => 'Castellano', 'codigo_area' => 'CAS-1', 'siglas' => 'CAS', 'bloques_semanales' => 2, 'status' => true]);
+        $carga = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccion->id]);
+
+        \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
+        \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
+
+        $asignacion = \App\Models\HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga->id,
+            'dia' => 1,
+            'bloque' => 1,
+            'fijada' => false,
+        ]);
+
+        // 1. Fijar asignación
+        $res1 = $this->actingAs($admin)->putJson("/api/horario/{$asignacion->id}/fijar");
+        $res1->assertOk();
+        $res1->assertJsonPath('fijada', true);
+        $this->assertDatabaseHas('horario_asignaciones', ['id' => $asignacion->id, 'fijada' => true]);
+
+        // 2. Desfijar asignación
+        $res2 = $this->actingAs($admin)->putJson("/api/horario/{$asignacion->id}/fijar");
+        $res2->assertOk();
+        $res2->assertJsonPath('fijada', false);
+        $this->assertDatabaseHas('horario_asignaciones', ['id' => $asignacion->id, 'fijada' => false]);
+    }
+
+    /**
+     * P10: Verifica que actualizarPosicion rechace mover una clase si está fijada.
+     */
+    public function test_actualizar_posicion_rechaza_mover_clase_fijada(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $tipoDocId = \DB::table('tipo_documentos')->insertGetId(['nombre' => 'CI', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $generoId = \DB::table('generos')->insertGetId(['genero' => 'M', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $persona = Persona::create(['primer_nombre' => 'Ana', 'primer_apellido' => 'Gomez', 'tipo_documento_id' => $tipoDocId, 'numero_documento' => 'V12344321', 'fecha_nacimiento' => '1985-01-01', 'genero_id' => $generoId, 'status' => true]);
+        $docente = Docente::create(['persona_id' => $persona->id, 'status' => true]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 35, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => true]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
+        $area = AreaFormacion::create(['nombre_area_formacion' => 'Inglés', 'codigo_area' => 'ING-1', 'siglas' => 'ING', 'bloques_semanales' => 2, 'status' => true]);
+        $carga = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccion->id]);
+
+        \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
+        \DB::table('dias_semana')->insert(['id' => 2, 'nombre_dia' => 'Martes', 'status' => 1]);
+        \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
+
+        $asignacion = \App\Models\HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga->id,
+            'dia' => 1,
+            'bloque' => 1,
+            'fijada' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->putJson("/api/horario/{$asignacion->id}/posicion", [
+            'dia' => 2,
+            'bloque' => 1,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['error' => 'No se puede mover una clase fijada (candado activo).']);
+    }
+
+    /**
+     * P10: Verifica que actualizarPosicion e intercambiar rechacen solapamiento de docente.
+     */
+    public function test_actualizar_posicion_rechaza_solapamiento_docente(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $tipoDocId = \DB::table('tipo_documentos')->insertGetId(['nombre' => 'CI', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $generoId = \DB::table('generos')->insertGetId(['genero' => 'M', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $persona = Persona::create(['primer_nombre' => 'Luis', 'primer_apellido' => 'Rivas', 'tipo_documento_id' => $tipoDocId, 'numero_documento' => 'V99887766', 'fecha_nacimiento' => '1980-01-01', 'genero_id' => $generoId, 'status' => true]);
+        $docente = Docente::create(['persona_id' => $persona->id, 'status' => true]);
+
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 35, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => true]);
+        $seccionA = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
+        $seccionB = Seccion::create(['nombre' => 'B', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
+
+        $area = AreaFormacion::create(['nombre_area_formacion' => 'Matemática', 'codigo_area' => 'MAT-1', 'siglas' => 'MAT', 'bloques_semanales' => 4, 'status' => true]);
+
+        $cargaA = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccionA->id]);
+        $cargaB = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccionB->id]);
+
+        \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
+        \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
+        \DB::table('bloque_horarios')->insert(['id' => 2, 'hora_inicio' => '07:45:00', 'hora_fin' => '08:30:00', 'status' => 1]);
+
+        // Docente asignado a Seccion A en Bloque 1
+        \App\Models\HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $cargaA->id,
+            'dia' => 1,
+            'bloque' => 1,
+            'fijada' => false,
+        ]);
+
+        // Docente asignado a Seccion B en Bloque 2
+        $asigB = \App\Models\HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $cargaB->id,
+            'dia' => 1,
+            'bloque' => 2,
+            'fijada' => false,
+        ]);
+
+        // Intento de mover $asigB al Bloque 1 (donde el mismo docente ya tiene clase en Seccion A)
+        $response = $this->actingAs($admin)->putJson("/api/horario/{$asigB->id}/posicion", [
+            'dia' => 1,
+            'bloque' => 1,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['error' => 'El docente ya tiene clase en ese bloque']);
+    }
+
+    /**
+     * P10: Verifica que actualizarPosicion e intercambiar rechacen solapamiento de sección.
+     */
+    public function test_actualizar_posicion_rechaza_solapamiento_seccion(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $tipoDocId = \DB::table('tipo_documentos')->insertGetId(['nombre' => 'CI', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $generoId = \DB::table('generos')->insertGetId(['genero' => 'M', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+
+        $p1 = Persona::create(['primer_nombre' => 'Doc1', 'primer_apellido' => 'Test', 'tipo_documento_id' => $tipoDocId, 'numero_documento' => 'V11111111', 'fecha_nacimiento' => '1980-01-01', 'genero_id' => $generoId, 'status' => true]);
+        $p2 = Persona::create(['primer_nombre' => 'Doc2', 'primer_apellido' => 'Test', 'tipo_documento_id' => $tipoDocId, 'numero_documento' => 'V22222222', 'fecha_nacimiento' => '1981-01-01', 'genero_id' => $generoId, 'status' => true]);
+
+        $doc1 = Docente::create(['persona_id' => $p1->id, 'status' => true]);
+        $doc2 = Docente::create(['persona_id' => $p2->id, 'status' => true]);
+
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 35, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => true]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
+
+        $area1 = AreaFormacion::create(['nombre_area_formacion' => 'Historia', 'codigo_area' => 'HIS-1', 'siglas' => 'HIS', 'bloques_semanales' => 2, 'status' => true]);
+        $area2 = AreaFormacion::create(['nombre_area_formacion' => 'Geografía', 'codigo_area' => 'GEO-1', 'siglas' => 'GEO', 'bloques_semanales' => 2, 'status' => true]);
+
+        $carga1 = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc1->id, 'area_formacion_id' => $area1->id, 'seccion_id' => $seccion->id]);
+        $carga2 = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc2->id, 'area_formacion_id' => $area2->id, 'seccion_id' => $seccion->id]);
+
+        \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
+        \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
+        \DB::table('bloque_horarios')->insert(['id' => 2, 'hora_inicio' => '07:45:00', 'hora_fin' => '08:30:00', 'status' => 1]);
+
+        // Carga 1 en Bloque 1
+        \App\Models\HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga1->id,
+            'dia' => 1,
+            'bloque' => 1,
+            'fijada' => false,
+        ]);
+
+        // Carga 2 en Bloque 2
+        $asig2 = \App\Models\HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga2->id,
+            'dia' => 1,
+            'bloque' => 2,
+            'fijada' => false,
+        ]);
+
+        // Intentar mover Carga 2 al Bloque 1 (donde la sección ya tiene Carga 1)
+        $response = $this->actingAs($admin)->putJson("/api/horario/{$asig2->id}/posicion", [
+            'dia' => 1,
+            'bloque' => 1,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['error' => 'La sección ya tiene clase en ese bloque']);
+    }
+
+    /**
+     * P10: Verifica que la restricción de unicidad unique_carga_bloque rechace guardar dos veces la misma carga en el mismo bloque.
+     */
+    public function test_unicidad_bloque_rechaza_duplicar_misma_carga_academica(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $tipoDocId = \DB::table('tipo_documentos')->insertGetId(['nombre' => 'CI', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $generoId = \DB::table('generos')->insertGetId(['genero' => 'M', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $persona = Persona::create(['primer_nombre' => 'Sara', 'primer_apellido' => 'Diaz', 'tipo_documento_id' => $tipoDocId, 'numero_documento' => 'V33334444', 'fecha_nacimiento' => '1990-01-01', 'genero_id' => $generoId, 'status' => true]);
+        $docente = Docente::create(['persona_id' => $persona->id, 'status' => true]);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 35, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => true]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
+        $area = AreaFormacion::create(['nombre_area_formacion' => 'Física', 'codigo_area' => 'FIS-1', 'siglas' => 'FIS', 'bloques_semanales' => 2, 'status' => true]);
+        $carga = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccion->id]);
+
+        \DB::table('dias_semana')->insert([
+            ['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1],
+            ['id' => 2, 'nombre_dia' => 'Martes', 'status' => 1]
+        ]);
+        \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
+
+        // Primera asignación exitosa
+        \App\Models\HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga->id,
+            'dia' => 1,
+            'bloque' => 1,
+            'fijada' => false,
+        ]);
+
+        // Intentar guardar la misma carga académica en el mismo bloque vía endpoint guardar-asignaciones
+        $response = $this->actingAs($admin)->postJson('/api/horario/guardar-asignaciones', [
+            'anio_escolar_id' => $anio->id,
+            'asignaciones' => [
+                [
+                    'carga_academica_id' => $carga->id,
+                    'dia' => 1,
+                    'bloque' => 1,
+                ],
+                [
+                    'carga_academica_id' => $carga->id,
+                    'dia' => 1,
+                    'bloque' => 1,
+                ],
+            ]
+        ]);
+
+        $response->assertStatus(207);
+        $this->assertEquals('La clase ya está asignada en ese día y bloque', $response->json('errores.0.error'));
+
+        // También probar que actualizarPosicion captura la unicidad si intenta duplicarse en el mismo bloque
+        $asig2 = HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga->id,
+            'dia' => 2,
+            'bloque' => 1,
+            'fijada' => false,
+        ]);
+
+        $respMove = $this->actingAs($admin)->putJson("/api/horario/{$asig2->id}/posicion", [
+            'dia' => 1,
+            'bloque' => 1,
+        ]);
+
+        $respMove->assertStatus(422);
+        $respMove->assertJson(['error' => 'La clase ya está asignada en ese día y bloque']);
     }
 }
