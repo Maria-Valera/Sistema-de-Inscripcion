@@ -835,6 +835,8 @@ Class GeneradorHorarioService
             ->with('cargaAcademica.seccion')
             ->get();
 
+        $bloquesFijadosPorCarga = [];
+
         foreach ($conservadas as $c) {
             $estaEnAlcance = true;
             if ($gradoId !== null && $c->cargaAcademica?->seccion?->grado_id != $gradoId) {
@@ -846,8 +848,8 @@ Class GeneradorHorarioService
 
             // Si es fijada o está fuera del alcance, se mantiene ocupando celda
             if ($c->fijada || !$estaEnAlcance) {
-                $cDia = $c->dia ?? $c->dia_id;
-                $cBloque = $c->bloque ?? $c->bloque_id;
+                $cDia = $c->dia instanceof Dia ? $c->dia->value : (int) ($c->dia ?? $c->dia_id);
+                $cBloque = (int) ($c->bloque ?? $c->bloque_id);
                 $cDocenteId = $c->cargaAcademica?->docente_id;
                 $cSeccionId = $c->cargaAcademica?->seccion_id;
                 $cMateriaId = $c->cargaAcademica?->area_formacion_id;
@@ -866,8 +868,24 @@ Class GeneradorHorarioService
                 if ($cMateriaId && $cSeccionId && $cDia) {
                     $matrices['materiaDia'][$cMateriaId . '_' . $cSeccionId . '_' . $cDia] = true;
                 }
+
+                // Contar cuántos bloques fijados tiene cada carga académica
+                if ($c->fijada && $c->carga_academica_id) {
+                    $bloquesFijadosPorCarga[$c->carga_academica_id] = ($bloquesFijadosPorCarga[$c->carga_academica_id] ?? 0) + 1;
+                }
             }
         }
+
+        // Descontar bloques ya fijados del total semanal de cada clase pendiente
+        $clases = $clases->map(function ($clase) use ($bloquesFijadosPorCarga) {
+            $cargaId = $clase['carga_academica_id'] ?? null;
+            $fijados = ($cargaId && isset($bloquesFijadosPorCarga[$cargaId])) ? (int) $bloquesFijadosPorCarga[$cargaId] : 0;
+            $clase['area_bloque'] = max(0, (int) ($clase['area_bloque'] ?? 0) - $fijados);
+            $clase['bloques_fijados'] = $fijados;
+            return $clase;
+        })->filter(function ($clase) {
+            return $clase['area_bloque'] > 0;
+        })->values();
 
         // Calcular disponibilidad docente para cada clase
         $clasesConDisp = $clases->map(function ($clase) use ($matrices, $totalDias, $totalBloques) {

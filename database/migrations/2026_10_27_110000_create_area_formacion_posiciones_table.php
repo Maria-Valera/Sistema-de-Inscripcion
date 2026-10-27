@@ -11,11 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('area_formacion_posiciones');
+
         Schema::create('area_formacion_posiciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('area_formacion_id')->constrained('area_formacions')->cascadeOnDelete();
-            $table->foreignId('grado_id')->nullable()->constrained('grados')->cascadeOnDelete();
-            $table->unsignedBigInteger('grado_key')->storedAs('IFNULL(grado_id, 0)');
+            $table->unsignedBigInteger('area_formacion_id');
+            $table->foreign('area_formacion_id')->references('id')->on('area_formacions')->cascadeOnDelete();
+            $table->unsignedBigInteger('grado_id')->nullable();
+            $table->foreign('grado_id')->references('id')->on('grados')->cascadeOnDelete();
+            $table->unsignedBigInteger('grado_key')->virtualAs('IFNULL(grado_id, 0)');
             $table->unsignedTinyInteger('dia');
             $table->unsignedTinyInteger('bloque');
             $table->string('tipo'); // 'prohibido', 'no_preferente', 'no_preferente_fuerte'

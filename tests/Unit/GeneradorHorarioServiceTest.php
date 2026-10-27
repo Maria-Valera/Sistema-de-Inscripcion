@@ -9,6 +9,7 @@ use App\Models\AreaFormacionPosicion;
 use App\Models\Aula;
 use App\Models\BloqueReservado;
 use App\Models\CargaAcademica;
+use App\Models\ConfiguracionHorario;
 use App\Models\Docente;
 use App\Models\DocenteIndisponibilidad;
 use App\Models\HorarioAsignacion;
@@ -1100,6 +1101,75 @@ class GeneradorHorarioServiceTest extends TestCase
         // Debe evitar Bloque 1 (costo 3) y preferir Bloque 2 (costo 0)
         $this->assertEquals(1, $asig['dia']);
         $this->assertEquals(2, $asig['bloque']);
+    }
+
+    /**
+     * Verifica que las clases fijadas cuenten para el límite de bloques semanales.
+     * Si bloques_semanales = 2 y 1 bloque está fijado, el generador solo debe generar 1 bloque adicional.
+     */
+    public function test_generar_descuenta_clases_fijadas_del_limite_de_bloques_semanales(): void
+    {
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+        ConfiguracionHorario::create([
+            'anio_escolar_id' => $anio->id,
+            'hora_inicio' => '07:00:00',
+            'numero_bloques' => 4,
+            'duracion_bloque_min' => 90,
+            'minutos_entre_bloques' => 0,
+        ]);
+
+        $docente = $this->crearDocentePrueba('Jorge Salazar', 36);
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 1, 'status' => 1]);
+        $seccion = Seccion::create(['nombre' => 'D', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => 1]);
+        $area = AreaFormacion::create([
+            'nombre_area_formacion' => 'Castellano',
+            'codigo_area' => 'CAS-1',
+            'siglas' => 'CAS',
+            'bloques_semanales' => 2, // Límite exacto de 2 bloques
+            'status' => 1,
+        ]);
+        $aula = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30, 'status' => 1]);
+
+        $carga = CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docente->id,
+            'area_formacion_id' => $area->id,
+            'seccion_id' => $seccion->id,
+        ]);
+
+        // Fija 1 bloque en la base de datos (Martes Bloque 1, día 2)
+        $fijada = HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga->id,
+            'aula_id' => $aula->id_aula,
+            'dia' => 2,
+            'bloque' => 1,
+            'fijada' => true,
+        ]);
+
+        // Ejecutar generación
+        $this->service->generar($anio->id, totalDias: 5, totalBloques: 4);
+
+        // La clase fijada debe seguir existiendo intacta
+        $this->assertDatabaseHas('horario_asignaciones', [
+            'id' => $fijada->id,
+            'carga_academica_id' => $carga->id,
+            'fijada' => true,
+            'dia' => 2,
+            'bloque' => 1,
+        ]);
+
+        // El total de asignaciones para esa carga_academica_id debe ser EXACTAMENTE 2 (1 fijada + 1 generada)
+        $totalAsignaciones = HorarioAsignacion::where('carga_academica_id', $carga->id)->count();
+        $this->assertEquals(2, $totalAsignaciones, "Deben existir exactamente 2 bloques en total para la carga académica (1 fijado + 1 generado).");
+
+        // Y no deben existir dos bloques en el mismo día (regla materiaDia: Martes ya tenía la clase fijada)
+        $martesCount = HorarioAsignacion::where('carga_academica_id', $carga->id)->where('dia', 2)->count();
+        $this->assertEquals(1, $martesCount, "No debe haberse asignado otro bloque el Martes porque ya tenía la clase fijada ese día.");
     }
 }
 
