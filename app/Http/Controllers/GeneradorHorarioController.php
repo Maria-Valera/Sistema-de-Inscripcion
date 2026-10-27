@@ -151,8 +151,8 @@ class GeneradorHorarioController extends Controller
                 $seccion = $carga?->seccion;
                 $grado = $seccion?->grado;
 
-                $diaVal = (int) ($asignacion->dia ?? $asignacion->dia_id);
-                $bloqueVal = (int) ($asignacion->bloque ?? $asignacion->bloque_id);
+                $diaVal = (int) $asignacion->dia;
+                $bloqueVal = (int) $asignacion->bloque;
                 $diaEnum = Dia::tryFrom($diaVal);
 
                 $materiaData = [
@@ -173,10 +173,8 @@ class GeneradorHorarioController extends Controller
                     'id' => $asignacion->id,
                     'carga_academica_id' => $asignacion->carga_academica_id,
                     'dia' => $diaVal,
-                    'dia_id' => $diaVal,
                     'dia_nombre' => $diaEnum?->label() ?? ('Día ' . $diaVal),
                     'bloque' => $bloqueVal,
-                    'bloque_id' => $bloqueVal,
                     'bloque_nombre' => 'Bloque ' . $bloqueVal,
                     'fijada' => (bool) $asignacion->fijada,
                     'docente_id' => $docente?->id,
@@ -254,18 +252,16 @@ class GeneradorHorarioController extends Controller
                 // Nivel 1: Mover la asignación
                 $asignacion = HorarioAsignacion::where('anio_escolar_id', $validado['anio_escolar_id'])
                     ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $validado['docente_id'])->where('seccion_id', $validado['seccion_id']))
-                    ->where(fn($q) => $q->where('dia', $validado['dia_actual'])->orWhere('dia_id', $validado['dia_actual']))
-                    ->where(fn($q) => $q->where('bloque', $validado['bloque_actual'])->orWhere('bloque_id', $validado['bloque_actual']))
+                    ->where('dia', $validado['dia_actual'])
+                    ->where('bloque', $validado['bloque_actual'])
                     ->first();
 
                 if ($asignacion) {
-                    $nuevoDia = $resultado['nueva_posicion']['dia'] ?? $resultado['nueva_posicion']['dia_id'];
-                    $nuevoBloque = $resultado['nueva_posicion']['bloque'] ?? $resultado['nueva_posicion']['bloque_id'];
+                    $nuevoDia = $resultado['nueva_posicion']['dia'];
+                    $nuevoBloque = $resultado['nueva_posicion']['bloque'];
                     $asignacion->update([
                         'dia' => $nuevoDia,
                         'bloque' => $nuevoBloque,
-                        'dia_id' => $nuevoDia,
-                        'bloque_id' => $nuevoBloque,
                         'aula_id' => $resultado['nueva_posicion']['aula_id'],
                     ]);
                 }
@@ -277,8 +273,8 @@ class GeneradorHorarioController extends Controller
                 // Actualizar clase original
                 $asignacionOriginal = HorarioAsignacion::where('anio_escolar_id', $validado['anio_escolar_id'])
                     ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $claseOriginal['docente_id'])->where('seccion_id', $claseOriginal['seccion_id']))
-                    ->where(fn($q) => $q->where('dia', $claseOriginal['dia_origen'])->orWhere('dia_id', $claseOriginal['dia_origen']))
-                    ->where(fn($q) => $q->where('bloque', $claseOriginal['bloque_origen'])->orWhere('bloque_id', $claseOriginal['bloque_origen']))
+                    ->where('dia', $claseOriginal['dia_origen'])
+                    ->where('bloque', $claseOriginal['bloque_origen'])
                     ->first();
 
                 if ($asignacionOriginal) {
@@ -287,8 +283,6 @@ class GeneradorHorarioController extends Controller
                     $asignacionOriginal->update([
                         'dia' => $origDiaDest,
                         'bloque' => $origBloqueDest,
-                        'dia_id' => $origDiaDest,
-                        'bloque_id' => $origBloqueDest,
                         'aula_id' => $claseOriginal['aula_destino'],
                     ]);
                 }
@@ -296,8 +290,8 @@ class GeneradorHorarioController extends Controller
                 // Actualizar clase intercambio
                 $asignacionIntercambio = HorarioAsignacion::where('anio_escolar_id', $validado['anio_escolar_id'])
                     ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $claseIntercambio['docente_id'])->where('seccion_id', $claseIntercambio['seccion_id']))
-                    ->where(fn($q) => $q->where('dia', $claseIntercambio['dia_origen'])->orWhere('dia_id', $claseIntercambio['dia_origen']))
-                    ->where(fn($q) => $q->where('bloque', $claseIntercambio['bloque_origen'])->orWhere('bloque_id', $claseIntercambio['bloque_origen']))
+                    ->where('dia', $claseIntercambio['dia_origen'])
+                    ->where('bloque', $claseIntercambio['bloque_origen'])
                     ->first();
 
                 if ($asignacionIntercambio) {
@@ -306,8 +300,6 @@ class GeneradorHorarioController extends Controller
                     $asignacionIntercambio->update([
                         'dia' => $interDiaDest,
                         'bloque' => $interBloqueDest,
-                        'dia_id' => $interDiaDest,
-                        'bloque_id' => $interBloqueDest,
                         'aula_id' => $claseIntercambio['aula_destino'],
                     ]);
                 }
@@ -337,12 +329,12 @@ class GeneradorHorarioController extends Controller
         }
 
         // Verificar que el aula no esté ocupada en el mismo día y bloque
-        $asigDia = $asignacion->dia ?? $asignacion->dia_id;
-        $asigBloque = $asignacion->bloque ?? $asignacion->bloque_id;
+        $asigDia = $asignacion->dia;
+        $asigBloque = $asignacion->bloque;
         $ocupada = HorarioAsignacion::where('aula_id', $aula_id)
             ->where('anio_escolar_id', $asignacion->anio_escolar_id)
-            ->where(fn($q) => $q->where('dia', $asigDia)->orWhere('dia_id', $asigDia))
-            ->where(fn($q) => $q->where('bloque', $asigBloque)->orWhere('bloque_id', $asigBloque))
+            ->where('dia', $asigDia)
+            ->where('bloque', $asigBloque)
             ->where('id', '!=', $id)
             ->exists();
 
@@ -360,14 +352,12 @@ class GeneradorHorarioController extends Controller
     public function actualizarPosicion(Request $request, int $id)
     {
         $validado = $request->validate([
-            'dia_id' => 'nullable|integer',
-            'bloque_id' => 'nullable|integer',
-            'dia' => 'nullable|integer',
-            'bloque' => 'nullable|integer',
+            'dia' => 'required|integer',
+            'bloque' => 'required|integer',
         ]);
 
-        $dia = (int) ($validado['dia'] ?? $validado['dia_id'] ?? 0);
-        $bloque = (int) ($validado['bloque'] ?? $validado['bloque_id'] ?? 0);
+        $dia = (int) $validado['dia'];
+        $bloque = (int) $validado['bloque'];
 
         if ($dia <= 0 || $bloque <= 0) {
             return response()->json(['error' => 'Día y bloque son requeridos y deben ser válidos'], 422);
@@ -415,8 +405,8 @@ class GeneradorHorarioController extends Controller
             $conflictoCarga = HorarioAsignacion::where('anio_escolar_id', $asignacion->anio_escolar_id)
                 ->where('id', '!=', $id)
                 ->where('carga_academica_id', $cargaId)
-                ->where(fn($q) => $q->where('dia', $dia)->orWhere('dia_id', $dia))
-                ->where(fn($q) => $q->where('bloque', $bloque)->orWhere('bloque_id', $bloque))
+                ->where('dia', $dia)
+                ->where('bloque', $bloque)
                 ->exists();
 
             if ($conflictoCarga) {
@@ -428,8 +418,8 @@ class GeneradorHorarioController extends Controller
         if ($docenteId) {
             $conflictoDocente = HorarioAsignacion::where('anio_escolar_id', $asignacion->anio_escolar_id)
                 ->where('id', '!=', $id)
-                ->where(fn($q) => $q->where('dia', $dia)->orWhere('dia_id', $dia))
-                ->where(fn($q) => $q->where('bloque', $bloque)->orWhere('bloque_id', $bloque))
+                ->where('dia', $dia)
+                ->where('bloque', $bloque)
                 ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $docenteId))
                 ->exists();
 
@@ -443,8 +433,8 @@ class GeneradorHorarioController extends Controller
         if ($seccionId) {
             $conflictoSeccion = HorarioAsignacion::where('anio_escolar_id', $asignacion->anio_escolar_id)
                 ->where('id', '!=', $id)
-                ->where(fn($q) => $q->where('dia', $dia)->orWhere('dia_id', $dia))
-                ->where(fn($q) => $q->where('bloque', $bloque)->orWhere('bloque_id', $bloque))
+                ->where('dia', $dia)
+                ->where('bloque', $bloque)
                 ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $seccionId))
                 ->exists();
 
@@ -457,8 +447,8 @@ class GeneradorHorarioController extends Controller
         if ($asignacion->aula_id) {
             $conflictoAula = HorarioAsignacion::where('anio_escolar_id', $asignacion->anio_escolar_id)
                 ->where('aula_id', $asignacion->aula_id)
-                ->where(fn($q) => $q->where('dia', $dia)->orWhere('dia_id', $dia))
-                ->where(fn($q) => $q->where('bloque', $bloque)->orWhere('bloque_id', $bloque))
+                ->where('dia', $dia)
+                ->where('bloque', $bloque)
                 ->where('id', '!=', $id)
                 ->exists();
 
@@ -471,8 +461,6 @@ class GeneradorHorarioController extends Controller
         try {
             $asignacion->dia = $dia;
             $asignacion->bloque = $bloque;
-            $asignacion->dia_id = $dia;
-            $asignacion->bloque_id = $bloque;
             $asignacion->save();
         } catch (\Illuminate\Database\QueryException $e) {
             if ($e->getCode() == 23000 || str_contains($e->getMessage(), 'unique_carga_bloque') || str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
@@ -532,10 +520,10 @@ class GeneradorHorarioController extends Controller
         }
 
         // Posiciones actuales
-        $dia1 = (int) ($asignacion1->dia ?? $asignacion1->dia_id);
-        $bloque1 = (int) ($asignacion1->bloque ?? $asignacion1->bloque_id);
-        $dia2 = (int) ($asignacion2->dia ?? $asignacion2->dia_id);
-        $bloque2 = (int) ($asignacion2->bloque ?? $asignacion2->bloque_id);
+        $dia1 = (int) $asignacion1->dia;
+        $bloque1 = (int) $asignacion1->bloque;
+        $dia2 = (int) $asignacion2->dia;
+        $bloque2 = (int) $asignacion2->bloque;
 
         // 2. Validar si alguna celda destino está reservada
         $res1 = BloqueReservado::where('anio_escolar_id', $asignacion1->anio_escolar_id)->where('dia', $dia2)->where('bloque', $bloque2)->exists();
@@ -579,8 +567,8 @@ class GeneradorHorarioController extends Controller
             $conflictoDocente1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
-                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
-                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
+                ->where('dia', $dia2)
+                ->where('bloque', $bloque2)
                 ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $doc1))
                 ->exists();
 
@@ -593,8 +581,8 @@ class GeneradorHorarioController extends Controller
             $conflictoDocente2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
-                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
-                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
+                ->where('dia', $dia1)
+                ->where('bloque', $bloque1)
                 ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $doc2))
                 ->exists();
 
@@ -609,8 +597,8 @@ class GeneradorHorarioController extends Controller
             $conflictoSeccion1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
-                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
-                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
+                ->where('dia', $dia2)
+                ->where('bloque', $bloque2)
                 ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec1))
                 ->exists();
 
@@ -624,8 +612,8 @@ class GeneradorHorarioController extends Controller
             $conflictoSeccion2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
-                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
-                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
+                ->where('dia', $dia1)
+                ->where('bloque', $bloque1)
                 ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec2))
                 ->exists();
 
@@ -642,8 +630,8 @@ class GeneradorHorarioController extends Controller
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
                 ->where('carga_academica_id', $carga1)
-                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
-                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
+                ->where('dia', $dia2)
+                ->where('bloque', $bloque2)
                 ->exists();
 
             if ($conflictoCarga1) {
@@ -656,8 +644,8 @@ class GeneradorHorarioController extends Controller
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
                 ->where('carga_academica_id', $carga2)
-                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
-                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
+                ->where('dia', $dia1)
+                ->where('bloque', $bloque1)
                 ->exists();
 
             if ($conflictoCarga2) {
@@ -669,8 +657,8 @@ class GeneradorHorarioController extends Controller
         if ($asignacion1->aula_id) {
             $conflictoAula1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
                 ->where('aula_id', $asignacion1->aula_id)
-                ->where(fn($q) => $q->where('dia', $dia2)->orWhere('dia_id', $dia2))
-                ->where(fn($q) => $q->where('bloque', $bloque2)->orWhere('bloque_id', $bloque2))
+                ->where('dia', $dia2)
+                ->where('bloque', $bloque2)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
                 ->exists();
@@ -683,8 +671,8 @@ class GeneradorHorarioController extends Controller
         if ($asignacion2->aula_id) {
             $conflictoAula2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
                 ->where('aula_id', $asignacion2->aula_id)
-                ->where(fn($q) => $q->where('dia', $dia1)->orWhere('dia_id', $dia1))
-                ->where(fn($q) => $q->where('bloque', $bloque1)->orWhere('bloque_id', $bloque1))
+                ->where('dia', $dia1)
+                ->where('bloque', $bloque1)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
                 ->exists();
@@ -699,14 +687,10 @@ class GeneradorHorarioController extends Controller
             \DB::transaction(function() use ($asignacion1, $asignacion2, $dia1, $bloque1, $dia2, $bloque2) {
                 $asignacion1->dia = $dia2;
                 $asignacion1->bloque = $bloque2;
-                $asignacion1->dia_id = $dia2;
-                $asignacion1->bloque_id = $bloque2;
                 $asignacion1->save();
 
                 $asignacion2->dia = $dia1;
                 $asignacion2->bloque = $bloque1;
-                $asignacion2->dia_id = $dia1;
-                $asignacion2->bloque_id = $bloque1;
                 $asignacion2->save();
             });
         } catch (\Illuminate\Database\QueryException $e) {
@@ -786,8 +770,8 @@ class GeneradorHorarioController extends Controller
                     $docenteId = $asignacion['docente_id'] ?? null;
                     $materiaId = $asignacion['materia_id'] ?? null;
                     $seccionId = $asignacion['seccion_id'] ?? null;
-                    $diaVal = (int) ($asignacion['dia'] ?? $asignacion['dia_id'] ?? 0);
-                    $bloqueVal = (int) ($asignacion['bloque'] ?? $asignacion['bloque_id'] ?? 0);
+                    $diaVal = (int) ($asignacion['dia'] ?? 0);
+                    $bloqueVal = (int) ($asignacion['bloque'] ?? 0);
 
                     if (!$cargaAcademicaId && (!$docenteId || !$materiaId || !$seccionId)) {
                         $errores[] = [
@@ -837,8 +821,6 @@ class GeneradorHorarioController extends Controller
                         'aula_id' => $aulaId,
                         'dia' => $diaVal,
                         'bloque' => $bloqueVal,
-                        'dia_id' => $diaVal,
-                        'bloque_id' => $bloqueVal,
                         'fijada' => !empty($asignacion['fijada']),
                         'conflicto_manual' => false,
                     ]);

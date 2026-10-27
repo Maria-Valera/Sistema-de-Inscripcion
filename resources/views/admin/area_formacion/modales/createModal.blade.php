@@ -74,20 +74,20 @@
                     </div>
 
                     <div class="form-group-modern">
-                        <label for="horas_semanales" class="form-label-modern">
+                        <label for="bloques_semanales" class="form-label-modern">
                             <i class="fas fa-clock"></i>
                             Bloques Semanales
                         </label>
                         <input type="number" 
-                            name="horas_semanales" 
-                            id="horas_semanales" 
+                            name="bloques_semanales" 
+                            id="bloques_semanales" 
                             class="form-control-modern" 
                             placeholder="Ingrese los bloques semanales"
                             required
                             min="1"
                             max="40">
                         
-                        @error('horas_semanales')
+                        @error('bloques_semanales')
                             <div class="error-message">
                                 Este campo es obligatorio.
                             </div>

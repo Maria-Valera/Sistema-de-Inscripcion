@@ -18,6 +18,17 @@ use Illuminate\Support\Collection;
 
 Class GeneradorHorarioService
 {
+    protected array $cacheAulaNormal = [];
+    protected array $cacheCapacidadAula = [];
+    protected array $cacheAulasEspeciales = [];
+
+    public function limpiarCaches(): void
+    {
+        $this->cacheAulaNormal = [];
+        $this->cacheCapacidadAula = [];
+        $this->cacheAulasEspeciales = [];
+    }
+
     public function PreparasDatos(?int $gradoId = null, ?int $areaFormacionId = null, ?int $anioEscolarId = null): Collection
     {
         $query = CargaAcademica::with([
@@ -188,34 +199,35 @@ Class GeneradorHorarioService
 
 
     public function obtenerAulaNormal(int $seccionId): ?int
-        {
-            //busca el aula asignada, si no busca otra disponible
-            $seccionAula = seccion_aula::where('id_seccion', $seccionId)
+    {
+        if (array_key_exists($seccionId, $this->cacheAulaNormal)) {
+            return $this->cacheAulaNormal[$seccionId];
+        }
+
+        $seccionAula = seccion_aula::where('id_seccion', $seccionId)
+            ->where('status', true)
+            ->first();
+
+        if (!$seccionAula) {
+            $aulaRegular = Aula::where('tipo_aula', Aula::TIPO_REGULAR)
                 ->where('status', true)
                 ->first();
 
-                
-            if (!$seccionAula) {
-                $aulaRegular = Aula::where('tipo_aula', Aula::TIPO_REGULAR)
-                    ->where('status', true)
-                    ->first();
-                
-                    // valida la capacidad maxima de la seccion
-                if ($aulaRegular && !$this->validarCapacidadAula($aulaRegular->id_aula, $seccionId)) {
-                    return null;
-                }
-                
-                return $aulaRegular?->id_aula;
+            if ($aulaRegular && !$this->validarCapacidadAula($aulaRegular->id_aula, $seccionId)) {
+                return $this->cacheAulaNormal[$seccionId] = null;
             }
 
-            if ($seccionAula && !$this->validarCapacidadAula($seccionAula->id_aula, $seccionId)) {
-                return null;
-            }
-
-            return $seccionAula?->id_aula;
+            return $this->cacheAulaNormal[$seccionId] = $aulaRegular?->id_aula;
         }
 
-        //para areas con aulas especializadas como edu
+        if ($seccionAula && !$this->validarCapacidadAula($seccionAula->id_aula, $seccionId)) {
+            return $this->cacheAulaNormal[$seccionId] = null;
+        }
+
+        return $this->cacheAulaNormal[$seccionId] = $seccionAula?->id_aula;
+    }
+
+    //para areas con aulas especializadas como edu
     public function verificarAulaEspecialLibre(int $aulaId, int $diaId, int $bloqueId, array $aulaEspecialOcupada): bool
     {
         $clave = $aulaId . '_' . $diaId . '_' . $bloqueId;
@@ -224,9 +236,13 @@ Class GeneradorHorarioService
 
     public function buscarAulaEspecialLibre(string $tipoAula, int $diaId, int $bloqueId, array $aulaEspecialOcupada, int $seccionId): ?int
     {
-        $aulas = Aula::where('tipo_aula', $tipoAula)
-            ->where('status', true)
-            ->get();
+        if (!isset($this->cacheAulasEspeciales[$tipoAula])) {
+            $this->cacheAulasEspeciales[$tipoAula] = Aula::where('tipo_aula', $tipoAula)
+                ->where('status', true)
+                ->get();
+        }
+
+        $aulas = $this->cacheAulasEspeciales[$tipoAula];
 
         foreach ($aulas as $aula) {
             $clave = $aula->id_aula . '_' . $diaId . '_' . $bloqueId;
@@ -312,6 +328,15 @@ Class GeneradorHorarioService
         $aulaFijaMateria = $clase['area_aula'] ?? null;
         $esEspecializada = $aulaFijaMateria && !Aula::esTipoRegular($aulaFijaMateria->tipo_aula);
 
+        $aulaNormalSeccion = null;
+        if (!$esEspecializada) {
+            $aulaNormalSeccion = $this->obtenerAulaNormal($clase['seccion_id']);
+            if ($aulaNormalSeccion === null) {
+                $matrices['rechazos']['aula'][$docenteId] = ($matrices['rechazos']['aula'][$docenteId] ?? 0) + 1;
+                return null;
+            }
+        }
+
         $mejorOpcion = null;
         $menorCosto = PHP_INT_MAX;
 
@@ -364,11 +389,7 @@ Class GeneradorHorarioService
                     }
                     $aulaAsignada = $aulaLibre;
                 } else {
-                    $aulaAsignada = $this->obtenerAulaNormal($clase['seccion_id']);
-                    if ($aulaAsignada === null) {
-                        $matrices['rechazos']['aula'][$docenteId] = ($matrices['rechazos']['aula'][$docenteId] ?? 0) + 1;
-                        continue;
-                    }
+                    $aulaAsignada = $aulaNormalSeccion;
                 }
 
                 // ===== CÁLCULO DE COSTO (M5 / M8 / P11) =====
@@ -481,8 +502,8 @@ Class GeneradorHorarioService
 
         foreach ($asignaciones as $asig) {
             $secId = $asig['seccion_id'] ?? null;
-            $dia = $asig['dia'] ?? $asig['dia_id'] ?? null;
-            $bloque = $asig['bloque'] ?? $asig['bloque_id'] ?? null;
+            $dia = $asig['dia'] ?? null;
+            $bloque = $asig['bloque'] ?? null;
 
             if ($secId !== null && in_array($secId, $seccionIds) && $dia !== null && $bloque !== null) {
                 $ocupadosPorSeccionDia[$secId][$dia][$bloque] = true;
@@ -543,15 +564,18 @@ Class GeneradorHorarioService
             $bloquesPorDocente = [];
 
             foreach ($asignacionesExistentes as $asignacion) {
+                $asigDia = (int) ($asignacion['dia'] ?? 0);
+                $asigBloque = (int) ($asignacion['bloque'] ?? 0);
+
                 if ($asignacion['docente_id'] == $docenteId &&
                     $asignacion['seccion_id'] == $seccionId &&
-                    $asignacion['dia_id'] == $diaActual &&
-                    $asignacion['bloque_id'] == $bloqueActual) {
+                    $asigDia == $diaActual &&
+                    $asigBloque == $bloqueActual) {
                     continue;
                 }
 
-                $claveDocente = $asignacion['docente_id'] . '_' . $asignacion['dia_id'] . '_' . $asignacion['bloque_id'];
-                $claveSeccion = $asignacion['seccion_id'] . '_' . $asignacion['dia_id'] . '_' . $asignacion['bloque_id'];
+                $claveDocente = $asignacion['docente_id'] . '_' . $asigDia . '_' . $asigBloque;
+                $claveSeccion = $asignacion['seccion_id'] . '_' . $asigDia . '_' . $asigBloque;
 
                 $docenteOcupado[$claveDocente] = true;
                 $seccionOcupado[$claveSeccion] = true;
@@ -1610,17 +1634,22 @@ Class GeneradorHorarioService
         //compara la cantidad actual de la seccion con la capacidad que tiene la aula
         public function validarCapacidadAula(int $aulaId, int $seccionId): bool
         {
+            $clave = $aulaId . '_' . $seccionId;
+            if (isset($this->cacheCapacidadAula[$clave])) {
+                return $this->cacheCapacidadAula[$clave];
+            }
+
             $aula = Aula::find($aulaId);
             $seccion = Seccion::find($seccionId);
 
             if (!$aula || !$seccion) {
-                return false;
+                return $this->cacheCapacidadAula[$clave] = false;
             }
 
             if ($aula->capacidad_maxima === null) {
-                return true;
+                return $this->cacheCapacidadAula[$clave] = true;
             }
 
-            return $seccion->cantidad_actual <= $aula->capacidad_maxima;
+            return $this->cacheCapacidadAula[$clave] = ($seccion->cantidad_actual <= $aula->capacidad_maxima);
         }
 }

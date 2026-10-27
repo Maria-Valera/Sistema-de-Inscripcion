@@ -222,8 +222,8 @@
 
                     // Verificar si esta celda está marcada como no disponible
                     const match = noDisponibilidades.find(nd => 
-                        Number(nd.dia || nd.dias_semana_id) === numDia &&
-                        Number(nd.bloque || nd.id_bloque_hora) === numBloque
+                        Number(nd.dia) === numDia &&
+                        Number(nd.bloque) === numBloque
                     );
 
                     if (match) {
@@ -280,8 +280,6 @@
                             cedula_persona: cedulaPersona,
                             dia: diaId,
                             bloque: bloqueId,
-                            id_dias_semana: diaId,
-                            id_bloque: bloqueId,
                             anio_escolar: anioEscolarId,
                             tipo: 'prohibido',
                             estado: 'aprobada',
@@ -343,8 +341,6 @@
                                     cedula_persona: cedulaPersona,
                                     dia: diaId,
                                     bloque: bloqueId,
-                                    id_dias_semana: diaId,
-                                    id_bloque: bloqueId,
                                     anio_escolar: anioEscolarId,
                                     tipo: 'prohibido',
                                     estado: 'aprobada',

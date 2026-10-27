@@ -247,7 +247,7 @@
         // Filas: bloques activos + cualquier bloque usado en asignaciones que no exista en la tabla
         const bloques = (Array.isArray(data.bloques) ? data.bloques : []).map(b => ({ ...b }));
         const idsBloques = new Set(bloques.map(b => Number(b.bloque || b.id)));
-        [...new Set(asignaciones.map(a => Number(a.bloque ?? a.bloque_id)))]
+        [...new Set(asignaciones.map(a => Number(a.bloque)))]
             .filter(id => !idsBloques.has(id))
             .sort((a, b) => a - b)
             .forEach(id => bloques.push({ id, bloque: id, hora_inicio: null, hora_fin: null, huerfano: true }));
@@ -276,7 +276,7 @@
                 }
 
                 const enCelda = asignaciones.filter(a =>
-                    Number(a.dia ?? a.dia_id) === numDia && Number(a.bloque ?? a.bloque_id) === numBloque);
+                    Number(a.dia) === numDia && Number(a.bloque) === numBloque);
 
                 const contenido = enCelda.map(a => {
                     const materia = a.materia || a.materia_nombre || a.cargaAcademica?.materia?.nombre || 'Sin materia';
@@ -301,7 +301,7 @@
 
         // Asignaciones en días fuera de la grilla (no debería pasar, pero se avisa para no ocultarlas)
         const idsDias = new Set(dias.map(d => Number(d.dia ?? d.id)));
-        const fueraDeGrilla = asignaciones.filter(a => !idsDias.has(Number(a.dia ?? a.dia_id))).length;
+        const fueraDeGrilla = asignaciones.filter(a => !idsDias.has(Number(a.dia))).length;
 
         if (asignaciones.length === 0) {
             setEstadoHorarioModal('empty', 'Esta sección no tiene clases asignadas en el año escolar activo.');

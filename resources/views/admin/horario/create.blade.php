@@ -1655,8 +1655,8 @@
 
                         // Buscar todas las asignaciones para este día y bloque (usando datos filtrados)
                         const asignacionesDeCelda = horarioFiltrado.filter(h => {
-                            const asigDia = Number(h.dia ?? h.dia_id);
-                            const asigBloque = Number(h.bloque ?? h.bloque_id);
+                            const asigDia = Number(h.dia);
+                            const asigBloque = Number(h.bloque);
                             const asigDiaNombre = (h.dia_nombre || '').toLowerCase();
                             const diaCoincide = asigDia === numDia || asigDiaNombre === diaNombre.toLowerCase();
                             return diaCoincide && asigBloque === numBloque;
@@ -2346,16 +2346,16 @@
                         }
 
                         if (origenData && destinoData) {
-                            const origenDia = diasSemana.find(d => Number(d.id || d.dia) === Number(origenData.dia ?? origenData.dia_id));
-                            const destinoDia = diasSemana.find(d => Number(d.id || d.dia) === Number(destinoData.dia ?? destinoData.dia_id));
+                            const origenDia = diasSemana.find(d => Number(d.id || d.dia) === Number(origenData.dia));
+                            const destinoDia = diasSemana.find(d => Number(d.id || d.dia) === Number(destinoData.dia));
 
                             const mensaje = `
-                                <strong>[${origenDia?.nombre_dia || origenData.dia_nombre || ('Día ' + (origenData.dia ?? origenData.dia_id))} - Bloque ${origenData.bloque ?? origenData.bloque_id}]:</strong><br>
+                                <strong>[${origenDia?.nombre_dia || origenData.dia_nombre || ('Día ' + origenData.dia)} - Bloque ${origenData.bloque}]:</strong><br>
                                 Docente: ${origenData.docente_nombre}<br>
                                 Sección: ${origenData.seccion_nombre}<br>
                                 Aula: ${origenData.aula_nombre}<br><br>
                                 <strong>⇄</strong><br><br>
-                                <strong>[${destinoDia?.nombre_dia || destinoData.dia_nombre || ('Día ' + (destinoData.dia ?? destinoData.dia_id))} - Bloque ${destinoData.bloque ?? destinoData.bloque_id}]:</strong><br>
+                                <strong>[${destinoDia?.nombre_dia || destinoData.dia_nombre || ('Día ' + destinoData.dia)} - Bloque ${destinoData.bloque}]:</strong><br>
                                 Docente: ${destinoData.docente_nombre}<br>
                                 Sección: ${destinoData.seccion_nombre}<br>
                                 Aula: ${destinoData.aula_nombre}
@@ -2411,12 +2411,10 @@
                                             aula_id: data.asignacion1.aula_id,
                                             aula_nombre: data.asignacion1.aula?.nombre_aula || 'N/A',
                                             aula_tipo: data.asignacion1.aula?.tipo_aula || 'N/A',
-                                            dia: data.asignacion1.dia ?? data.asignacion1.dia_id,
-                                            dia_id: data.asignacion1.dia_id ?? data.asignacion1.dia,
-                                            dia_nombre: diasSemana.find(d => Number(d.id || d.dia) === Number(data.asignacion1.dia ?? data.asignacion1.dia_id))?.nombre_dia || 'Día ' + (data.asignacion1.dia ?? data.asignacion1.dia_id),
-                                            bloque: data.asignacion1.bloque ?? data.asignacion1.bloque_id,
-                                            bloque_id: data.asignacion1.bloque_id ?? data.asignacion1.bloque,
-                                            bloque_nombre: 'Bloque ' + (data.asignacion1.bloque ?? data.asignacion1.bloque_id),
+                                            dia: data.asignacion1.dia,
+                                            dia_nombre: diasSemana.find(d => Number(d.id || d.dia) === Number(data.asignacion1.dia))?.nombre_dia || 'Día ' + data.asignacion1.dia,
+                                            bloque: data.asignacion1.bloque,
+                                            bloque_nombre: 'Bloque ' + data.asignacion1.bloque,
                                             fijada: data.asignacion1.fijada ?? false
                                         };
                                     }
@@ -2441,12 +2439,10 @@
                                             aula_id: data.asignacion2.aula_id,
                                             aula_nombre: data.asignacion2.aula?.nombre_aula || 'N/A',
                                             aula_tipo: data.asignacion2.aula?.tipo_aula || 'N/A',
-                                            dia: data.asignacion2.dia ?? data.asignacion2.dia_id,
-                                            dia_id: data.asignacion2.dia_id ?? data.asignacion2.dia,
-                                            dia_nombre: diasSemana.find(d => Number(d.id || d.dia) === Number(data.asignacion2.dia ?? data.asignacion2.dia_id))?.nombre_dia || 'Día ' + (data.asignacion2.dia ?? data.asignacion2.dia_id),
-                                            bloque: data.asignacion2.bloque ?? data.asignacion2.bloque_id,
-                                            bloque_id: data.asignacion2.bloque_id ?? data.asignacion2.bloque,
-                                            bloque_nombre: 'Bloque ' + (data.asignacion2.bloque ?? data.asignacion2.bloque_id),
+                                            dia: data.asignacion2.dia,
+                                            dia_nombre: diasSemana.find(d => Number(d.id || d.dia) === Number(data.asignacion2.dia))?.nombre_dia || 'Día ' + data.asignacion2.dia,
+                                            bloque: data.asignacion2.bloque,
+                                            bloque_nombre: 'Bloque ' + data.asignacion2.bloque,
                                             fijada: data.asignacion2.fijada ?? false
                                         };
                                     }
@@ -2513,9 +2509,7 @@
                             },
                             body: JSON.stringify({
                                 dia: diaNum,
-                                bloque: bloqueNum,
-                                dia_id: diaNum,
-                                bloque_id: bloqueNum
+                                bloque: bloqueNum
                             })
                         });
 
@@ -2529,10 +2523,8 @@
                         const asignacionIndex = horarioData.findIndex(h => h.id == origen.asignacionId);
                         if (asignacionIndex !== -1) {
                             horarioData[asignacionIndex].dia = diaNum;
-                            horarioData[asignacionIndex].dia_id = diaNum;
                             horarioData[asignacionIndex].dia_nombre = diaObj?.nombre_dia || diaObj?.nombre || 'Día ' + diaNum;
                             horarioData[asignacionIndex].bloque = bloqueNum;
-                            horarioData[asignacionIndex].bloque_id = bloqueNum;
                             horarioData[asignacionIndex].bloque_nombre = 'Bloque ' + bloqueNum;
                         }
 
@@ -2620,8 +2612,8 @@
                 // 1. Conservar asignaciones existentes que no hayan sido sobreescritas localmente
                 if (asignacionesExistentes) {
                     horarioData.forEach(h => {
-                        const hDia = Number(h.dia ?? h.dia_id);
-                        const hBloque = Number(h.bloque ?? h.bloque_id);
+                        const hDia = Number(h.dia);
+                        const hBloque = Number(h.bloque);
                         const celdaKey = `${hDia}-${hBloque}`;
                         if (!horarioAsignaciones[celdaKey] || horarioAsignaciones[celdaKey].length === 0) {
                             asignacionesParaGuardar.push({
@@ -2632,8 +2624,6 @@
                                 aula_id: parseInt(h.aula_id || 0),
                                 dia: hDia,
                                 bloque: hBloque,
-                                dia_id: hDia,
-                                bloque_id: hBloque,
                                 fijada: !!h.fijada
                             });
                         }
@@ -2667,8 +2657,6 @@
                             aula_id: parseInt(aulaIdFinal || 0),
                             dia: numDia,
                             bloque: numBloque,
-                            dia_id: numDia,
-                            bloque_id: numBloque,
                             fijada: false
                         });
                     });

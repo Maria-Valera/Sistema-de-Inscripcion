@@ -33,16 +33,14 @@ class DocenteNoDisponibilidadController extends Controller
             }
 
             $noDisponibilidades = $query->get()->map(function($item) {
-                $diaNum = $item->dia instanceof Dia ? $item->dia->value : ($item->dia ?? $item->dias_semana_id);
-                $bloqueNum = (int)($item->bloque ?? $item->id_bloque_hora);
+                $diaNum = $item->dia instanceof Dia ? $item->dia->value : (int) $item->dia;
+                $bloqueNum = (int) $item->bloque;
                 return [
                     'id' => $item->id,
                     'docente_id' => $item->docente_id,
                     'anio_escolar_id' => $item->anio_escolar_id,
                     'dia' => (int)$diaNum,
                     'bloque' => $bloqueNum,
-                    'dias_semana_id' => (int)$diaNum,
-                    'id_bloque_hora' => $bloqueNum,
                     'tipo' => $item->tipo ?? 'prohibido',
                     'estado' => $item->estado ?? 'aprobada',
                     'motivo' => $item->motivo
@@ -60,20 +58,14 @@ class DocenteNoDisponibilidadController extends Controller
         try {
             $validated = $request->validate([
                 'cedula_persona' => 'required|string|exists:personas,numero_documento',
-                'id_dias_semana' => 'nullable|integer',
-                'id_bloque' => 'nullable|integer',
-                'dia' => 'nullable|integer',
-                'bloque' => 'nullable|integer',
+                'dia' => 'required|integer',
+                'bloque' => 'required|integer',
                 'anio_escolar' => 'required|integer|exists:anio_escolars,id',
                 'motivo' => 'nullable|string|max:255',
             ]);
 
-            $diaVal = (int)($request->input('dia') ?? $request->input('id_dias_semana'));
-            $bloqueVal = (int)($request->input('bloque') ?? $request->input('id_bloque'));
-
-            if (!$diaVal || !$bloqueVal) {
-                return response()->json(['error' => 'Día y bloque son requeridos'], 422);
-            }
+            $diaVal = (int) $validated['dia'];
+            $bloqueVal = (int) $validated['bloque'];
 
             $persona = Persona::where('numero_documento', $validated['cedula_persona'])->first();
             $docente = Docente::where('persona_id', $persona->id)->first();
@@ -88,8 +80,6 @@ class DocenteNoDisponibilidadController extends Controller
                 'dia' => $diaVal,
                 'bloque' => $bloqueVal,
             ], [
-                'dias_semana_id' => $diaVal,
-                'id_bloque_hora' => $bloqueVal,
                 'tipo' => $request->input('tipo', 'prohibido'),
                 'estado' => $request->input('estado', 'aprobada'),
                 'motivo' => $validated['motivo'] ?? 'Marcado por administrador',
