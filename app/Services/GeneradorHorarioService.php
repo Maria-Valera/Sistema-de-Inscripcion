@@ -493,7 +493,9 @@ Class GeneradorHorarioService
                 ->where('anio_escolar_id', $anioEscolar)
                 ->get();
             foreach ($noDisponible as $nd) {
-                $clave = $nd->docente_id . '_' . $nd->dias_semana_id . '_' . $nd->id_bloque_hora;
+                $diaNum = $nd->dia instanceof \App\Enums\Dia ? $nd->dia->value : ($nd->dia ?? $nd->dias_semana_id);
+                $bloqueNum = $nd->bloque ?? $nd->id_bloque_hora;
+                $clave = $nd->docente_id . '_' . $diaNum . '_' . $bloqueNum;
                 $docenteOcupado[$clave] = true;
             }
 
@@ -563,7 +565,9 @@ Class GeneradorHorarioService
                 ->where('anio_escolar_id', $anioEscolar)
                 ->get();
             foreach ($noDisponible as $nd) {
-                $clave = $nd->docente_id . '_' . $nd->dias_semana_id . '_' . $nd->id_bloque_hora;
+                $diaNum = $nd->dia instanceof \App\Enums\Dia ? $nd->dia->value : ($nd->dia ?? $nd->dias_semana_id);
+                $bloqueNum = $nd->bloque ?? $nd->id_bloque_hora;
+                $clave = $nd->docente_id . '_' . $diaNum . '_' . $bloqueNum;
                 $docenteOcupado[$clave] = true;
             }
 

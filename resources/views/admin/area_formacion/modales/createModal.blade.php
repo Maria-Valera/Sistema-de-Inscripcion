@@ -76,13 +76,13 @@
                     <div class="form-group-modern">
                         <label for="horas_semanales" class="form-label-modern">
                             <i class="fas fa-clock"></i>
-                            Horas Semanales
+                            Bloques Semanales
                         </label>
                         <input type="number" 
                             name="horas_semanales" 
                             id="horas_semanales" 
                             class="form-control-modern" 
-                            placeholder="Ingrese las horas semanales"
+                            placeholder="Ingrese los bloques semanales"
                             required
                             min="1"
                             max="40">

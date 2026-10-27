@@ -305,7 +305,7 @@
                                                             <button class="dropdown-item d-flex align-items-center text-primary"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#viewModalHorario"
-                                                                onclick="cargarHorarioEnModal({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
+                                                                onclick="cargarHorarioEnModal({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }}, '{{ $horario['grado'] }}', '{{ $horario['seccion'] }}')">
                                                                 <i class="fas fa-eye me-2"></i>
                                                                 Ver Horario
                                                             </button>
@@ -355,9 +355,122 @@
     </div>
 
     <script>
-        function generarPDF(gradoId, seccionId) {
-            // Aquí implementar la generación de PDF
-            alert('Función de generación de PDF para Grado ID: ' + gradoId + ', Sección ID: ' + seccionId);
+        async function generarPDF(gradoId, seccionId) {
+            try {
+                const response = await fetch(`/admin/horario/${gradoId}/${seccionId}/show-api`);
+                if (!response.ok) {
+                    throw new Error('Error al obtener los datos del horario');
+                }
+                const data = await response.json();
+
+                const dias = data.dias || [];
+                const bloques = data.bloques || [];
+                const asignaciones = data.asignaciones || [];
+                const reservados = data.reservados || [];
+                const gradoNombre = data.grado ? `${data.grado.numero_grado}° Grado` : 'Grado N/A';
+                const seccionNombre = data.seccion ? `Sección "${data.seccion.nombre}"` : 'Sección N/A';
+                const anioEscolar = data.anio_escolar || 'Año Escolar Activo';
+
+                // Construir filas de la tabla
+                let filasHtml = '';
+                bloques.forEach(bloque => {
+                    const numBloque = bloque.bloque || bloque.id;
+                    const horas = (bloque.hora_inicio && bloque.hora_fin) ? `${bloque.hora_inicio} - ${bloque.hora_fin}` : `Bloque ${numBloque}`;
+
+                    let celdasDias = '';
+                    dias.forEach(dia => {
+                        const numDia = dia.dia || dia.id;
+                        const esReservado = reservados.some(r => Number(r.dia) === Number(numDia) && Number(r.bloque) === Number(numBloque));
+
+                        if (esReservado) {
+                            celdasDias += `<td style="background-color: #f1f5f9; color: #64748b; font-size: 11px; text-align: center; vertical-align: middle; font-weight: 600;">RESERVADO</td>`;
+                        } else {
+                            const asig = asignaciones.find(a => Number(a.dia) === Number(numDia) && Number(a.bloque) === Number(numBloque));
+                            if (asig) {
+                                const lock = asig.fijada ? ' 🔒' : '';
+                                celdasDias += `
+                                    <td style="padding: 6px; vertical-align: top; font-size: 11px; background-color: #f8fafc;">
+                                        <div style="font-weight: bold; color: #1e293b; margin-bottom: 2px;">${asig.materia || 'Materia'}${lock}</div>
+                                        <div style="color: #475569; font-size: 10px;">${asig.docente || 'Docente N/A'}</div>
+                                        <div style="color: #64748b; font-size: 9px; margin-top: 2px;">📍 ${asig.aula || 'Aula regular'}</div>
+                                    </td>
+                                `;
+                            } else {
+                                celdasDias += `<td style="text-align: center; color: #cbd5e1; font-size: 12px; vertical-align: middle;">-</td>`;
+                            }
+                        }
+                    });
+
+                    filasHtml += `
+                        <tr>
+                            <td style="font-weight: 600; text-align: center; vertical-align: middle; background-color: #f8fafc; font-size: 11px; white-space: nowrap; padding: 6px 10px;">
+                                Bloque ${numBloque}<br><span style="font-size: 9px; color: #64748b; font-weight: normal;">${horas}</span>
+                            </td>
+                            ${celdasDias}
+                        </tr>
+                    `;
+                });
+
+                let cabecerasDias = dias.map(d => `<th style="padding: 8px; text-align: center; background-color: #0f172a; color: #ffffff; font-size: 12px; font-weight: 600;">${d.nombre_dia || d.nombre}</th>`).join('');
+
+                const printWindow = window.open('', '_blank', 'width=950,height=650');
+                if (!printWindow) {
+                    alert('Por favor, permita las ventanas emergentes en su navegador para imprimir el horario.');
+                    return;
+                }
+
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html lang="es">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Horario Escolar - ${gradoNombre} ${seccionNombre}</title>
+                        <style>
+                            @page { size: landscape; margin: 12mm; }
+                            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; color: #1e293b; }
+                            .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
+                            .header h1 { margin: 0 0 6px 0; font-size: 20px; text-transform: uppercase; letter-spacing: 0.5px; color: #0f172a; }
+                            .header p { margin: 2px 0; font-size: 13px; color: #475569; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+                            th, td { border: 1px solid #cbd5e1; }
+                            .footer { margin-top: 20px; font-size: 10px; color: #94a3b8; text-align: right; }
+                            @media print {
+                                body { padding: 0; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>Horario Escolar Oficial</h1>
+                            <p><strong>${gradoNombre} - ${seccionNombre}</strong> &nbsp;|&nbsp; <strong>Año Escolar:</strong> ${anioEscolar}</p>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px; width: 110px; text-align: center; background-color: #0f172a; color: #ffffff; font-size: 12px;">Hora / Bloque</th>
+                                    ${cabecerasDias}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${filasHtml}
+                            </tbody>
+                        </table>
+                        <div class="footer">
+                            Generado el ${new Date().toLocaleDateString('es-VE', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                        <script>
+                            window.onload = function() {
+                                window.print();
+                            };
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            } catch (err) {
+                console.error('Error al generar PDF:', err);
+                alert('No se pudo generar el reporte del horario.');
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function () {

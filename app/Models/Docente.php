@@ -104,6 +104,14 @@ class Docente extends Model
     }
 
     /**
+     * Relación con CargaAcademica
+     */
+    public function cargasAcademicas()
+    {
+        return $this->hasMany(\App\Models\CargaAcademica::class, 'docente_id');
+    }
+
+    /**
      * Relación con Persona
      */
     public function persona()

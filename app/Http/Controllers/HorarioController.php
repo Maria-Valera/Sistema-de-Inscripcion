@@ -14,16 +14,22 @@ use App\Models\AnioEscolar;
 use App\Models\BloqueHorario;
 use App\Models\Dias_semana;
 use App\Models\ConfiguracionHorario;
+use App\Models\BloqueReservado;
+use App\Models\CargaAcademica;
+use App\Enums\Dia;
 use App\Services\ValidadorHorarioService;
+use App\Services\ConfiguracionHorarioService;
 use Illuminate\Support\Facades\DB;
 
 class HorarioController extends Controller
 {
     protected ValidadorHorarioService $validador;
+    protected ConfiguracionHorarioService $configuracionHorarioService;
 
-    public function __construct(ValidadorHorarioService $validador)
+    public function __construct(ValidadorHorarioService $validador, ConfiguracionHorarioService $configuracionHorarioService)
     {
         $this->validador = $validador;
+        $this->configuracionHorarioService = $configuracionHorarioService;
     }
 
     //muestra horarios en formato API
@@ -91,47 +97,145 @@ class HorarioController extends Controller
             return response()->json(['message' => 'La sección no pertenece al grado indicado.'], 404);
         }
 
+        $config = ConfiguracionHorario::where('anio_escolar_id', $anioEscolarActivo->id)->first();
+        $numeroBloques = $config ? (int) $config->numero_bloques : 8;
+        $bloquesCalculados = $config ? $this->configuracionHorarioService->bloques($config) : collect();
+
         $asignaciones = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
             ->whereHas('cargaAcademica', function ($q) use ($seccion, $grado_id) {
                 $q->where('seccion_id', $seccion->id);
             })
-            ->with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'aula', 'dia', 'bloque'])
-            ->orderBy('dia_id')
-            ->orderBy('bloque_id')
+            ->with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'aula'])
+            ->orderBy('dia')
+            ->orderBy('bloque')
             ->get()
-            ->map(function ($a) {
+            ->map(function ($a) use ($seccion) {
                 $carga = $a->cargaAcademica;
                 $docente = $carga?->docente;
                 $persona = $docente?->persona;
                 $materia = $carga?->areaFormacion;
+                $diaVal = $a->dia instanceof Dia ? $a->dia->value : (int) ($a->dia ?? $a->dia_id);
+                $bloqueVal = (int) ($a->bloque ?? $a->bloque_id);
+                $diaEnum = Dia::tryFrom($diaVal);
+                $docenteNombre = $persona ? trim($persona->primer_nombre . ' ' . $persona->primer_apellido) : null;
+                $materiaNombre = $materia?->nombre_area_formacion;
+                $aulaNombre = $a->aula?->nombre_aula;
+
                 return [
                     'id' => $a->id,
-                    'dia_id' => (int) $a->dia_id,
-                    'dia_nombre' => $a->dia?->nombre_dia,
-                    'bloque_id' => (int) $a->bloque_id,
+                    'carga_academica_id' => $a->carga_academica_id,
+                    'dia' => $diaVal,
+                    'dia_id' => $diaVal,
+                    'dia_nombre' => $diaEnum?->label() ?? ('Día ' . $diaVal),
+                    'bloque' => $bloqueVal,
+                    'bloque_id' => $bloqueVal,
+                    'fijada' => (bool) $a->fijada,
                     'docente_id' => $docente?->id,
-                    'docente_nombre' => $persona ? trim($persona->primer_nombre . ' ' . $persona->primer_apellido) : null,
+                    'docente' => $docenteNombre,
+                    'docente_nombre' => $docenteNombre,
                     'materia_id' => $materia?->id,
-                    'materia_nombre' => $materia?->nombre_area_formacion,
+                    'materia' => $materiaNombre,
+                    'materia_nombre' => $materiaNombre,
                     'aula_id' => $a->aula_id,
-                    'aula_nombre' => $a->aula?->nombre_aula,
+                    'aula' => $aulaNombre,
+                    'aula_nombre' => $aulaNombre,
                     'conflicto_manual' => (bool) $a->conflicto_manual,
+                    'cargaAcademica' => [
+                        'id' => $carga?->id,
+                        'docente_id' => $docente?->id,
+                        'docente' => $docente ? [
+                            'id' => $docente->id,
+                            'nombre' => $docenteNombre,
+                        ] : null,
+                        'materia' => $materia ? [
+                            'id' => $materia->id,
+                            'nombre' => $materiaNombre,
+                        ] : null,
+                        'areaFormacion' => $materia ? [
+                            'id' => $materia->id,
+                            'nombre' => $materiaNombre,
+                        ] : null,
+                        'seccion' => [
+                            'id' => $seccion->id,
+                            'nombre' => $seccion->nombre,
+                        ],
+                    ],
                 ];
             })
             ->values();
 
-        $dias = Dias_semana::whereBetween('id', [1, 5])->orderBy('id')->get(['id', 'nombre_dia']);
+        // Consultar docentes asignados a la sección mediante CargaAcademica
+        $cargasSeccion = CargaAcademica::where('anio_escolar_id', $anioEscolarActivo->id)
+            ->where('seccion_id', $seccion->id)
+            ->with(['docente.persona', 'areaFormacion'])
+            ->get();
 
-        $bloques = BloqueHorario::where('status', true)
-            ->orderBy('hora_inicio', 'asc')
-            ->get(['id', 'hora_inicio', 'hora_fin']);
+        $docentesMap = [];
+        foreach ($cargasSeccion as $carga) {
+            $docente = $carga->docente;
+            if (!$docente) continue;
+            $docId = $docente->id;
+            $persona = $docente->persona;
+            $nombre = $persona ? trim($persona->primer_nombre . ' ' . $persona->primer_apellido) : ('Docente #' . $docId);
+            $materiaNombre = $carga->areaFormacion?->nombre_area_formacion;
+
+            if (!isset($docentesMap[$docId])) {
+                $docentesMap[$docId] = [
+                    'id' => $docId,
+                    'nombre' => $nombre,
+                    'materias' => [],
+                ];
+            }
+            if ($materiaNombre && !in_array($materiaNombre, $docentesMap[$docId]['materias'], true)) {
+                $docentesMap[$docId]['materias'][] = $materiaNombre;
+            }
+        }
+        $docentes = array_values($docentesMap);
+
+        $dias = collect(Dia::cases())->map(fn(Dia $d) => [
+            'id' => $d->value,
+            'dia' => $d->value,
+            'nombre_dia' => $d->label(),
+            'nombre' => $d->label(),
+        ])->values();
+
+        $bloques = [];
+        for ($b = 1; $b <= $numeroBloques; $b++) {
+            $info = $bloquesCalculados->get($b, ['inicio' => '07:00', 'fin' => '07:45']);
+            $bloques[] = [
+                'id' => $b,
+                'bloque' => $b,
+                'hora_inicio' => $info['inicio'],
+                'hora_fin' => $info['fin'],
+            ];
+        }
+
+        $reservados = BloqueReservado::where('anio_escolar_id', $anioEscolarActivo->id)
+            ->get(['dia', 'bloque'])
+            ->map(fn($r) => [
+                'dia' => $r->dia instanceof Dia ? $r->dia->value : (is_object($r->dia) && isset($r->dia->value) ? $r->dia->value : (int) $r->dia),
+                'bloque' => (int) $r->bloque,
+                'motivo' => 'Reservado',
+            ])
+            ->values();
 
         return response()->json([
-            'grado' => ['id' => $seccion->grado?->id, 'numero_grado' => $seccion->grado?->numero_grado],
-            'seccion' => ['id' => $seccion->id, 'nombre' => $seccion->nombre],
+            'grado' => [
+                'id' => $seccion->grado?->id,
+                'numero_grado' => $seccion->grado?->numero_grado,
+                'nombre' => $seccion->grado ? ($seccion->grado->numero_grado . '° Año') : null,
+            ],
+            'seccion' => [
+                'id' => $seccion->id,
+                'nombre' => $seccion->nombre,
+            ],
+            'anio_escolar' => $anioEscolarActivo->nombre_periodo ?? ($anioEscolarActivo->inicio_anio . '-' . $anioEscolarActivo->fin_anio),
             'anio_escolar_id' => $anioEscolarActivo->id,
+            'numero_bloques' => $numeroBloques,
             'dias' => $dias,
             'bloques' => $bloques,
+            'reservados' => $reservados,
+            'docentes' => $docentes,
             'asignaciones' => $asignaciones,
         ]);
     }
@@ -343,15 +447,32 @@ class HorarioController extends Controller
 
         $aulas = $aulasNoRegulares->concat($aulasRegularesAsignadas);
 
-        //carga docentes activos con sus areas
-        $docentes = Docente::with(['persona', 'detalleDocenteEstudio.estudiosRealizado'])
+        //carga docentes activos con sus areas y secciones (priorizando cargasAcademicas)
+        $docentesCollection = Docente::with(['persona', 'cargasAcademicas.areaFormacion', 'cargasAcademicas.seccion'])
             ->where('status', true)
-            ->whereHas('detalleDocenteEstudio', function($query) {
+            ->whereHas('persona', function($query) {
                 $query->where('status', true);
             })
-            ->get()
-            ->map(function($docente) {
-                //obtiene areas del docente
+            ->get();
+
+        $docentes = $docentesCollection->map(function($docente) {
+            $cargas = $docente->cargasAcademicas;
+
+            if ($cargas && $cargas->isNotEmpty()) {
+                $areas = $cargas->pluck('areaFormacion.nombre_area_formacion')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                $secciones = $cargas->map(function($c) {
+                    return $c->seccion ? [
+                        'id' => $c->seccion->id,
+                        'nombre' => $c->seccion->nombre,
+                    ] : null;
+                })->filter()->unique('id')->values()->all();
+            } else {
+                // Fallback histórico para registros sin cargas académicas migradas
                 $areas = DB::table('docentes as d')
                     ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
                     ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
@@ -364,7 +485,6 @@ class HorarioController extends Controller
                     ->pluck('af.nombre_area_formacion')
                     ->toArray();
 
-                //obtiene secciones del docente
                 $secciones = DB::table('docente_area_grados as dag')
                     ->join('seccions as s', 'dag.seccion_id', '=', 's.id')
                     ->whereIn('dag.docente_estudio_realizado_id', function($query) use ($docente) {
@@ -379,20 +499,36 @@ class HorarioController extends Controller
                     ->distinct()
                     ->get()
                     ->toArray();
+            }
 
-                return [
-                    'id' => $docente->id,
-                    'nombre' => $docente->nombre_completo,
-                    'area' => !empty($areas) ? implode(', ', $areas) : 'Sin área asignada',
-                    'areas' => $areas,
-                    'secciones' => $secciones
-                ];
-            });
+            $rawNombre = preg_replace('/\s+/', ' ', trim($docente->nombre_completo));
+            if (empty($rawNombre) && $docente->persona) {
+                $rawNombre = preg_replace('/\s+/', ' ', trim(
+                    ($docente->persona->primer_nombre ?? '') . ' ' . ($docente->persona->primer_apellido ?? '')
+                ));
+            }
+
+            return [
+                'id' => $docente->id,
+                'nombre' => $rawNombre,
+                'nombre_completo' => $rawNombre,
+                'area' => !empty($areas) ? implode(', ', $areas) : 'Sin área asignada',
+                'areas' => $areas,
+                'secciones' => $secciones,
+                'horas_academicas' => (int) ($docente->horas_academicas ?? 0),
+                'cedula' => $docente->persona?->numero_documento,
+            ];
+        });
 
         //detecta modo de edición desde parametros
         $modoEdicion = $request->has('modo_edicion') && $request->modo_edicion === 'true';
         $editGradoId = $request->input('grado_id');
         $editSeccionId = $request->input('seccion_id');
+
+        $numeroBloques = $configuracion ? (int) $configuracion->numero_bloques : 8;
+        $bloquesCalculados = $configuracion ? $this->configuracionHorarioService->bloques($configuracion) : collect();
+        $diasCases = Dia::cases();
+        $bloquesReservados = BloqueReservado::where('anio_escolar_id', $anioEscolarActivo->id)->get(['dia', 'bloque']);
 
         return view('admin.horario.create', compact(
             'grados', 
@@ -403,7 +539,12 @@ class HorarioController extends Controller
             'anioEscolarActivo',
             'modoEdicion',
             'editGradoId',
-            'editSeccionId'
+            'editSeccionId',
+            'configuracion',
+            'numeroBloques',
+            'bloquesCalculados',
+            'diasCases',
+            'bloquesReservados'
         ));
     }
 

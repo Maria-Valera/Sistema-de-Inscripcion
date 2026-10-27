@@ -62,10 +62,10 @@
                     <div class="form-group-modern">
                         <label for="horas_semanales_{{ $datos->id }}" class="form-label-modern">
                             <i class="fas fa-clock"></i>
-                            Horas Semanales
+                            Bloques Semanales
                         </label>
                         <input type="number" class="form-control-modern" id="horas_semanales_{{ $datos->id }}"
-                            name="horas_semanales" value="{{ $datos->horas_semanales }}" required
+                            name="horas_semanales" value="{{ $datos->bloques_semanales ?? $datos->horas_semanales }}" required
                             min="1" max="40">
                         @error('horas_semanales')
                             <div class="error-message">

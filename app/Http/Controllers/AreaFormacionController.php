@@ -75,10 +75,16 @@ class AreaFormacionController extends Controller
             'nombre_area_formacion' => 'required|string|max:255',
             'codigo_area' => 'required|numeric',
             'siglas' => 'required|string|max:255',
-            'horas_semanales' => 'required|integer',
+            'horas_semanales' => 'nullable|integer',
+            'bloques_semanales' => 'nullable|integer',
             'bloques_maximos_por_dia' => 'required|integer|min:1|max:8',
             'aula_id' => 'nullable|exists:aulas,id_aula',
         ]);
+
+        $bloques = $request->input('bloques_semanales') ?? $request->input('horas_semanales');
+        if (!$bloques) {
+            return redirect()->back()->withInput()->with('error', 'El número de bloques semanales es obligatorio.');
+        }
 
         $existe = AreaFormacion::where('nombre_area_formacion', $validated['nombre_area_formacion'])
             ->where('status', true)
@@ -95,7 +101,7 @@ class AreaFormacionController extends Controller
             $areaFormacion->nombre_area_formacion = $validated['nombre_area_formacion'];
             $areaFormacion->codigo_area = $validated['codigo_area'];
             $areaFormacion->siglas = $validated['siglas'];
-            $areaFormacion->horas_semanales = $validated['horas_semanales'];
+            $areaFormacion->bloques_semanales = $bloques;
             $areaFormacion->bloques_maximos_por_dia = $validated['bloques_maximos_por_dia'];
             $areaFormacion->aula_id = $validated['aula_id'];
             $areaFormacion->status = true;
@@ -151,10 +157,16 @@ class AreaFormacionController extends Controller
             'nombre_area_formacion' => 'required|string|max:255',
             'codigo_area' => 'required|numeric',
             'siglas' => 'required|string|max:255',
-            'horas_semanales' => 'required|integer',
+            'horas_semanales' => 'nullable|integer',
+            'bloques_semanales' => 'nullable|integer',
             'bloques_maximos_por_dia' => 'required|integer|min:1|max:8',
             'aula_id' => 'nullable|exists:aulas,id_aula',
         ]);
+
+        $bloques = $request->input('bloques_semanales') ?? $request->input('horas_semanales');
+        if (!$bloques) {
+            return redirect()->back()->withInput()->with('error', 'El número de bloques semanales es obligatorio.');
+        }
 
         $existe = AreaFormacion::where('nombre_area_formacion', $validated['nombre_area_formacion'])
             ->where('status', true)
@@ -171,7 +183,7 @@ class AreaFormacionController extends Controller
             $areaFormacion->nombre_area_formacion = $validated['nombre_area_formacion'];
             $areaFormacion->codigo_area = $validated['codigo_area'];
             $areaFormacion->siglas = $validated['siglas'];
-            $areaFormacion->horas_semanales = $validated['horas_semanales'];
+            $areaFormacion->bloques_semanales = $bloques;
             $areaFormacion->bloques_maximos_por_dia = $validated['bloques_maximos_por_dia'];
             $areaFormacion->aula_id = $validated['aula_id'];
             $areaFormacion->save();

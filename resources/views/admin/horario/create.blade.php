@@ -1371,9 +1371,43 @@
             // Almacenar información de contexto para las asignaciones
             let asignacionesContexto = {};
 
-            // Variables para almacenar datos de la API
-            let diasSemana = [];
-            let bloquesHorario = [];
+            // Variables para almacenar datos de la cuadrícula
+            @php
+                $diasJson = isset($diasCases) ? collect($diasCases)->map(function ($d) {
+                    $id = $d instanceof \App\Enums\Dia ? $d->value : (is_object($d) && isset($d->value) ? $d->value : (int) $d);
+                    $nombre = $d instanceof \App\Enums\Dia ? $d->label() : (is_object($d) && method_exists($d, 'label') ? $d->label() : (is_object($d) ? ($d->nombre ?? $d->nombre_dia ?? (string) $id) : (string) $id));
+                    return [
+                        'id' => (int) $id,
+                        'dia' => (int) $id,
+                        'nombre' => (string) $nombre,
+                        'nombre_dia' => (string) $nombre,
+                    ];
+                })->values()->all() : [];
+
+                $bloquesJson = [];
+                if (isset($numeroBloques)) {
+                    for ($b = 1; $b <= (int) $numeroBloques; $b++) {
+                        $info = isset($bloquesCalculados) ? ($bloquesCalculados[$b] ?? ['inicio' => '07:00', 'fin' => '07:45']) : ['inicio' => '07:00', 'fin' => '07:45'];
+                        $bloquesJson[] = [
+                            'id' => $b,
+                            'bloque' => $b,
+                            'hora_inicio' => is_array($info) ? ($info['inicio'] ?? '07:00') : '07:00',
+                            'hora_fin' => is_array($info) ? ($info['fin'] ?? '07:45') : '07:45',
+                        ];
+                    }
+                }
+
+                $reservadosJson = isset($bloquesReservados) ? collect($bloquesReservados)->map(function ($r) {
+                    $diaVal = $r->dia instanceof \App\Enums\Dia ? $r->dia->value : (is_object($r->dia) && isset($r->dia->value) ? $r->dia->value : (int) $r->dia);
+                    return [
+                        'dia' => (int) $diaVal,
+                        'bloque' => (int) $r->bloque,
+                    ];
+                })->values()->all() : [];
+            @endphp
+            let diasSemana = {!! json_encode($diasJson) !!};
+            let bloquesHorario = {!! json_encode($bloquesJson) !!};
+            let bloquesReservados = {!! json_encode($reservadosJson) !!};
             let horarioData = [];
             let anioEscolarActivo = null;
             let draggedAsignacion = null;
@@ -1401,8 +1435,16 @@
                         fetch('/api/anio-escolar/activo')
                     ]);
 
-                    diasSemana = await diasResponse.json();
-                    bloquesHorario = await bloquesResponse.json();
+                    const diasApi = await diasResponse.json().catch(() => null);
+                    if (Array.isArray(diasApi) && diasApi.length > 0) {
+                        diasSemana = diasApi;
+                    }
+
+                    const bloquesApi = await bloquesResponse.json().catch(() => null);
+                    if (Array.isArray(bloquesApi) && bloquesApi.length > 0) {
+                        bloquesHorario = bloquesApi;
+                    }
+
                     horarioData = await horarioResponse.json();
                     
                     if (anioResponse.ok) {
@@ -1471,18 +1513,21 @@
                 const seccionId = document.getElementById('seccion').value;
 
                 docentesList.innerHTML = docentes.map(docente => {
-                    const nombre = docente.nombre_completo || 'Sin nombre';
+                    const nombre = docente.nombre_completo || docente.nombre || 'Sin nombre';
                     const horasAcademicas = docente.horas_academicas || 0;
 
                     // Filtrar áreas de formación según el filtro seleccionado
                     let areasAMostrar = docente.areas || [];
                     if (areaFormacionId) {
-                        // Si hay un filtro de área, mostrar solo esa área si el docente la tiene
-                        areasAMostrar = areasAMostrar.filter(area => {
-                            // Necesitamos comparar con el nombre del área seleccionado
-                            const areaNombre = areaFormacionSelect.options[areaFormacionSelect.selectedIndex]?.text;
-                            return area === areaNombre;
-                        });
+                        const areaNombre = areaFormacionSelect.options[areaFormacionSelect.selectedIndex]?.text?.trim();
+                        if (areaNombre) {
+                            const filtradas = areasAMostrar.filter(area => {
+                                return area?.trim().toLowerCase() === areaNombre.toLowerCase();
+                            });
+                            if (filtradas.length > 0) {
+                                areasAMostrar = filtradas;
+                            }
+                        }
                     }
 
                     const areaTexto = areasAMostrar.length > 0 ? areasAMostrar.join(', ') : 'Sin área asignada';
@@ -1490,7 +1535,10 @@
                     // Filtrar secciones según el filtro seleccionado
                     let seccionesAMostrar = docente.secciones || [];
                     if (seccionId) {
-                        seccionesAMostrar = seccionesAMostrar.filter(seccion => seccion.id == seccionId);
+                        const filtradasSec = seccionesAMostrar.filter(seccion => seccion.id == seccionId);
+                        if (filtradasSec.length > 0) {
+                            seccionesAMostrar = filtradasSec;
+                        }
                     }
 
                     const seccionTexto = seccionesAMostrar.length > 0 
@@ -1541,13 +1589,15 @@
 
                 if (seccionId) {
                     horarioFiltrado = horarioFiltrado.filter(h => {
-                        return h.seccion_id == seccionId;
+                        const secId = h.seccion_id || h.cargaAcademica?.seccion?.id;
+                        return secId == seccionId;
                     });
                 }
 
                 if (areaFormacionId) {
                     horarioFiltrado = horarioFiltrado.filter(h => {
-                        return h.materia_id == areaFormacionId;
+                        const matId = h.materia_id || h.cargaAcademica?.materia?.id;
+                        return matId == areaFormacionId;
                     });
                 }
 
@@ -1565,45 +1615,63 @@
                 tbody.innerHTML = '';
                 bloquesHorario.forEach((bloque, index) => {
                     const tr = document.createElement('tr');
+                    const numBloque = Number(bloque.bloque || bloque.id || (index + 1));
 
                     // Celda de tiempo
                     const timeCell = document.createElement('td');
                     timeCell.className = 'time-cell';
                     timeCell.innerHTML = `
-                        <strong>Bloque ${index + 1}</strong>
+                        <strong>Bloque ${numBloque}</strong>
                         <br>
-                        <small>${bloque.hora_inicio} - ${bloque.hora_fin}</small>
+                        <small>${bloque.hora_inicio || '--:--'} - ${bloque.hora_fin || '--:--'}</small>
                     `;
                     tr.appendChild(timeCell);
 
                     // Celdas de días
                     diasSemana.forEach(dia => {
                         const td = document.createElement('td');
-                        td.className = 'drop-zone';
+                        const numDia = Number(dia.dia || dia.id);
                         const diaNombre = dia.nombre_dia || dia.nombre;
-                        td.dataset.day = diaNombre.toLowerCase();
-                        td.dataset.block = index + 1;
+                        td.dataset.day = numDia;
+                        td.dataset.dayName = diaNombre.toLowerCase();
+                        td.dataset.block = numBloque;
+
+                        // Verificar si es celda reservada institucionalmente
+                        const esReservada = Array.isArray(bloquesReservados) && bloquesReservados.some(r => Number(r.dia) === numDia && Number(r.bloque) === numBloque);
+
+                        if (esReservada) {
+                            td.className = 'drop-zone celda-reservada text-center align-middle';
+                            td.style.backgroundColor = '#f1f5f9';
+                            td.style.cursor = 'not-allowed';
+                            td.innerHTML = '<span class="badge bg-secondary" style="background-color: #94a3b8 !important; font-size: 0.8rem; padding: 0.35rem 0.65rem;"><i class="fas fa-ban me-1"></i>Reservado</span>';
+                            tr.appendChild(td);
+                            return;
+                        }
+
+                        td.className = 'drop-zone';
 
                         const inner = document.createElement('div');
                         inner.className = 'drop-zone-inner';
 
                         // Buscar todas las asignaciones para este día y bloque (usando datos filtrados)
                         const asignacionesDeCelda = horarioFiltrado.filter(h => {
-                            const apiDiaNombre = h.dia_nombre;
-                            const apiBloqueId = h.bloque_id;
-                            return apiDiaNombre && apiDiaNombre.toLowerCase() === diaNombre.toLowerCase() && apiBloqueId === bloque.id;
+                            const asigDia = Number(h.dia ?? h.dia_id);
+                            const asigBloque = Number(h.bloque ?? h.bloque_id);
+                            const asigDiaNombre = (h.dia_nombre || '').toLowerCase();
+                            const diaCoincide = asigDia === numDia || asigDiaNombre === diaNombre.toLowerCase();
+                            return diaCoincide && asigBloque === numBloque;
                         });
 
                         // Verificar si hay asignación local (drag and drop)
-                        const key = `${diaNombre.toLowerCase()}-${index + 1}`;
+                        const key = `${numDia}-${numBloque}`;
                         const asignacionLocal = horarioAsignaciones[key];
 
                         // Priorizar asignación local sobre datos de API
-                            if (Array.isArray(asignacionLocal) && asignacionLocal.length > 0) {
-                                inner.innerHTML = asignacionLocal
-                                    .map((a, idx) => renderizarAsignacionLocalHTML(key, a, idx))
-                                    .join('');
-                            } else if (asignacionesDeCelda.length > 0) {
+                        if (Array.isArray(asignacionLocal) && asignacionLocal.length > 0) {
+                            inner.innerHTML = asignacionLocal
+                                .map((a, idx) => renderizarAsignacionLocalHTML(key, a, idx))
+                                .join('');
+                        } else if (asignacionesDeCelda.length > 0) {
                             // Mostrar todas las asignaciones como tarjetas apiladas
                             inner.innerHTML = asignacionesDeCelda.map(horarioAsignado => renderizarTarjetaPersistida(horarioAsignado)).join('');
                         } else {
@@ -1619,7 +1687,6 @@
                 });
 
                 console.log('Total drop-zones creadas:', document.querySelectorAll('.drop-zone').length);
-
                 console.log('Calendario renderizado con', tbody.children.length, 'filas');
             }
 
@@ -1696,14 +1763,16 @@
 
             // Función para renderizar una tarjeta de asignación persistida
             function renderizarTarjetaPersistida(horarioAsignado) {
-                const docenteNombre = horarioAsignado.docente_nombre || 'N/A';
+                const docenteNombre = horarioAsignado.cargaAcademica?.docente?.nombre || horarioAsignado.docente_nombre || 'N/A';
                 const docenteCedula = horarioAsignado.docente_cedula || 'N/A';
-                const materiaNombre = horarioAsignado.materia_nombre || 'N/A';
-                const seccionNombre = horarioAsignado.seccion_nombre || 'N/A';
+                const materiaNombre = horarioAsignado.cargaAcademica?.materia?.nombre || horarioAsignado.materia_nombre || 'N/A';
+                const seccionNombre = horarioAsignado.cargaAcademica?.seccion?.nombre || horarioAsignado.seccion_nombre || 'N/A';
+                const seccionId = horarioAsignado.cargaAcademica?.seccion?.id || horarioAsignado.seccion_id;
                 const asignacionId = horarioAsignado.id;
                 const aulaId = horarioAsignado.aula_id;
                 const aulaNombre = horarioAsignado.aula_nombre || 'N/A';
                 const aulaTipo = horarioAsignado.aula_tipo || 'Aula Regular';
+                const esFijada = !!horarioAsignado.fijada;
 
                 // Determinar si la materia es especializada (basado en el nombre)
                 const materiasEspecializadas = ['Arte y Patrimonio', 'Ciencias Naturales', 'Biología', 'Física', 'Química'];
@@ -1723,7 +1792,7 @@
                         }
                     } else {
                         // Materia regular: solo el aula fija de la sección, no todas las regulares
-                        const aulaFija = obtenerAulaRegularDeSeccion(horarioAsignado.seccion_id);
+                        const aulaFija = obtenerAulaRegularDeSeccion(seccionId);
                         if (aulaFija) {
                             aulaOptionsPersistida += `<option value="${aulaFija.id}" selected>${aulaFija.nombre}</option>`;
                         } else {
@@ -1732,24 +1801,30 @@
                     }
                 }
 
+                const lockIconHtml = esFijada
+                    ? '<span class="ms-1 text-warning" title="Clase fijada (no se puede mover ni intercambiar)"><i class="fas fa-lock"></i></span>'
+                    : '';
+                const draggableAttr = esFijada ? 'draggable="false"' : 'draggable="true"';
+                const fijadaCls = esFijada ? ' clase-fijada' : '';
+
                 return `
-                    <div class="assigned-docente" draggable="true" data-asignacion-id="${asignacionId}">
+                    <div class="assigned-docente${fijadaCls}" ${draggableAttr} data-asignacion-id="${asignacionId}" data-fijada="${esFijada}">
                         <div class="adm-mini">
                             <span class="adm-mini-nombre">${docenteNombre}</span>
-                            <span class="adm-mini-seccion">${seccionNombre}</span>
+                            <span class="adm-mini-seccion">${seccionNombre} ${lockIconHtml}</span>
                         </div>
                         <div class="adm-full">
-                            <span class="docente-nombre">${docenteNombre}</span>
+                            <span class="docente-nombre">${docenteNombre} ${lockIconHtml}</span>
                             <span class="docente-cedula">${docenteCedula}</span>
                             <span class="docente-materia">${materiaNombre}</span>
                             <select class="pildora-selector" disabled>
                                 <option>${seccionNombre}</option>
                             </select>
-                            <select class="pildora-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)" ${!esEspecializada ? 'disabled' : ''}>
+                            <select class="pildora-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)" ${!esEspecializada || esFijada ? 'disabled' : ''}>
                                 ${aulaOptionsPersistida}
                             </select>
                             <div class="aula-error-message"></div>
-                            <button class="btn-eliminar-docente" onclick="eliminarAsignacionPersistida(${asignacionId}, event)">×</button>
+                            ${!esFijada ? `<button class="btn-eliminar-docente" onclick="eliminarAsignacionPersistida(${asignacionId}, event)">×</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -2044,6 +2119,13 @@
                         e.dataTransfer.effectAllowed = 'move';
                         e.dataTransfer.setData('text/plain', docenteCard.dataset.id);
                     } else if (assignedDocente) {
+                        // Si la asignación está fijada (candado), no permitir arrastrar
+                        if (assignedDocente.dataset.fijada === 'true' || assignedDocente.getAttribute('data-fijada') === 'true') {
+                            e.preventDefault();
+                            mostrarNotificacion('Esta clase está fijada y no se puede mover', 'warning');
+                            return;
+                        }
+
                         // Arrastrando una asignación existente
                         const dropZoneOrigen = assignedDocente.closest('.drop-zone');
                         draggedAsignacion = {
@@ -2071,7 +2153,7 @@
                 // Eventos para las zonas de drop
                 document.addEventListener('dragover', function(e) {
                     const dropZone = e.target.closest('.drop-zone');
-                    if (dropZone && !dropZone.classList.contains('ocupado-por-otro')) {
+                    if (dropZone && !dropZone.classList.contains('ocupado-por-otro') && !dropZone.classList.contains('celda-reservada')) {
                         e.preventDefault();
                         e.dataTransfer.dropEffect = 'move';
                         dropZone.classList.add('drag-over');
@@ -2089,6 +2171,13 @@
                     const dropZone = e.target.closest('.drop-zone');
                     
                     if (!dropZone) return;
+
+                    // Si la celda está reservada, no permitir soltar
+                    if (dropZone.classList.contains('celda-reservada')) {
+                        e.preventDefault();
+                        mostrarNotificacion('El bloque seleccionado está reservado institucionalmente', 'warning');
+                        return;
+                    }
                     
                     e.preventDefault();
                     dropZone.classList.remove('drag-over');
@@ -2148,6 +2237,11 @@
 
             // Función para mover asignación existente
             async function moverAsignacion(origen, dropZoneDestino) {
+                if (dropZoneDestino.classList.contains('celda-reservada')) {
+                    mostrarNotificacion('El bloque seleccionado está reservado institucionalmente', 'warning');
+                    return;
+                }
+
                 const destKey = `${dropZoneDestino.dataset.day}-${dropZoneDestino.dataset.block}`;
 
                 // Si se soltó en el mismo lugar, no hacer nada
@@ -2155,7 +2249,6 @@
                     return;
                 }
 
-                // ⬅️ CAMBIO: ahora origen.localKey apunta a un ARRAY de asignaciones
                 const origenArr = Array.isArray(horarioAsignaciones[origen.localKey])
                     ? horarioAsignaciones[origen.localKey]
                     : (horarioAsignaciones[origen.localKey] ? [horarioAsignaciones[origen.localKey]] : []);
@@ -2176,17 +2269,22 @@
                         const origenData = horarioData.find(h => h.id == origen.asignacionId);
                         const destinoData = horarioData.find(h => h.id == destinoAsignacionId);
 
+                        if (origenData?.fijada || destinoData?.fijada) {
+                            mostrarNotificacion('No se puede intercambiar una clase fijada (candado activo).', 'warning');
+                            return;
+                        }
+
                         if (origenData && destinoData) {
-                            const origenDia = diasSemana.find(d => d.id == origenData.dia_id);
-                            const destinoDia = diasSemana.find(d => d.id == destinoData.dia_id);
+                            const origenDia = diasSemana.find(d => Number(d.id || d.dia) === Number(origenData.dia ?? origenData.dia_id));
+                            const destinoDia = diasSemana.find(d => Number(d.id || d.dia) === Number(destinoData.dia ?? destinoData.dia_id));
 
                             const mensaje = `
-                                <strong>[${origenDia?.nombre_dia || origenData.dia_nombre} - Bloque ${origenData.bloque_id}]:</strong><br>
+                                <strong>[${origenDia?.nombre_dia || origenData.dia_nombre || ('Día ' + (origenData.dia ?? origenData.dia_id))} - Bloque ${origenData.bloque ?? origenData.bloque_id}]:</strong><br>
                                 Docente: ${origenData.docente_nombre}<br>
                                 Sección: ${origenData.seccion_nombre}<br>
                                 Aula: ${origenData.aula_nombre}<br><br>
                                 <strong>⇄</strong><br><br>
-                                <strong>[${destinoDia?.nombre_dia || destinoData.dia_nombre} - Bloque ${destinoData.bloque_id}]:</strong><br>
+                                <strong>[${destinoDia?.nombre_dia || destinoData.dia_nombre || ('Día ' + (destinoData.dia ?? destinoData.dia_id))} - Bloque ${destinoData.bloque ?? destinoData.bloque_id}]:</strong><br>
                                 Docente: ${destinoData.docente_nombre}<br>
                                 Sección: ${destinoData.seccion_nombre}<br>
                                 Aula: ${destinoData.aula_nombre}
@@ -2224,51 +2322,61 @@
 
                                     if (idx1 !== -1) {
                                         horarioData[idx1] = {
+                                            ...horarioData[idx1],
                                             id: data.asignacion1.id,
-                                            docente_id: data.asignacion1.docente_id,
+                                            carga_academica_id: data.asignacion1.carga_academica_id,
+                                            docente_id: data.asignacion1.docente_id || data.asignacion1.cargaAcademica?.docente_id,
                                             docente_nombre: data.asignacion1.docente?.persona
                                                 ? data.asignacion1.docente.persona.primer_nombre + ' ' + data.asignacion1.docente.persona.primer_apellido
-                                                : 'N/A',
-                                            materia_id: data.asignacion1.materia_id,
-                                            materia_nombre: data.asignacion1.materia?.nombre_area_formacion || 'N/A',
-                                            seccion_id: data.asignacion1.seccion_id,
-                                            seccion_nombre: data.asignacion1.seccion?.nombre || 'N/A',
-                                            grado_id: data.asignacion1.seccion?.grado_id || null,
-                                            grado_nombre: data.asignacion1.seccion?.grado
-                                                ? data.asignacion1.seccion.grado.numero_grado + '° Grado'
+                                                : (data.asignacion1.cargaAcademica?.docente?.persona ? data.asignacion1.cargaAcademica.docente.persona.primer_nombre + ' ' + data.asignacion1.cargaAcademica.docente.persona.primer_apellido : 'N/A'),
+                                            materia_id: data.asignacion1.materia_id || data.asignacion1.cargaAcademica?.area_formacion_id,
+                                            materia_nombre: data.asignacion1.materia?.nombre_area_formacion || data.asignacion1.cargaAcademica?.areaFormacion?.nombre_area_formacion || 'N/A',
+                                            seccion_id: data.asignacion1.seccion_id || data.asignacion1.cargaAcademica?.seccion_id,
+                                            seccion_nombre: data.asignacion1.seccion?.nombre || data.asignacion1.cargaAcademica?.seccion?.nombre || 'N/A',
+                                            grado_id: data.asignacion1.seccion?.grado_id || data.asignacion1.cargaAcademica?.seccion?.grado_id || null,
+                                            grado_nombre: (data.asignacion1.seccion?.grado || data.asignacion1.cargaAcademica?.seccion?.grado)
+                                                ? (data.asignacion1.seccion?.grado?.numero_grado || data.asignacion1.cargaAcademica?.seccion?.grado?.numero_grado) + '° Grado'
                                                 : 'N/A',
                                             aula_id: data.asignacion1.aula_id,
                                             aula_nombre: data.asignacion1.aula?.nombre_aula || 'N/A',
                                             aula_tipo: data.asignacion1.aula?.tipo_aula || 'N/A',
-                                            dia_id: data.asignacion1.dia_id,
-                                            dia_nombre: data.asignacion1.dia?.nombre_dia || data.asignacion1.dia_id,
-                                            bloque_id: data.asignacion1.bloque_id,
-                                            bloque_nombre: 'Bloque ' + data.asignacion1.bloque_id
+                                            dia: data.asignacion1.dia ?? data.asignacion1.dia_id,
+                                            dia_id: data.asignacion1.dia_id ?? data.asignacion1.dia,
+                                            dia_nombre: diasSemana.find(d => Number(d.id || d.dia) === Number(data.asignacion1.dia ?? data.asignacion1.dia_id))?.nombre_dia || 'Día ' + (data.asignacion1.dia ?? data.asignacion1.dia_id),
+                                            bloque: data.asignacion1.bloque ?? data.asignacion1.bloque_id,
+                                            bloque_id: data.asignacion1.bloque_id ?? data.asignacion1.bloque,
+                                            bloque_nombre: 'Bloque ' + (data.asignacion1.bloque ?? data.asignacion1.bloque_id),
+                                            fijada: data.asignacion1.fijada ?? false
                                         };
                                     }
 
                                     if (idx2 !== -1) {
                                         horarioData[idx2] = {
+                                            ...horarioData[idx2],
                                             id: data.asignacion2.id,
-                                            docente_id: data.asignacion2.docente_id,
+                                            carga_academica_id: data.asignacion2.carga_academica_id,
+                                            docente_id: data.asignacion2.docente_id || data.asignacion2.cargaAcademica?.docente_id,
                                             docente_nombre: data.asignacion2.docente?.persona
                                                 ? data.asignacion2.docente.persona.primer_nombre + ' ' + data.asignacion2.docente.persona.primer_apellido
-                                                : 'N/A',
-                                            materia_id: data.asignacion2.materia_id,
-                                            materia_nombre: data.asignacion2.materia?.nombre_area_formacion || 'N/A',
-                                            seccion_id: data.asignacion2.seccion_id,
-                                            seccion_nombre: data.asignacion2.seccion?.nombre || 'N/A',
-                                            grado_id: data.asignacion2.seccion?.grado_id || null,
-                                            grado_nombre: data.asignacion2.seccion?.grado
-                                                ? data.asignacion2.seccion.grado.numero_grado + '° Grado'
+                                                : (data.asignacion2.cargaAcademica?.docente?.persona ? data.asignacion2.cargaAcademica.docente.persona.primer_nombre + ' ' + data.asignacion2.cargaAcademica.docente.persona.primer_apellido : 'N/A'),
+                                            materia_id: data.asignacion2.materia_id || data.asignacion2.cargaAcademica?.area_formacion_id,
+                                            materia_nombre: data.asignacion2.materia?.nombre_area_formacion || data.asignacion2.cargaAcademica?.areaFormacion?.nombre_area_formacion || 'N/A',
+                                            seccion_id: data.asignacion2.seccion_id || data.asignacion2.cargaAcademica?.seccion_id,
+                                            seccion_nombre: data.asignacion2.seccion?.nombre || data.asignacion2.cargaAcademica?.seccion?.nombre || 'N/A',
+                                            grado_id: data.asignacion2.seccion?.grado_id || data.asignacion2.cargaAcademica?.seccion?.grado_id || null,
+                                            grado_nombre: (data.asignacion2.seccion?.grado || data.asignacion2.cargaAcademica?.seccion?.grado)
+                                                ? (data.asignacion2.seccion?.grado?.numero_grado || data.asignacion2.cargaAcademica?.seccion?.grado?.numero_grado) + '° Grado'
                                                 : 'N/A',
                                             aula_id: data.asignacion2.aula_id,
                                             aula_nombre: data.asignacion2.aula?.nombre_aula || 'N/A',
                                             aula_tipo: data.asignacion2.aula?.tipo_aula || 'N/A',
-                                            dia_id: data.asignacion2.dia_id,
-                                            dia_nombre: data.asignacion2.dia?.nombre_dia || data.asignacion2.dia_id,
-                                            bloque_id: data.asignacion2.bloque_id,
-                                            bloque_nombre: 'Bloque ' + data.asignacion2.bloque_id
+                                            dia: data.asignacion2.dia ?? data.asignacion2.dia_id,
+                                            dia_id: data.asignacion2.dia_id ?? data.asignacion2.dia,
+                                            dia_nombre: diasSemana.find(d => Number(d.id || d.dia) === Number(data.asignacion2.dia ?? data.asignacion2.dia_id))?.nombre_dia || 'Día ' + (data.asignacion2.dia ?? data.asignacion2.dia_id),
+                                            bloque: data.asignacion2.bloque ?? data.asignacion2.bloque_id,
+                                            bloque_id: data.asignacion2.bloque_id ?? data.asignacion2.bloque,
+                                            bloque_nombre: 'Bloque ' + (data.asignacion2.bloque ?? data.asignacion2.bloque_id),
+                                            fijada: data.asignacion2.fijada ?? false
                                         };
                                     }
 
@@ -2289,9 +2397,8 @@
                         return;
                     }
 
-                    // CASO C: ambas locales → mover el array (o sumarlo si destino tiene otros)
+                    // CASO C: ambas locales → mover el array
                     if (!origen.asignacionId && !destinoAsignacionId) {
-                        // ⬅️ CAMBIO: concatenar arrays en vez de sobreescribir
                         if (!Array.isArray(horarioAsignaciones[destKey])) {
                             horarioAsignaciones[destKey] = destinoLocalArr.slice();
                         }
@@ -2302,31 +2409,21 @@
                         return;
                     }
 
-                    // Fallback: celda destino ocupada por algo no manejado
                     mostrarNotificacion('La celda destino ya está ocupada', 'error');
                     return;
                 }
 
                 // CASO D: destino vacío
                 if (origen.asignacionId) {
-                    // Asignación persistida → actualizar en backend
-                    const diaNombre = dropZoneDestino.dataset.day;
-                    const dia = diasSemana.find(d =>
-                        (d.nombre_dia || d.nombre).toLowerCase() === diaNombre.toLowerCase()
-                    );
-
-                    if (!dia) {
-                        mostrarNotificacion('Error: No se encontró el día correspondiente', 'error');
+                    const origenData = horarioData.find(h => h.id == origen.asignacionId);
+                    if (origenData?.fijada) {
+                        mostrarNotificacion('Esta clase está fijada y no se puede mover', 'warning');
                         return;
                     }
 
-                    const bloqueIndex = parseInt(dropZoneDestino.dataset.block) - 1;
-                    const bloque = bloquesHorario[bloqueIndex];
-
-                    if (!bloque) {
-                        mostrarNotificacion('Error: No se encontró el bloque correspondiente', 'error');
-                        return;
-                    }
+                    const diaNum = parseInt(dropZoneDestino.dataset.day);
+                    const bloqueNum = parseInt(dropZoneDestino.dataset.block);
+                    const diaObj = diasSemana.find(d => Number(d.id || d.dia) === diaNum);
 
                     try {
                         const response = await fetch(`/api/horario/${origen.asignacionId}/posicion`, {
@@ -2336,8 +2433,10 @@
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                             },
                             body: JSON.stringify({
-                                dia_id: dia.id,
-                                bloque_id: bloque.id
+                                dia: diaNum,
+                                bloque: bloqueNum,
+                                dia_id: diaNum,
+                                bloque_id: bloqueNum
                             })
                         });
 
@@ -2350,9 +2449,12 @@
 
                         const asignacionIndex = horarioData.findIndex(h => h.id == origen.asignacionId);
                         if (asignacionIndex !== -1) {
-                            horarioData[asignacionIndex].dia_id = dia.id;
-                            horarioData[asignacionIndex].dia_nombre = dia.nombre_dia || dia.nombre;
-                            horarioData[asignacionIndex].bloque_id = bloque.id;
+                            horarioData[asignacionIndex].dia = diaNum;
+                            horarioData[asignacionIndex].dia_id = diaNum;
+                            horarioData[asignacionIndex].dia_nombre = diaObj?.nombre_dia || diaObj?.nombre || 'Día ' + diaNum;
+                            horarioData[asignacionIndex].bloque = bloqueNum;
+                            horarioData[asignacionIndex].bloque_id = bloqueNum;
+                            horarioData[asignacionIndex].bloque_nombre = 'Bloque ' + bloqueNum;
                         }
 
                         mostrarNotificacion('Asignación movida exitosamente', 'success');
@@ -2363,7 +2465,6 @@
                     }
                 } else {
                     // Asignación solo local → mover el array en memoria
-                    // ⬅️ CAMBIO: concatenar arrays en vez de sobreescribir
                     const destArr = Array.isArray(horarioAsignaciones[destKey])
                         ? horarioAsignaciones[destKey]
                         : (horarioAsignaciones[destKey] ? [horarioAsignaciones[destKey]] : []);
@@ -2400,54 +2501,73 @@
             };
 
             // Eliminar asignación
-                window.eliminarAsignacion = function(key, index, event) {
-                    if (event) event.stopPropagation();
-                    const arr = horarioAsignaciones[key];
-                    if (!Array.isArray(arr)) return;
+            window.eliminarAsignacion = function(key, index, event) {
+                if (event) event.stopPropagation();
+                const arr = horarioAsignaciones[key];
+                if (!Array.isArray(arr)) return;
 
-                    arr.splice(index, 1);
-                    if (arr.length === 0) delete horarioAsignaciones[key];
+                arr.splice(index, 1);
+                if (arr.length === 0) delete horarioAsignaciones[key];
 
-                    renderizarCalendario();
-                    mostrarNotificacion('Asignación eliminada correctamente', 'success');
-};
+                renderizarCalendario();
+                mostrarNotificacion('Asignación eliminada correctamente', 'success');
+            };
 
             // Guardar horario
             document.getElementById('btnGuardarHorario').addEventListener('click', async function() {
-                const asignacionesLocales = Object.keys(horarioAsignaciones);
+                const asignacionesLocalesKeys = Object.keys(horarioAsignaciones);
                 const asignacionesExistentes = horarioData && horarioData.length > 0;
 
-                // Verificar si hay asignaciones locales (drag & drop) o asignaciones existentes (generadas automáticamente)
-                if (asignacionesLocales.length === 0 && !asignacionesExistentes) {
+                // Verificar si hay asignaciones
+                if (asignacionesLocalesKeys.length === 0 && !asignacionesExistentes) {
                     mostrarNotificacion('No hay asignaciones en el horario', 'warning');
                     return;
                 }
 
-                // Si solo hay asignaciones existentes (generadas automáticamente), redirigir directamente
-                if (asignacionesLocales.length === 0 && asignacionesExistentes) {
-                    mostrarNotificacion('El horario ya fue generado y guardado automáticamente', 'success');
+                // Si solo hay asignaciones existentes y ninguna local pendiente, redirigir directamente
+                if (asignacionesLocalesKeys.length === 0 && asignacionesExistentes) {
+                    mostrarNotificacion('El horario ya está generado y guardado.', 'success');
                     window.location.href = "{{ route('admin.horario.index') }}";
                     return;
                 }
 
-                // Convertir asignaciones locales al formato que espera el backend
+                // Construir array completo para persistir
                 const asignacionesParaGuardar = [];
-                asignacionesLocales.forEach(key => {
-                    const arr = horarioAsignaciones[key];
 
-                    // Compatibilidad: si todavía hay un objeto suelto, lo envolvemos en array
+                // 1. Conservar asignaciones existentes que no hayan sido sobreescritas localmente
+                if (asignacionesExistentes) {
+                    horarioData.forEach(h => {
+                        const hDia = Number(h.dia ?? h.dia_id);
+                        const hBloque = Number(h.bloque ?? h.bloque_id);
+                        const celdaKey = `${hDia}-${hBloque}`;
+                        if (!horarioAsignaciones[celdaKey] || horarioAsignaciones[celdaKey].length === 0) {
+                            asignacionesParaGuardar.push({
+                                carga_academica_id: h.carga_academica_id || h.cargaAcademica?.id || null,
+                                docente_id: h.docente_id || h.cargaAcademica?.docente_id,
+                                materia_id: h.materia_id || h.cargaAcademica?.area_formacion_id,
+                                seccion_id: h.seccion_id || h.cargaAcademica?.seccion_id,
+                                aula_id: parseInt(h.aula_id || 0),
+                                dia: hDia,
+                                bloque: hBloque,
+                                dia_id: hDia,
+                                bloque_id: hBloque,
+                                fijada: !!h.fijada
+                            });
+                        }
+                    });
+                }
+
+                // 2. Agregar asignaciones locales
+                asignacionesLocalesKeys.forEach(key => {
+                    const arr = horarioAsignaciones[key];
                     const items = Array.isArray(arr) ? arr : (arr ? [arr] : []);
                     if (items.length === 0) return;
 
-                    const [diaNombre, bloqueId] = key.split('-');
-
-                    // Encontrar el ID del día correspondiente al nombre
-                    const dia = diasSemana.find(d =>
-                        (d.nombre_dia || d.nombre).toLowerCase() === diaNombre.toLowerCase()
-                    );
+                    const [diaStr, bloqueStr] = key.split('-');
+                    const numDia = parseInt(diaStr);
+                    const numBloque = parseInt(bloqueStr);
 
                     items.forEach(asignacion => {
-                        // Si no hay aulaId asignada, usar el aula regular fija de la sección si existe
                         let aulaIdFinal = asignacion.aulaId;
                         if (!aulaIdFinal && asignacion.seccionId) {
                             const aulaRegular = obtenerAulaRegularDeSeccion(asignacion.seccionId);
@@ -2457,12 +2577,16 @@
                         }
 
                         asignacionesParaGuardar.push({
+                            carga_academica_id: asignacion.carga_academica_id || null,
                             docente_id: parseInt(asignacion.id),
                             materia_id: parseInt(asignacion.areaFormacionId),
                             seccion_id: parseInt(asignacion.seccionId),
                             aula_id: parseInt(aulaIdFinal || 0),
-                            dia_id: dia ? dia.id : 1,
-                            bloque_id: parseInt(bloqueId)
+                            dia: numDia,
+                            bloque: numBloque,
+                            dia_id: numDia,
+                            bloque_id: numBloque,
+                            fijada: false
                         });
                     });
                 });
@@ -2496,7 +2620,6 @@
 
                     if (data.success) {
                         mostrarNotificacion(data.mensaje, 'success');
-                        // Redirigir inmediatamente al inicio del módulo
                         window.location.href = "{{ route('admin.horario.index') }}";
                     } else {
                         mostrarNotificacion(data.mensaje, 'warning');
@@ -2507,7 +2630,6 @@
                     console.error('Error al guardar horario:', error);
                     mostrarNotificacion('Error de conexión al servidor', 'error');
                 } finally {
-                    // Restaurar botón
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     ocultarPantallaCarga();

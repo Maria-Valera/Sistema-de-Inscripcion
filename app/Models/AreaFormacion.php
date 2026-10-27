@@ -47,5 +47,15 @@ class AreaFormacion extends Model
         return $tipoAula !== 'Aula Regular';
     }
 
+    public function getHorasSemanalesAttribute()
+    {
+        return $this->attributes['bloques_semanales'] ?? null;
+    }
+
+    public function setHorasSemanalesAttribute($value)
+    {
+        $this->attributes['bloques_semanales'] = $value;
+    }
+
 
 }

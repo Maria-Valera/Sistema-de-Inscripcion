@@ -194,12 +194,13 @@
     }
 
     // Función para cargar horario en la modal
-    async function cargarHorarioEnModal(gradoId, seccionId) {
+    async function cargarHorarioEnModal(gradoId, seccionId, gradoNombre = null, seccionNombre = null) {
         const requestId = ++horarioModalRequestId;
         const docentesList = document.getElementById('modalDocentesList');
 
-        document.getElementById('modalContextNivel').textContent = 'Grado: --';
-        document.getElementById('modalContextSeccion').textContent = 'Sección: --';
+        const gradoInicial = gradoNombre ? (String(gradoNombre).includes('Año') ? gradoNombre : `${gradoNombre}° Año`) : '--';
+        document.getElementById('modalContextNivel').textContent = `Grado: ${gradoInicial}`;
+        document.getElementById('modalContextSeccion').textContent = `Sección: ${seccionNombre ?? '--'}`;
         document.querySelector('#modalHorarioTable thead tr').innerHTML = '<th class="time-header">Hora / Bloque</th>';
         document.querySelector('#modalHorarioTable tbody').innerHTML = '';
         docentesList.innerHTML = '<div class="empty-state"><i class="fas fa-user-tie"></i><p>Cargando docentes...</p></div>';
@@ -239,17 +240,19 @@
         const asignaciones = Array.isArray(data.asignaciones) ? data.asignaciones : [];
         const dias = (Array.isArray(data.dias) && data.dias.length) ? data.dias : DIAS_POR_DEFECTO;
 
-        document.getElementById('modalContextNivel').textContent =
-            `Grado: ${data.grado?.numero_grado != null ? data.grado.numero_grado + '° Año' : '--'}`;
+        const gradoTexto = data.grado?.nombre || (data.grado?.numero_grado != null ? `${data.grado.numero_grado}° Año` : '--');
+        document.getElementById('modalContextNivel').textContent = `Grado: ${gradoTexto}`;
         document.getElementById('modalContextSeccion').textContent = `Sección: ${data.seccion?.nombre ?? '--'}`;
 
-        // Filas: bloques activos + cualquier bloque_id usado en asignaciones que no exista en la tabla
+        // Filas: bloques activos + cualquier bloque usado en asignaciones que no exista en la tabla
         const bloques = (Array.isArray(data.bloques) ? data.bloques : []).map(b => ({ ...b }));
-        const idsBloques = new Set(bloques.map(b => Number(b.id)));
-        [...new Set(asignaciones.map(a => Number(a.bloque_id)))]
+        const idsBloques = new Set(bloques.map(b => Number(b.bloque || b.id)));
+        [...new Set(asignaciones.map(a => Number(a.bloque ?? a.bloque_id)))]
             .filter(id => !idsBloques.has(id))
             .sort((a, b) => a - b)
-            .forEach(id => bloques.push({ id, hora_inicio: null, hora_fin: null, huerfano: true }));
+            .forEach(id => bloques.push({ id, bloque: id, hora_inicio: null, hora_fin: null, huerfano: true }));
+
+        const reservados = Array.isArray(data.reservados) ? data.reservados : [];
 
         // Encabezado: días en columnas
         thead.innerHTML = '<th class="time-header">Hora / Bloque</th>' +
@@ -257,31 +260,48 @@
 
         // Cuerpo: una fila por bloque, todas las asignaciones de cada celda
         tbody.innerHTML = bloques.map((bloque, index) => {
+            const numBloque = Number(bloque.bloque || bloque.id);
             const horario = bloque.huerfano
                 ? '<strong>Bloque sin horario</strong>'
                 : `<strong>${horaCorta(bloque.hora_inicio)} - ${horaCorta(bloque.hora_fin)}</strong>`;
 
             const celdas = dias.map(dia => {
+                const numDia = Number(dia.dia || dia.id);
+                const esReservado = reservados.some(r => Number(r.dia) === numDia && Number(r.bloque) === numBloque);
+
+                if (esReservado) {
+                    return `<td class="drop-zone celda-reservada text-center align-middle" data-day="${escHtml(numDia)}" data-block="${escHtml(numBloque)}" style="background-color: #f1f5f9; color: #64748b; font-weight: 500;">
+                        <span class="badge bg-secondary"><i class="fas fa-ban me-1"></i>Reservado</span>
+                    </td>`;
+                }
+
                 const enCelda = asignaciones.filter(a =>
-                    Number(a.dia_id) === Number(dia.id) && Number(a.bloque_id) === Number(bloque.id));
+                    Number(a.dia ?? a.dia_id) === numDia && Number(a.bloque ?? a.bloque_id) === numBloque);
 
-                const contenido = enCelda.map(a => `
+                const contenido = enCelda.map(a => {
+                    const materia = a.materia || a.materia_nombre || a.cargaAcademica?.materia?.nombre || 'Sin materia';
+                    const docente = a.docente || a.docente_nombre || a.cargaAcademica?.docente?.nombre || 'Sin docente';
+                    const aula = a.aula || a.aula_nombre || 'Sin aula';
+                    const lockIcon = a.fijada ? '<span class="ms-1 text-warning" title="Clase fijada"><i class="fas fa-lock"></i></span>' : '';
+
+                    return `
                     <div class="assigned-docente mb-1${a.conflicto_manual ? ' border border-warning' : ''}">
-                        <div class="docente-materia">${escHtml(a.materia_nombre || 'Sin materia')}</div>
-                        <div class="docente-nombre">${escHtml(a.docente_nombre || 'Sin docente')}</div>
-                        <div class="aula-texto">${escHtml(a.aula_nombre || 'Sin aula')}</div>
+                        <div class="docente-materia">${escHtml(materia)} ${lockIcon}</div>
+                        <div class="docente-nombre">${escHtml(docente)}</div>
+                        <div class="aula-texto">${escHtml(aula)}</div>
                         ${a.conflicto_manual ? '<small class="text-warning"><i class="fas fa-exclamation-circle"></i> Conflicto</small>' : ''}
-                    </div>`).join('');
+                    </div>`;
+                }).join('');
 
-                return `<td class="drop-zone" data-day="${escHtml(dia.id)}" data-block="${escHtml(bloque.id)}">${contenido}</td>`;
+                return `<td class="drop-zone" data-day="${escHtml(numDia)}" data-block="${escHtml(numBloque)}">${contenido}</td>`;
             }).join('');
 
-            return `<tr><td class="time-cell">${horario}<small>Bloque ${index + 1}</small></td>${celdas}</tr>`;
+            return `<tr><td class="time-cell">${horario}<small>Bloque ${numBloque}</small></td>${celdas}</tr>`;
         }).join('');
 
         // Asignaciones en días fuera de la grilla (no debería pasar, pero se avisa para no ocultarlas)
-        const idsDias = new Set(dias.map(d => Number(d.id)));
-        const fueraDeGrilla = asignaciones.filter(a => !idsDias.has(Number(a.dia_id))).length;
+        const idsDias = new Set(dias.map(d => Number(d.dia ?? d.id)));
+        const fueraDeGrilla = asignaciones.filter(a => !idsDias.has(Number(a.dia ?? a.dia_id))).length;
 
         if (asignaciones.length === 0) {
             setEstadoHorarioModal('empty', 'Esta sección no tiene clases asignadas en el año escolar activo.');
@@ -294,20 +314,26 @@
             setEstadoHorarioModal(null);
         }
 
-        // Docentes únicos en el sidebar
-        const docentesUnicos = {};
-        asignaciones.forEach(a => {
-            if (!a.docente_id) return;
-            const d = docentesUnicos[a.docente_id] ??= { nombre: a.docente_nombre || 'Sin nombre', materias: [] };
-            if (a.materia_nombre && !d.materias.includes(a.materia_nombre)) d.materias.push(a.materia_nombre);
-        });
+        // Docentes en el sidebar (primero intenta desde data.docentes cargados de CargaAcademica, o fallback a asignaciones)
+        let lista = [];
+        if (Array.isArray(data.docentes) && data.docentes.length > 0) {
+            lista = data.docentes;
+        } else {
+            const docentesUnicos = {};
+            asignaciones.forEach(a => {
+                if (!a.docente_id) return;
+                const d = docentesUnicos[a.docente_id] ??= { nombre: a.docente_nombre || a.docente || 'Sin nombre', materias: [] };
+                const mat = a.materia_nombre || a.materia;
+                if (mat && !d.materias.includes(mat)) d.materias.push(mat);
+            });
+            lista = Object.values(docentesUnicos);
+        }
 
-        const lista = Object.values(docentesUnicos);
         docentesList.innerHTML = lista.length
             ? lista.map(d => `
                 <div class="docente-card">
                     <div class="docente-name">${escHtml(d.nombre)}</div>
-                    <div class="docente-area"><i class="fas fa-book"></i><span>${escHtml(d.materias.join(', '))}</span></div>
+                    <div class="docente-area"><i class="fas fa-book"></i><span>${escHtml(Array.isArray(d.materias) ? d.materias.join(', ') : (d.materias || 'Sin materia asignada'))}</span></div>
                 </div>`).join('')
             : '<div class="empty-state"><i class="fas fa-user-tie"></i><p>No hay docentes asignados</p></div>';
     }

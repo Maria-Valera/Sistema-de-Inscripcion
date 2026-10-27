@@ -17,6 +17,26 @@ class BloqueHorarioController extends Controller
     
     public function apiIndex()
     {
+        $anio = AnioEscolar::activos()->first();
+        if ($anio) {
+            $config = \App\Models\ConfiguracionHorario::where('anio_escolar_id', $anio->id)->first();
+            if ($config) {
+                $bloquesService = app(\App\Services\ConfiguracionHorarioService::class);
+                $calculados = $bloquesService->bloques($config);
+                $bloques = [];
+                for ($b = 1; $b <= $config->numero_bloques; $b++) {
+                    $info = $calculados->get($b, ['inicio' => '07:00', 'fin' => '07:45']);
+                    $bloques[] = [
+                        'id' => $b,
+                        'bloque' => $b,
+                        'hora_inicio' => $info['inicio'],
+                        'hora_fin' => $info['fin'],
+                    ];
+                }
+                return response()->json($bloques);
+            }
+        }
+
         $bloques = BloqueHorario::where('status', true)
             ->orderBy('hora_inicio', 'asc')
             ->get();
