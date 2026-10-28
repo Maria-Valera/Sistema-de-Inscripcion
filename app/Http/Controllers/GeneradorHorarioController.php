@@ -188,7 +188,7 @@ class GeneradorHorarioController extends Controller
                     'materia_id' => $materia?->id,
                     'materia_nombre' => $materiaData['nombre'],
                     'seccion_id' => $seccion?->id,
-                    'seccion_nombre' => $seccion ? $seccion->nombre : 'N/A',
+                    'seccion_nombre' => $seccion ? $seccion->nombre : 'Sin Sección',
                     'seccion' => $seccion ? [
                         'id' => $seccion->id,
                         'nombre' => $seccion->nombre,
@@ -209,6 +209,7 @@ class GeneradorHorarioController extends Controller
                             'nombre' => $persona ? trim($persona->primer_nombre . ' ' . $persona->primer_apellido) : 'N/A',
                         ] : null,
                         'materia' => $materiaData,
+                        'areaFormacion' => $materiaData,
                         'seccion' => $seccion ? [
                             'id' => $seccion->id,
                             'nombre' => $seccion->nombre,

@@ -74,7 +74,28 @@ class HorarioController extends Controller
                 ] : null,
                 'aula' => $a->aula,
                 'seccion' => $seccion,
+                'seccion_id' => $seccion?->id,
+                'seccion_nombre' => $seccion?->nombre ?? 'Sin Sección',
                 'grado' => $seccion?->grado,
+                'cargaAcademica' => [
+                    'id' => $a->carga_academica_id,
+                    'docente' => $docente ? [
+                        'id' => $docente->id,
+                        'nombre' => $docente->nombre_completo
+                    ] : null,
+                    'areaFormacion' => $materia ? [
+                        'id' => $materia->id,
+                        'nombre' => $materia->nombre_area_formacion
+                    ] : null,
+                    'materia' => $materia ? [
+                        'id' => $materia->id,
+                        'nombre' => $materia->nombre_area_formacion
+                    ] : null,
+                    'seccion' => $seccion ? [
+                        'id' => $seccion->id,
+                        'nombre' => $seccion->nombre
+                    ] : null,
+                ],
             ];
         });
 
@@ -136,6 +157,8 @@ class HorarioController extends Controller
                     'materia_id' => $materia?->id,
                     'materia' => $materiaNombre,
                     'materia_nombre' => $materiaNombre,
+                    'seccion_id' => $seccion->id,
+                    'seccion_nombre' => $seccion->nombre,
                     'aula_id' => $a->aula_id,
                     'aula' => $aulaNombre,
                     'aula_nombre' => $aulaNombre,
@@ -430,6 +453,10 @@ class HorarioController extends Controller
             ->get()
             ->unique('nombre');
 
+        $todasLasSecciones = Seccion::where('status', true)
+            ->orderBy('nombre', 'asc')
+            ->get(['id', 'nombre', 'grado_id']);
+
         //filtra aulas (tipo_aula real en BD: Aula::TIPO_REGULAR = 'Aula Regular')
         $aulasNoRegulares = Aula::where('status', true)
             ->whereRaw('LOWER(TRIM(tipo_aula)) != ?', [mb_strtolower(Aula::TIPO_REGULAR)])
@@ -553,7 +580,8 @@ class HorarioController extends Controller
             'numeroBloques',
             'bloquesCalculados',
             'diasCases',
-            'bloquesReservados'
+            'bloquesReservados',
+            'todasLasSecciones'
         ));
     }
 

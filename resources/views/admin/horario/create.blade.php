@@ -8,10 +8,135 @@
         /* Estilos específicos adicionales para create.blade.php */
         /* Los estilos principales están en horario-styles.css */
 
-        .horario-container {
+        /* Contenedor principal de calendario y panel lateral */
+        #vistaCalendario {
             display: flex;
-            gap: 1.25rem;
-            height: auto;
+            flex-wrap: wrap;
+        }
+
+        #vistaCalendario > [class*="col-"] {
+            min-width: 0; /* Previene que los flex items crezcan más allá de su ancho de columna */
+        }
+
+        .main-content {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .sidebar-docentes {
+            width: 100% !important;
+            max-width: 100%;
+            position: sticky;
+            top: 1rem;
+            max-height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+            border-radius: 0.375rem;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .sidebar-docentes .docentes-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: calc(100vh - 190px);
+            padding: 0.75rem;
+        }
+
+        /* Simetría estricta de la cuadrícula de horarios */
+        .horario-matrix-wrapper {
+            overflow-x: auto;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .horario-matrix {
+            width: 100% !important;
+            table-layout: fixed !important;
+            border-collapse: collapse !important;
+            margin-bottom: 0 !important;
+        }
+
+        .horario-matrix thead th.time-header,
+        .horario-matrix tbody td.time-cell {
+            width: 85px !important;
+            min-width: 80px !important;
+            max-width: 90px !important;
+            box-sizing: border-box !important;
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.2rem !important;
+        }
+
+        .horario-matrix thead th:not(.time-header),
+        .horario-matrix tbody td.drop-zone {
+            width: calc((100% - 85px) / 5) !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        .drop-zone {
+            min-height: 95px !important;
+            height: 105px !important;
+            padding: 0.35rem !important;
+            vertical-align: top !important;
+            box-sizing: border-box !important;
+        }
+
+        .drop-zone-inner {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 0.35rem !important;
+            align-content: flex-start !important;
+            justify-content: flex-start !important;
+            height: 100% !important;
+            max-height: 96px !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            scrollbar-width: thin;
+            padding-right: 2px;
+        }
+
+        /* Píldoras compactas alineadas a la izquierda sin estirarse a 100% */
+        .drop-zone .assigned-docente {
+            flex: 0 0 auto !important;
+            width: auto !important;
+            min-width: 80px;
+            max-width: 100% !important;
+            box-sizing: border-box;
+            align-self: flex-start !important;
+            padding: 0.3rem 0.5rem !important;
+            margin: 0 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-mini {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.35rem;
+            padding: 0;
+            font-size: 0.72rem;
+            white-space: nowrap;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .drop-zone .assigned-docente .adm-mini .adm-mini-nombre {
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 85px;
+            white-space: nowrap;
+        }
+
+        .drop-zone .assigned-docente .adm-mini .adm-mini-seccion {
+            opacity: 0.85;
+            flex-shrink: 0;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
         }
 
         .drop-zone .assigned-docente .pildora-selector {
@@ -368,6 +493,117 @@
             background: #5f141d;
         }
 
+        /* Toasts Flotantes Persistentes estilo AdminLTE / Bootstrap 5 */
+        #toast-container.toast-container {
+            position: fixed !important;
+            top: 1rem !important;
+            right: 1rem !important;
+            z-index: 1090 !important;
+            width: auto !important;
+            min-width: 320px !important;
+            max-width: 380px !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: 85vh !important;
+            padding: 0 !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            pointer-events: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+
+        #toast-container .toast {
+            position: relative !important;
+            pointer-events: auto !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            flex: 0 0 auto !important;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            border-radius: 0.375rem !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            overflow: hidden !important;
+            opacity: 1 !important;
+            display: block !important;
+            margin: 0 0 0.5rem 0 !important;
+            animation: toastEntrada 0.25s ease-out;
+        }
+
+        @keyframes toastEntrada {
+            from { transform: translateX(110%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        #toast-container .toast .toast-header {
+            display: flex !important;
+            align-items: center !important;
+            padding: 0.5rem 0.75rem !important;
+            height: auto !important;
+            min-height: 0 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+            line-height: 1.5 !important;
+        }
+
+        #toast-container .toast .toast-header .close,
+        #toast-container .toast .toast-header .btn-close {
+            margin-left: auto !important;
+            background: transparent !important;
+            border: none !important;
+            font-size: 1.2rem !important;
+            line-height: 1 !important;
+            opacity: 0.85 !important;
+            cursor: pointer !important;
+            padding: 0 !important;
+            transition: opacity 0.15s ease !important;
+            outline: none !important;
+        }
+
+        #toast-container .toast .toast-header .close:hover,
+        #toast-container .toast .toast-header .btn-close:hover {
+            opacity: 1 !important;
+        }
+
+        #toast-container .toast .toast-body {
+            padding: 0.75rem 1rem !important;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            font-size: 0.875rem !important;
+            line-height: 1.45 !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
+        /* Variantes de color en el header */
+        #toast-container .toast-header.bg-success {
+            background-color: #28a745 !important;
+            color: #ffffff !important;
+        }
+
+        #toast-container .toast-header.bg-danger {
+            background-color: #dc3545 !important;
+            color: #ffffff !important;
+        }
+
+        #toast-container .toast-header.bg-warning {
+            background-color: #ffc107 !important;
+            color: #1f2d3d !important;
+        }
+
+        #toast-container .toast-header.bg-info {
+            background-color: #17a2b8 !important;
+            color: #ffffff !important;
+        }
+
     </style>
 @stop
 
@@ -399,6 +635,9 @@
 @stop
 
 @section('content')
+    <!-- Contenedor de Notificaciones Flotantes (Toasts) -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
+
     <div class="main-container">
         <!-- Banner informativo de validación de entrada exitosa -->
         <div class="alert alert-success d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm border-0" style="background-color: #ecfdf5; border-left: 5px solid #10b981 !important;">
@@ -465,87 +704,94 @@
         </style>
 
         <!-- Vista del calendario (oculta inicialmente) -->
-        <div class="horario-container" id="vistaCalendario" style="display: none;">
-            <div class="main-content">
-                <!-- Header de contexto -->
-                <div class="context-header" id="contextHeader">
-                    <div class="context-info">
-                        <span class="context-item">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span id="contextNivel">Nivel Académico: No seleccionado</span>
-                        </span>
-                        <span class="context-separator">|</span>
-                        <span class="context-item">
-                            <i class="fas fa-book"></i>
-                            <span id="contextArea">Área de Formación: No seleccionada</span>
-                        </span>
-                    </div>
-                    <button class="btn-back-mini" id="btnVolverPaso1">
-                        <i class="fas fa-arrow-left"></i>
-                        Cambiar selección
-                    </button>
-                </div>
-
-                <!-- Filtros de refinamiento -->
-                <div class="selection-section">
-                    <div class="selection-row">
-                        <div class="form-group-modern">
-                            <label class="form-label-modern">
-                                <i class="fas fa-users" style="color: var(--primary);"></i>
-                                Sección
-                            </label>
-                            <select class="form-select form-control-modern" id="seccion">
-                                <option value="">Todas las secciones</option>
-                                @foreach($secciones as $seccion)
-                                    <option value="{{ $seccion->id }}">
-                                        {{ $seccion->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
+        <div class="row" id="vistaCalendario" style="display: none;">
+            <!-- Cuadrícula -->
+            <div class="col-12 col-lg-8 col-xl-9 mb-4">
+                <div class="main-content">
+                    <!-- Header de contexto -->
+                    <div class="context-header" id="contextHeader">
+                        <div class="context-info">
+                            <span class="context-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span id="contextNivel">Nivel Académico: No seleccionado</span>
+                            </span>
+                            <span class="context-separator">|</span>
+                            <span class="context-item">
+                                <i class="fas fa-book"></i>
+                                <span id="contextArea">Área de Formación: No seleccionada</span>
+                            </span>
                         </div>
-                        <div class="form-group-modern">
-                            <label class="form-label-modern">
-                                <i class="fas fa-door-open" style="color: var(--primary);"></i>
-                                Aula
-                            </label>
-                            <select class="form-select form-control-modern" id="aula">
-                                <option value="">Todas las aulas</option>
-                                @foreach($aulas as $aula)
-                                    <option value="{{ is_array($aula) ? $aula['id_aula'] : $aula->id_aula }}"
-                                            data-seccion="{{ is_array($aula) ? $aula['seccion_id'] : null }}"
-                                            data-tipo="{{ is_array($aula) ? $aula['tipo_aula'] : $aula->tipo_aula }}">
-                                        {{ is_array($aula) ? $aula['nombre_aula'] : $aula->nombre_aula }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <button class="btn-back-mini" id="btnVolverPaso1">
+                            <i class="fas fa-arrow-left"></i>
+                            Cambiar selección
+                        </button>
+                    </div>
+
+                    <!-- Filtros de refinamiento -->
+                    <div class="selection-section">
+                        <div class="selection-row">
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-users" style="color: var(--primary);"></i>
+                                    Sección
+                                </label>
+                                <select class="form-select form-control-modern" id="seccion">
+                                    <option value="">Todas las secciones</option>
+                                    @foreach($secciones as $seccion)
+                                        <option value="{{ $seccion->id }}">
+                                            {{ $seccion->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="fas fa-door-open" style="color: var(--primary);"></i>
+                                    Aula
+                                </label>
+                                <select class="form-select form-control-modern" id="aula">
+                                    <option value="">Todas las aulas</option>
+                                    @foreach($aulas as $aula)
+                                        <option value="{{ is_array($aula) ? $aula['id_aula'] : $aula->id_aula }}"
+                                                data-seccion="{{ is_array($aula) ? $aula['seccion_id'] : null }}"
+                                                data-tipo="{{ is_array($aula) ? $aula['tipo_aula'] : $aula->tipo_aula }}">
+                                            {{ is_array($aula) ? $aula['nombre_aula'] : $aula->nombre_aula }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Matriz de Horarios -->
-                <div class="horario-matrix-wrapper">
-                    <table class="table table-bordered horario-matrix">
-                        <thead>
-                            <tr>
-                                <th class="time-header">Hora / Bloque</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <!-- Matriz de Horarios -->
+                    <div class="horario-matrix-wrapper">
+                        <table class="table table-bordered horario-matrix">
+                            <thead>
+                                <tr>
+                                    <th class="time-header">Hora / Bloque</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Sidebar de docentes -->
-            <div class="sidebar-docentes">
-                <div class="sidebar-header">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    <h5>Docentes Disponibles</h5>
-                </div>
-                <div class="docentes-list" id="docentesList">
-                    <div class="empty-state">
-                        <i class="fas fa-user-tie"></i>
-                        <p>Seleccione un nivel académico para ver los docentes disponibles</p>
+            <!-- Panel lateral -->
+            <div class="col-12 col-lg-4 col-xl-3">
+                <div class="card shadow-sm border-0 sidebar-docentes">
+                    <div class="card-header bg-primary text-white d-flex align-items-center">
+                        <i class="fas fa-chalkboard-teacher mr-2"></i>
+                        <h5 class="card-title mb-0 font-weight-bold" style="font-size: 0.95rem;">Docentes Disponibles</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="docentes-list" id="docentesList">
+                            <div class="empty-state">
+                                <i class="fas fa-user-tie"></i>
+                                <p>Seleccione un nivel académico para ver los docentes disponibles</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1408,6 +1654,7 @@
             let diasSemana = {!! json_encode($diasJson) !!};
             let bloquesHorario = {!! json_encode($bloquesJson) !!};
             let bloquesReservados = {!! json_encode($reservadosJson) !!};
+            let seccionesGlobales = {!! json_encode($todasLasSecciones ?? \App\Models\Seccion::where('status', true)->get(['id', 'nombre', 'grado_id'])) !!};
             let horarioData = [];
             let anioEscolarActivo = null;
             let draggedAsignacion = null;
@@ -1482,27 +1729,35 @@
 
                     const url = `/api/docente?${params.toString()}`;
                     const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}`);
+                    }
                     const docentes = await response.json();
 
                     console.log('Docentes cargados:', docentes);
 
-                    renderizarDocentes(docentes);
+                    renderizarDocentes(Array.isArray(docentes) ? docentes : []);
                 } catch (error) {
                     console.error('Error al cargar docentes:', error);
-                    mostrarNotificacion('Error al cargar docentes', 'error');
+                    renderizarDocentes([]);
                 }
             }
 
             // Función para renderizar docentes en el sidebar
             function renderizarDocentes(docentes) {
+                if (!Array.isArray(docentes)) {
+                    docentes = [];
+                }
+
                 // Popular cache de docentes para uso posterior
-                docentes.forEach(d => { docentesCache[d.id] = d; });
+                docentes.forEach(d => { if (d && d.id) docentesCache[d.id] = d; });
 
                 if (docentes.length === 0) {
                     docentesList.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-user-tie"></i>
-                            <p>No hay docentes disponibles</p>
+                            <p>Sin datos</p>
+                            <small class="text-muted">No se encontraron docentes disponibles</small>
                         </div>
                     `;
                     return;
@@ -1666,18 +1921,15 @@
                         const key = `${numDia}-${numBloque}`;
                         const asignacionLocal = horarioAsignaciones[key];
 
-                        // Priorizar asignación local sobre datos de API
-                        if (Array.isArray(asignacionLocal) && asignacionLocal.length > 0) {
-                            inner.innerHTML = asignacionLocal
-                                .map((a, idx) => renderizarAsignacionLocalHTML(key, a, idx))
-                                .join('');
-                        } else if (asignacionesDeCelda.length > 0) {
-                            // Mostrar todas las asignaciones como tarjetas apiladas
-                            inner.innerHTML = asignacionesDeCelda.map(horarioAsignado => renderizarTarjetaPersistida(horarioAsignado)).join('');
-                        } else {
-                            // Celda vacía pero visible para permitir drag and drop
-                            inner.innerHTML = '';
+                        // Combinar asignaciones persistidas y locales en la celda
+                        let htmlTarjetas = '';
+                        if (asignacionesDeCelda.length > 0) {
+                            htmlTarjetas += asignacionesDeCelda.map(horarioAsignado => renderizarTarjetaPersistida(horarioAsignado)).join('');
                         }
+                        if (Array.isArray(asignacionLocal) && asignacionLocal.length > 0) {
+                            htmlTarjetas += asignacionLocal.map((a, idx) => renderizarAsignacionLocalHTML(key, a, idx)).join('');
+                        }
+                        inner.innerHTML = htmlTarjetas;
 
                         td.appendChild(inner);
                         tr.appendChild(td);
@@ -1690,15 +1942,98 @@
                 console.log('Calendario renderizado con', tbody.children.length, 'filas');
             }
 
+            // Función helper para obtener la letra o nombre de la sección de manera robusta
+            function obtenerLetraSeccion(asignacion) {
+                if (!asignacion) return 'Sin Sección';
+
+                // 1. Relación anidada de carga académica
+                let nombre = asignacion.cargaAcademica?.seccion?.nombre;
+
+                // 2. Objeto sección directo
+                if (!nombre || nombre === '?' || nombre === 'N/A') {
+                    nombre = asignacion.seccion?.nombre;
+                }
+
+                // 3. Propiedad seccion_nombre en la raíz
+                if (!nombre || nombre === '?' || nombre === 'N/A') {
+                    nombre = asignacion.seccion_nombre;
+                }
+
+                // 4. Búsqueda por ID en asignacion.secciones, seccionesGlobales o en el DOM
+                const secId = asignacion.seccionId || asignacion.seccion_id || asignacion.cargaAcademica?.seccion_id || asignacion.cargaAcademica?.seccion?.id;
+                if ((!nombre || nombre === '?' || nombre === 'N/A') && secId) {
+                    if (Array.isArray(asignacion.secciones)) {
+                        const sec = asignacion.secciones.find(s => String(s.id) === String(secId));
+                        if (sec?.nombre) {
+                            nombre = sec.nombre;
+                        }
+                    }
+                    if ((!nombre || nombre === '?' || nombre === 'N/A') && typeof seccionesGlobales !== 'undefined' && Array.isArray(seccionesGlobales)) {
+                        const secG = seccionesGlobales.find(s => String(s.id) === String(secId));
+                        if (secG?.nombre) {
+                            nombre = secG.nombre;
+                        }
+                    }
+                    if (!nombre || nombre === '?' || nombre === 'N/A') {
+                        const optDom = document.querySelector(`#seccion option[value="${secId}"]`);
+                        if (optDom && optDom.textContent.trim()) {
+                            nombre = optDom.textContent.trim();
+                        }
+                    }
+                }
+
+                // 5. Si es asignación local y el docente tiene lista de secciones
+                if ((!nombre || nombre === '?' || nombre === 'N/A') && Array.isArray(asignacion.secciones) && asignacion.secciones.length > 0) {
+                    nombre = asignacion.secciones[0]?.nombre;
+                }
+
+                // 6. Si aún no tiene y hay seccionesGlobales para el grado actual
+                if ((!nombre || nombre === '?' || nombre === 'N/A') && typeof seccionesGlobales !== 'undefined' && Array.isArray(seccionesGlobales)) {
+                    const gradoActual = document.getElementById('nivelAcademico')?.value;
+                    const secGrado = seccionesGlobales.find(s => !gradoActual || String(s.grado_id) === String(gradoActual));
+                    if (secGrado?.nombre) {
+                        nombre = secGrado.nombre;
+                    }
+                }
+
+                if (!nombre || nombre === '?' || nombre === 'N/A' || String(nombre).trim() === '') {
+                    return 'Sin Sección';
+                }
+
+                let limpio = String(nombre).trim();
+                if (/^secci[oó]n\s+([a-z0-9]+)$/i.test(limpio)) {
+                    limpio = limpio.replace(/^secci[oó]n\s+/i, '').toUpperCase();
+                }
+
+                return limpio;
+            }
+
+            // Función helper para formatear la sección en la píldora compacta (ej. "(A)", "(B)", etc.)
+            function formatearPildoraSeccion(asignacion) {
+                const letra = obtenerLetraSeccion(asignacion);
+                if (letra === 'Sin Sección') return 'Sin Sección';
+                if (letra.startsWith('(') && letra.endsWith(')')) return letra;
+                return `(${letra})`;
+            }
+
             function renderizarAsignacionLocalHTML(key, asignacion, index) {
                 const uid = `${key}-${index}`;
 
                 let seccionHtml = '';
-                if (asignacion.secciones && asignacion.secciones.length > 0) {
+                let listaSecciones = (asignacion.secciones && asignacion.secciones.length > 0) 
+                    ? asignacion.secciones 
+                    : [];
+
+                if (listaSecciones.length === 0 && typeof seccionesGlobales !== 'undefined' && Array.isArray(seccionesGlobales)) {
+                    const gradoId = document.getElementById('nivelAcademico')?.value;
+                    listaSecciones = seccionesGlobales.filter(s => !gradoId || String(s.grado_id) === String(gradoId));
+                }
+
+                if (listaSecciones && listaSecciones.length > 0) {
                     let opciones = '<option value="">Seleccione sección</option>';
-                    asignacion.secciones.forEach(s => {
-                        const selected = asignacion.seccionId == s.id ? 'selected' : '';
-                        opciones += `<option value="${s.id}" ${selected}>${s.nombre}</option>`;
+                    listaSecciones.forEach(s => {
+                        const isSelected = (String(asignacion.seccionId) === String(s.id) || String(asignacion.seccion_id) === String(s.id));
+                        opciones += `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${s.nombre}</option>`;
                     });
                     seccionHtml = `
                         <select class="pildora-selector" id="seccion-local-${uid}"
@@ -1757,7 +2092,7 @@
                     <div class="assigned-docente${fijadaClsLocal}" ${draggableAttrLocal} data-fijada="${esFijadaLocal}">
                         <div class="adm-mini">
                             <span class="adm-mini-nombre">${asignacion.nombre}</span>
-                            <span class="adm-mini-seccion">${asignacion.secciones?.find(s => s.id == asignacion.seccionId)?.nombre || '?'} ${lockIconLocalHtml}</span>
+                            <span class="adm-mini-seccion">${formatearPildoraSeccion(asignacion)} ${lockIconLocalHtml}</span>
                         </div>
                         <div class="adm-full">
                             <div class="d-flex justify-content-between align-items-center mb-1">
@@ -1779,7 +2114,8 @@
                 const docenteNombre = horarioAsignado.cargaAcademica?.docente?.nombre || horarioAsignado.docente_nombre || 'N/A';
                 const docenteCedula = horarioAsignado.docente_cedula || 'N/A';
                 const materiaNombre = horarioAsignado.cargaAcademica?.materia?.nombre || horarioAsignado.materia_nombre || 'N/A';
-                const seccionNombre = horarioAsignado.cargaAcademica?.seccion?.nombre || horarioAsignado.seccion_nombre || 'N/A';
+                const seccionLetra = obtenerLetraSeccion(horarioAsignado);
+                const seccionPildora = formatearPildoraSeccion(horarioAsignado);
                 const seccionId = horarioAsignado.cargaAcademica?.seccion?.id || horarioAsignado.seccion_id;
                 const asignacionId = horarioAsignado.id;
                 const aulaId = horarioAsignado.aula_id;
@@ -1828,7 +2164,7 @@
                     <div class="assigned-docente${fijadaCls}" ${draggableAttr} data-asignacion-id="${asignacionId}" data-fijada="${esFijada}">
                         <div class="adm-mini">
                             <span class="adm-mini-nombre">${docenteNombre}</span>
-                            <span class="adm-mini-seccion">${seccionNombre} ${lockIconHtml}</span>
+                            <span class="adm-mini-seccion">${seccionPildora} ${lockIconHtml}</span>
                         </div>
                         <div class="adm-full">
                             <div class="d-flex justify-content-between align-items-center mb-1">
@@ -1838,7 +2174,7 @@
                             <span class="docente-cedula">${docenteCedula}</span>
                             <span class="docente-materia">${materiaNombre}</span>
                             <select class="pildora-selector" disabled>
-                                <option>${seccionNombre}</option>
+                                <option>${seccionLetra === 'Sin Sección' ? 'Sin Sección' : `Sección ${seccionLetra}`}</option>
                             </select>
                             <select class="pildora-selector" data-asignacion-id="${asignacionId}" data-aula-actual="${aulaId}" onchange="actualizarAula(this)" ${!esEspecializada || esFijada ? 'disabled' : ''}>
                                 ${aulaOptionsPersistida}
@@ -1908,9 +2244,20 @@
                 const arr = horarioAsignaciones[key];
                 if (!Array.isArray(arr) || !arr[index]) return;
 
-                arr[index].seccionId = selectElement.value;
+                const nuevaSecId = selectElement.value;
+                let nombreSec = selectElement.options[selectElement.selectedIndex]?.text?.trim() || '';
 
-                const aulaRegular = obtenerAulaRegularDeSeccion(selectElement.value);
+                if ((!nombreSec || nombreSec.includes('Seleccione')) && typeof seccionesGlobales !== 'undefined' && Array.isArray(seccionesGlobales)) {
+                    const encontrada = seccionesGlobales.find(s => String(s.id) === String(nuevaSecId));
+                    if (encontrada) nombreSec = encontrada.nombre;
+                }
+
+                arr[index].seccionId = nuevaSecId;
+                arr[index].seccion_id = nuevaSecId;
+                arr[index].seccion_nombre = (nombreSec && !nombreSec.includes('Seleccione')) ? nombreSec : '';
+                arr[index].seccion = nuevaSecId ? { id: nuevaSecId, nombre: arr[index].seccion_nombre } : null;
+
+                const aulaRegular = obtenerAulaRegularDeSeccion(nuevaSecId);
                 if (aulaRegular) arr[index].aulaId = aulaRegular.id;
 
                 renderizarCalendario();
@@ -2004,28 +2351,92 @@
                 return null;
             }
 
-            // Función para mostrar notificaciones
-            function mostrarNotificacion(mensaje, tipo = 'info') {
-                const icon = tipo === 'error' ? 'fa-exclamation-circle' : 
-                            tipo === 'success' ? 'fa-check-circle' : 
-                            tipo === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
-                
-                const notification = document.createElement('div');
-                notification.className = `notification ${tipo}`;
-                notification.innerHTML = `
-                    <i class="fas ${icon}"></i>
-                    <div>
-                        <strong>${mensaje}</strong>
+            // Función para mostrar notificaciones flotantes (Toasts) estándar de Bootstrap 5 / AdminLTE
+            function mostrarToast(mensaje, tipo = 'error', titulo = null, persistente = true) {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+
+                let icon = 'fa-exclamation-circle';
+                let defaultTitulo = 'Error de Asignación';
+                let headerBg = 'bg-danger text-white';
+                let btnCloseClass = 'btn-close btn-close-white text-white';
+
+                if (tipo === 'error' || tipo === 'danger') {
+                    icon = 'fa-exclamation-circle';
+                    defaultTitulo = 'Error de Asignación';
+                    headerBg = 'bg-danger text-white';
+                    btnCloseClass = 'btn-close btn-close-white text-white';
+                } else if (tipo === 'warning') {
+                    icon = 'fa-exclamation-triangle';
+                    defaultTitulo = 'Advertencia';
+                    headerBg = 'bg-warning text-dark';
+                    btnCloseClass = 'btn-close text-dark';
+                } else if (tipo === 'success') {
+                    icon = 'fa-check-circle';
+                    defaultTitulo = 'Operación Exitosa';
+                    headerBg = 'bg-success text-white';
+                    btnCloseClass = 'btn-close btn-close-white text-white';
+                } else if (tipo === 'info') {
+                    icon = 'fa-info-circle';
+                    defaultTitulo = 'Información';
+                    headerBg = 'bg-info text-white';
+                    btnCloseClass = 'btn-close btn-close-white text-white';
+                }
+
+                // Elemento toast estándar Bootstrap 5: SIN clases de color en el contenedor raíz
+                const toast = document.createElement('div');
+                toast.className = 'toast shadow-sm border-0';
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+
+                toast.innerHTML = `
+                    <div class="toast-header ${headerBg}">
+                        <i class="fas ${icon} me-2 mr-2"></i>
+                        <strong class="me-auto mr-auto">${titulo || defaultTitulo}</strong>
+                        <small class="me-2 mr-2 ${tipo === 'warning' ? 'text-muted' : 'text-white-50'}">Ahora</small>
+                        <button type="button" class="${btnCloseClass} ms-auto ml-auto close border-0 bg-transparent" data-bs-dismiss="toast" data-dismiss="toast" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="toast-body">
+                        ${mensaje}
                     </div>
                 `;
-                
-                notificationsContainer.appendChild(notification);
-                
-                // Auto eliminar después de 5 segundos
-                setTimeout(() => {
-                    notification.style.opacity = '0';
-                    setTimeout(() => notification.remove(), 300);
-                }, 5000);
+
+                // Botón de cierre "X" (elimina el toast)
+                const btnCerrar = toast.querySelector('button');
+                if (btnCerrar) {
+                    btnCerrar.addEventListener('click', () => {
+                        toast.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateX(110%)';
+                        setTimeout(() => toast.remove(), 200);
+                    });
+                }
+
+                container.appendChild(toast);
+
+                // Errores y advertencias no se auto-eliminan (persisten hasta clic en "X").
+                // Solo si no es persistente (ej. info o éxito), se auto-oculta tras 6s
+                if (!persistente) {
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            toast.style.opacity = '0';
+                            toast.style.transform = 'translateX(110%)';
+                            setTimeout(() => toast.remove(), 300);
+                        }
+                    }, 6000);
+                }
+            }
+
+            // Función centralizada para mostrar notificaciones mediante Toasts persistentes
+            function mostrarNotificacion(mensaje, tipo = 'info', persistente = null) {
+                // Por requerimiento: errores y advertencias de arrastre, solapamiento y guardado
+                // son persistentes (NO desaparecen automáticamente hasta que el usuario hace clic en la "X").
+                const esPersistente = persistente !== null ? persistente : (tipo === 'error' || tipo === 'warning');
+                mostrarToast(mensaje, tipo, null, esPersistente);
             }
 
             // Continuar a la vista del calendario
@@ -2089,7 +2500,8 @@
                     docentesList.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-user-tie"></i>
-                            <p>No hay docentes disponibles para este nivel</p>
+                            <p>Sin datos</p>
+                            <small class="text-muted">No hay docentes disponibles para este nivel</small>
                         </div>
                     `;
                     return;
@@ -2224,7 +2636,7 @@
                 // Eventos para las zonas de drop
                 document.addEventListener('dragover', function(e) {
                     const dropZone = e.target.closest('.drop-zone');
-                    if (dropZone && !dropZone.classList.contains('ocupado-por-otro') && !dropZone.classList.contains('celda-reservada')) {
+                    if (dropZone && !dropZone.classList.contains('celda-reservada')) {
                         e.preventDefault();
                         e.dataTransfer.dropEffect = 'move';
                         dropZone.classList.add('drag-over');
@@ -2260,21 +2672,35 @@
                         return;
                     }
 
-                    // Si es un docente nuevo, usar la lógica existente
-                    if (!draggedDocente || dropZone.classList.contains('ocupado-por-otro')) {
+                    // Si es un docente nuevo
+                    if (!draggedDocente) {
                         return;
                     }
 
-                    const day = dropZone.dataset.day;
-                    const block = dropZone.dataset.block;
+                    const day = parseInt(dropZone.dataset.day);
+                    const block = parseInt(dropZone.dataset.block);
                     const key = `${day}-${block}`;
 
-                    const areaFormacionId = document.getElementById('areaFormacion').value;
-                    const seccionId = document.getElementById('seccion').value;
+                    const areaFormacionId = document.getElementById('areaFormacion')?.value;
+                    const seccionFiltro = document.getElementById('seccion')?.value || '';
 
                     if (!areaFormacionId) {
                         mostrarNotificacion('Por favor, seleccione un área de formación antes de asignar', 'warning');
                         return;
+                    }
+
+                    // Modo Sección Específica: verificar si la sección ya tiene clase en este bloque
+                    if (seccionFiltro !== '') {
+                        const tieneClase = horarioData.some(h => 
+                            Number(h.dia) === day && 
+                            Number(h.bloque) === block && 
+                            String(h.seccion_id || h.cargaAcademica?.seccion_id) === String(seccionFiltro)
+                        ) || (horarioAsignaciones[key] && horarioAsignaciones[key].some(a => String(a.seccionId) === String(seccionFiltro)));
+
+                        if (tieneClase) {
+                            mostrarNotificacion('Esta sección ya tiene una clase en este bloque', 'error');
+                            return;
+                        }
                     }
 
                     // Inicializar array si no existe
@@ -2282,25 +2708,52 @@
                         horarioAsignaciones[key] = [];
                     }
 
-                    // Evitar duplicar el mismo docente en la misma celda
-                    const yaExiste = horarioAsignaciones[key]
-                        .some(a => String(a.id) === String(draggedDocente.id));
-                    if (yaExiste) {
-                        mostrarNotificacion('Este docente ya está asignado en esta celda', 'warning');
+                    // Evitar duplicar el mismo docente en el mismo bloque
+                    const yaExisteDocente = horarioAsignaciones[key].some(a => String(a.id) === String(draggedDocente.id))
+                        || horarioData.some(h => Number(h.dia) === day && Number(h.bloque) === block && String(h.docente_id || h.cargaAcademica?.docente_id) === String(draggedDocente.id));
+
+                    if (yaExisteDocente) {
+                        mostrarNotificacion('El docente ya tiene una clase en este bloque', 'error');
                         return;
+                    }
+
+                    const seccionSelectEl = document.getElementById('seccion');
+                    let defaultSeccionId = '';
+                    let defaultSeccionNombre = '';
+
+                    if (seccionFiltro !== '') {
+                        defaultSeccionId = String(seccionFiltro);
+                        defaultSeccionNombre = seccionSelectEl ? seccionSelectEl.options[seccionSelectEl.selectedIndex]?.text?.trim() : '';
+                    } else if (draggedDocente.secciones && draggedDocente.secciones.length > 0) {
+                        defaultSeccionId = String(draggedDocente.secciones[0].id);
+                        defaultSeccionNombre = draggedDocente.secciones[0].nombre;
+                    } else if (typeof seccionesGlobales !== 'undefined' && Array.isArray(seccionesGlobales)) {
+                        const gradoId = document.getElementById('nivelAcademico')?.value;
+                        const primeraSec = seccionesGlobales.find(s => !gradoId || String(s.grado_id) === String(gradoId));
+                        if (primeraSec) {
+                            defaultSeccionId = String(primeraSec.id);
+                            defaultSeccionNombre = primeraSec.nombre;
+                        }
+                    }
+
+                    if (!defaultSeccionNombre && defaultSeccionId && typeof seccionesGlobales !== 'undefined' && Array.isArray(seccionesGlobales)) {
+                        const secObj = seccionesGlobales.find(s => String(s.id) === String(defaultSeccionId));
+                        if (secObj) defaultSeccionNombre = secObj.nombre;
                     }
 
                     horarioAsignaciones[key].push({
                         ...draggedDocente,
                         areaFormacionId: String(areaFormacionId),
-                        seccionId: seccionId ? String(seccionId) : '',
+                        seccionId: defaultSeccionId,
+                        seccion_id: defaultSeccionId,
+                        seccion_nombre: defaultSeccionNombre,
+                        seccion: defaultSeccionId ? { id: defaultSeccionId, nombre: defaultSeccionNombre } : null,
                         aulaId: ''
                     });
 
                     renderizarCalendario();
-                    mostrarNotificacion(`Docente ${draggedDocente.nombre} asignado. Seleccione sección y aula.`, 'success');        
-                                        mostrarNotificacion(`Docente ${draggedDocente.nombre} asignado correctamente. Seleccione sección y aula.`, 'success');
-                                    });
+                    mostrarNotificacion(`Docente ${draggedDocente.nombre} asignado. Seleccione sección y aula.`, 'success');
+                });
 
                 // Marcar como inicializado
                 dragAndDropInicializado = true;
@@ -2313,191 +2766,103 @@
                     return;
                 }
 
-                const destKey = `${dropZoneDestino.dataset.day}-${dropZoneDestino.dataset.block}`;
+                const diaNum = parseInt(dropZoneDestino.dataset.day);
+                const bloqueNum = parseInt(dropZoneDestino.dataset.block);
+                const destKey = `${diaNum}-${bloqueNum}`;
 
                 // Si se soltó en el mismo lugar, no hacer nada
                 if (destKey === origen.localKey) {
                     return;
                 }
 
-                const origenArr = Array.isArray(horarioAsignaciones[origen.localKey])
-                    ? horarioAsignaciones[origen.localKey]
-                    : (horarioAsignaciones[origen.localKey] ? [horarioAsignaciones[origen.localKey]] : []);
+                // Identificar información de la asignación origen
+                let origenData = null;
+                let origenSeccionId = null;
+                let origenDocenteId = null;
+                let origenSeccionNombre = '';
 
-                // Verificar si la celda destino está ocupada (local o persistida)
-                const destinoLocalArr = Array.isArray(horarioAsignaciones[destKey])
-                    ? horarioAsignaciones[destKey]
-                    : (horarioAsignaciones[destKey] ? [horarioAsignaciones[destKey]] : []);
-                const destinoAsignacionDOM = dropZoneDestino.querySelector('.assigned-docente');
-                const destinoOcupado = destinoLocalArr.length > 0 || !!destinoAsignacionDOM;
-
-                if (destinoOcupado) {
-                    // Obtener información de la asignación destino (persistida)
-                    const destinoAsignacionId = destinoAsignacionDOM?.dataset.asignacionId;
-
-                    // CASO A: ambas son persistidas → ofrecer intercambio
-                    if (origen.asignacionId && destinoAsignacionId) {
-                        const origenData = horarioData.find(h => h.id == origen.asignacionId);
-                        const destinoData = horarioData.find(h => h.id == destinoAsignacionId);
-
-                        if (origenData?.fijada || destinoData?.fijada) {
-                            mostrarNotificacion('No se puede intercambiar una clase fijada (candado activo).', 'warning');
-                            return;
-                        }
-
-                        if (origenData && destinoData) {
-                            const origenDia = diasSemana.find(d => Number(d.id || d.dia) === Number(origenData.dia));
-                            const destinoDia = diasSemana.find(d => Number(d.id || d.dia) === Number(destinoData.dia));
-
-                            const mensaje = `
-                                <strong>[${origenDia?.nombre_dia || origenData.dia_nombre || ('Día ' + origenData.dia)} - Bloque ${origenData.bloque}]:</strong><br>
-                                Docente: ${origenData.docente_nombre}<br>
-                                Sección: ${origenData.seccion_nombre}<br>
-                                Aula: ${origenData.aula_nombre}<br><br>
-                                <strong>⇄</strong><br><br>
-                                <strong>[${destinoDia?.nombre_dia || destinoData.dia_nombre || ('Día ' + destinoData.dia)} - Bloque ${destinoData.bloque}]:</strong><br>
-                                Docente: ${destinoData.docente_nombre}<br>
-                                Sección: ${destinoData.seccion_nombre}<br>
-                                Aula: ${destinoData.aula_nombre}
-                            `;
-
-                            mostrarModalConfirmacion(mensaje, async () => {
-                                try {
-                                    const response = await fetch('/api/horario/intercambiar', {
-                                        method: 'PUT',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                                        },
-                                        body: JSON.stringify({
-                                            horario_id_1: origen.asignacionId,
-                                            horario_id_2: destinoAsignacionId
-                                        })
-                                    });
-
-                                    const data = await response.json();
-
-                                    if (!response.ok) {
-                                        if (data.error === 'conflicto' && data.detalles) {
-                                            const mensajes = data.detalles.map(d => d.mensaje).join('<br>');
-                                            mostrarNotificacionConflicto('Conflicto al intercambiar: ' + mensajes, 'swap-' + Date.now());
-                                        } else {
-                                            mostrarNotificacion(data.error || 'Error al intercambiar asignaciones', 'error');
-                                        }
-                                        return;
-                                    }
-
-                                    // Actualizar horarioData en memoria
-                                    const idx1 = horarioData.findIndex(h => h.id == data.asignacion1.id);
-                                    const idx2 = horarioData.findIndex(h => h.id == data.asignacion2.id);
-
-                                    if (idx1 !== -1) {
-                                        horarioData[idx1] = {
-                                            ...horarioData[idx1],
-                                            id: data.asignacion1.id,
-                                            carga_academica_id: data.asignacion1.carga_academica_id,
-                                            docente_id: data.asignacion1.docente_id || data.asignacion1.cargaAcademica?.docente_id,
-                                            docente_nombre: data.asignacion1.docente?.persona
-                                                ? data.asignacion1.docente.persona.primer_nombre + ' ' + data.asignacion1.docente.persona.primer_apellido
-                                                : (data.asignacion1.cargaAcademica?.docente?.persona ? data.asignacion1.cargaAcademica.docente.persona.primer_nombre + ' ' + data.asignacion1.cargaAcademica.docente.persona.primer_apellido : 'N/A'),
-                                            materia_id: data.asignacion1.materia_id || data.asignacion1.cargaAcademica?.area_formacion_id,
-                                            materia_nombre: data.asignacion1.materia?.nombre_area_formacion || data.asignacion1.cargaAcademica?.areaFormacion?.nombre_area_formacion || 'N/A',
-                                            seccion_id: data.asignacion1.seccion_id || data.asignacion1.cargaAcademica?.seccion_id,
-                                            seccion_nombre: data.asignacion1.seccion?.nombre || data.asignacion1.cargaAcademica?.seccion?.nombre || 'N/A',
-                                            grado_id: data.asignacion1.seccion?.grado_id || data.asignacion1.cargaAcademica?.seccion?.grado_id || null,
-                                            grado_nombre: (data.asignacion1.seccion?.grado || data.asignacion1.cargaAcademica?.seccion?.grado)
-                                                ? (data.asignacion1.seccion?.grado?.numero_grado || data.asignacion1.cargaAcademica?.seccion?.grado?.numero_grado) + '° Grado'
-                                                : 'N/A',
-                                            aula_id: data.asignacion1.aula_id,
-                                            aula_nombre: data.asignacion1.aula?.nombre_aula || 'N/A',
-                                            aula_tipo: data.asignacion1.aula?.tipo_aula || 'N/A',
-                                            dia: data.asignacion1.dia,
-                                            dia_nombre: diasSemana.find(d => Number(d.id || d.dia) === Number(data.asignacion1.dia))?.nombre_dia || 'Día ' + data.asignacion1.dia,
-                                            bloque: data.asignacion1.bloque,
-                                            bloque_nombre: 'Bloque ' + data.asignacion1.bloque,
-                                            fijada: data.asignacion1.fijada ?? false
-                                        };
-                                    }
-
-                                    if (idx2 !== -1) {
-                                        horarioData[idx2] = {
-                                            ...horarioData[idx2],
-                                            id: data.asignacion2.id,
-                                            carga_academica_id: data.asignacion2.carga_academica_id,
-                                            docente_id: data.asignacion2.docente_id || data.asignacion2.cargaAcademica?.docente_id,
-                                            docente_nombre: data.asignacion2.docente?.persona
-                                                ? data.asignacion2.docente.persona.primer_nombre + ' ' + data.asignacion2.docente.persona.primer_apellido
-                                                : (data.asignacion2.cargaAcademica?.docente?.persona ? data.asignacion2.cargaAcademica.docente.persona.primer_nombre + ' ' + data.asignacion2.cargaAcademica.docente.persona.primer_apellido : 'N/A'),
-                                            materia_id: data.asignacion2.materia_id || data.asignacion2.cargaAcademica?.area_formacion_id,
-                                            materia_nombre: data.asignacion2.materia?.nombre_area_formacion || data.asignacion2.cargaAcademica?.areaFormacion?.nombre_area_formacion || 'N/A',
-                                            seccion_id: data.asignacion2.seccion_id || data.asignacion2.cargaAcademica?.seccion_id,
-                                            seccion_nombre: data.asignacion2.seccion?.nombre || data.asignacion2.cargaAcademica?.seccion?.nombre || 'N/A',
-                                            grado_id: data.asignacion2.seccion?.grado_id || data.asignacion2.cargaAcademica?.seccion?.grado_id || null,
-                                            grado_nombre: (data.asignacion2.seccion?.grado || data.asignacion2.cargaAcademica?.seccion?.grado)
-                                                ? (data.asignacion2.seccion?.grado?.numero_grado || data.asignacion2.cargaAcademica?.seccion?.grado?.numero_grado) + '° Grado'
-                                                : 'N/A',
-                                            aula_id: data.asignacion2.aula_id,
-                                            aula_nombre: data.asignacion2.aula?.nombre_aula || 'N/A',
-                                            aula_tipo: data.asignacion2.aula?.tipo_aula || 'N/A',
-                                            dia: data.asignacion2.dia,
-                                            dia_nombre: diasSemana.find(d => Number(d.id || d.dia) === Number(data.asignacion2.dia))?.nombre_dia || 'Día ' + data.asignacion2.dia,
-                                            bloque: data.asignacion2.bloque,
-                                            bloque_nombre: 'Bloque ' + data.asignacion2.bloque,
-                                            fijada: data.asignacion2.fijada ?? false
-                                        };
-                                    }
-
-                                    mostrarNotificacion('Asignaciones intercambiadas exitosamente', 'success');
-                                    renderizarCalendario();
-                                } catch (error) {
-                                    console.error('Error al intercambiar asignaciones:', error);
-                                    mostrarNotificacion('Error de conexión al servidor', 'error');
-                                }
-                            });
-                            return;
-                        }
-                    }
-
-                    // CASO B: una local + una persistida → bloquear
-                    if ((origen.asignacionId && !destinoAsignacionId) || (!origen.asignacionId && destinoAsignacionId)) {
-                        mostrarNotificacion('No se puede intercambiar una asignación guardada con una que aún no se ha guardado', 'warning');
-                        return;
-                    }
-
-                    // CASO C: ambas locales → mover el array
-                    if (!origen.asignacionId && !destinoAsignacionId) {
-                        if (Array.isArray(origenArr) && origenArr.some(a => a.fijada)) {
-                            mostrarNotificacion('No se puede intercambiar una clase fijada (candado activo).', 'warning');
-                            return;
-                        }
-                        if (Array.isArray(destinoLocalArr) && destinoLocalArr.some(a => a.fijada)) {
-                            mostrarNotificacion('No se puede intercambiar una clase fijada (candado activo).', 'warning');
-                            return;
-                        }
-                        if (!Array.isArray(horarioAsignaciones[destKey])) {
-                            horarioAsignaciones[destKey] = destinoLocalArr.slice();
-                        }
-                        horarioAsignaciones[destKey].push(...origenArr);
-                        delete horarioAsignaciones[origen.localKey];
-                        renderizarCalendario();
-                        mostrarNotificacion('Asignación movida localmente', 'success');
-                        return;
-                    }
-
-                    mostrarNotificacion('La celda destino ya está ocupada', 'error');
-                    return;
-                }
-
-                // CASO D: destino vacío
                 if (origen.asignacionId) {
-                    const origenData = horarioData.find(h => h.id == origen.asignacionId);
+                    origenData = horarioData.find(h => h.id == origen.asignacionId);
                     if (origenData?.fijada) {
                         mostrarNotificacion('Esta clase está fijada y no se puede mover', 'warning');
                         return;
                     }
+                    origenSeccionId = origenData?.seccion_id || origenData?.cargaAcademica?.seccion_id || origenData?.cargaAcademica?.seccion?.id;
+                    origenDocenteId = origenData?.docente_id || origenData?.cargaAcademica?.docente_id;
+                    origenSeccionNombre = origenData?.seccion_nombre || origenData?.cargaAcademica?.seccion?.nombre || '';
+                } else {
+                    const origenArr = Array.isArray(horarioAsignaciones[origen.localKey])
+                        ? horarioAsignaciones[origen.localKey]
+                        : (horarioAsignaciones[origen.localKey] ? [horarioAsignaciones[origen.localKey]] : []);
+                    if (origenArr.some(a => a.fijada)) {
+                        mostrarNotificacion('Esta clase está fijada y no se puede mover', 'warning');
+                        return;
+                    }
+                    const primera = origenArr[0];
+                    origenSeccionId = primera?.seccionId;
+                    origenDocenteId = primera?.id;
+                    origenSeccionNombre = primera?.secciones?.find(s => s.id == origenSeccionId)?.nombre || '';
+                }
 
-                    const diaNum = parseInt(dropZoneDestino.dataset.day);
-                    const bloqueNum = parseInt(dropZoneDestino.dataset.block);
+                // Filtro de sección activo en la interfaz
+                const seccionFiltro = document.getElementById('seccion')?.value || '';
+
+                // Asignaciones presentes en la celda destino (excluyendo la que se está moviendo)
+                const persistidasEnDestino = horarioData.filter(h => 
+                    Number(h.dia) === diaNum && 
+                    Number(h.bloque) === bloqueNum && 
+                    h.id != origen.asignacionId
+                );
+
+                const localesEnDestino = Array.isArray(horarioAsignaciones[destKey])
+                    ? horarioAsignaciones[destKey]
+                    : (horarioAsignaciones[destKey] ? [horarioAsignaciones[destKey]] : []);
+
+                // 3. MODO "Sección Específica":
+                if (seccionFiltro !== '') {
+                    // Si el usuario está viendo una sección específica y ya hay una clase en esa celda
+                    const tieneClaseEnCelda = persistidasEnDestino.some(h => {
+                        const sId = h.seccion_id || h.cargaAcademica?.seccion_id || h.cargaAcademica?.seccion?.id;
+                        return String(sId) === String(seccionFiltro);
+                    }) || localesEnDestino.some(a => String(a.seccionId) === String(seccionFiltro));
+
+                    if (tieneClaseEnCelda || dropZoneDestino.querySelector('.assigned-docente')) {
+                        mostrarNotificacion('Esta sección ya tiene una clase en este bloque', 'error');
+                        return;
+                    }
+                }
+
+                // 4. MODO "Todas las secciones":
+                if (seccionFiltro === '') {
+                    // Validar si la misma sección ya tiene clase en este bloque
+                    if (origenSeccionId) {
+                        const seccionOcupada = persistidasEnDestino.some(h => {
+                            const sId = h.seccion_id || h.cargaAcademica?.seccion_id || h.cargaAcademica?.seccion?.id;
+                            return String(sId) === String(origenSeccionId);
+                        }) || localesEnDestino.some(a => String(a.seccionId) === String(origenSeccionId));
+
+                        if (seccionOcupada) {
+                            mostrarNotificacion(`Esta sección ya tiene una clase en este bloque`, 'error');
+                            return;
+                        }
+                    }
+
+                    // Validar si el mismo docente ya tiene clase en este bloque
+                    if (origenDocenteId) {
+                        const docenteOcupado = persistidasEnDestino.some(h => {
+                            const dId = h.docente_id || h.cargaAcademica?.docente_id;
+                            return String(dId) === String(origenDocenteId);
+                        }) || localesEnDestino.some(a => String(a.id) === String(origenDocenteId));
+
+                        if (docenteOcupado) {
+                            mostrarNotificacion('El docente ya tiene una clase en este bloque', 'error');
+                            return;
+                        }
+                    }
+                }
+
+                // Procesar movimiento:
+                if (origen.asignacionId) {
                     const diaObj = diasSemana.find(d => Number(d.id || d.dia) === diaNum);
 
                     try {
@@ -2535,15 +2900,16 @@
                         mostrarNotificacion('Error de conexión al servidor', 'error');
                     }
                 } else {
-                    // Asignación solo local → mover el array en memoria
-                    if (Array.isArray(origenArr) && origenArr.some(a => a.fijada)) {
-                        mostrarNotificacion('Esta clase está fijada y no se puede mover', 'warning');
-                        return;
+                    const origenArr = Array.isArray(horarioAsignaciones[origen.localKey])
+                        ? horarioAsignaciones[origen.localKey]
+                        : (horarioAsignaciones[origen.localKey] ? [horarioAsignaciones[origen.localKey]] : []);
+
+                    if (!Array.isArray(horarioAsignaciones[destKey])) {
+                        horarioAsignaciones[destKey] = [];
                     }
-                    const destArr = Array.isArray(horarioAsignaciones[destKey])
-                        ? horarioAsignaciones[destKey]
-                        : (horarioAsignaciones[destKey] ? [horarioAsignaciones[destKey]] : []);
-                    horarioAsignaciones[destKey] = destArr.concat(origenArr);
+
+                    // Agregar (append) al array de destino
+                    horarioAsignaciones[destKey].push(...origenArr);
                     delete horarioAsignaciones[origen.localKey];
                     renderizarCalendario();
                     mostrarNotificacion('Asignación movida localmente', 'success');
@@ -2564,13 +2930,21 @@
             // Función para asignar sección local
             window.asignarSeccionLocal = function(selectElement) {
                 const key = selectElement.dataset.key;
-                if (horarioAsignaciones[key]) {
-                    horarioAsignaciones[key].seccionId = selectElement.value;
-                    // Re-renderizar la celda inmediatamente para aplicar bloqueo de aula si corresponde
-                    const dropZone = selectElement.closest('.drop-zone');
-                    if (dropZone) {
-                        dropZone.innerHTML = renderizarAsignacionLocalHTML(key, horarioAsignaciones[key]);
+                const index = parseInt(selectElement.dataset.index || 0, 10);
+                const arr = horarioAsignaciones[key];
+                const target = Array.isArray(arr) ? arr[index] : arr;
+                if (target) {
+                    const secId = selectElement.value;
+                    let secNom = selectElement.options[selectElement.selectedIndex]?.text?.trim() || '';
+                    if ((!secNom || secNom.includes('Seleccione')) && typeof seccionesGlobales !== 'undefined') {
+                        const secObj = seccionesGlobales.find(s => String(s.id) === String(secId));
+                        if (secObj) secNom = secObj.nombre;
                     }
+                    target.seccionId = secId;
+                    target.seccion_id = secId;
+                    target.seccion_nombre = (secNom && !secNom.includes('Seleccione')) ? secNom : '';
+                    target.seccion = secId ? { id: secId, nombre: target.seccion_nombre } : null;
+                    renderizarCalendario();
                     mostrarNotificacion('Sección asignada correctamente', 'success');
                 }
             };
