@@ -42,6 +42,8 @@ use App\Http\Controllers\ActaEntrevistaController;
 use App\Http\Controllers\Seccion_AulaController;
 use App\Http\Controllers\DocenteNoDisponibilidadController;
 use App\Http\Controllers\CalendarioAcademicoController;
+use App\Http\Controllers\ConfiguracionHorarioController;
+use App\Http\Controllers\PosicionMateriaController;
 use App\Models\Historico;
 
 Route::get('/', function () {
@@ -480,6 +482,11 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
     Route::get('horario/{grado_id}/{seccion_id}/show-api', [HorarioController::class, 'showApi'])->middleware('permission:horarios.ver')->name('horario.show-api');
 
     Route::middleware(['permission:horarios.gestionar'])->group(function () {
+        Route::get('horario/configuracion', [ConfiguracionHorarioController::class, 'index'])->name('horario.configuracion');
+        Route::put('horario/configuracion', [ConfiguracionHorarioController::class, 'update'])->name('horario.configuracion.update');
+        Route::get('horario/posiciones', [PosicionMateriaController::class, 'index'])->name('horario.posiciones');
+        Route::post('horario/posiciones', [PosicionMateriaController::class, 'guardar'])->name('horario.posiciones.guardar');
+        Route::get('horario/posiciones/consultar', [PosicionMateriaController::class, 'consultar'])->name('horario.posiciones.consultar');
         Route::get('horario/create', [HorarioController::class, 'create'])->name('horario.create');
         Route::get('horario/{grado_id}/{seccion_id}/edit', [HorarioController::class, 'edit'])->name('horario.edit');
         Route::put('horario/{grado_id}/{seccion_id}', [HorarioController::class, 'update'])->name('horario.update');

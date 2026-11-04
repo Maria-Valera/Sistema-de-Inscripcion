@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\BloqueHorario;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class BloqueHorarioSeeder extends Seeder
 {
@@ -13,6 +14,11 @@ class BloqueHorarioSeeder extends Seeder
      */
     public function run(): void
     {
+        if (!Schema::hasTable('bloque_horarios')) {
+            $this->command?->info('Tabla bloque_horarios no existe (obsoleta tras refactor de horarios). Omitiendo seeder.');
+            return;
+        }
+
         $bloques = [
             ['hora_inicio' => '07:00', 'hora_fin' => '07:45', 'status' => true],
             ['hora_inicio' => '07:45', 'hora_fin' => '08:30', 'status' => true],
@@ -25,9 +31,9 @@ class BloqueHorarioSeeder extends Seeder
         ];
 
         foreach ($bloques as $bloque) {
-            BloqueHorario::firstOrCreate($bloque);
+            DB::table('bloque_horarios')->insertOrIgnore($bloque);
         }
 
-        $this->command->info('Bloques horarios creados exitosamente.');
+        $this->command?->info('Bloques horarios creados exitosamente.');
     }
 }

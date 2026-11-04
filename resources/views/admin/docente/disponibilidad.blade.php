@@ -133,9 +133,14 @@
                     <table class="disponibilidad-grid">
                         <thead>
                             <tr>
-                                <th>Bloque</th>
+                                <th style="vertical-align: middle;">Bloque</th>
                                 @foreach($diasSemana as $dia)
-                                    <th>{{ $dia->nombre_dia }}</th>
+                                    <th>
+                                        <div class="fw-bold mb-1">{{ $dia->nombre_dia ?? $dia->nombre }}</div>
+                                        <button type="button" class="btn btn-xs btn-outline-secondary btn-dia-completo" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px;" onclick="toggleDiaCompleto({{ $dia->id ?? $dia->dia }})">
+                                            <i class="fas fa-calendar-check me-1"></i>Día completo
+                                        </button>
+                                    </th>
                                 @endforeach
                             </tr>
                         </thead>
@@ -198,31 +203,35 @@
             const tbody = document.getElementById('disponibilidadBody');
             tbody.innerHTML = '';
 
-            bloquesHorario.forEach(bloque => {
+            bloquesHorario.forEach((bloque, idx) => {
                 const row = document.createElement('tr');
+                const numBloque = Number(bloque.bloque || bloque.id || (idx + 1));
                 
-                // Celda del bloque (nombre del bloque)
+                // Celda del bloque
                 const bloqueCell = document.createElement('td');
-                bloqueCell.innerHTML = `<strong>${bloque.hora_inicio} - ${bloque.hora_fin}</strong>`;
+                bloqueCell.innerHTML = `<strong>Bloque ${numBloque}</strong><br><small class="text-muted">${bloque.hora_inicio || ''} - ${bloque.hora_fin || ''}</small>`;
                 row.appendChild(bloqueCell);
 
                 // Celdas de cada día
                 diasSemana.forEach(dia => {
+                    const numDia = Number(dia.dia || dia.id);
                     const cell = document.createElement('td');
                     cell.className = 'disponibilidad-cell';
-                    cell.dataset.diaId = dia.id;
-                    cell.dataset.bloqueId = bloque.id;
+                    cell.dataset.diaId = numDia;
+                    cell.dataset.bloqueId = numBloque;
 
                     // Verificar si esta celda está marcada como no disponible
-                    const isNoDisponible = noDisponibilidades.some(nd => 
-                        nd.dias_semana_id === dia.id && nd.id_bloque_hora === bloque.id
+                    const match = noDisponibilidades.find(nd => 
+                        Number(nd.dia) === numDia &&
+                        Number(nd.bloque) === numBloque
                     );
 
-                    if (isNoDisponible) {
+                    if (match) {
                         cell.classList.add('no-disponible');
-                        cell.dataset.registroId = noDisponibilidades.find(nd => 
-                            nd.dias_semana_id === dia.id && nd.id_bloque_hora === bloque.id
-                        ).id;
+                        cell.dataset.registroId = match.id;
+                        cell.innerHTML = '<span class="badge bg-danger" style="font-size: 0.75rem;"><i class="fas fa-ban me-1"></i>No Disp.</span>';
+                    } else {
+                        cell.innerHTML = '';
                     }
 
                     cell.addEventListener('click', () => toggleDisponibilidad(cell));
@@ -233,7 +242,7 @@
             });
         }
 
-        // Función para alternar disponibilidad
+        // Función para alternar disponibilidad de una sola celda
         async function toggleDisponibilidad(cell) {
             const diaId = cell.dataset.diaId;
             const bloqueId = cell.dataset.bloqueId;
@@ -257,6 +266,7 @@
                     }
                     
                     cell.classList.remove('no-disponible');
+                    cell.innerHTML = '';
                     delete cell.dataset.registroId;
                 } else {
                     // Crear registro
@@ -268,9 +278,11 @@
                         },
                         body: JSON.stringify({
                             cedula_persona: cedulaPersona,
-                            id_dias_semana: diaId,
-                            id_bloque: bloqueId,
+                            dia: diaId,
+                            bloque: bloqueId,
                             anio_escolar: anioEscolarId,
+                            tipo: 'prohibido',
+                            estado: 'aprobada',
                             motivo: 'Marcado por administrador'
                         })
                     });
@@ -282,6 +294,7 @@
                     const data = await response.json();
                     cell.classList.add('no-disponible');
                     cell.dataset.registroId = data.id;
+                    cell.innerHTML = '<span class="badge bg-danger" style="font-size: 0.75rem;"><i class="fas fa-ban me-1"></i>No Disp.</span>';
                 }
             } catch (error) {
                 console.error('Error al cambiar disponibilidad:', error);
@@ -290,6 +303,61 @@
                 showLoading(false);
             }
         }
+
+        // Función para alternar día completo (todos los bloques de ese día)
+        window.toggleDiaCompleto = async function(diaId) {
+            const celdasDelDia = document.querySelectorAll(`.disponibilidad-cell[data-dia-id="${diaId}"]`);
+            if (!celdasDelDia.length) return;
+
+            const todasMarcadas = Array.from(celdasDelDia).every(c => c.classList.contains('no-disponible'));
+            showLoading(true);
+
+            try {
+                if (todasMarcadas) {
+                    // Desmarcar todas las celdas de ese día
+                    for (const cell of celdasDelDia) {
+                        const registroId = cell.dataset.registroId;
+                        if (registroId) {
+                            await fetch(`/api/docente-no-disponibilidad/${registroId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                }
+                            });
+                        }
+                    }
+                } else {
+                    // Marcar todas las celdas faltantes de ese día
+                    for (const cell of celdasDelDia) {
+                        if (!cell.classList.contains('no-disponible')) {
+                            const bloqueId = cell.dataset.bloqueId;
+                            await fetch('/api/docente-no-disponibilidad', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                },
+                                body: JSON.stringify({
+                                    cedula_persona: cedulaPersona,
+                                    dia: diaId,
+                                    bloque: bloqueId,
+                                    anio_escolar: anioEscolarId,
+                                    tipo: 'prohibido',
+                                    estado: 'aprobada',
+                                    motivo: 'Día completo marcado por administrador'
+                                })
+                            });
+                        }
+                    }
+                }
+                await cargarNoDisponibilidades();
+            } catch (error) {
+                console.error('Error al alternar día completo:', error);
+                alert('Ocurrió un error al procesar el día completo.');
+            } finally {
+                showLoading(false);
+            }
+        };
 
         // Cargar disponibilidades al iniciar
         cargarNoDisponibilidades();

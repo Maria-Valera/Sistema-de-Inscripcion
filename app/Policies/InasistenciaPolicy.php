@@ -83,8 +83,9 @@ class InasistenciaPolicy
                 ->toArray();
 
             $seccionesHorario = DB::table('horario_asignaciones')
-                ->where('docente_id', $docente->id)
-                ->pluck('seccion_id')
+                ->join('cargas_academicas', 'horario_asignaciones.carga_academica_id', '=', 'cargas_academicas.id')
+                ->where('cargas_academicas.docente_id', $docente->id)
+                ->pluck('cargas_academicas.seccion_id')
                 ->toArray();
 
             $secciones = array_values(array_unique(array_filter(array_merge($seccionesCarga, $seccionesHorario))));

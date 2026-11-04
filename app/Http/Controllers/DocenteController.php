@@ -16,6 +16,8 @@ use App\Models\AnioEscolar;
 use App\Models\Grado;
 use App\Models\Seccion;
 use App\Models\AreaFormacion;
+use App\Enums\Dia;
+use App\Services\ConfiguracionHorarioService;
 use Illuminate\Http\JsonResponse;
 
 class DocenteController extends Controller
@@ -27,98 +29,130 @@ class DocenteController extends Controller
             ->exists();
     }
 
-    public function apiIndex(Request $request){
+    public function apiIndex(Request $request)
+    {
         $gradoId = $request->query('grado_id');
         $areaFormacionId = $request->query('area_formacion_id');
         $seccionId = $request->query('seccion_id');
 
-        $query = Docente::with(['persona'])
+        $query = Docente::with(['persona', 'cargasAcademicas.areaFormacion', 'cargasAcademicas.seccion'])
             ->where('status', true)
             ->whereHas('persona', function ($query) {
                 $query->where('status', true);
             });
 
-    // Filtrar por grado y área de formación (deben coincidir en la MISMA fila)
-    if ($gradoId && $areaFormacionId) {
-        $query->whereHas('detalleDocenteEstudio.docenteAreaGrados', function ($query) use ($gradoId, $areaFormacionId) {
-            $query->where('grado_id', $gradoId)
-                ->where('status', true)
-                ->whereHas('areaEstudios', function ($q) use ($areaFormacionId) {
-                    $q->where('area_formacion_id', $areaFormacionId);
+        // Filtrar por grado, área y/o sección usando CargaAcademica (con fallback a docente_area_grados)
+        if ($seccionId || $areaFormacionId || $gradoId) {
+            $query->where(function ($q) use ($gradoId, $areaFormacionId, $seccionId) {
+                // 1. Carga Académica (modelo normalizado)
+                $q->whereHas('cargasAcademicas', function ($cq) use ($gradoId, $areaFormacionId, $seccionId) {
+                    if ($seccionId) {
+                        $cq->where('seccion_id', $seccionId);
+                    }
+                    if ($areaFormacionId) {
+                        $cq->where('area_formacion_id', $areaFormacionId);
+                    }
+                    if ($gradoId) {
+                        $cq->whereHas('seccion', fn($sq) => $sq->where('grado_id', $gradoId));
+                    }
+                })
+                // 2. Fallback: docente_area_grados (histórico)
+                ->orWhereHas('detalleDocenteEstudio.docenteAreaGrados', function ($dq) use ($gradoId, $areaFormacionId, $seccionId) {
+                    $dq->where('status', true);
+                    if ($seccionId) {
+                        $dq->where('seccion_id', $seccionId);
+                    }
+                    if ($gradoId) {
+                        $dq->where('grado_id', $gradoId);
+                    }
+                    if ($areaFormacionId) {
+                        $dq->whereHas('areaEstudios', fn($aq) => $aq->where('area_formacion_id', $areaFormacionId));
+                    }
                 });
-        });
-    } elseif ($gradoId) {
-        $query->whereHas('detalleDocenteEstudio.docenteAreaGrados', function ($query) use ($gradoId) {
-            $query->where('grado_id', $gradoId)
-                ->where('status', true);
-        });
-    } elseif ($areaFormacionId) {
-        $query->whereHas('detalleDocenteEstudio.docenteAreaGrados.areaEstudios', function ($query) use ($areaFormacionId) {
-            $query->where('area_formacion_id', $areaFormacionId);
-        });
-    }
-
-        // Filtrar por sección si se proporciona
-        if ($seccionId) {
-            $query->whereHas('detalleDocenteEstudio.docenteAreaGrados', function ($query) use ($seccionId) {
-                $query->where('seccion_id', $seccionId)
-                      ->where('status', true);
             });
         }
 
         $docentes = $query->get();
 
         // Transformar los datos para incluir nombre completo, áreas y secciones
-        $resultado = $docentes->map(function ($docente) use ($gradoId, $areaFormacionId) {
-            // Obtener áreas de formación del docente
-        $areas = DB::table('docentes as d')
-            ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
-            ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
-            ->join('area_estudio_realizados as aer', 'dag.area_estudio_realizado_id', '=', 'aer.id')
-            ->join('area_formacions as af', 'aer.area_formacion_id', '=', 'af.id')
-            ->where('d.id', $docente->id)
-            ->where('dde.status', true)
-            ->where('dag.status', true)
-            ->where('af.status', true)
-            ->distinct()
-            ->pluck('af.nombre_area_formacion')
-            ->toArray();
+        $resultado = $docentes->map(function ($docente) use ($gradoId, $areaFormacionId, $seccionId) {
+            $cargas = $docente->cargasAcademicas;
 
-            // Obtener secciones del docente
-        $seccionesQuery = DB::table('docentes as d')
-            ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
-            ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
-            ->join('seccions as s', 'dag.seccion_id', '=', 's.id')
-            ->where('d.id', $docente->id)
-            ->where('dde.status', true)
-            ->where('dag.status', true)
-            ->where('s.status', true);
+            if ($cargas && $cargas->isNotEmpty()) {
+                $areas = $cargas->pluck('areaFormacion.nombre_area_formacion')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
 
-        if ($gradoId) {
-            $seccionesQuery->where('dag.grado_id', $gradoId);
-        }
+                $secciones = $cargas->map(function ($c) use ($gradoId) {
+                    if (!$c->seccion) return null;
+                    if ($gradoId && $c->seccion->grado_id != $gradoId) return null;
+                    return [
+                        'id' => $c->seccion->id,
+                        'nombre' => $c->seccion->nombre,
+                        'grado_id' => $c->seccion->grado_id,
+                    ];
+                })->filter()->unique('id')->values()->all();
+            } else {
+                // Fallback histórico para registros sin cargas académicas migradas
+                $areas = DB::table('docentes as d')
+                    ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
+                    ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
+                    ->join('area_estudio_realizados as aer', 'dag.area_estudio_realizado_id', '=', 'aer.id')
+                    ->join('area_formacions as af', 'aer.area_formacion_id', '=', 'af.id')
+                    ->where('d.id', $docente->id)
+                    ->where('dde.status', true)
+                    ->where('dag.status', true)
+                    ->where('af.status', true)
+                    ->distinct()
+                    ->pluck('af.nombre_area_formacion')
+                    ->toArray();
 
-        if ($areaFormacionId) {
-            $seccionesQuery->join('area_estudio_realizados as aer', 'dag.area_estudio_realizado_id', '=', 'aer.id')
-                ->where('aer.area_formacion_id', $areaFormacionId);
-        }
+                $seccionesQuery = DB::table('docentes as d')
+                    ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
+                    ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
+                    ->join('seccions as s', 'dag.seccion_id', '=', 's.id')
+                    ->where('d.id', $docente->id)
+                    ->where('dde.status', true)
+                    ->where('dag.status', true)
+                    ->where('s.status', true);
 
-        $secciones = $seccionesQuery
-            ->select('s.id', 's.nombre')
-            ->distinct()
-            ->get()
-            ->toArray();
+                if ($gradoId) {
+                    $seccionesQuery->where('dag.grado_id', $gradoId);
+                }
+
+                if ($areaFormacionId) {
+                    $seccionesQuery->join('area_estudio_realizados as aer', 'dag.area_estudio_realizado_id', '=', 'aer.id')
+                        ->where('aer.area_formacion_id', $areaFormacionId);
+                }
+
+                $secciones = $seccionesQuery
+                    ->select('s.id', 's.nombre')
+                    ->distinct()
+                    ->get()
+                    ->toArray();
+            }
+
+            $persona = $docente->persona;
+            $rawNombre = preg_replace('/\s+/', ' ', trim($docente->nombre_completo));
+            if (empty($rawNombre) && $persona) {
+                $rawNombre = preg_replace('/\s+/', ' ', trim(
+                    ($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? '')
+                ));
+            }
 
             return [
                 'id' => $docente->id,
-                'nombre_completo' => $docente->nombre_completo,
-                'cedula' => $docente->persona ? $docente->persona->numero_documento : 'N/A',
+                'nombre' => $rawNombre,
+                'nombre_completo' => $rawNombre,
+                'cedula' => $persona ? $persona->numero_documento : 'N/A',
                 'area' => !empty($areas) ? implode(', ', $areas) : 'Sin área asignada',
                 'areas' => $areas,
                 'secciones' => $secciones,
-                'horas_academicas' => $docente->horas_academicas,
+                'horas_academicas' => (int) ($docente->horas_academicas ?? 0),
                 'persona_id' => $docente->persona_id,
-                'codigo' => $docente->codigo
+                'codigo' => $docente->codigo,
             ];
         });
 
@@ -463,27 +497,44 @@ class DocenteController extends Controller
         return view('admin.docente.estudios', compact('docentes', 'estudios', 'docenteEstudios'));
     }
 
-    public function disponibilidad($id)
+    public function disponibilidad($id, ConfiguracionHorarioService $configService)
     {
         $docente = Docente::with([
-            'persona',
-            'noDisponibilidades.diaSemana',
-            'noDisponibilidades.bloqueHorario',
+            'persona.tipoDocumento',
             'noDisponibilidades.anioEscolar'
         ])->findOrFail($id);
 
-        $diasSemana = \App\Models\Dias_semana::all();
-        $bloquesHorario = \App\Models\BloqueHorario::where('status', true)->get();
         $aniosEscolares = AnioEscolar::activos()->get();
-
         $anioEscolarActivo = AnioEscolar::activos()->first();
+
+        $config = $anioEscolarActivo ? $configService->obtenerConfiguracion($anioEscolarActivo->id) : null;
+        $numeroBloques = $config ? (int)$config->numero_bloques : 7;
+        $bloquesCalculados = $config ? $configService->calcularHorasBloques($config) : collect();
+
+        $diasSemana = collect(Dia::cases())->map(fn(Dia $d) => (object)[
+            'id' => $d->value,
+            'dia' => $d->value,
+            'nombre_dia' => $d->label(),
+            'nombre' => $d->label()
+        ]);
+
+        $bloquesHorario = collect(range(1, $numeroBloques))->map(function($b) use ($bloquesCalculados) {
+            $info = $bloquesCalculados->get($b, ['inicio' => '07:00', 'fin' => '07:45']);
+            return (object)[
+                'id' => $b,
+                'bloque' => $b,
+                'hora_inicio' => $info['inicio'],
+                'hora_fin' => $info['fin']
+            ];
+        });
 
         return view('admin.docente.disponibilidad', compact(
             'docente',
             'diasSemana',
             'bloquesHorario',
             'aniosEscolares',
-            'anioEscolarActivo'
+            'anioEscolarActivo',
+            'numeroBloques'
         ));
     }
 

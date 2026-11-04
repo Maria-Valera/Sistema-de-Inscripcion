@@ -67,11 +67,11 @@ class DatabaseSeeder extends Seeder
             BloqueHorarioSeeder::class,
             DocenteAreaGradoSeeder::class,
             SeccionAulaSeeder::class,
-
-// ===== Maestros de notas y calendario (un seeder por persona) =====
+            // ===== Maestros de notas y calendario (un seeder por persona) =====
             StephaniaMaestrosSeeder::class,
             MariaMaestrosSeeder::class,
             JoseMaestrosSeeder::class,
+
 
             /*InscripcionProsecucionSeeder::class,
             ProsecucionAreaSeeder::class,  */

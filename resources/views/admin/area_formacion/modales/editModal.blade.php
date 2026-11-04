@@ -60,14 +60,14 @@
                     </div>
 
                     <div class="form-group-modern">
-                        <label for="horas_semanales_{{ $datos->id }}" class="form-label-modern">
+                        <label for="bloques_semanales_{{ $datos->id }}" class="form-label-modern">
                             <i class="fas fa-clock"></i>
-                            Horas Semanales
+                            Bloques Semanales
                         </label>
-                        <input type="number" class="form-control-modern" id="horas_semanales_{{ $datos->id }}"
-                            name="horas_semanales" value="{{ $datos->horas_semanales }}" required
+                        <input type="number" class="form-control-modern" id="bloques_semanales_{{ $datos->id }}"
+                            name="bloques_semanales" value="{{ $datos->bloques_semanales }}" required
                             min="1" max="40">
-                        @error('horas_semanales')
+                        @error('bloques_semanales')
                             <div class="error-message">
                                 Este campo es obligatorio.
                             </div>
