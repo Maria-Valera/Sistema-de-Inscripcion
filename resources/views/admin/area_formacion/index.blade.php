@@ -131,7 +131,7 @@
                                         <td>{{ $datos->siglas }}</td>
                                         <td>
                                             <span class="badge badge-info">
-                                                <i class="fas fa-clock"></i> {{ $datos->horas_semanales }} hrs
+                                                <i class="fas fa-clock"></i> {{ $datos->bloques_semanales }} bloques
                                             </span>
                                         </td>
                                         <td>

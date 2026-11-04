@@ -339,6 +339,18 @@ Breadcrumbs::for('admin.horario.create', function (Trail $trail) {
     $trail->push('Nuevo Horario', route('admin.horario.create'));
 });
 
+// Horario configuración
+Breadcrumbs::for('admin.horario.configuracion', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Configuración de Bloques', route('admin.horario.configuracion'));
+});
+
+// Horario posiciones pedagógicas por materia
+Breadcrumbs::for('admin.horario.posiciones', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Posiciones por Materia', route('admin.horario.posiciones'));
+});
+
 // Inasistencia
 Breadcrumbs::for('admin.inasistencia.index', function (Trail $trail) {
     $trail->parent('home');

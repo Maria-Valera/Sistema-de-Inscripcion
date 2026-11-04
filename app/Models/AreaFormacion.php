@@ -14,9 +14,7 @@ class AreaFormacion extends Model
         'nombre_area_formacion',
         'codigo_area',
         'siglas',
-        'horas_semanales',
-        'bloques_maximos_por_dia',
-        'dias_max_semana',
+        'bloques_semanales',
         'aula_id',
         'status',
     ];
@@ -35,6 +33,11 @@ class AreaFormacion extends Model
         return $this->belongsTo(Aula::class, 'aula_id', 'id_aula');
     }
 
+    public function posiciones()
+    {
+        return $this->hasMany(AreaFormacionPosicion::class, 'area_formacion_id');
+    }
+
     public function getEsEspecializadaAttribute(): bool
     {
         if (!$this->aula_id) {
@@ -45,6 +48,4 @@ class AreaFormacion extends Model
             : $this->aula()->value('tipo_aula');
         return $tipoAula !== 'Aula Regular';
     }
-
-
 }
