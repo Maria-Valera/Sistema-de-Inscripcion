@@ -41,12 +41,9 @@ use App\Http\Controllers\Permisos_RepososController;
 use App\Http\Controllers\ActaEntrevistaController;
 use App\Http\Controllers\Seccion_AulaController;
 use App\Http\Controllers\DocenteNoDisponibilidadController;
-<<<<<<< HEAD
 use App\Http\Controllers\CalendarioAcademicoController;
-=======
 use App\Http\Controllers\ConfiguracionHorarioController;
 use App\Http\Controllers\PosicionMateriaController;
->>>>>>> steph
 use App\Models\Historico;
 
 Route::get('/', function () {
