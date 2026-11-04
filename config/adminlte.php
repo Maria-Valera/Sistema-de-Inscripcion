@@ -2,6 +2,28 @@
 
 
 
+/*
+|--------------------------------------------------------------------------
+| Menus de los maestros (un archivo por persona)
+|--------------------------------------------------------------------------
+| Cada persona agrega sus opciones SOLO en config/maestros/menu/<nombre>.php.
+| Las entradas padre de abajo juntan las opciones de las tres personas.
+*/
+$menusMaestros = [
+    require __DIR__ . '/maestros/menu/stephania.php',
+    require __DIR__ . '/maestros/menu/maria.php',
+    require __DIR__ . '/maestros/menu/jose.php',
+];
+$opcionesDe = fn (string $seccion) => array_merge(...array_map(fn ($m) => $m[$seccion] ?? [], $menusMaestros));
+$entradasMaestros = array_values(array_filter([
+    ['text' => 'Calendario y Evaluación', 'icon' => 'fas fa-fw fa-calendar-day', 'submenu' => $opcionesDe('calendario')],
+    ['text' => 'Notas', 'icon' => 'fas fa-fw fa-clipboard-check', 'submenu' => $opcionesDe('notas')],
+    ['text' => 'Institución', 'icon' => 'fas fa-fw fa-school', 'submenu' => $opcionesDe('institucion')],
+], fn ($entrada) => ! empty($entrada['submenu'])));
+if ($entradasMaestros) {
+    array_unshift($entradasMaestros, ['header' => 'MAESTROS DE NOTAS']);
+}
+
 return [
 
 
@@ -254,6 +276,10 @@ return [
             'icon' => 'fas fa-clock',
             'can' => ['horarios.ver', 'portal_horarios.ver_docente'],
         ],
+
+                // ================== MAESTROS DE NOTAS Y CALENDARIO ==================
+        // Se arman desde config/maestros/menu/*.php (no editar aqui).
+        ...$entradasMaestros,
 
         ['header' => 'INSCRIPCIONES'],
 

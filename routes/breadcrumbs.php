@@ -356,3 +356,8 @@ Breadcrumbs::for('admin.bloque_horario.index', function (Trail $trail) {
     $trail->parent('home');
     $trail->push('Gestión de Bloques Horarios', route('admin.bloque_horario.index'));
 });
+
+// ===== MAESTROS DE NOTAS Y CALENDARIO (un archivo por persona) =====
+require __DIR__ . '/breadcrumbs/stephania.php';
+require __DIR__ . '/breadcrumbs/maria.php';
+require __DIR__ . '/breadcrumbs/jose.php';
