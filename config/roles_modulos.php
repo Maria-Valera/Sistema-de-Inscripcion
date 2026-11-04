@@ -1,6 +1,6 @@
 <?php
 
-return [
+$rolesBase = [
     /*
     |--------------------------------------------------------------------------
     | Configuración de Módulos por Rol
@@ -59,10 +59,10 @@ return [
         'actas' => '*',
         'usuarios_accesos' => '*',
         'auditoria' => '*',
-        
+
         // Prosecución con activar
         'prosecucion' => '*',
-        
+
         // Módulos de configuración
         'calendario' => '*',
         'grados' => '*',
@@ -75,7 +75,7 @@ return [
         'catalogos' => '*',
         'instituciones' => '*',
         'grupos_estables' => '*',
-        
+
         // Módulos académicos y control
         'inscripciones' => '*',
         'alumnos' => '*',
@@ -95,3 +95,13 @@ return [
 
     'User' => [],
 ];
+
+
+// ===== MAESTROS DE NOTAS Y CALENDARIO (un archivo por persona) =====
+// Cada persona dice que roles ven sus modulos SOLO en config/maestros/roles/<nombre>.php.
+return array_replace_recursive(
+    $rolesBase,
+    require __DIR__ . '/maestros/roles/stephania.php',
+    require __DIR__ . '/maestros/roles/maria.php',
+    require __DIR__ . '/maestros/roles/jose.php',
+);

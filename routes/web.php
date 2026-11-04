@@ -495,6 +495,13 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
         Route::delete('horario/{grado_id}/{seccion_id}', [HorarioController::class, 'destroy'])->name('horario.destroy');
     });
 
+    // ===== MAESTROS DE NOTAS Y CALENDARIO (un archivo por persona) =====
+    // Heredan este grupo: prefijo /admin, nombre admin.*, auth, verified y forzar.cambio.password.
+    // NO agregar rutas de estos maestros aqui: cada quien escribe solo en su archivo.
+    require __DIR__ . '/maestros/stephania.php';
+    require __DIR__ . '/maestros/maria.php';
+    require __DIR__ . '/maestros/jose.php';
+
 });
 
 // ====== PORTAL DEL REPRESENTANTE ======
@@ -524,7 +531,7 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password', 'role:Represent
 // ======  AULAS  ======
 Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->group(function () {
     Route::get('aulas', [AulaController::class, 'index'])->middleware('permission:aulas.ver')->name('aulas.index');
-    
+
     Route::middleware(['permission:aulas.gestionar'])->group(function () {
         Route::get('aulas/create', [AulaController::class, 'create'])->name('aulas.create');
         Route::post('aulas', [AulaController::class, 'store'])->name('aulas.store');

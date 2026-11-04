@@ -1,6 +1,6 @@
 <?php
 
-return [
+$modulosBase = [
     /*
     |--------------------------------------------------------------------------
     | Configuración de Módulos del Sistema
@@ -505,4 +505,13 @@ return [
         ],
     ],
 ];
+
+// ===== MAESTROS DE NOTAS Y CALENDARIO (un archivo por persona) =====
+// Cada persona declara sus modulos y permisos SOLO en config/maestros/modulos/<nombre>.php.
+return array_merge(
+    $modulosBase,
+    require __DIR__ . '/maestros/modulos/stephania.php',
+    require __DIR__ . '/maestros/modulos/maria.php',
+    require __DIR__ . '/maestros/modulos/jose.php',
+);
 
