@@ -68,7 +68,6 @@ class HorarioPruebasSeeder extends Seeder
 
         AreaFormacion::query()->update([
             'bloques_semanales' => $bloquesPermitidos,
-            'bloques_maximos_por_dia' => min(2, $bloquesPermitidos),
         ]);
 
         $this->resumen['bloquesPermitidos'] = $bloquesPermitidos;

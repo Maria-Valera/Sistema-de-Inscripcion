@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Dias_semana;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DiasSemanaSeeder extends Seeder
 {
@@ -13,6 +14,11 @@ class DiasSemanaSeeder extends Seeder
      */
     public function run(): void
     {
+        if (!Schema::hasTable('dias_semana')) {
+            $this->command?->info('Tabla dias_semana no existe (obsoleta tras refactor de horarios). Omitiendo seeder.');
+            return;
+        }
+
         $dias = [
             ['nombre_dia' => 'Lunes', 'status' => true],
             ['nombre_dia' => 'Martes', 'status' => true],
@@ -22,9 +28,9 @@ class DiasSemanaSeeder extends Seeder
         ];
 
         foreach ($dias as $dia) {
-            Dias_semana::firstOrCreate($dia);
+            DB::table('dias_semana')->insertOrIgnore($dia);
         }
 
-        $this->command->info('Días de la semana creados exitosamente.');
+        $this->command?->info('Días de la semana creados exitosamente.');
     }
 }
