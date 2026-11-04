@@ -2,119 +2,253 @@
 
 @section('title', 'Seleccionar Año Escolar')
 
-@section('content_header')
-    <div class="content-header-modern mb-3">
-        <div class="d-flex align-items-center justify-content-between flex-wrap">
-            <div class="d-flex align-items-center">
-                <div class="mr-3 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.5rem;">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <div>
-                    <h1 class="m-0 text-dark font-weight-bold" style="font-size: 1.6rem;">Seleccionar Año Escolar</h1>
-                    <p class="text-muted mb-0">Elija el período académico con el que desea operar en el sistema</p>
-                </div>
-            </div>
-        </div>
-    </div>
+@section('classes_body', 'sidebar-collapse')
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    <style>
+        /* Ocultar barra lateral y resetear márgenes */
+        .main-sidebar, 
+        .sidebar, 
+        [class*="sidebar-dark-"] {
+            display: none !important;
+        }
+
+        .content-wrapper, 
+        body:not(.sidebar-mini-md):not(.sidebar-mini-xs):not(.layout-top-nav) .content-wrapper,
+        .main-header,
+        .main-footer {
+            margin-left: 0 !important;
+        }
+
+        /* Ocultar el botón hamburguesa en el navbar */
+        .nav-item [data-widget="pushmenu"] {
+            display: none !important;
+        }
+
+        /* Contenedor centrado */
+        .select-year-container {
+            min-height: calc(85vh - 70px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .select-year-card {
+            width: 100%;
+            max-width: 520px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            animation: fadeInCard 0.35s ease-out;
+        }
+
+        @keyframes fadeInCard {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .select-year-header {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            color: #ffffff;
+            padding: 2.25rem 2rem 1.75rem;
+            text-align: center;
+        }
+
+        .select-year-header .icon-circle {
+            width: 68px;
+            height: 68px;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.85rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .select-year-body {
+            padding: 2rem;
+        }
+
+        .form-select-styled {
+            height: 52px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #1f2937;
+            background-color: #f9fafb;
+            transition: all 0.2s ease;
+        }
+
+        .form-select-styled:focus {
+            border-color: #4f46e5;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            outline: none;
+        }
+
+        .btn-ingresar {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            cursor: pointer;
+        }
+
+        .btn-ingresar:hover {
+            background: linear-gradient(135deg, #4338ca, #3730a3);
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-ingresar:active {
+            transform: translateY(0);
+        }
+    </style>
 @stop
 
 @section('content')
-    <div class="container-fluid">
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+    <div class="select-year-container">
+        <div class="select-year-card">
+            {{-- Encabezado estilizado con degradado índigo --}}
+            <div class="select-year-header">
+                <div class="icon-circle">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="font-weight-bold mb-1" style="font-size: 1.5rem;">Año Escolar</h3>
+                <p class="mb-0 text-white-50" style="font-size: 0.95rem;">Seleccione el período académico de trabajo</p>
             </div>
-        @endif
 
-        @if(session('info'))
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="fas fa-info-circle mr-2"></i>{{ session('info') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        @endif
+            {{-- Formulario de selección --}}
+            <div class="select-year-body">
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
 
-        <div class="row">
-            @foreach($anios as $anio)
-                @php
-                    $esActivo = in_array($anio->status, ['Activo', 'Extendido']);
-                    $esSeleccionado = ($anio->id === $anioSeleccionadoId);
-                    $inicioAnio = $anio->inicio_anio_escolar ? $anio->inicio_anio_escolar->format('Y') : '';
-                    $cierreAnio = $anio->cierre_anio_escolar ? $anio->cierre_anio_escolar->format('Y') : '';
-                @endphp
-                <div class="col-md-4 col-sm-6 mb-4">
-                    <div class="card h-100 shadow-sm border {{ $esSeleccionado ? 'border-primary' : ($esActivo ? 'border-success' : 'border-secondary') }}" style="{{ $esSeleccionado ? 'border-width: 2px !important;' : '' }}">
-                        <div class="card-header d-flex justify-content-between align-items-center {{ $esSeleccionado ? 'bg-primary text-white' : ($esActivo ? 'bg-light' : 'bg-light text-muted') }}">
-                            <h5 class="card-title font-weight-bold mb-0">
-                                <i class="fas fa-calendar-check mr-2"></i>Período {{ $inicioAnio }} - {{ $cierreAnio }}
-                            </h5>
-                            @if($esSeleccionado)
-                                <span class="badge badge-light text-primary font-weight-bold">
-                                    <i class="fas fa-check mr-1"></i>En uso
-                                </span>
-                            @endif
+                @if(session('info'))
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle mr-2"></i>{{ session('info') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+
+                <form action="{{ route('admin.anio-escolar.guardar') }}" method="POST" id="formSeleccionarAnio">
+                    @csrf
+                    <div class="form-group mb-3">
+                        <label for="anio_escolar_id" class="font-weight-bold text-secondary mb-2" style="font-size: 0.9rem;">
+                            <i class="fas fa-layer-group text-primary mr-1"></i> Período Académico
+                        </label>
+                        <select name="anio_escolar_id" id="anio_escolar_id" class="form-control form-select-styled" required>
+                            @foreach($anios as $anio)
+                                @php
+                                    $esActivo = in_array($anio->status, ['Activo', 'Extendido']);
+                                    $esSeleccionado = ($anio->id === $anioSeleccionadoId);
+                                    $inicioAnio = $anio->inicio_anio_escolar ? \Carbon\Carbon::parse($anio->inicio_anio_escolar)->format('Y') : '';
+                                    $cierreAnio = $anio->cierre_anio_escolar ? \Carbon\Carbon::parse($anio->cierre_anio_escolar)->format('Y') : '';
+                                    $etiqueta = $esActivo ? 'Activo' : 'Solo consulta';
+                                @endphp
+                                <option value="{{ $anio->id }}" 
+                                        data-activo="{{ $esActivo ? '1' : '0' }}"
+                                        {{ $esSeleccionado || ($loop->first && !$anioSeleccionadoId) ? 'selected' : '' }}>
+                                    Período {{ $inicioAnio }} - {{ $cierreAnio }} ({{ $etiqueta }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Banner dinámico según el período elegido --}}
+                    <div id="banner-estado" class="mb-4">
+                        <div id="estado-consulta" class="alert alert-warning py-2 px-3 small border-0 d-none" style="background-color: #fffbeb; color: #b45309; border-left: 4px solid #f59e0b !important; border-radius: 8px;">
+                            <i class="fas fa-lock mr-1.5"></i>
+                            <span>Ha seleccionado un <strong>año anterior</strong>. El sistema operará en modo de <strong>solo consulta</strong> (lectura).</span>
                         </div>
-                        <div class="card-body d-flex flex-column justify-content-between">
-                            <div>
-                                <div class="mb-3 d-flex flex-wrap align-items-center">
-                                    @if($esActivo)
-                                        <span class="badge badge-success px-2 py-1 mr-2">
-                                            <i class="fas fa-circle mr-1" style="font-size: 0.6rem;"></i>Año Activo
-                                        </span>
-                                    @else
-                                        <span class="badge badge-warning text-dark px-2 py-1 mr-2 font-weight-bold">
-                                            <i class="fas fa-eye mr-1"></i>Solo consulta
-                                        </span>
-                                        <span class="badge badge-secondary px-2 py-1">
-                                            {{ $anio->status }}
-                                        </span>
-                                    @endif
-                                </div>
-
-                                <ul class="list-unstyled text-muted mb-4" style="font-size: 0.95rem;">
-                                    <li class="mb-2">
-                                        <i class="fas fa-calendar-day text-secondary mr-2"></i>
-                                        <strong>Inicio:</strong> {{ $anio->inicio_anio_escolar?->format('d/m/Y') ?? 'N/D' }}
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="fas fa-calendar-times text-secondary mr-2"></i>
-                                        <strong>Cierre:</strong> {{ $anio->cierre_anio_escolar?->format('d/m/Y') ?? 'N/D' }}
-                                    </li>
-                                    @if($anio->extencion_anio_escolar)
-                                        <li class="mb-2 text-info">
-                                            <i class="fas fa-clock mr-2"></i>
-                                            <strong>Extensión:</strong> {{ $anio->extencion_anio_escolar->format('d/m/Y') }}
-                                        </li>
-                                    @endif
-                                </ul>
-
-                                @if(!$esActivo)
-                                    <div class="alert alert-warning py-2 px-3 small text-dark mb-3">
-                                        <i class="fas fa-lock mr-1"></i> Las operaciones en este período son únicamente de lectura.
-                                    </div>
-                                @endif
-                            </div>
-
-                            <form action="{{ route('admin.anio-escolar.guardar') }}" method="POST" class="mt-2">
-                                @csrf
-                                <input type="hidden" name="anio_escolar_id" value="{{ $anio->id }}">
-                                <button type="submit" class="btn btn-block {{ $esSeleccionado ? 'btn-primary' : ($esActivo ? 'btn-outline-success' : 'btn-outline-primary') }} font-weight-bold">
-                                    @if($esSeleccionado)
-                                        <i class="fas fa-arrow-right mr-1"></i>Continuar en este año
-                                    @else
-                                        <i class="fas fa-sign-in-alt mr-1"></i>Seleccionar este año
-                                    @endif
-                                </button>
-                            </form>
+                        <div id="estado-activo" class="alert alert-success py-2 px-3 small border-0 d-none" style="background-color: #ecfdf5; color: #047857; border-left: 4px solid #10b981 !important; border-radius: 8px;">
+                            <i class="fas fa-check-circle mr-1.5"></i>
+                            <span>Ha seleccionado el <strong>año activo</strong>. Podrá realizar inscripciones y modificaciones normalmente.</span>
                         </div>
                     </div>
-                </div>
-            @endforeach
+
+                    <button type="submit" class="btn btn-ingresar">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Ingresar al sistema</span>
+                    </button>
+                </form>
+            </div>
+
+            {{-- Pie de tarjeta con info de usuario y cierre de sesión --}}
+            <div class="px-4 py-3 bg-light text-center border-top small text-muted d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-user-circle mr-1 text-secondary"></i> {{ auth()->user()->name ?? 'Usuario' }}
+                </span>
+                <a href="{{ route('logout') }}" 
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                   class="text-danger font-weight-bold text-decoration-none">
+                    <i class="fas fa-power-off mr-1"></i> Salir
+                </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
+            </div>
         </div>
     </div>
 @stop
 
+@section('js')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const select = document.getElementById('anio_escolar_id');
+        const estadoConsulta = document.getElementById('estado-consulta');
+        const estadoActivo = document.getElementById('estado-activo');
+
+        function actualizarBanner() {
+            if (!select) return;
+            const selectedOption = select.options[select.selectedIndex];
+            const esActivo = selectedOption && selectedOption.getAttribute('data-activo') === '1';
+
+            if (esActivo) {
+                if (estadoActivo) estadoActivo.classList.remove('d-none');
+                if (estadoConsulta) estadoConsulta.classList.add('d-none');
+            } else {
+                if (estadoConsulta) estadoConsulta.classList.remove('d-none');
+                if (estadoActivo) estadoActivo.classList.add('d-none');
+            }
+        }
+
+        if (select) {
+            select.addEventListener('change', actualizarBanner);
+            actualizarBanner();
+        }
+    });
+</script>
+@stop
