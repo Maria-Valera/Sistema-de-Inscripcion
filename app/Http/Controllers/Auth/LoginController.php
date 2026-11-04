@@ -94,6 +94,10 @@ class LoginController extends Controller
             null,
             'Inicio de sesión correcto'
         );
+
+        if (! $request->session()->has('anio_escolar_id')) {
+            return redirect()->route('admin.anio-escolar.seleccionar');
+        }
     }
 
     /**

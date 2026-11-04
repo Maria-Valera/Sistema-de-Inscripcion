@@ -1,0 +1,127 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\AnioEscolar;
+use App\Models\User;
+use App\Support\AnioEscolarSeleccionado;
+use Database\Seeders\PermisosSeeder;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
+
+class SeleccionarAnioEscolarTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected User $adminUser;
+    protected AnioEscolar $anioActivo;
+    protected AnioEscolar $anioAnterior;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(PermisosSeeder::class);
+        $this->seed(RoleSeeder::class);
+
+        $this->adminUser = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'password' => Hash::make('Password123'),
+            'activo' => true,
+            'rol_principal' => 'Admin',
+        ]);
+        $this->adminUser->assignRole('Admin');
+
+        $this->anioActivo = AnioEscolar::create([
+            'inicio_anio_escolar' => now()->subMonths(2)->toDateString(),
+            'cierre_anio_escolar' => now()->addMonths(10)->toDateString(),
+            'status' => 'Activo',
+        ]);
+
+        $this->anioAnterior = AnioEscolar::create([
+            'inicio_anio_escolar' => now()->subYears(2)->toDateString(),
+            'cierre_anio_escolar' => now()->subYear()->toDateString(),
+            'status' => 'Inactivo',
+        ]);
+    }
+
+    public function test_post_login_redirige_a_seleccionar_anio_si_no_hay_sesion(): void
+    {
+        $response = $this->post(route('login'), [
+            'email' => $this->adminUser->email,
+            'password' => 'Password123',
+        ]);
+
+        $response->assertRedirect(route('admin.anio-escolar.seleccionar'));
+    }
+
+    public function test_home_redirige_a_seleccionar_anio_si_no_hay_sesion(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('home'));
+
+        $response->assertRedirect(route('admin.anio-escolar.seleccionar'));
+    }
+
+    public function test_pantalla_seleccion_muestra_anios_escolares(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('admin.anio-escolar.seleccionar'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Seleccionar Año Escolar');
+        $response->assertSee('Solo consulta');
+    }
+
+    public function test_guardar_anio_escolar_guarda_en_sesion_y_redirige_a_dashboard(): void
+    {
+        $response = $this->actingAs($this->adminUser)->post(route('admin.anio-escolar.guardar'), [
+            'anio_escolar_id' => $this->anioAnterior->id,
+        ]);
+
+        $response->assertSessionHas('anio_escolar_id', $this->anioAnterior->id);
+        $response->assertRedirect($this->adminUser->rutaDashboard());
+    }
+
+    public function test_middleware_solo_lectura_bloquea_post_en_anio_anterior(): void
+    {
+        // Registrar ruta de prueba temporal para POST
+        Route::post('/test-modificar-datos', function () {
+            return response()->json(['success' => true]);
+        })->middleware(['web']);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->post('/test-modificar-datos');
+
+        $response->assertStatus(403);
+    }
+
+    public function test_middleware_solo_lectura_permite_post_en_anio_activo(): void
+    {
+        Route::post('/test-modificar-datos-activo', function () {
+            return response()->json(['success' => true]);
+        })->middleware(['web']);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->post('/test-modificar-datos-activo');
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+    }
+
+    public function test_middleware_solo_lectura_permite_guardar_nuevo_anio_aun_en_anio_anterior(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->post(route('admin.anio-escolar.guardar'), [
+                'anio_escolar_id' => $this->anioActivo->id,
+            ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHas('anio_escolar_id', $this->anioActivo->id);
+    }
+}

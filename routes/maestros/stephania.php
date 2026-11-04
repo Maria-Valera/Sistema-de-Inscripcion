@@ -4,3 +4,10 @@
 // Solo Stephania edita este archivo. Se carga dentro del grupo admin de routes/web.php.
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Horario\SeleccionarAnioEscolarController;
+
+Route::get('seleccionar-anio', [SeleccionarAnioEscolarController::class, 'index'])
+    ->name('anio-escolar.seleccionar');
+
+Route::post('seleccionar-anio', [SeleccionarAnioEscolarController::class, 'guardar'])
+    ->name('anio-escolar.guardar');
