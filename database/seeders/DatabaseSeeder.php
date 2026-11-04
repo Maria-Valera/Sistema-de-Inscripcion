@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
             BloqueHorarioSeeder::class,
             DocenteAreaGradoSeeder::class,
             SeccionAulaSeeder::class,
-            CalendarioPalabraClaveSeeder::class,
+
 // ===== Maestros de notas y calendario (un seeder por persona) =====
             StephaniaMaestrosSeeder::class,
             MariaMaestrosSeeder::class,
