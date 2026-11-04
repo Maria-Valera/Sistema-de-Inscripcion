@@ -142,6 +142,15 @@
                         </div>
                     </div> 
 
+                    <!-- Alerta de Persona Encontrada en el Sistema -->
+                    <div id="alerta-persona-encontrada" class="alert alert-info d-none align-items-center mt-2 mb-3" role="alert" style="border-left: 4px solid #0284c7; background-color: #f0f9ff; color: #0369a1;">
+                        <i class="fas fa-info-circle fa-lg me-2" style="color: #0284c7;"></i>
+                        <div>
+                            <strong>Persona encontrada en el sistema.</strong>
+                            <span>Los datos personales han sido bloqueados para evitar inconsistencias.</span>
+                        </div>
+                    </div>
+
                     <div class="section-title-modern" style="margin-top: 2rem;">
                         <i class="fas fa-user"></i> Datos Personales
                     </div>

@@ -8,7 +8,7 @@
 
 @stop
 
-@section('title', 'Histórico Académico')
+@section('title', 'Histórico de Inscripciones Estudiantil')
 
 @section('content_header')
     <div class="content-header-modern">
@@ -18,7 +18,7 @@
                     <i class="fas fa-history"></i>
                 </div>
                 <div>
-                    <h1 class="title-main">Histórico Académico</h1>
+                    <h1 class="title-main">Histórico de Inscripciones Estudiantil</h1>
                     <p class="title-subtitle">Consulta de registros por Calendario Escolar</p>
                 </div>
             </div>

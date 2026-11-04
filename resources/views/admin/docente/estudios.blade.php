@@ -19,10 +19,16 @@
                     <p class="title-subtitle">Información registrada en el sistema</p>
                 </div>
             </div>
-            <a href="{{ route('admin.docente.index') }}" class="btn-create" style="background: var(--gray-500);">
-                <i class="fas fa-arrow-left"></i>
-                <span>Volver</span>
-            </a>
+            <div class="header-actions">
+                <a href="{{ route('admin.docente.disponibilidad', $docentes->id) }}" class="btn-create" style="background: var(--blue-500);">
+                    <i class="fas fa-calendar-times"></i>
+                    <span>Disponibilidad</span>
+                </a>
+                <a href="{{ route('admin.docente.index') }}" class="btn-create" style="background: var(--gray-500);">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Volver</span>
+                </a>
+            </div>
         </div>
     </div>
 @stop

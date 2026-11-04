@@ -15,4 +15,9 @@ class BloqueHorario extends Model
         'hora_fin',
         'status',
     ];
+
+    public function noDisponibilidades()
+    {
+        return $this->hasMany(DocenteNoDisponibilidad::class, 'id_bloque_hora');
+    }
 }

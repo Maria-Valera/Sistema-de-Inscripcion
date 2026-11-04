@@ -1,4 +1,66 @@
 /* ===================================
+   ANCHO Y TAMAÑO DEL SIDEBAR
+   =================================== */
+
+/* Aumentar ancho del sidebar */
+.main-sidebar {
+    width: 280px !important;
+}
+
+/* Ajustar ancho del sidebar cuando está colapsado */
+.sidebar-collapse .main-sidebar {
+    width: 70px !important;
+}
+
+/* Ajustar ancho del sidebar en pantallas pequeñas */
+@media (max-width: 768px) {
+    .main-sidebar {
+        width: 280px !important;
+    }
+}
+
+/* Ajustar el content-wrapper al nuevo ancho del sidebar */
+.content-wrapper {
+    margin-left: 280px !important;
+}
+
+/* Ajustar el content-wrapper cuando el sidebar está colapsado */
+.sidebar-collapse .content-wrapper {
+    margin-left: 70px !important;
+}
+
+/* Ajustar el content-wrapper en pantallas pequeñas */
+@media (max-width: 768px) {
+    .content-wrapper {
+        margin-left: 0 !important;
+    }
+}
+
+/* Aumentar tamaño de fuente del menú */
+.nav-sidebar .nav-link {
+    font-size: 1rem !important;
+    padding: 0.75rem 1rem !important;
+}
+
+/* Aumentar tamaño de fuente de los headers del menú */
+.nav-header {
+    font-size: 0.85rem !important;
+    padding: 0.75rem 1rem !important;
+}
+
+/* Aumentar tamaño de los iconos */
+.nav-icon {
+    font-size: 1.1rem !important;
+    width: 1.75rem !important;
+}
+
+/* Aumentar tamaño de fuente en submenús */
+.nav-treeview .nav-link {
+    font-size: 0.95rem !important;
+    padding: 0.6rem 1rem 0.6rem 2.5rem !important;
+}
+
+/* ===================================
    MENÚ ACTIVO - ESTILOS PERSONALIZADOS
    =================================== */
 
@@ -80,9 +142,7 @@
 .sidebar-dark-primary .nav-header {
     color: #8b5cf6 !important;
     font-weight: 600;
-    font-size: 0.75rem;
     letter-spacing: 0.5px;
-    padding: 0.5rem 1rem;
     margin-top: 0.5rem;
 }
 

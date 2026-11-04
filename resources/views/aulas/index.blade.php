@@ -89,13 +89,14 @@
                             <tr style="text-align: center">
                                 <th style="text-align: center">#</th>
                                 <th style="text-align: center">Nombre del Aula</th>
+                                <th style="text-aling:center">Tipo Aula</th>
                                 <th style="text-align: center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody style="text-align: center">
                             @if ($aulas->isEmpty())
                                 <tr>
-                                    <td colspan="3">
+                                    <td colspan="4">
                                         <div class="empty-state">
                                             <div class="empty-icon">
                                                 <i class="fas fa-inbox"></i>
@@ -110,6 +111,7 @@
                                     <tr class="row-12" style="text-align: center">
                                         <td>{{ $index + 1 }}</td>
                                         <td class="title-main">{{ $aula->nombre_aula }}</td>
+                                        <td>{{ $aula->tipo_aula }}</td>
                                         <td>
                                             <div class="action-buttons">
 

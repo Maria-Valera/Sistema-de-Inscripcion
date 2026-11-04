@@ -82,8 +82,10 @@ class Inscripcion extends Component
 
     public function mount()
     {
+        abort_unless(auth()->user()?->can('inscripciones.gestionar'), 403, 'No tiene permiso para gestionar inscripciones.');
         $this->acepta_normas_contrato = true;
         $this->discapacidadesAgregadas = [];
+
         $this->discapacidadSeleccionada = null;
         $this->documentosDisponibles = $this->documentoService->obtenerDocumentosDisponibles();
         $this->documentosEtiquetas = $this->documentoService->obtenerEtiquetas();

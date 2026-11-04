@@ -45,7 +45,16 @@ class InscripcionProsecucionController extends Controller
             'grado',
             'seccion',
             'anioEscolar',
-        ])
+        ]);
+
+        $user = auth()->user();
+        if ($user && $user->hasRole('Representante')) {
+            $prosecuciones->whereHas('inscripcion.alumno', fn($q) => $q->visiblesParaRepresentante($user));
+        } elseif ($user && $user->hasRole('Docente')) {
+            $prosecuciones->whereHas('inscripcion.alumno', fn($q) => $q->visiblesParaDocente($user));
+        }
+
+        $prosecuciones
             ->whereHas('inscripcion', function ($q) use ($anioEscolarActivo) {
                 $q->where('tipo_inscripcion', 'prosecucion');
 

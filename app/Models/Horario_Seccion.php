@@ -27,4 +27,9 @@ class Horario_Seccion extends Model
     {
         return $this->belongsTo(Seccion::class);
     }
+
+    public function seccionConAulaFija()
+    {
+        return $this->belongsTo(Seccion::class)->with('aulaFija');
+    }
 }

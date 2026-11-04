@@ -36,8 +36,8 @@ class AlumnoController extends Controller
         $genero = request('genero');
         $tipo_documento = request('tipo_documento');
 
-        // Construir la consulta base
-        $query = Alumno::with([
+        // Construir la consulta base filtrada según el rol y visibilidad del usuario
+        $query = Alumno::visiblesPara(auth()->user())->with([
             'persona',
             'etniaIndigena',
             'ordenNacimiento',
@@ -93,6 +93,40 @@ class AlumnoController extends Controller
             ->paginate(10)
             ->appends(request()->query());
 
+        // Si el usuario es Docente (sin Admin/Subdirectora), no enviar campos sensibles
+        if (auth()->user()?->esSoloDocente()) {
+            $alumnos->getCollection()->each(function ($alumno) {
+                $alumno->makeHidden([
+                    'talla_camisa_id',
+                    'talla_pantalon_id',
+                    'talla_zapato',
+                    'peso',
+                    'estatura',
+                    'orden_nacimiento_id',
+                    'lateralidad_id',
+                    'etnia_indigena_id',
+                ]);
+                $alumno->talla_camisa_id = null;
+                $alumno->talla_pantalon_id = null;
+                $alumno->talla_zapato = null;
+                $alumno->peso = null;
+                $alumno->estatura = null;
+                $alumno->orden_nacimiento_id = null;
+                $alumno->lateralidad_id = null;
+                $alumno->etnia_indigena_id = null;
+
+                if ($alumno->persona) {
+                    $alumno->persona->makeHidden(['direccion', 'localidad_id']);
+                    $alumno->persona->direccion = null;
+                    $alumno->persona->localidad_id = null;
+                    $alumno->persona->unsetRelation('localidad');
+                }
+                $alumno->unsetRelation('etniaIndigena');
+                $alumno->unsetRelation('ordenNacimiento');
+                $alumno->unsetRelation('lateralidad');
+            });
+        }
+
         // Verificar si hay Calendario Escolar activo
         $anioEscolarActivo = $this->verificarAnioEscolar();
 
@@ -132,6 +166,28 @@ class AlumnoController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(Alumno $alumno)
+    {
+        $this->authorize('view', $alumno);
+
+        $alumno->load([
+            'persona.tipoDocumento',
+            'persona.genero',
+            'persona.localidad.municipio.estado.pais',
+            'discapacidades',
+            'ordenNacimiento',
+            'lateralidad',
+            'etniaIndigena',
+            'tallaCamisa',
+            'tallaPantalon'
+        ]);
+
+        return view('admin.alumnos.show', compact('alumno'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Alumno $alumno)
@@ -168,6 +224,8 @@ class AlumnoController extends Controller
             ])
             ->firstOrFail();
 
+        $this->authorize('view', $alumno);
+
         // Cargar nombres de tallas directamente
         if ($alumno->talla_camisa_id) {
             $tallaCamisa = \App\Models\Talla::find($alumno->talla_camisa_id);
@@ -177,6 +235,40 @@ class AlumnoController extends Controller
         if ($alumno->talla_pantalon_id) {
             $tallaPantalon = \App\Models\Talla::find($alumno->talla_pantalon_id);
             $alumno->talla_pantalon_nombre = $tallaPantalon ? $tallaPantalon->nombre : null;
+        }
+
+        // Si el usuario es Docente (sin Admin/Subdirectora), no enviar campos sensibles
+        if (auth()->user()?->esSoloDocente()) {
+            $alumno->makeHidden([
+                'talla_camisa_id',
+                'talla_pantalon_id',
+                'talla_zapato',
+                'peso',
+                'estatura',
+                'orden_nacimiento_id',
+                'lateralidad_id',
+                'etnia_indigena_id',
+            ]);
+            $alumno->talla_camisa_id = null;
+            $alumno->talla_pantalon_id = null;
+            $alumno->talla_zapato = null;
+            $alumno->peso = null;
+            $alumno->estatura = null;
+            $alumno->orden_nacimiento_id = null;
+            $alumno->lateralidad_id = null;
+            $alumno->etnia_indigena_id = null;
+            $alumno->talla_camisa_nombre = null;
+            $alumno->talla_pantalon_nombre = null;
+
+            if ($alumno->persona) {
+                $alumno->persona->makeHidden(['direccion', 'localidad_id']);
+                $alumno->persona->direccion = null;
+                $alumno->persona->localidad_id = null;
+                $alumno->persona->unsetRelation('localidad');
+            }
+            $alumno->unsetRelation('etniaIndigena');
+            $alumno->unsetRelation('ordenNacimiento');
+            $alumno->unsetRelation('lateralidad');
         }
 
         $pdf = PDF::loadView('admin.alumnos.reportes.general_est', compact('alumno'));

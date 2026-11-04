@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\Auditable;
 
 class Horario extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
     
     protected $table = 'horario';
     
@@ -35,7 +36,7 @@ class Horario extends Model
     }
     
     public function diasSemana()
-    {
+    {   
         return $this->belongsToMany(Dias_semana::class, 'horario__dias_semana', 'horario_id', 'dias_semana_id')
                     ->withPivot('status')
                     ->withTimestamps();

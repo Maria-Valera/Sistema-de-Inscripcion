@@ -68,6 +68,7 @@ class AlumnoCreate extends Component
     public $anioEscolarActivo = false;
 
     protected function rules()
+
     {
         return [
 
@@ -236,6 +237,8 @@ class AlumnoCreate extends Component
 
     public function mount($alumno_id = null)
     {
+        abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
+
         $this->verificarAnioEscolar();
         $this->alumno_id = $alumno_id;
         $this->cargarDatosIniciales();
@@ -531,9 +534,11 @@ class AlumnoCreate extends Component
 
     public function enviarDatosAlumno()
     {
+        abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
         $datos = $this->validate();
         $this->dispatch('recibirDatosAlumno', datos: $datos);
     }
+
 
     public function render()
     {

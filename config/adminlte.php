@@ -2,6 +2,28 @@
 
 
 
+/*
+|--------------------------------------------------------------------------
+| Menus de los maestros (un archivo por persona)
+|--------------------------------------------------------------------------
+| Cada persona agrega sus opciones SOLO en config/maestros/menu/<nombre>.php.
+| Las entradas padre de abajo juntan las opciones de las tres personas.
+*/
+$menusMaestros = [
+    require __DIR__ . '/maestros/menu/stephania.php',
+    require __DIR__ . '/maestros/menu/maria.php',
+    require __DIR__ . '/maestros/menu/jose.php',
+];
+$opcionesDe = fn (string $seccion) => array_merge(...array_map(fn ($m) => $m[$seccion] ?? [], $menusMaestros));
+$entradasMaestros = array_values(array_filter([
+    ['text' => 'Calendario y Evaluación', 'icon' => 'fas fa-fw fa-calendar-day', 'submenu' => $opcionesDe('calendario')],
+    ['text' => 'Notas', 'icon' => 'fas fa-fw fa-clipboard-check', 'submenu' => $opcionesDe('notas')],
+    ['text' => 'Institución', 'icon' => 'fas fa-fw fa-school', 'submenu' => $opcionesDe('institucion')],
+], fn ($entrada) => ! empty($entrada['submenu'])));
+if ($entradasMaestros) {
+    array_unshift($entradasMaestros, ['header' => 'MAESTROS DE NOTAS']);
+}
+
 return [
 
 
@@ -222,11 +244,10 @@ return [
 
         // ================== PANEL PRINCIPAL ==================
         [
-            'text' => 'Panel Director',
+            'text' => 'Panel Principal',
             'url' => 'home',
             'icon' => 'fas fa-fw fa-tachometer-alt',
-
-            'active' => ['home', 'home/*'],
+            'active' => ['home', 'home/*', 'dashboard/*', 'portal-representante*'],
         ],
 
         // ================== CONFIGURACIÓN BASE ==================
@@ -234,6 +255,7 @@ return [
             'text' => 'Calendario Escolar',
             'url'  => 'admin/anio_escolar',
             'icon' => 'fas fa-calendar-check',
+            'can'  => 'calendario.ver',
         ],
 
         // ---------------------------
@@ -245,11 +267,19 @@ return [
         ],
         // ---------------------------
 
+        // ============================================================
+        //  HORARIOS
+        // ============================================================
         [
-            'text' => 'Histórico',
-            'url'  => 'admin/historico',
-            'icon' => 'fas fa-history',
+            'text' => 'Horarios',
+            'url' => 'admin/horario',
+            'icon' => 'fas fa-clock',
+            'can' => ['horarios.ver', 'portal_horarios.ver_docente'],
         ],
+
+                // ================== MAESTROS DE NOTAS Y CALENDARIO ==================
+        // Se arman desde config/maestros/menu/*.php (no editar aqui).
+        ...$entradasMaestros,
 
         ['header' => 'INSCRIPCIONES'],
 
@@ -263,12 +293,29 @@ return [
                     'url' => 'admin/transacciones/inscripcion',
                     'icon' => 'fas fa-fw fa-user-plus',
                     'active' => ['admin/transacciones/inscripcion', 'admin/transacciones/inscripcion/*'],
+                    'can'  => 'inscripciones.ver',
                 ],
                 [
                     'text' => 'Prosecución',
                     'url' => 'admin/transacciones/inscripcion_prosecucion',
                     'icon' => 'fas fa-fw fa-user-graduate',
                     'active' => ['admin/transacciones/inscripcion_prosecucion', 'admin/transacciones/inscripcion_prosecucion/*'],
+                    'can'  => 'prosecucion.ver',
+                ],
+
+                [
+                    'text' => 'Histórico de Inscripciones Estudiantil',
+                    'url'  => 'admin/historico',
+                    'icon' => 'fas fa-history',
+                    'can'  => 'historico.ver',
+                ],
+
+                [
+                    'text' => 'Historial del Percentil',
+                    'url' => 'admin/transacciones/percentil',
+                    'icon' => 'fas fa-fw fa-chart-line',
+                    'active' => ['admin/transacciones/percentil', 'admin/transacciones/percentil/*'],
+                    'can'  => 'percentil.ver',
                 ],
             ],
         ],
@@ -276,19 +323,25 @@ return [
         ['header' => 'ASISTENCIA'],
 
         [
-            'text' => 'Permisos y Reposos',
-            'url' => 'admin/permisos_reposos',
+            'text' => 'Asistencia',
             'icon' => 'fas fa-fw fa-calendar-check',
-            'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
+            'submenu' => [
+                [
+                    'text' => 'Permisos y Reposos',
+                    'url' => 'admin/permisos_reposos',
+                    'icon' => 'fas fa-fw fa-calendar-check',
+                    'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
+                    'can'  => 'permisos_reposos.ver',
+                ],
+                [
+                    'text' => 'Gestión de Inasistencias',
+                    'url' => 'admin/inasistencia',
+                    'icon' => 'fas fa-clipboard-list',
+                    'can'  => 'inasistencia_docente.ver',
+                ],
+            ],
         ],
-
         // ================== EVALUACIÓN ==================
-        [
-            'text' => 'Historial del Percentil',
-            'url' => 'admin/transacciones/percentil',
-            'icon' => 'fas fa-fw fa-chart-line',
-            'active' => ['admin/transacciones/percentil', 'admin/transacciones/percentil/*'],
-        ],
 
         ['header' => 'INFORMACION ACADÉMICA'],
 
@@ -298,6 +351,7 @@ return [
             'url' => 'admin/alumnos',
             'icon' => 'fas fa-fw fa-user-graduate',
             'active' => ['admin/alumnos', 'admin/alumnos/*'],
+            'can'  => 'alumnos.ver',
         ],
 
         [
@@ -305,14 +359,10 @@ return [
             'url' => 'representante',
             'icon' => 'fas fa-fw fa-user-tie',
             'active' => ['representante', 'representante/*'],
+            'can'  => 'representantes.ver',
         ],
 
-        [
-            'text' => 'Aulas',
-            'url' => 'aulas',
-            'icon' => 'fas fa-fw fa-door-open',
-            'active' => ['aulas', 'aulas/*'],
-        ],
+
 
         // ============================================================
         //  GESTIÓN DOCENTES
@@ -327,21 +377,25 @@ return [
                     'text' => 'Listado de Docentes',
                     'url'  => 'admin/docente',
                     'icon' => 'fas fa-user',
+                    'can'  => 'personal.ver',
                 ],
                 [
                     'text' => 'Asignar Area Formación',
                     'url'  => 'admin/transacciones/docente_area_grado',
                     'icon' => 'fas fa-book-reader',
+                    'can'  => 'asignacion_docente.ver',
                 ],
                 [
                     'text' => 'Estudios Realizados',
                     'url'  => 'admin/estudios_realizados',
                     'icon' => 'fas fa-user-graduate',
+                    'can'  => 'estudios_realizados.ver',
                 ],
                 [
                     'text' => 'Expresiones Literarias',
                     'url'  => 'admin/expresion_literaria',
                     'icon' => 'fas fa-feather-alt',
+                    'can'  => 'catalogos.ver',
                 ],
             ],
         ],
@@ -350,7 +404,7 @@ return [
 
 
         // ============================================================
-        //  GESTIÓN ACADÉMICA
+        //  GESTIÓN ACADÉMICA Y CONFIGURACIÓN GENERAL
         // ============================================================
         ['header' => 'CONFIGURACIÓN GENERAL'],
 
@@ -365,6 +419,7 @@ return [
                     'url' => 'admin/grado',
                     'icon' => 'fas fa-fw fa-layer-group',
                     'active' => ['admin/grado', 'admin/grado/*'],
+                    'can'  => 'grados.ver',
                 ],
 
                 [
@@ -372,14 +427,25 @@ return [
                     'url' => 'admin/bloque_horario',
                     'icon' => 'fas fa-fw fa-clock',
                     'active' => ['admin/bloque_horario', 'admin/bloque_horario/*'],
+                    'can'  => 'bloques_horarios.ver',
                 ],
 
-                                [
-                    'text' => 'Reposos y permisos',
+                [
+                    'text' => 'Gestion de permisos y reposos',
                     'url' => 'admin/permisos_reposos',
                     'icon' => 'fas fa-fw fa-clock',
                     'active' => ['admin/permisos_reposos', 'admin/permisos_reposos/*'],
+                    'can'  => 'permisos_reposos.ver',
                 ],
+
+                [
+                    'text' => 'Aulas',
+                    'url' => 'aulas',
+                    'icon' => 'fas fa-fw fa-door-open',
+                    'active' => ['aulas', 'aulas/*'],
+                    'can'  => 'aulas.ver',
+                ],
+
 
                 // Asignaciones
                 [
@@ -392,16 +458,26 @@ return [
                             'text' => 'Áreas de Formación',
                             'url'  => 'admin/area_formacion',
                             'icon' => 'fas fa-book-open',
+                            'can'  => 'areas_formacion.ver',
                         ],
                         [
                             'text' => 'Niveles Academicos → Área de Formacion',
                             'url'  => 'admin/transacciones/grado_area_formacion',
                             'icon' => 'fas fa-link',
+                            'can'  => 'grado_area_formacion.ver',
                         ],
                         [
                             'text' => 'Área de Formacion → Estudios Realizados',
                             'url'  => 'admin/transacciones/area_estudio_realizado',
                             'icon' => 'fas fa-arrow-right',
+                            'can'  => 'area_estudio_realizado.ver',
+                        ],
+                        [
+                            'text' => 'Asignar Aulas a Seccion',
+                            'url' => 'admin/seccion_aula',
+                            'icon' => 'fas fa-fw fa-door-open',
+                            'active' => ['admin/seccion_aula', 'admin/seccion_aula/*'],
+                            'can'  => 'aulas.ver',
                         ],
                     ],
                 ],
@@ -418,16 +494,19 @@ return [
                             'text' => 'Etnias Indígenas',
                             'url'  => 'admin/etnia_indigena',
                             'icon' => 'fas fa-users',
+                            'can'  => 'catalogos.ver',
                         ],
                         [
                             'text' => 'Discapacidades',
                             'url'  => 'admin/discapacidad',
                             'icon' => 'fas fa-wheelchair',
+                            'can'  => 'catalogos.ver',
                         ],
                         [
                             'text' => 'Ocupaciones',
                             'url'  => 'admin/ocupacion',
                             'icon' => 'fas fa-briefcase',
+                            'can'  => 'catalogos.ver',
                         ],
                     ],
                 ],
@@ -443,21 +522,25 @@ return [
                             'text' => 'Paises',
                             'url'  => 'admin/pais',
                             'icon' => 'fas fa-flag',
+                            'can'  => 'ubicacion_geografica.ver',
                         ],
                         [
                             'text' => 'Estados',
                             'url'  => 'admin/estado',
                             'icon' => 'fas fa-map',
+                            'can'  => 'ubicacion_geografica.ver',
                         ],
                         [
                             'text' => 'Municipios',
                             'url'  => 'admin/municipio',
                             'icon' => 'fas fa-city',
+                            'can'  => 'ubicacion_geografica.ver',
                         ],
                         [
                             'text' => 'Localidades',
                             'url'  => 'admin/localidad',
                             'icon' => 'fas fa-home',
+                            'can'  => 'ubicacion_geografica.ver',
                         ],
                     ],
                 ],
@@ -473,69 +556,67 @@ return [
                             'text' => 'Bancos',
                             'url'  => 'admin/banco',
                             'icon' => 'fas fa-university',
+                            'can'  => 'catalogos.ver',
                         ],
                         [
                             'text' => 'Prefijos de Teléfono',
                             'url'  => 'admin/prefijo_telefono',
                             'icon' => 'fas fa-phone',
+                            'can'  => 'catalogos.ver',
                         ],
                         [
                             'text' => 'Instituciones de Procedencia',
                             'url'  => 'admin/institucion_procedencia',
                             'icon' => 'fas fa-school',
+                            'can'  => 'instituciones.ver',
                         ],
                     ],
                 ],
             ],
         ],
-         // ============================================================
-        //  MENU DE LA SUBDIRECTORA
-        // ============================================================
-        [
-            'text' => 'Panel Subdirectora',
-            'url' => 'dashboard/subdirectora',
-            'icon' => 'fas fa-user-tie',
-            'role' => 'Subdirectora',
-        ],
-        // ============================================================
-        //  HORARIOS
-        // ============================================================
-        [
-            'text' => 'Horarios',
-            'url' => 'admin/horario',
-            'icon' => 'fas fa-clock',
-            'role' => 'Subdirectora',
-        ],
 
         // ============================================================
-        //  INASISTENCIAS
+        //  PORTAL DEL REPRESENTANTE / PERSONAL
         // ============================================================
+        ['header' => 'PORTAL DEL REPRESENTANTE'],
+
         [
-            'text' => 'Gestión de Inasistencias',
-            'url' => 'admin/inasistencia',
-            'icon' => 'fas fa-clipboard-list',
-            'role' => 'Subdirectora',
+            'text' => 'Mi Carnet',
+            'url'  => 'portal-representante/carnet',
+            'icon' => 'fas fa-id-card',
+            'can'  => ['portal_carnets.ver_estudiante', 'portal_carnets.ver_docente'],
+        ],
+        [
+            'text' => 'Inscripción por Prosecución',
+            'url'  => 'portal-representante/prosecucion',
+            'icon' => 'fas fa-graduation-cap',
+            'can'  => ['portal_prosecucion.registrar', 'portal_prosecucion.ver_planilla'],
         ],
 
-// ============================================================
-//  MENU DEL DOCENTE
-// ============================================================
-[
-    'text' => 'Panel Docente',
-    'url' => 'dashboard/docente',
-    'icon' => 'fas fa-chalkboard-teacher',
-    'role' => 'Docente',
-],
-
-
-
-/*         ['header' => 'ADMINISTRACIÓN'],
+        // ============================================================
+        //  ADMINISTRACIÓN Y SEGURIDAD
+        // ============================================================
+        ['header' => 'SEGURIDAD Y ACCESOS'],
 
         [
             'text' => 'Roles y Permisos',
-            'url'  => 'admin/roles',
+            'route' => 'admin.roles.index',
             'icon' => 'fas fa-user-shield',
-        ], */
+            'active' => ['admin/roles', 'admin/roles/*'],
+            'can'  => 'roles.gestionar',
+        ],
+        [
+            'text' => 'Gestión de Usuarios',
+            'route' => 'admin.usuarios.index',
+            'icon' => 'fas fa-users-cog',
+            'can'  => 'usuarios.gestionar_modulos',
+        ],
+        [
+            'text' => 'Auditoría',
+            'route' => 'admin.auditoria.index',
+            'icon' => 'fas fa-history',
+            'can'  => 'auditoria.ver',
+        ],
     ],
 
 

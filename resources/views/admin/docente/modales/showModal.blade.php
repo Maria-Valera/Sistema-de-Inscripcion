@@ -161,7 +161,42 @@
                                         {{ $datos->horas_academicas ?? 'Sin especificar' }}
                                     </span>
                                 </div>
-                            </div
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-title">
+                        <i class="fas fa-calendar-times"></i>
+                        <span>No Disponibilidad</span>
+                    </div>
+                    <div class="card mini-card shadow-sm border-0 p-3 mt-2">
+                        <div class="row">
+                            @if($datos->noDisponibilidades->count() > 0)
+                                @foreach($datos->noDisponibilidades as $noDisponibilidad)
+                                    <div class="col-md-6 mb-3">
+                                        <div class="detail-item">
+                                            <span class="detail-label">
+                                                <i class="fas fa-calendar-day"></i>
+                                                {{ $noDisponibilidad->diaSemana->nombre_dia ?? 'N/A' }}
+                                            </span>
+                                            <span class="detail-value">
+                                                {{ $noDisponibilidad->bloqueHorario->hora_inicio ?? 'N/A' }} - {{ $noDisponibilidad->bloqueHorario->hora_fin ?? 'N/A' }}
+                                            </span>
+                                            @if($noDisponibilidad->motivo)
+                                                <small class="text-muted d-block mt-1">
+                                                    <i class="fas fa-info-circle"></i> {{ $noDisponibilidad->motivo }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="col-12">
+                                    <div class="alert alert-info py-2">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Sin horarios no disponibles registrados
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

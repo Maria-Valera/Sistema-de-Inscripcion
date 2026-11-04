@@ -363,17 +363,31 @@ return new Promise(async (resolve) => {
         }
 
             const data = await response.json();
+            const alertaExistente = document.getElementById('alerta-persona-encontrada');
             
             if (data.status === 'error') {
+                if (alertaExistente) alertaExistente.classList.add('d-none');
+                desbloquearCamposPersonales();
                 showError('numero_documento', data.message);
                 resolve(false);
+            } else if (data.status === 'persona_existente') {
+                clearError({ target: document.getElementById('numero_documento') });
+                if (alertaExistente) {
+                    alertaExistente.classList.remove('d-none');
+                    alertaExistente.classList.add('d-flex');
+                }
+                autocompletarYBloquearCamposPersonales(data.persona);
+                resolve(true);
             } else if (data.status === 'info') {
-                // Cédula de registro eliminado, se puede usar
+                if (alertaExistente) alertaExistente.classList.add('d-none');
+                desbloquearCamposPersonales();
                 console.log(data.message);
                 clearError({ target: document.getElementById('numero_documento') });
                 resolve(true);
             } else {
                 // Cédula disponible
+                if (alertaExistente) alertaExistente.classList.add('d-none');
+                desbloquearCamposPersonales();
                 clearError({ target: document.getElementById('numero_documento') });
                 resolve(true);
             }
@@ -381,6 +395,92 @@ return new Promise(async (resolve) => {
             console.error('Error al verificar cédula:', error);
             showError('numero_documento', error.message || 'Error al verificar la cédula');
             resolve(false);
+        }
+    });
+}
+
+function autocompletarYBloquearCamposPersonales(persona) {
+    if (!persona) return;
+
+    const campos = [
+        { id: 'primer_nombre', val: persona.primer_nombre },
+        { id: 'segundo_nombre', val: persona.segundo_nombre },
+        { id: 'tercer_nombre', val: persona.tercer_nombre },
+        { id: 'primer_apellido', val: persona.primer_apellido },
+        { id: 'segundo_apellido', val: persona.segundo_apellido },
+        { id: 'fecha_nacimiento', val: persona.fecha_nacimiento },
+        { id: 'direccion', val: persona.direccion },
+        { id: 'correo', val: persona.email },
+        { id: 'primer_telefono', val: persona.telefono },
+        { id: 'telefono_dos', val: persona.telefono_dos }
+    ];
+
+    campos.forEach(c => {
+        const el = document.getElementById(c.id) || document.querySelector(`[name="${c.id}"]`);
+        if (el) {
+            if (c.val !== undefined && c.val !== null && c.val !== '') {
+                el.value = c.val;
+            }
+            el.readOnly = true;
+            el.classList.add('bg-light');
+        }
+    });
+
+    if (persona.genero_id) {
+        const genSelect = document.getElementById('genero');
+        if (genSelect) {
+            genSelect.value = persona.genero_id;
+            genSelect.style.pointerEvents = 'none';
+            genSelect.classList.add('bg-light');
+        }
+    }
+
+    if (persona.tipo_documento_id) {
+        const tipoDocSelect = document.getElementById('tipo_documento_id');
+        if (tipoDocSelect) {
+            tipoDocSelect.value = persona.tipo_documento_id;
+            tipoDocSelect.style.pointerEvents = 'none';
+            tipoDocSelect.classList.add('bg-light');
+        }
+    }
+
+    if (persona.prefijo_id) {
+        const prefSelect = document.getElementById('prefijo_id');
+        if (prefSelect) {
+            prefSelect.value = persona.prefijo_id;
+            prefSelect.style.pointerEvents = 'none';
+            prefSelect.classList.add('bg-light');
+        }
+    }
+}
+
+function desbloquearCamposPersonales() {
+    const camposIds = [
+        'primer_nombre',
+        'segundo_nombre',
+        'tercer_nombre',
+        'primer_apellido',
+        'segundo_apellido',
+        'fecha_nacimiento',
+        'direccion',
+        'correo',
+        'primer_telefono',
+        'telefono_dos'
+    ];
+
+    camposIds.forEach(id => {
+        const el = document.getElementById(id) || document.querySelector(`[name="${id}"]`);
+        if (el && el.readOnly) {
+            el.readOnly = false;
+            el.classList.remove('bg-light');
+        }
+    });
+
+    ['genero', 'tipo_documento_id', 'prefijo_id'].forEach(id => {
+        const select = document.getElementById(id);
+        if (select) {
+            select.style.pointerEvents = '';
+            select.classList.remove('bg-light');
         }
     });
 }

@@ -155,7 +155,7 @@
                                         <input type="text" class="form-control" id="numero_documento-representante"
                                             name="numero_documento-representante"
                                             value="{{ old('numero_documento-representante', $representante->persona->numero_documento ?? '') }}"
-                                            maxlength="8" pattern="\d{6,8}" title="Ingrese solo números (entre 6 y 8 dígitos)"
+                                            maxlength="9" pattern="\d{6,9}" title="Ingrese solo números (entre 6 y 9 dígitos)"
                                             required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                         <div class="invalid-feedback">
                                             Por favor ingrese un número de cédula válido (solo números).
@@ -167,9 +167,15 @@
                                             <i class="fas fa-calendar-alt me-2"></i> Fecha de Nacimiento <span
                                                 class="required-badge">*</span>
                                         </label>
+                                        @php
+                                            $fechaNac = $representante->persona->fecha_nacimiento ? \Carbon\Carbon::parse($representante->persona->fecha_nacimiento)->format('Y-m-d') : '';
+                                            if ($fechaNac === '2000-01-01' && ($esFichaNueva ?? false)) {
+                                                $fechaNac = '';
+                                            }
+                                        @endphp
                                         <input type="date" class="form-control" id="fecha-nacimiento-representante"
                                             name="fecha-nacimiento-representante"
-                                            value="{{ old('fecha-nacimiento-representante', $representante->persona->fecha_nacimiento ? \Carbon\Carbon::parse($representante->persona->fecha_nacimiento)->format('Y-m-d') : '') }}"
+                                            value="{{ old('fecha-nacimiento-representante', $fechaNac) }}"
                                             required>
                                         <div class="invalid-feedback">
                                             Por favor ingrese una fecha de nacimiento válida.
@@ -348,15 +354,18 @@
                                             <i class="fas fa-globe me-2"></i> País <span
                                                 class="required-badge">*</span>
                                         </label>
+                                        @php
+                                            $valPais = ($esFichaNueva ?? false) ? old('pais_id', '') : old('pais_id', $representante->pais_id ?? '');
+                                        @endphp
                                         <select class="form-select" id="pais_id" name="pais_id" required>
-                                            <option value="" disabled>Seleccione</option>
+                                            <option value="" disabled {{ empty($valPais) ? 'selected' : '' }}>Seleccione</option>
                                             @php
                                                 // Obtener países únicos
                                                 $paisesUnicos = isset($paises) ? $paises->unique('id')->sortBy('nameES') : collect([]);
                                             @endphp
                                             @foreach ($paisesUnicos as $pais)
                                                 <option value="{{ $pais->id }}"
-                                                    {{ old('pais_id', $representante->pais_id ?? '') == $pais->id ? 'selected' : '' }}>
+                                                    {{ $valPais == $pais->id ? 'selected' : '' }}>
                                                     {{ $pais->nameES }}
                                                 </option>
                                             @endforeach
@@ -371,12 +380,15 @@
                                             <i class="fas fa-map-marker-alt me-2"></i> Estado <span
                                                 class="required-badge">*</span>
                                         </label>
+                                        @php
+                                            $valEstado = ($esFichaNueva ?? false) ? old('estado_id', '') : old('estado_id', $representante->estado_id ?? '');
+                                        @endphp
                                         <select class="form-select" id="estado_id" name="estado_id" required>
-                                            <option value="" disabled>Seleccione</option>
+                                            <option value="" disabled {{ empty($valEstado) ? 'selected' : '' }}>Seleccione</option>
                                             @foreach ($estados as $estado)
                                                 <option value="{{ $estado->id }}"
                                                     data-pais-id="{{ $estado->pais_id }}"
-                                                    {{ old('estado_id', $representante->estado_id ?? '') == $estado->id ? 'selected' : '' }}>
+                                                    {{ $valEstado == $estado->id ? 'selected' : '' }}>
                                                     {{ $estado->nombre_estado }}
                                                 </option>
                                             @endforeach
@@ -391,12 +403,15 @@
                                             <i class="fas fa-map-marker-alt me-2"></i> Municipio <span
                                                 class="required-badge">*</span>
                                         </label>
+                                        @php
+                                            $valMunicipio = ($esFichaNueva ?? false) ? old('municipio_id', '') : old('municipio_id', $representante->municipio_id ?? '');
+                                        @endphp
                                         <select class="form-select" id="municipio_id" name="municipio_id" required>
-                                            <option value="" disabled>Seleccione</option>
+                                            <option value="" disabled {{ empty($valMunicipio) ? 'selected' : '' }}>Seleccione</option>
                                             @foreach ($municipios as $municipio)
                                                 <option value="{{ $municipio->id }}"
                                                     data-estado-id="{{ $municipio->estado_id }}"
-                                                    {{ $representante->municipio_id == $municipio->id ? 'selected' : '' }}>
+                                                    {{ $valMunicipio == $municipio->id ? 'selected' : '' }}>
                                                     {{ $municipio->nombre_municipio }}
                                                 </option>
                                             @endforeach
@@ -411,12 +426,15 @@
                                             <i class="fas fa-map-marker-alt me-2"></i> Parroquia <span
                                                 class="required-badge">*</span>
                                         </label>
+                                        @php
+                                            $valParroquia = ($esFichaNueva ?? false) ? old('parroquia_id', '') : old('parroquia_id', $representante->parroquia_id ?? '');
+                                        @endphp
                                         <select class="form-select" id="parroquia_id" name="parroquia_id" required>
-                                            <option value="" disabled>Seleccione</option>
+                                            <option value="" disabled {{ empty($valParroquia) ? 'selected' : '' }}>Seleccione</option>
                                             @foreach ($parroquias_cargadas as $parroquia)
                                                 <option value="{{ $parroquia->id }}"
                                                     data-municipio-id="{{ $parroquia->municipio_id }}"
-                                                    {{ $representante->parroquia_id == $parroquia->id ? 'selected' : '' }}>
+                                                    {{ $valParroquia == $parroquia->id ? 'selected' : '' }}>
                                                     {{ $parroquia->nombre_localidad }}
                                                 </option>
                                             @endforeach
@@ -445,11 +463,14 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="ocupacion_id" class="form-label">Ocupación</label>
+                                        @php
+                                            $valOcupacion = ($esFichaNueva ?? false) ? old('ocupacion_id', '') : old('ocupacion_id', $representante->ocupacion_representante ?? '');
+                                        @endphp
                                         <select class="form-select" id="ocupacion_id" name="ocupacion_id">
-                                            <option value="">Seleccione</option>
+                                            <option value="" {{ empty($valOcupacion) ? 'selected' : '' }}>Seleccione</option>
                                             @foreach ($ocupaciones as $ocupacion)
                                                 <option value="{{ $ocupacion->id }}"
-                                                    {{ old('ocupacion_id', $representante->ocupacion_representante ?? '') == $ocupacion->id ? 'selected' : '' }}>
+                                                    {{ $valOcupacion == $ocupacion->id ? 'selected' : '' }}>
                                                     {{ $ocupacion->nombre_ocupacion }}
                                                 </option>
                                             @endforeach
@@ -936,7 +957,8 @@
             });
 
             // Inicializar selects al cargar la página
-            // Si hay valores preseleccionados, aplicar los filtros correspondientes
+            // Solo si hay valores preseleccionados válidos (no vacíos), aplicar los filtros correspondientes
+            @if (!($esFichaNueva ?? false))
             if (paisId) {
                 $paisSelect.trigger('change');
                 
@@ -963,6 +985,7 @@
                     }
                 }, 100);
             }
+            @endif
         }
 
         // Función para mostrar/ocultar campo de organización
