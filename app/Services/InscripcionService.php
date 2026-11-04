@@ -9,6 +9,7 @@ use App\Models\Persona;
 use App\DTOs\InscripcionData;
 use App\Models\InscripcionNuevoIngreso;
 use App\Models\InscripcionProsecucion;
+use App\Support\AnioEscolarSeleccionado;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -21,12 +22,10 @@ class InscripcionService
 
     public function obtenerAnioEscolarActivo()
     {
-        $anioEscolar = \App\Models\AnioEscolar::activos()
-            ->whereIn('status', ['Activo', 'Extendido'])
-            ->first();
+        $anioEscolar = AnioEscolarSeleccionado::modelo();
 
         if (!$anioEscolar) {
-            throw new \Exception('No hay un Calendario Escolar activo. Por favor, contacte al administrador.');
+            throw new \Exception('No hay un Calendario Escolar activo o seleccionado. Por favor, contacte al administrador.');
         }
 
         return $anioEscolar;

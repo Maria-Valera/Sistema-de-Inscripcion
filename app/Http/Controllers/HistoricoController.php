@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\Docente;
 use App\Models\DocenteAreaGrado;
 use App\Models\Inscripcion;
@@ -17,7 +18,7 @@ class HistoricoController extends Controller
 {
     public function index(Request $request)
     {
-        $anioEscolarId = $request->anio_escolar_id;
+        $anioEscolarId = $request->has('anio_escolar_id') ? $request->anio_escolar_id : AnioEscolarSeleccionado::id();
         $tipo = $request->get('tipo', 'inscripciones');
         $modalidad = $request->get('modalidad');
         $gradoId = $request->grado_id;

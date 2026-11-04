@@ -14,6 +14,7 @@ use App\Models\Localidad;
 use App\Models\Municipio;
 use App\Models\Estado;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
@@ -22,9 +23,7 @@ class AlumnoController extends Controller
 
     private function verificarAnioEscolar()
     {
-        return \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->exists();
+        return AnioEscolarSeleccionado::esActual();
     }
     /**
      * Display a listing of the resource.
@@ -35,6 +34,7 @@ class AlumnoController extends Controller
         $estatus = request('estatus', 'Activo');
         $genero = request('genero');
         $tipo_documento = request('tipo_documento');
+        $anioId = AnioEscolarSeleccionado::id();
 
         // Construir la consulta base filtrada según el rol y visibilidad del usuario
         $query = Alumno::visiblesPara(auth()->user())->with([
@@ -42,13 +42,24 @@ class AlumnoController extends Controller
             'etniaIndigena',
             'ordenNacimiento',
             'lateralidad',
-            'inscripciones',
+            'inscripciones' => function ($q) use ($anioId) {
+                if ($anioId) {
+                    $q->where('anio_escolar_id', $anioId);
+                }
+            },
             'persona.genero',
             'persona.tipoDocumento',
             'inscripciones.grado',
             'inscripciones.anioEscolar',
             'inscripciones.seccion',
         ]);
+
+        if ($anioId) {
+            $query->where(function ($q) use ($anioId) {
+                $q->whereHas('inscripciones', fn($i) => $i->where('inscripcions.anio_escolar_id', $anioId))
+                  ->orWhereHas('inscripcionProsecucions', fn($p) => $p->where('inscripcion_prosecucions.anio_escolar_id', $anioId));
+            });
+        }
 
         // Aplicar búsqueda
         if (!empty($buscar)) {
@@ -285,6 +296,13 @@ class AlumnoController extends Controller
 
         // Construir la consulta base
         $query = Alumno::with(['persona', 'etniaIndigena', 'ordenNacimiento', 'lateralidad', 'persona.genero', 'persona.tipoDocumento']);
+
+        if ($anioId = AnioEscolarSeleccionado::id()) {
+            $query->where(function ($q) use ($anioId) {
+                $q->whereHas('inscripciones', fn($i) => $i->where('inscripcions.anio_escolar_id', $anioId))
+                  ->orWhereHas('inscripcionProsecucions', fn($p) => $p->where('inscripcion_prosecucions.anio_escolar_id', $anioId));
+            });
+        }
 
         // Aplicar filtro de estatus
         if ($estatus === 'todos') {

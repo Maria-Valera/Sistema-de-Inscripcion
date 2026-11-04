@@ -17,6 +17,7 @@ use App\Models\EntradasPercentil;
 use App\Models\Seccion;
 use App\Models\InscripcionNuevoIngreso;
 use App\Exceptions\InscripcionException;
+use App\Support\AnioEscolarSeleccionado;
 
 
 class InscripcionController extends Controller
@@ -24,16 +25,13 @@ class InscripcionController extends Controller
 
     private function verificarAnioEscolar()
     {
-        return \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->exists();
+        return AnioEscolarSeleccionado::esActual();
     }
 
     public function index(Request $request)
     {
-        $anioEscolarActivo = \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
+        $anioId = AnioEscolarSeleccionado::id();
 
         $grados = Grado::where('status', true)
             ->orderBy('numero_grado', 'asc')
@@ -125,8 +123,8 @@ class InscripcionController extends Controller
                 }
             })
 
-            ->whereHas('anioEscolar', function ($q) {
-                $q->whereIn('status', ['Activo', 'Extendido']);
+            ->when($anioId, function ($q) use ($anioId) {
+                $q->where('anio_escolar_id', $anioId);
             })
 
             ->when($status, fn($q) => $q->where('status', $status))
@@ -148,7 +146,7 @@ class InscripcionController extends Controller
 
 
         return view('admin.transacciones.inscripcion.index', [
-            'anioEscolarActivo' => $anioEscolarActivo ? true : false,
+            'anioEscolarActivo' => AnioEscolarSeleccionado::esActual(),
             'anioEscolar' => $anioEscolarActivo,
             'inscripciones' => $inscripciones,
             'grados' => $grados,
@@ -262,9 +260,7 @@ class InscripcionController extends Controller
             'nuevoIngreso.expresionLiteraria',
         ])->findOrFail($id);
         $datosCompletos = $inscripcion->obtenerDatosCompletos();
-        $anioEscolarActivo = \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
         $pdf = PDF::loadview('admin.transacciones.inscripcion.reporte.ficha_inscripcion', compact('datosCompletos', 'anioEscolarActivo'));
         $pdf->setOption('isPhpEnabled', true);
         return $pdf->stream('ficha_inscripcion.pdf');
@@ -272,9 +268,7 @@ class InscripcionController extends Controller
 
     public function reporteGeneralNuevoIngresoPDF(Request $request)
     {
-        $anioEscolarActivo = \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
         $filtro = $request->all();
         if (!isset($filtro['anio_escolar_id']) && $anioEscolarActivo) {
             $filtro['anio_escolar_id'] = $anioEscolarActivo->id;

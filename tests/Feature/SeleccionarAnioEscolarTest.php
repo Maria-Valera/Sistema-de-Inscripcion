@@ -124,4 +124,52 @@ class SeleccionarAnioEscolarTest extends TestCase
         $response->assertStatus(302);
         $response->assertSessionHas('anio_escolar_id', $this->anioActivo->id);
     }
+
+    public function test_soporte_anio_escolar_seleccionado_devuelve_sesion_o_activo(): void
+    {
+        // Sin sesión, devuelve el activo
+        $this->assertEquals($this->anioActivo->id, AnioEscolarSeleccionado::id());
+        $this->assertTrue(AnioEscolarSeleccionado::esActual());
+
+        // Con sesión del año anterior
+        session(['anio_escolar_id' => $this->anioAnterior->id]);
+        $this->assertEquals($this->anioAnterior->id, AnioEscolarSeleccionado::id());
+        $this->assertFalse(AnioEscolarSeleccionado::esActual());
+        $this->assertEquals($this->anioAnterior->id, AnioEscolarSeleccionado::modelo()->id);
+    }
+
+    public function test_modulos_cargan_correctamente_con_anio_seleccionado(): void
+    {
+        $admin = $this->adminUser;
+
+        // Probar acceso a Inscripciones con sesión en año anterior
+        $responseInscripcion = $this->actingAs($admin)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->get(route('admin.transacciones.inscripcion.index'));
+        $responseInscripcion->assertOk();
+
+        // Probar acceso a Alumnos con sesión en año anterior
+        $responseAlumnos = $this->actingAs($admin)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->get(route('admin.alumnos.index'));
+        $responseAlumnos->assertOk();
+
+        // Probar acceso a Histórico con sesión en año anterior
+        $responseHistorico = $this->actingAs($admin)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->get(route('admin.historico.index'));
+        $responseHistorico->assertOk();
+
+        // Probar acceso a Prosecución con sesión en año anterior
+        $responseProsecucion = $this->actingAs($admin)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->get(route('admin.transacciones.inscripcion_prosecucion.index'));
+        $responseProsecucion->assertOk();
+
+        // Probar acceso a Percentil con sesión en año anterior
+        $responsePercentil = $this->actingAs($admin)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->get(route('admin.transacciones.percentil.index'));
+        $responsePercentil->assertOk();
+    }
 }

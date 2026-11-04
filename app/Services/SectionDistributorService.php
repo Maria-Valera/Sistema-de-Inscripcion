@@ -7,6 +7,7 @@ use App\Models\Seccion;
 use App\Models\EjecucionesPercentil;
 use App\Models\EntradasPercentil;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Services\PercentilService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,10 +25,8 @@ class SectionDistributorService
     {
         return DB::transaction(function () use ($grado) {
 
-            // Verificar Calendario Escolar activo
-            $anioEscolarActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])
-                ->orWhere('status', 'Extendido')
-                ->first();
+            // Verificar Calendario Escolar activo o seleccionado
+            $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
             if (!$anioEscolarActivo) {
                 throw new \Exception('No hay un Calendario Escolar activo');
