@@ -29,6 +29,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'horarios.ver',
+            'horarios.gestionar',
             'horarios.crear',
             'horarios.editar',
             'horarios.eliminar',
@@ -73,6 +74,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'areas_formacion.ver',
+            'areas_formacion.gestionar',
             'areas_formacion.crear',
             'areas_formacion.editar',
             'areas_formacion.eliminar',
@@ -199,6 +201,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'actas.ver',
+            'actas.generar',
             'actas.crear',
             'actas.editar',
             'actas.eliminar',
@@ -212,6 +215,7 @@ return [
         'grupo' => 'seguridad',
         'permisos' => [
             'usuarios_accesos.ver',
+            'usuarios_accesos.gestionar',
             'usuarios_accesos.roles',
             'usuarios_accesos.permisos',
             'usuarios_accesos.usuarios',
@@ -239,6 +243,7 @@ return [
         'grupo' => 'configuracion',
         'permisos' => [
             'calendario.ver',
+            'calendario.gestionar',
             'calendario.crear',
             'calendario.editar',
             'calendario.eliminar',
@@ -284,6 +289,7 @@ return [
         'grupo' => 'configuracion',
         'permisos' => [
             'grados.ver',
+            'grados.gestionar',
             'grados.crear',
             'grados.editar',
             'grados.eliminar',
@@ -310,6 +316,7 @@ return [
         'grupo' => 'configuracion',
         'permisos' => [
             'bloques_horarios.ver',
+            'bloques_horarios.gestionar',
             'bloques_horarios.crear',
             'bloques_horarios.editar',
             'bloques_horarios.eliminar',
@@ -323,6 +330,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'asignacion_docente.ver',
+            'asignacion_docente.gestionar',
             'asignacion_docente.crear',
             'asignacion_docente.editar',
             'asignacion_docente.eliminar',
@@ -337,6 +345,7 @@ return [
         'grupo' => 'configuracion',
         'permisos' => [
             'grado_area_formacion.ver',
+            'grado_area_formacion.gestionar',
             'grado_area_formacion.crear',
             'grado_area_formacion.editar',
             'grado_area_formacion.eliminar',
@@ -350,6 +359,7 @@ return [
         'grupo' => 'configuracion',
         'permisos' => [
             'estudios_realizados.ver',
+            'estudios_realizados.gestionar',
             'estudios_realizados.crear',
             'estudios_realizados.editar',
             'estudios_realizados.eliminar',
@@ -363,6 +373,7 @@ return [
         'grupo' => 'configuracion',
         'permisos' => [
             'area_estudio_realizado.ver',
+            'area_estudio_realizado.gestionar',
             'area_estudio_realizado.crear',
             'area_estudio_realizado.editar',
             'area_estudio_realizado.eliminar',
@@ -386,6 +397,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'percentil.ver',
+            'percentil.gestionar',
             'percentil.ejecutar',
         ],
     ],
@@ -397,6 +409,7 @@ return [
         'grupo' => 'academico',
         'permisos' => [
             'permisos_reposos.ver',
+            'permisos_reposos.gestionar',
             'permisos_reposos.crear',
             'permisos_reposos.editar',
             'permisos_reposos.eliminar',
@@ -438,6 +451,7 @@ return [
         'grupo' => 'configuracion',
         'permisos' => [
             'catalogos.ver',
+            'catalogos.gestionar',
             'catalogos.banco',
             'catalogos.etnia',
             'catalogos.ocupacion',
@@ -462,6 +476,7 @@ return [
         'grupo' => 'configuracion',
         'permisos' => [
             'instituciones.ver',
+            'instituciones.gestionar',
             'instituciones.crear',
             'instituciones.editar',
             'instituciones.eliminar',

@@ -8,7 +8,7 @@ use App\Models\seccion_aula;
 use App\Models\Seccion;
 use App\Models\Aula;
 
-class Seccion_aulaController extends Controller
+class Seccion_AulaController extends Controller
 {
     private function verificarAnioEscolar()
     {
