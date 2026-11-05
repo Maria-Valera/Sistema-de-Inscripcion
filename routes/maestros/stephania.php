@@ -6,8 +6,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Horario\SeleccionarAnioEscolarController;
 
-Route::get('seleccionar-anio', [SeleccionarAnioEscolarController::class, 'index'])
-    ->name('anio-escolar.seleccionar');
+Route::middleware(['permission:anio_escolar.cambiar'])->group(function () {
+    Route::get('seleccionar-anio', [SeleccionarAnioEscolarController::class, 'index'])
+        ->name('anio-escolar.seleccionar');
 
-Route::post('seleccionar-anio', [SeleccionarAnioEscolarController::class, 'guardar'])
-    ->name('anio-escolar.guardar');
+    Route::post('seleccionar-anio', [SeleccionarAnioEscolarController::class, 'guardar'])
+        ->name('anio-escolar.guardar');
+});

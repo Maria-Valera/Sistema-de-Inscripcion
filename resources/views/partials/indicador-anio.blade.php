@@ -25,12 +25,14 @@
                 </span>
             @endif
 
-            <a href="{{ route('admin.anio-escolar.seleccionar') }}" 
-               class="btn btn-xs btn-outline-light ml-2 px-2 font-weight-bold" 
-               style="border-color: rgba(255, 255, 255, 0.7); line-height: 1.3;" 
-               title="Cambiar año escolar">
-                <i class="fas fa-sync-alt mr-1"></i>Cambiar
-            </a>
+            @if(auth()->check() && auth()->user()->can('anio_escolar.cambiar'))
+                <a href="{{ route('admin.anio-escolar.seleccionar') }}" 
+                   class="btn btn-xs btn-outline-light ml-2 px-2 font-weight-bold" 
+                   style="border-color: rgba(255, 255, 255, 0.7); line-height: 1.3;" 
+                   title="Cambiar año escolar">
+                    <i class="fas fa-sync-alt mr-1"></i>Cambiar
+                </a>
+            @endif
         </div>
     </li>
 @endif

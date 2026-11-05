@@ -95,6 +95,14 @@ class LoginController extends Controller
             'Inicio de sesión correcto'
         );
 
+        if (! $user->can('anio_escolar.cambiar')) {
+            $anioActivo = \App\Models\AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+            if ($anioActivo) {
+                session(['anio_escolar_id' => $anioActivo->id]);
+            }
+            return redirect($user->rutaDashboard());
+        }
+
         if (! $request->session()->has('anio_escolar_id')) {
             return redirect()->route('admin.anio-escolar.seleccionar');
         }

@@ -172,4 +172,52 @@ class SeleccionarAnioEscolarTest extends TestCase
             ->get(route('admin.transacciones.percentil.index'));
         $responsePercentil->assertOk();
     }
+
+    public function test_usuario_sin_permiso_redirige_directamente_a_dashboard_y_asigna_anio_activo_en_login(): void
+    {
+        $docenteUser = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'password' => Hash::make('Password123'),
+            'activo' => true,
+            'rol_principal' => 'Docente',
+        ]);
+        $docenteUser->assignRole('Docente');
+
+        $response = $this->post(route('login'), [
+            'email' => $docenteUser->email,
+            'password' => 'Password123',
+        ]);
+
+        $response->assertRedirect($docenteUser->rutaDashboard());
+        $response->assertSessionHas('anio_escolar_id', $this->anioActivo->id);
+    }
+
+    public function test_usuario_sin_permiso_no_puede_acceder_a_pantalla_de_seleccion(): void
+    {
+        $docenteUser = User::factory()->create([
+            'email_verified_at' => now(),
+            'debe_cambiar_password' => false,
+            'password' => Hash::make('Password123'),
+            'activo' => true,
+            'rol_principal' => 'Docente',
+        ]);
+        $docenteUser->assignRole('Docente');
+
+        $response = $this->actingAs($docenteUser)->get(route('admin.anio-escolar.seleccionar'));
+        $response->assertStatus(403);
+
+        $responsePost = $this->actingAs($docenteUser)->post(route('admin.anio-escolar.guardar'), [
+            'anio_escolar_id' => $this->anioAnterior->id,
+        ]);
+        $responsePost->assertStatus(403);
+    }
+
+    public function test_es_actual_retorna_true_si_no_hay_anios_activos_en_la_bd(): void
+    {
+        $this->anioActivo->update(['status' => 'Inactivo']);
+        session()->forget('anio_escolar_id');
+
+        $this->assertTrue(AnioEscolarSeleccionado::esActual());
+    }
 }

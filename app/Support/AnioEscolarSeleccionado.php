@@ -34,9 +34,15 @@ class AnioEscolarSeleccionado
     /**
      * Retorna true si el año seleccionado (o el activo por defecto) está actualmente
      * activo o extendido en el sistema, y false si es un año anterior/inactivo.
+     * Si no existe ningún año activo o extendido en la BD, retorna true para no bloquear el sistema.
      */
     public static function esActual(): bool
     {
+        $hayActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->exists();
+        if (! $hayActivo) {
+            return true;
+        }
+
         $modelo = self::modelo();
         if (!$modelo) {
             return false;

@@ -20,7 +20,14 @@ class HomeController extends Controller
     public function index()
     {
         if (!session()->has('anio_escolar_id')) {
-            return redirect()->route('admin.anio-escolar.seleccionar');
+            if (auth()->check() && !auth()->user()->can('anio_escolar.cambiar')) {
+                $anioActivo = \App\Models\AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+                if ($anioActivo) {
+                    session(['anio_escolar_id' => $anioActivo->id]);
+                }
+            } else {
+                return redirect()->route('admin.anio-escolar.seleccionar');
+            }
         }
 
         // Si el usuario autenticado no es Admin, redirigir a su dashboard correspondiente
