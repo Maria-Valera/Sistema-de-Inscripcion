@@ -20,9 +20,11 @@
                     <p class="title-subtitle">Gestión de calendarios académicos</p>
                 </div>
             </div>
-            <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create_manual') }}'">
-                <i class="fas fa-calendar-plus"></i> <span>Crear nuevo calendario</span>
-            </button>
+            @can('calendario_academico.gestionar')
+                <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create_manual') }}'">
+                    <i class="fas fa-calendar-plus"></i> <span>Crear nuevo calendario</span>
+                </button>
+            @endcan
         </div>
     </div>
 @stop
@@ -40,6 +42,36 @@
                         <p>{{ session('exito') }}</p>
                     </div>
                     <button type="button" class="alert-close btn-close" data-dismiss="alert" aria-label="Cerrar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        @endif
+
+                @if (session('error'))
+            <div class="alerts-container">
+                <div class="alert-modern alert-danger alert alert-dismissible fade show" role="alert">
+                    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="alert-content">
+                        <h4>Error</h4>
+                        <p>{{ session('error') }}</p>
+                    </div>
+                    <button type="button" class="alert-close btn-close" data-bs-dismiss="alert" aria-label="Cerrar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="alerts-container">
+                <div class="alert-modern alert-danger alert alert-dismissible fade show" role="alert">
+                    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="alert-content">
+                        <h4>Revisa los datos</h4>
+                        <p>{{ $errors->first() }}</p>
+                    </div>
+                    <button type="button" class="alert-close btn-close" data-bs-dismiss="alert" aria-label="Cerrar">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -111,6 +143,23 @@
                                                         </a>
                                                     </li>
 
+                                                                                                                                                            @can('calendario_academico.gestionar')
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            <li>
+                                                                <button type="button" class="dropdown-item d-flex align-items-center text-warning"
+                                                                    data-bs-toggle="modal" data-bs-target="#editarCalendario{{ $calendario->id }}">
+                                                                    <i class="fas fa-pen me-2"></i> Editar
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item d-flex align-items-center text-danger"
+                                                                    data-bs-toggle="modal" data-bs-target="#eliminarCalendario{{ $calendario->id }}">
+                                                                    <i class="fas fa-trash-alt me-2"></i> Eliminar
+                                                                </button>
+                                                            </li>
+                                                        @endif
+                                                    @endcan
+
                                                 </ul>
                                             </div>
                                         </div>
@@ -133,6 +182,15 @@
                     </table>
                 </div>
             </div>
+
+
+                        {{-- Modales de editar y eliminar (fuera de la tabla, uno por calendario) --}}
+            @can('calendario_academico.gestionar')
+                @foreach ($calendarios as $calendario)
+                    @include('calendario_academico.modales.editModal')
+                    @include('calendario_academico.modales.deleteModal')
+                @endforeach
+            @endcan
 
             {{-- Pie de tarjeta --}}
             <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between">
