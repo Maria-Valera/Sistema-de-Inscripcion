@@ -68,16 +68,15 @@ class EntradasPercentilController extends Controller
             ->groupBy('seccion_id')
             ->get();
 
-        $activoActivo = $esActual ? $anioEscolarActivo : null;
-
         return view(
             'admin.transacciones.percentil.index',
             [
                 'entradasPercentil' => $entradasPercentil,
                 'gradoId' => $gradoId,
                 'seccionesResumen' => $seccionesResumen,
-                'anioEscolarActivo' => $activoActivo,
+                'anioEscolarActivo' => (bool) $anioEscolarActivo,
                 'anioEscolar' => $anioEscolarActivo,
+                'esActual' => $esActual,
             ]
         );
     }

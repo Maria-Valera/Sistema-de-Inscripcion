@@ -409,6 +409,8 @@ class AlumnoCreate extends Component
 
     public function save()
     {
+        abort_unless(AnioEscolarSeleccionado::esActual(), 403, 'No puedes modificar o registrar alumnos en un año anterior.');
+
         $this->talla_estudiante = (float) str_replace(',', '.', $this->talla_estudiante);
         $this->validate();
 

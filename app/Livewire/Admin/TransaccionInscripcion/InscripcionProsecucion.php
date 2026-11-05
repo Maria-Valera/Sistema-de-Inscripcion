@@ -556,6 +556,8 @@ class InscripcionProsecucion extends Component
             abort(403);
         }
 
+        abort_unless(AnioEscolarSeleccionado::esActual(), 403, 'No puedes registrar prosecuciones en un año anterior.');
+
         $this->validate();
 
         $anioActual = AnioEscolarSeleccionado::modelo();

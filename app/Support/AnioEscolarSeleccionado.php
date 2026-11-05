@@ -32,22 +32,17 @@ class AnioEscolarSeleccionado
     }
 
     /**
-     * Retorna true si el ID de la sesión es igual al año activo (o si no hay nada en sesión),
-     * y false si es un año anterior.
+     * Retorna true si el año seleccionado (o el activo por defecto) está actualmente
+     * activo o extendido en el sistema, y false si es un año anterior/inactivo.
      */
     public static function esActual(): bool
     {
-        $sessionId = session('anio_escolar_id');
-        if ($sessionId === null || $sessionId === '') {
-            return true;
-        }
-
-        $activo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
-        if (!$activo) {
+        $modelo = self::modelo();
+        if (!$modelo) {
             return false;
         }
 
-        return (int) $sessionId === (int) $activo->id;
+        return in_array($modelo->status, ['Activo', 'Extendido']);
     }
 }
 

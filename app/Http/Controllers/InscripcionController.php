@@ -46,7 +46,7 @@ class InscripcionController extends Controller
             $inscritos = Inscripcion::where('grado_id', 1)
                 ->where('status', 'Activo')
                 ->when($anioEscolarActivo, function ($q) use ($anioEscolarActivo) {
-                    $q->where('anio_escolar_id', $anioEscolarActivo->id);
+                    $q->where('inscripcions.anio_escolar_id', $anioEscolarActivo->id);
                 })
                 ->count();
 
@@ -67,7 +67,7 @@ class InscripcionController extends Controller
                 ->whereHas('inscripcion', function ($q) use ($grado1, $anioEscolarActivo) {
                     $q->where('grado_id', $grado1->id);
                     if ($anioEscolarActivo) {
-                        $q->where('anio_escolar_id', $anioEscolarActivo->id);
+                        $q->where('inscripcions.anio_escolar_id', $anioEscolarActivo->id);
                     }
                 })
                 ->orderBy('seccion_id')
@@ -78,7 +78,7 @@ class InscripcionController extends Controller
                 ->whereHas('inscripcion', function ($q) use ($grado1, $anioEscolarActivo) {
                     $q->where('grado_id', $grado1->id);
                     if ($anioEscolarActivo) {
-                        $q->where('anio_escolar_id', $anioEscolarActivo->id);
+                        $q->where('inscripcions.anio_escolar_id', $anioEscolarActivo->id);
                     }
                 })
                 ->groupBy('seccion_id')
@@ -124,7 +124,7 @@ class InscripcionController extends Controller
             })
 
             ->when($anioId, function ($q) use ($anioId) {
-                $q->where('anio_escolar_id', $anioId);
+                $q->where('inscripcions.anio_escolar_id', $anioId);
             })
 
             ->when($status, fn($q) => $q->where('status', $status))
@@ -146,8 +146,9 @@ class InscripcionController extends Controller
 
 
         return view('admin.transacciones.inscripcion.index', [
-            'anioEscolarActivo' => AnioEscolarSeleccionado::esActual(),
+            'anioEscolarActivo' => (bool) $anioEscolarActivo,
             'anioEscolar' => $anioEscolarActivo,
+            'esActual' => AnioEscolarSeleccionado::esActual(),
             'inscripciones' => $inscripciones,
             'grados' => $grados,
             'secciones' => $secciones,
@@ -164,6 +165,11 @@ class InscripcionController extends Controller
 
     public function create()
     {
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.transacciones.inscripcion.index')
+                ->with('warning', 'No puedes registrar nuevas inscripciones en un año escolar anterior (solo lectura).');
+        }
+
         $this->verificarAnioEscolar();
         $personas = Persona::all();
         $generos = Genero::all();

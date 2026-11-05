@@ -41,13 +41,13 @@ class SectionDistributorService
                         // NUEVO INGRESO
                         $q->where(function ($qq) use ($anioEscolarActivo) {
                             $qq->whereHas('nuevoIngreso')
-                            ->where('anio_escolar_id', $anioEscolarActivo->id);
+                            ->where('inscripcions.anio_escolar_id', $anioEscolarActivo->id);
                         })
 
                         // REPITIENTE (NO promovido)
                         ->orWhere(function ($qq) use ($anioEscolarActivo) {
                             $qq->whereHas('prosecucion', function ($p) use ($anioEscolarActivo) {
-                                $p->where('anio_escolar_id', $anioEscolarActivo->id)
+                                $p->where('inscripcion_prosecucions.anio_escolar_id', $anioEscolarActivo->id)
                                 ->where('status', 'Activo')
                                 ->where('promovido', 0);
                             });

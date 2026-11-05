@@ -47,17 +47,17 @@ class InscripcionService
                 if ((int) $grado->numero_grado === 1) {
                     $q->where(function ($qq) use ($anioEscolarActivo) {
                         $qq->whereHas('nuevoIngreso', function ($n) use ($anioEscolarActivo) {
-                            $n->where('anio_escolar_id', $anioEscolarActivo->id);
+                            $n->where('inscripcion_nuevo_ingresos.anio_escolar_id', $anioEscolarActivo->id);
                         })
                             ->orWhereHas('prosecucion', function ($p) use ($anioEscolarActivo) {
-                                $p->where('anio_escolar_id', $anioEscolarActivo->id)
+                                $p->where('inscripcion_prosecucions.anio_escolar_id', $anioEscolarActivo->id)
                                     ->where('status', 'Activo')
                                     ->where('promovido', 0);
                             });
                     });
                 } else {
                     $q->whereHas('prosecucion', function ($p) use ($anioEscolarActivo) {
-                        $p->where('anio_escolar_id', $anioEscolarActivo->id)
+                        $p->where('inscripcion_prosecucions.anio_escolar_id', $anioEscolarActivo->id)
                             ->where('promovido', 1);
                     });
                 }

@@ -66,7 +66,7 @@ class InscripcionProsecucionController extends Controller
                 $q->where('tipo_inscripcion', 'prosecucion');
 
                 if ($anioId) {
-                    $q->where('anio_escolar_id', $anioId);
+                    $q->where('inscripcions.anio_escolar_id', $anioId);
                 }
             })
             ->when($gradoId, fn($q) => $q->where('grado_id', $gradoId))
@@ -99,8 +99,9 @@ class InscripcionProsecucionController extends Controller
 
 
         return view('admin.transacciones.inscripcion_prosecucion.index', [
-            'anioEscolarActivo' => AnioEscolarSeleccionado::esActual(),
+            'anioEscolarActivo' => (bool) $anioEscolarActivo,
             'anioEscolar' => $anioEscolarActivo,
+            'esActual' => AnioEscolarSeleccionado::esActual(),
             'prosecuciones' => $prosecuciones,
             'grados' => $grados,
             'secciones' => $secciones,
@@ -123,6 +124,11 @@ class InscripcionProsecucionController extends Controller
 
     public function create()
     {
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.transacciones.inscripcion_prosecucion.index')
+                ->with('warning', 'No puedes registrar nuevas prosecuciones en un año escolar anterior (solo lectura).');
+        }
+
         $this->verificarAnioEscolar();
         $personas = Persona::all();
         $generos = Genero::all();

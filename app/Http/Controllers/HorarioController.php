@@ -10,6 +10,7 @@ use App\Models\Docente;
 use App\Models\HorarioAsignacion;
 use App\Models\Aula;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\ConfiguracionHorario;
 use App\Models\BloqueReservado;
 use App\Models\CargaAcademica;
@@ -32,7 +33,7 @@ class HorarioController extends Controller
     //muestra horarios en formato API
     public function IndexApi()
     {
-        $anio = AnioEscolar::activos()->first();
+        $anio = AnioEscolarSeleccionado::modelo();
         if (!$anio) {
             return response()->json([]);
         }
@@ -105,10 +106,10 @@ class HorarioController extends Controller
     //devuelve todas las asignaciones (HorarioAsignacion) de una sección para el modal "Ver Horario"
     public function showApi($grado_id, $seccion_id)
     {
-        $anioEscolarActivo = AnioEscolar::activos()->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
         if (!$anioEscolarActivo) {
-            return response()->json(['message' => 'No hay año escolar activo.'], 404);
+            return response()->json(['message' => 'No hay año escolar seleccionado.'], 404);
         }
 
         $seccion = Seccion::with('grado')
@@ -279,7 +280,7 @@ class HorarioController extends Controller
             ->get()
             ->unique('nombre');
 
-        $anioEscolarActivo = AnioEscolar::activos()->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
         $numeroBloques = 8;
         if ($anioEscolarActivo) {
@@ -418,11 +419,16 @@ class HorarioController extends Controller
     //muestra la vista para crear horario con docentes, aulas y datos
     public function create(Request $request)
     {
-        $anioEscolarActivo = AnioEscolar::activos()->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
         if (!$anioEscolarActivo) {
             return redirect()->route('admin.horario.index')
-                ->with('error', 'No hay un año escolar activo.');
+                ->with('error', 'No hay un año escolar seleccionado.');
+        }
+
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.horario.index')
+                ->with('warning', 'No puedes crear horarios en un año escolar anterior (solo lectura).');
         }
 
         // 1. Verificar si existe configuración de horario para el año activo
@@ -606,7 +612,7 @@ class HorarioController extends Controller
     public function destroy(Request $request, $grado_id, $seccion_id)
     {
         try {
-            $anioEscolarActivo = AnioEscolar::activos()->first();
+            $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
             if (!$anioEscolarActivo) {
                 return redirect()->back()->with('error', 'No hay año escolar activo. No se puede eliminar el horario.');

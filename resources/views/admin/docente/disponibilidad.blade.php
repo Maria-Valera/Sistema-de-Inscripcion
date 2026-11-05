@@ -88,6 +88,7 @@
 
 @section('content')
     <div class="main-container">
+        @include('partials.alerta-modo-consulta')
         <div class="card-modern">
             <div class="card-header-modern">
                 <div class="header-left">

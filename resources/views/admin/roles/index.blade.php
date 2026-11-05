@@ -25,12 +25,13 @@
             </div>
 
             {{-- Botón que abre la ventana modal para crear un nuevo rol --}}
-            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Nuevo Rol' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nuevo Rol</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
+                    title="Nuevo Rol">
+                    <i class="fas fa-plus"></i>
+                    <span>Nuevo Rol</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop
@@ -40,23 +41,7 @@
 
         {{-- Modal para crear un nuevo rol --}}
         @include('admin.roles.modales.createModal')
-
-        {{-- Alerta si NO hay Calendario Escolar activo --}}
-        @if (!$anioEscolarActivo)
-            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                        <p class="mb-0">
-                            Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong> hasta que se
-                            registre un Calendario Escolar activo.
-                            <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
+        @include('partials.alerta-modo-consulta')
 
         {{-- Sección de alertas de éxito o error --}}
         @if (session('success') || session('error'))
@@ -194,25 +179,24 @@
                                         </td>
 
                                         <td>
-                                            <div class="action-buttons">
+                                            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                <div class="action-buttons">
 
-                                                {{-- Editar grado --}}
-                                                <button class="action-btn btn-edit" data-bs-toggle="modal"
-                                                    data-bs-target="#viewModalEditar{{ $datos->id }}" title="Editar"
-                                                    @if (!$anioEscolarActivo) disabled @endif
-                                                    title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Editar Rol' }}">
-                                                    <i class="fas fa-pen"></i>
-                                                </button>
+                                                    {{-- Editar grado --}}
+                                                    <button class="action-btn btn-edit" data-bs-toggle="modal"
+                                                        data-bs-target="#viewModalEditar{{ $datos->id }}"
+                                                        title="Editar Rol">
+                                                        <i class="fas fa-pen"></i>
+                                                    </button>
 
-                                                {{-- Eliminar grado --}}
-                                                <button class="action-btn btn-delete" data-bs-toggle="modal"
-                                                    data-bs-target="#confirmarEliminar{{ $datos->id }}"
-                                                    title="Eliminar" @if (!$anioEscolarActivo) disabled @endif
-                                                    title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Eliminar Rol' }}">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-
-
+                                                    {{-- Eliminar grado --}}
+                                                    <button class="action-btn btn-delete" data-bs-toggle="modal"
+                                                        data-bs-target="#confirmarEliminar{{ $datos->id }}"
+                                                        title="Eliminar Rol">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+                                            @endif
                                         </td>
                                     </tr>
 

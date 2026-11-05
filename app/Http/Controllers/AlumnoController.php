@@ -44,7 +44,7 @@ class AlumnoController extends Controller
             'lateralidad',
             'inscripciones' => function ($q) use ($anioId) {
                 if ($anioId) {
-                    $q->where('anio_escolar_id', $anioId);
+                    $q->where('inscripcions.anio_escolar_id', $anioId);
                 }
             },
             'persona.genero',
@@ -138,8 +138,8 @@ class AlumnoController extends Controller
             });
         }
 
-        // Verificar si hay Calendario Escolar activo
-        $anioEscolarActivo = $this->verificarAnioEscolar();
+        // Verificar si hay Calendario Escolar seleccionado o activo
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo() !== null;
 
         // Se envían los datos a la vista
         return view('admin.alumnos.index', compact(
@@ -159,6 +159,11 @@ class AlumnoController extends Controller
      */
     public function create()
     {
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.alumnos.index')
+                ->with('warning', 'No puedes registrar nuevos alumnos en un año escolar anterior (solo lectura).');
+        }
+
         $orden_nacimiento = OrdenNacimiento::all();
         $discapacidad = Discapacidad::all();
         $etnia_indigena = EtniaIndigena::all();
@@ -203,6 +208,11 @@ class AlumnoController extends Controller
      */
     public function edit(Alumno $alumno)
     {
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.alumnos.index')
+                ->with('warning', 'No puedes editar alumnos en un año escolar anterior (solo lectura).');
+        }
+
         $anioEscolarActivo = $this->verificarAnioEscolar();
 
         return view('admin.alumnos.edit', compact(

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ConfianzaDia;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\CalendarioAcademico;
 use App\Models\CalendarioDia;
 use App\Services\CalendarioPdfExtractorService;
@@ -37,7 +38,12 @@ class CalendarioAcademicoController extends Controller
     // aqui tenemos la entrada de una pantalla de decision : o el usuario se va por el camino de extraer el calendario por pdf o hacerlo de manera manual
     // para cargar un calendario nuevo
 
-    public function create(): View {
+    public function create(): View|\Illuminate\Http\RedirectResponse {
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.calendario_academico.index')
+                ->with('warning', 'No puedes cargar calendarios en un año escolar anterior (solo lectura).');
+        }
+
         $hayAniosDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->exists();
 
         return view('calendario_academico.create', compact('hayAniosDisponibles'));

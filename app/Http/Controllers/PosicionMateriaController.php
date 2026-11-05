@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Dia;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\AreaFormacion;
 use App\Models\AreaFormacionPosicion;
 use App\Models\Grado;
@@ -24,7 +25,7 @@ class PosicionMateriaController extends Controller
      */
     public function index(Request $request): View
     {
-        $anioActivo = AnioEscolar::activos()->first();
+        $anioActivo = AnioEscolarSeleccionado::modelo();
 
         $areas = AreaFormacion::where('status', true)
             ->orderBy('nombre_area_formacion', 'asc')

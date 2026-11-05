@@ -134,7 +134,7 @@ class InscripcionProsecucion extends Model
                 'prosecucionAreas.gradoAreaFormacion.area_formacion',
             ])
             ->when($anioEscolarId, function ($q) use ($anioEscolarId) {
-                $q->where('anio_escolar_id', $anioEscolarId);
+                $q->where('inscripcion_prosecucions.anio_escolar_id', $anioEscolarId);
             })
             ->when($gradoId, function ($q) use ($gradoId) {
                 $q->where('grado_id', $gradoId);

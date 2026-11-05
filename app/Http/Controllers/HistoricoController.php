@@ -48,7 +48,7 @@ class HistoricoController extends Controller
                 ->when(
                     $anioEscolarId,
                     fn($q) =>
-                    $q->where('anio_escolar_id', $anioEscolarId)
+                    $q->where('docentes.anio_escolar_id', $anioEscolarId)
                 )
 
                 ->when($gradoId, function ($q) use ($gradoId) {
@@ -90,7 +90,7 @@ class HistoricoController extends Controller
                 'nuevoIngreso.expresionLiteraria'
             ])
                 ->whereHas('nuevoIngreso')
-                ->when($anioEscolarId, fn($q) => $q->where('anio_escolar_id', $anioEscolarId))
+                ->when($anioEscolarId, fn($q) => $q->where('inscripcions.anio_escolar_id', $anioEscolarId))
                 ->when($gradoId, fn($q) => $q->where('grado_id', $gradoId))
                 ->when($seccionId, fn($q) => $q->where('seccion_id', $seccionId))
                 ->orderBy('created_at', 'desc')
@@ -120,7 +120,7 @@ class HistoricoController extends Controller
                 'seccion'
             ])
                 ->where('status', 'Activo')
-                ->when($anioEscolarId, fn($q) => $q->where('anio_escolar_id', $anioEscolarId))
+                ->when($anioEscolarId, fn($q) => $q->where('inscripcion_prosecucions.anio_escolar_id', $anioEscolarId))
                 ->when(
                     $gradoId,
                     fn($q) =>
@@ -159,7 +159,7 @@ class HistoricoController extends Controller
             'prosecucion.seccion'
         ])
             ->whereNull('deleted_at')
-            ->when($anioEscolarId, fn($q) => $q->where('anio_escolar_id', $anioEscolarId))
+            ->when($anioEscolarId, fn($q) => $q->where('inscripcions.anio_escolar_id', $anioEscolarId))
             ->when($gradoId, fn($q) => $q->where('grado_id', $gradoId))
             ->when($seccionId, fn($q) => $q->where('seccion_id', $seccionId))
 

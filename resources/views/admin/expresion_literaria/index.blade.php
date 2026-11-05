@@ -21,12 +21,13 @@
                     <p class="title-subtitle">Administración de las expresiones literarias</p>
                 </div>
             </div>
-            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Nueva expresión literaria' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nueva Expresión Literaria</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
+                    title="Nueva expresión literaria">
+                    <i class="fas fa-plus"></i>
+                    <span>Nueva Expresión Literaria</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop
@@ -35,22 +36,7 @@
     <div class="main-container">
 
         @include('admin.expresion_literaria.modales.createModal')
-
-        @if (!$anioEscolarActivo)
-            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                        <p class="mb-0">
-                            Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong> hasta que se
-                            registre un Calendario Escolar activo.
-                            <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
+        @include('partials.alerta-modo-consulta')
 
         @if (session('success') || session('error'))
             <div class="alerts-container">
@@ -150,28 +136,28 @@
                                                         <i class="fas fa-ellipsis-v"></i>
                                                     </button>
                                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                        <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-warning"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#viewModalEditar{{ $datos->id }}"
-                                                                title="Editar"
-                                                                @if (!$anioEscolarActivo) disabled @endif
-                                                                title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Editar' }}">
-                                                                <i class="fas fa-pen me-2"></i>
-                                                                Editar
-                                                            </button>
-                                                        </li>
-                                                        <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-danger"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#confirmarEliminar{{ $datos->id }}"
-                                                                @disabled(!$anioEscolarActivo) title="Inactivar Calendario Escolar">
-                                                                <i class="fas fa-ban me-2"></i>
-                                                                Inactivar
-                                                            </button>
-                                                        </li>
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            <li>
+                                                                <button
+                                                                    class="dropdown-item d-flex align-items-center text-warning"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#viewModalEditar{{ $datos->id }}"
+                                                                    title="Editar">
+                                                                    <i class="fas fa-pen me-2"></i>
+                                                                    Editar
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button
+                                                                    class="dropdown-item d-flex align-items-center text-danger"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#confirmarEliminar{{ $datos->id }}"
+                                                                    title="Inactivar">
+                                                                    <i class="fas fa-ban me-2"></i>
+                                                                    Inactivar
+                                                                </button>
+                                                            </li>
+                                                        @endif
                                                     </ul>
                                                 </div>
                                             </div>

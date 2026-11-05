@@ -20,36 +20,23 @@
                     </p>
                 </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div>
-                    <a href="{{ route('admin.transacciones.inscripcion.create') }}" class="btn-create"
-                        @if (!$anioEscolarActivo) disabled @endif
-                        title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Crear nueva inscripción' }}">
-                        <i class="fas fa-plus"></i>
-                        <span>Registrar</span>
-                    </a>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        <a href="{{ route('admin.transacciones.inscripcion.create') }}" class="btn-create"
+                            title="Crear nueva inscripción">
+                            <i class="fas fa-plus"></i>
+                            <span>Registrar</span>
+                        </a>
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 @stop
 @section('content')
     <div class="main-container">
-        @if (!$anioEscolarActivo)
-            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                        <p class="mb-0">
-                            Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong>
-                            inscripciones.
-                            <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
+        @include('partials.alerta-modo-consulta')
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         @if (session('error'))
             <script>
@@ -281,38 +268,37 @@
                                                                 Ver mas
                                                             </button>
                                                         </li>
-                                                        @if ($datos->nuevoIngreso)
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            @if ($datos->nuevoIngreso)
+                                                                <li>
+                                                                    <a href="{{ route('admin.transacciones.inscripcion.edit', $datos->id) }}"
+                                                                        class="dropdown-item d-flex align-items-center text-warning"
+                                                                        title="Editar">
+                                                                        <i class="fas fa-edit me-2"></i>
+                                                                        Editar
+                                                                    </a>
+                                                                </li>
+                                                            @endif
                                                             <li>
-                                                                <a href="{{ route('admin.transacciones.inscripcion.edit', $datos->id) }}"
-                                                                    class="dropdown-item d-flex align-items-center text-warning"
-                                                                    @if (!$anioEscolarActivo) disabled @endif
-                                                                    title="{{ !$anioEscolarActivo ? 'Requiere Calendario Escolar activo' : 'Editar' }}">
-                                                                    <i class="fas fa-edit me-2"></i>
-                                                                    Editar
-                                                                </a>
+                                                                @if ($datos->status === 'Activo' || $datos->status === 'Pendiente')
+                                                                    <button
+                                                                        class="dropdown-item d-flex align-items-center text-danger"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#confirmarEliminar{{ $datos->id }}">
+                                                                        <i class="fas fa-ban me-2"></i>
+                                                                        Inactivar
+                                                                    </button>
+                                                                @else
+                                                                    <button
+                                                                        class="dropdown-item d-flex align-items-center text-success"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#confirmarRestaurar{{ $datos->id }}">
+                                                                        <i class="fas fa-undo me-2"></i>
+                                                                        Restaurar
+                                                                    </button>
+                                                                @endif
                                                             </li>
                                                         @endif
-                                                        <li>
-                                                            @if ($datos->status === 'Activo' || $datos->status === 'Pendiente')
-                                                                <button
-                                                                    class="dropdown-item d-flex align-items-center text-danger"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#confirmarEliminar{{ $datos->id }}"
-                                                                    @disabled(!$anioEscolarActivo)>
-                                                                    <i class="fas fa-ban me-2"></i>
-                                                                    Inactivar
-                                                                </button>
-                                                            @else
-                                                                <button
-                                                                    class="dropdown-item d-flex align-items-center text-success"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#confirmarRestaurar{{ $datos->id }}"
-                                                                    @disabled(!$anioEscolarActivo)>
-                                                                    <i class="fas fa-undo me-2"></i>
-                                                                    Restaurar
-                                                                </button>
-                                                            @endif
-                                                        </li>
                                                         <li>
                                                             <a href="{{ route('admin.transacciones.inscripcion.reporte', $datos->id) }}"
                                                                 class="dropdown-item d-flex align-items-center text-danger"
