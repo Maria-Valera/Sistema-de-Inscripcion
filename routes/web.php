@@ -142,18 +142,7 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
         Route::delete('anio_escolar/{id}', [AnioEscolarController::class, 'destroy'])->name('anio_escolar.destroy');
     });
 
-        // ===== Calendario Académico (días no laborables — registro manual) =====
-    // Igual que anio_escolar, sin middleware verificar.anio.escolar: se puede
-    // cargar el calendario de un año escolar que todavía no esté activo.
-    Route::get('calendario_academico', [CalendarioAcademicoController::class, 'index'])->name('calendario_academico.index');
-    Route::get('calendario_academico/nuevo/manual', [CalendarioAcademicoController::class, 'createManual'])->name('calendario_academico.create_manual');
-    Route::post('calendario_academico/manual', [CalendarioAcademicoController::class, 'storeManual'])->name('calendario_academico.store_manual');
-    Route::get('calendario_academico/{calendarioAcademico}', [CalendarioAcademicoController::class, 'show'])->name('calendario_academico.show');
- 
-    // ===== CRUD de eventos manuales =====
-    Route::post('calendario_academico/{calendarioAcademico}/eventos', [CalendarioAcademicoController::class, 'eventoStore'])->name('calendario_academico.eventos.store');
-    Route::put('calendario_academico/{calendarioAcademico}/eventos/{calendarioDia}', [CalendarioAcademicoController::class, 'eventoUpdate'])->name('calendario_academico.eventos.update');
-    Route::delete('calendario_academico/{calendarioAcademico}/eventos/{calendarioDia}', [CalendarioAcademicoController::class, 'eventoDestroy'])->name('calendario_academico.eventos.destroy');
+    // ===== Calendario Académico: sus rutas están en routes/maestros/maria.php =====
 
 
     // ===== BANCOS =====
