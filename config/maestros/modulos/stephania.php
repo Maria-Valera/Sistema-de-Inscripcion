@@ -13,6 +13,7 @@ return [
             'anio_escolar.cambiar',
         ],
     ],
+<<<<<<< HEAD
     'institucion' => [
         'nombre' => 'Datos del Plantel',
         'icono' => 'fas fa-school',
@@ -43,4 +44,6 @@ return [
             'autoridad_firmante.gestionar',
         ],
     ],
+=======
+>>>>>>> origin/dev
 ];

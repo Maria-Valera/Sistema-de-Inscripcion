@@ -5,6 +5,7 @@
 return [
     'Admin' => [
         'anio_escolar' => '*',
+<<<<<<< HEAD
         'institucion' => '*',
         'escala_literal' => '*',
         'autoridad_firmante' => '*',
@@ -12,5 +13,10 @@ return [
     'Subdirectora' => [
         'anio_escolar' => '*',
         'escala_literal' => '*',
+=======
+    ],
+    'Subdirectora' => [
+        'anio_escolar' => '*',
+>>>>>>> origin/dev
     ],
 ];
