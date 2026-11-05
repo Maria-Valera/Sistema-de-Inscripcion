@@ -245,16 +245,17 @@
                 <table class="table-modern overflow-hidden ">
                     <thead>
                         <tr style="text-align: center">
-                            <th style="text-align: center">#</th>
-                            <th style="text-align: center">Grupo estable</th>
-                            <th style="text-align: center">Estado</th>
-                            <th style="text-align: center">Acciones</th>
+                            <th style="text-align: center; width: 60px;">#</th>
+                            <th style="text-align: center; width: 120px;">Código</th>
+                            <th style="text-align: left;">Grupo Estable</th>
+                            <th style="text-align: center; width: 120px;">Estado</th>
+                            <th style="text-align: center; width: 120px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody style="text-align: center">
                         @if($grupoEstable->isEmpty())
                             <tr>
-                                <td colspan="4">
+                                <td colspan="5">
                                     <div class="empty-state">
                                         <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                                         <h4>No hay grupos estables registrados</h4>
@@ -265,9 +266,16 @@
                         @else
                             @foreach($grupoEstable as $index => $grupo)
                                 @if($grupo->status)
-                                    <tr class="  row-12">
-                                        <td>{{ $index + 1 }}</td>
-                                        <td class="title-main">{{ $grupo->nombre_grupo_estable }}</td>
+                                    <tr class="row-12">
+                                        <td>{{ $grupoEstable->firstItem() ? ($grupoEstable->firstItem() + $index) : ($index + 1) }}</td>
+                                        <td>
+                                            @if($grupo->codigo)
+                                                <span class="badge badge-light border text-primary font-weight-bold" style="font-size: 0.85rem; padding: 0.35rem 0.6rem;">{{ $grupo->codigo }}</span>
+                                            @else
+                                                <span class="text-muted font-italic">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="title-main" style="text-align: left;">{{ $grupo->nombre_grupo_estable }}</td>
                                         <td>
                                             @if ($grupo->status)
                                                 <span class="status-badge status-active">

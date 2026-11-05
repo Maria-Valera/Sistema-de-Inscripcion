@@ -6,6 +6,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Horario\SeleccionarAnioEscolarController;
 use App\Http\Controllers\InstitucionController;
+use App\Http\Controllers\EscalaLiteralController;
 
 Route::middleware(['permission:anio_escolar.cambiar'])->group(function () {
     Route::get('seleccionar-anio', [SeleccionarAnioEscolarController::class, 'index'])
@@ -18,4 +19,12 @@ Route::middleware(['permission:anio_escolar.cambiar'])->group(function () {
 // Maestro S1: Datos del Plantel (Instituciones)
 Route::middleware(['permission:institucion.ver|institucion.gestionar'])->group(function () {
     Route::resource('institucion', InstitucionController::class);
+});
+
+// Maestro S2: Escala Literal
+Route::middleware('permission:escala_literal.ver')->group(function () {
+    Route::get('escala-literal', [EscalaLiteralController::class, 'index'])->name('escala-literal.index');
+});
+Route::middleware('permission:escala_literal.gestionar')->group(function () {
+    Route::resource('escala-literal', EscalaLiteralController::class)->except(['index', 'show']);
 });

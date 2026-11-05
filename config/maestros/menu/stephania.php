@@ -5,7 +5,14 @@
 
 return [
     'calendario'  => [],
-    'notas'       => [],
+    'notas'       => [
+        [
+            'text' => 'Escala Literal',
+            'url'  => 'admin/escala-literal',
+            'icon' => 'fas fa-sort-alpha-down',
+            'can'  => 'escala_literal.ver',
+        ],
+    ],
     'institucion' => [
         [
             'text' => 'Datos del Plantel',

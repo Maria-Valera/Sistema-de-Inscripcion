@@ -23,4 +23,14 @@ return [
             'institucion.gestionar',
         ],
     ],
+    'escala_literal' => [
+        'nombre' => 'Escala Literal',
+        'icono' => 'fas fa-sort-alpha-down',
+        'ruta' => 'admin.escala-literal.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'escala_literal.ver',
+            'escala_literal.gestionar',
+        ],
+    ],
 ];

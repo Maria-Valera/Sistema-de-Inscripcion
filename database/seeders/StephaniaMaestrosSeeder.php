@@ -14,6 +14,7 @@ class StephaniaMaestrosSeeder extends Seeder
     {
         $this->call([
             InstitucionSeeder::class,
+            EscalaLiteralSeeder::class,
         ]);
     }
 }
