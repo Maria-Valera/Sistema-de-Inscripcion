@@ -12,6 +12,8 @@ class StephaniaMaestrosSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $this->call([
+            InstitucionSeeder::class,
+        ]);
     }
 }

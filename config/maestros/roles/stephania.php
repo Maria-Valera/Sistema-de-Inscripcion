@@ -5,6 +5,7 @@
 return [
     'Admin' => [
         'anio_escolar' => '*',
+        'institucion' => '*',
     ],
     'Subdirectora' => [
         'anio_escolar' => '*',

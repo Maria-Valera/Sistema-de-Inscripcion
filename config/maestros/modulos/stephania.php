@@ -13,4 +13,14 @@ return [
             'anio_escolar.cambiar',
         ],
     ],
+    'institucion' => [
+        'nombre' => 'Datos del Plantel',
+        'icono' => 'fas fa-school',
+        'ruta' => 'admin.institucion.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'institucion.ver',
+            'institucion.gestionar',
+        ],
+    ],
 ];

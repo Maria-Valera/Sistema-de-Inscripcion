@@ -6,5 +6,12 @@
 return [
     'calendario'  => [],
     'notas'       => [],
-    'institucion' => [],
+    'institucion' => [
+        [
+            'text' => 'Datos del Plantel',
+            'url'  => 'admin/institucion',
+            'icon' => 'fas fa-school',
+            'can'  => 'institucion.ver',
+        ],
+    ],
 ];
