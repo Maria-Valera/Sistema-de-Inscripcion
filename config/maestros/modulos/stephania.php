@@ -33,4 +33,14 @@ return [
             'escala_literal.gestionar',
         ],
     ],
+    'autoridad_firmante' => [
+        'nombre' => 'Autoridades Firmantes',
+        'icono' => 'fas fa-signature',
+        'ruta' => 'admin.autoridad-firmante.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'autoridad_firmante.ver',
+            'autoridad_firmante.gestionar',
+        ],
+    ],
 ];

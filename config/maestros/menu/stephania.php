@@ -20,5 +20,11 @@ return [
             'icon' => 'fas fa-school',
             'can'  => 'institucion.ver',
         ],
+        [
+            'text' => 'Autoridades Firmantes',
+            'url'  => 'admin/autoridad-firmante',
+            'icon' => 'fas fa-signature',
+            'can'  => 'autoridad_firmante.ver',
+        ],
     ],
 ];
