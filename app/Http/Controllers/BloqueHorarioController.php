@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\AnioEscolar;
+use App\Models\ConfiguracionHorario;
+use App\Services\ConfiguracionHorarioService;
+
+class BloqueHorarioController extends Controller
+{
+    public function apiIndex()
+    {
+        $anio = AnioEscolar::activos()->first();
+        if ($anio) {
+            $config = ConfiguracionHorario::where('anio_escolar_id', $anio->id)->first();
+            if ($config) {
+                $bloquesService = app(ConfiguracionHorarioService::class);
+                $calculados = $bloquesService->bloques($config);
+                $bloques = [];
+                for ($b = 1; $b <= $config->numero_bloques; $b++) {
+                    $info = $calculados->get($b, ['inicio' => '07:00', 'fin' => '07:45']);
+                    $bloques[] = [
+                        'id' => $b,
+                        'bloque' => $b,
+                        'hora_inicio' => $info['inicio'],
+                        'hora_fin' => $info['fin'],
+                    ];
+                }
+                return response()->json($bloques);
+            }
+        }
+
+        return response()->json([]);
+    }
+
+    public function index()
+    {
+        return redirect()->route('horario.configuracion');
+    }
+
+    public function store(Request $request)
+    {
+        return redirect()->route('horario.configuracion');
+    }
+
+    public function update(Request $request, $id)
+    {
+        return redirect()->route('horario.configuracion');
+    }
+
+    public function verificarExistencia(Request $request)
+    {
+        return response()->json(['success' => true, 'existe' => false]);
+    }
+
+    public function destroy($id)
+    {
+        return redirect()->route('horario.configuracion');
+    }
+}

@@ -14,6 +14,7 @@ use App\Models\Localidad;
 use App\Models\Municipio;
 use App\Models\Estado;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
@@ -22,9 +23,7 @@ class AlumnoController extends Controller
 
     private function verificarAnioEscolar()
     {
-        return \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->exists();
+        return AnioEscolarSeleccionado::esActual();
     }
     /**
      * Display a listing of the resource.
@@ -35,20 +34,32 @@ class AlumnoController extends Controller
         $estatus = request('estatus', 'Activo');
         $genero = request('genero');
         $tipo_documento = request('tipo_documento');
+        $anioId = AnioEscolarSeleccionado::id();
 
-        // Construir la consulta base
-        $query = Alumno::with([
+        // Construir la consulta base filtrada según el rol y visibilidad del usuario
+        $query = Alumno::visiblesPara(auth()->user())->with([
             'persona',
             'etniaIndigena',
             'ordenNacimiento',
             'lateralidad',
-            'inscripciones',
+            'inscripciones' => function ($q) use ($anioId) {
+                if ($anioId) {
+                    $q->where('inscripcions.anio_escolar_id', $anioId);
+                }
+            },
             'persona.genero',
             'persona.tipoDocumento',
             'inscripciones.grado',
             'inscripciones.anioEscolar',
             'inscripciones.seccion',
         ]);
+
+        if ($anioId) {
+            $query->where(function ($q) use ($anioId) {
+                $q->whereHas('inscripciones', fn($i) => $i->where('inscripcions.anio_escolar_id', $anioId))
+                  ->orWhereHas('inscripcionProsecucions', fn($p) => $p->where('inscripcion_prosecucions.anio_escolar_id', $anioId));
+            });
+        }
 
         // Aplicar búsqueda
         if (!empty($buscar)) {
@@ -93,8 +104,42 @@ class AlumnoController extends Controller
             ->paginate(10)
             ->appends(request()->query());
 
-        // Verificar si hay Calendario Escolar activo
-        $anioEscolarActivo = $this->verificarAnioEscolar();
+        // Si el usuario es Docente (sin Admin/Subdirectora), no enviar campos sensibles
+        if (auth()->user()?->esSoloDocente()) {
+            $alumnos->getCollection()->each(function ($alumno) {
+                $alumno->makeHidden([
+                    'talla_camisa_id',
+                    'talla_pantalon_id',
+                    'talla_zapato',
+                    'peso',
+                    'estatura',
+                    'orden_nacimiento_id',
+                    'lateralidad_id',
+                    'etnia_indigena_id',
+                ]);
+                $alumno->talla_camisa_id = null;
+                $alumno->talla_pantalon_id = null;
+                $alumno->talla_zapato = null;
+                $alumno->peso = null;
+                $alumno->estatura = null;
+                $alumno->orden_nacimiento_id = null;
+                $alumno->lateralidad_id = null;
+                $alumno->etnia_indigena_id = null;
+
+                if ($alumno->persona) {
+                    $alumno->persona->makeHidden(['direccion', 'localidad_id']);
+                    $alumno->persona->direccion = null;
+                    $alumno->persona->localidad_id = null;
+                    $alumno->persona->unsetRelation('localidad');
+                }
+                $alumno->unsetRelation('etniaIndigena');
+                $alumno->unsetRelation('ordenNacimiento');
+                $alumno->unsetRelation('lateralidad');
+            });
+        }
+
+        // Verificar si hay Calendario Escolar seleccionado o activo
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo() !== null;
 
         // Se envían los datos a la vista
         return view('admin.alumnos.index', compact(
@@ -114,6 +159,11 @@ class AlumnoController extends Controller
      */
     public function create()
     {
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.alumnos.index')
+                ->with('warning', 'No puedes registrar nuevos alumnos en un año escolar anterior (solo lectura).');
+        }
+
         $orden_nacimiento = OrdenNacimiento::all();
         $discapacidad = Discapacidad::all();
         $etnia_indigena = EtniaIndigena::all();
@@ -132,10 +182,37 @@ class AlumnoController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(Alumno $alumno)
+    {
+        $this->authorize('view', $alumno);
+
+        $alumno->load([
+            'persona.tipoDocumento',
+            'persona.genero',
+            'persona.localidad.municipio.estado.pais',
+            'discapacidades',
+            'ordenNacimiento',
+            'lateralidad',
+            'etniaIndigena',
+            'tallaCamisa',
+            'tallaPantalon'
+        ]);
+
+        return view('admin.alumnos.show', compact('alumno'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Alumno $alumno)
     {
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.alumnos.index')
+                ->with('warning', 'No puedes editar alumnos en un año escolar anterior (solo lectura).');
+        }
+
         $anioEscolarActivo = $this->verificarAnioEscolar();
 
         return view('admin.alumnos.edit', compact(
@@ -168,6 +245,8 @@ class AlumnoController extends Controller
             ])
             ->firstOrFail();
 
+        $this->authorize('view', $alumno);
+
         // Cargar nombres de tallas directamente
         if ($alumno->talla_camisa_id) {
             $tallaCamisa = \App\Models\Talla::find($alumno->talla_camisa_id);
@@ -177,6 +256,40 @@ class AlumnoController extends Controller
         if ($alumno->talla_pantalon_id) {
             $tallaPantalon = \App\Models\Talla::find($alumno->talla_pantalon_id);
             $alumno->talla_pantalon_nombre = $tallaPantalon ? $tallaPantalon->nombre : null;
+        }
+
+        // Si el usuario es Docente (sin Admin/Subdirectora), no enviar campos sensibles
+        if (auth()->user()?->esSoloDocente()) {
+            $alumno->makeHidden([
+                'talla_camisa_id',
+                'talla_pantalon_id',
+                'talla_zapato',
+                'peso',
+                'estatura',
+                'orden_nacimiento_id',
+                'lateralidad_id',
+                'etnia_indigena_id',
+            ]);
+            $alumno->talla_camisa_id = null;
+            $alumno->talla_pantalon_id = null;
+            $alumno->talla_zapato = null;
+            $alumno->peso = null;
+            $alumno->estatura = null;
+            $alumno->orden_nacimiento_id = null;
+            $alumno->lateralidad_id = null;
+            $alumno->etnia_indigena_id = null;
+            $alumno->talla_camisa_nombre = null;
+            $alumno->talla_pantalon_nombre = null;
+
+            if ($alumno->persona) {
+                $alumno->persona->makeHidden(['direccion', 'localidad_id']);
+                $alumno->persona->direccion = null;
+                $alumno->persona->localidad_id = null;
+                $alumno->persona->unsetRelation('localidad');
+            }
+            $alumno->unsetRelation('etniaIndigena');
+            $alumno->unsetRelation('ordenNacimiento');
+            $alumno->unsetRelation('lateralidad');
         }
 
         $pdf = PDF::loadView('admin.alumnos.reportes.general_est', compact('alumno'));
@@ -193,6 +306,13 @@ class AlumnoController extends Controller
 
         // Construir la consulta base
         $query = Alumno::with(['persona', 'etniaIndigena', 'ordenNacimiento', 'lateralidad', 'persona.genero', 'persona.tipoDocumento']);
+
+        if ($anioId = AnioEscolarSeleccionado::id()) {
+            $query->where(function ($q) use ($anioId) {
+                $q->whereHas('inscripciones', fn($i) => $i->where('inscripcions.anio_escolar_id', $anioId))
+                  ->orWhereHas('inscripcionProsecucions', fn($p) => $p->where('inscripcion_prosecucions.anio_escolar_id', $anioId));
+            });
+        }
 
         // Aplicar filtro de estatus
         if ($estatus === 'todos') {

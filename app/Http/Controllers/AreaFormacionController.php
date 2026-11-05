@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AreaFormacion;
 use App\Models\GrupoEstable;
+use App\Http\Requests\GrupoEstableRequest;
 use Illuminate\Http\Request;
 
 class AreaFormacionController extends Controller
@@ -18,6 +19,7 @@ class AreaFormacionController extends Controller
     public function index()
     {
         $areaFormacion = AreaFormacion::where('status', true)
+            ->with('aula')
             ->orderBy('nombre_area_formacion', 'asc')
             ->paginate(5);
 
@@ -25,32 +27,23 @@ class AreaFormacionController extends Controller
             ->orderBy('nombre_grupo_estable', 'asc')
             ->paginate(5);
 
+        $aulas = \App\Models\Aula::where('status', true)
+            ->orderBy('nombre_aula', 'asc')
+            ->get();
+
         $anioEscolarActivo = $this->verificarAnioEscolar();
 
-        return view('admin.area_formacion.index', compact('areaFormacion', 'grupoEstable', 'anioEscolarActivo'));
+        return view('admin.area_formacion.index', compact('areaFormacion', 'grupoEstable', 'aulas', 'anioEscolarActivo'));
     }
 
-    public function storeGrupoEstable(Request $request)
+    public function storeGrupoEstable(GrupoEstableRequest $request)
     {
-        $validated = $request->validate([
-            'nombre_grupo_estable' => 'required|string|max:255',
-            
-        ]);
-
-        $existe = GrupoEstable::where('nombre_grupo_estable', $validated['nombre_grupo_estable'])
-            ->where('status', true)
-            ->exists();
-
-        if ($existe) {
-            return redirect()
-                ->route('admin.area_formacion.index')
-                ->with('error', 'Ya existe un grupo estable activo con este nombre.');
-        }
+        $validated = $request->validated();
 
         try {
             $grupoEstable = new GrupoEstable();
+            $grupoEstable->codigo = $validated['codigo'] ?? null;
             $grupoEstable->nombre_grupo_estable = $validated['nombre_grupo_estable'];
-            
             $grupoEstable->status = true;
             $grupoEstable->save();
 
@@ -70,6 +63,8 @@ class AreaFormacionController extends Controller
             'nombre_area_formacion' => 'required|string|max:255',
             'codigo_area' => 'required|numeric',
             'siglas' => 'required|string|max:255',
+            'bloques_semanales' => 'required|integer|min:1|max:40',
+            'aula_id' => 'nullable|exists:aulas,id_aula',
         ]);
 
         $existe = AreaFormacion::where('nombre_area_formacion', $validated['nombre_area_formacion'])
@@ -87,6 +82,8 @@ class AreaFormacionController extends Controller
             $areaFormacion->nombre_area_formacion = $validated['nombre_area_formacion'];
             $areaFormacion->codigo_area = $validated['codigo_area'];
             $areaFormacion->siglas = $validated['siglas'];
+            $areaFormacion->bloques_semanales = $validated['bloques_semanales'];
+            $areaFormacion->aula_id = $validated['aula_id'];
             $areaFormacion->status = true;
             $areaFormacion->save();
 
@@ -100,25 +97,13 @@ class AreaFormacionController extends Controller
         }
     }
 
-    public function updateGrupoEstable(Request $request, $id)
+    public function updateGrupoEstable(GrupoEstableRequest $request, $id)
     {
-        $validated = $request->validate([
-            'nombre_grupo_estable' => 'required|string|max:255',
-        ]);
-
-        $existe = GrupoEstable::where('nombre_grupo_estable', $validated['nombre_grupo_estable'])
-            ->where('status', true)
-            ->where('id', '!=', $id)
-            ->exists();
-
-        if ($existe) {
-            return redirect()
-                ->route('admin.area_formacion.index')
-                ->with('error', 'Ya existe otro grupo estable activo con este nombre.');
-        }
+        $validated = $request->validated();
 
         try {
             $grupoEstable = GrupoEstable::findOrFail($id);
+            $grupoEstable->codigo = $validated['codigo'] ?? null;
             $grupoEstable->nombre_grupo_estable = $validated['nombre_grupo_estable'];
             $grupoEstable->save();
 
@@ -140,6 +125,8 @@ class AreaFormacionController extends Controller
             'nombre_area_formacion' => 'required|string|max:255',
             'codigo_area' => 'required|numeric',
             'siglas' => 'required|string|max:255',
+            'bloques_semanales' => 'required|integer|min:1|max:40',
+            'aula_id' => 'nullable|exists:aulas,id_aula',
         ]);
 
         $existe = AreaFormacion::where('nombre_area_formacion', $validated['nombre_area_formacion'])
@@ -157,6 +144,8 @@ class AreaFormacionController extends Controller
             $areaFormacion->nombre_area_formacion = $validated['nombre_area_formacion'];
             $areaFormacion->codigo_area = $validated['codigo_area'];
             $areaFormacion->siglas = $validated['siglas'];
+            $areaFormacion->bloques_semanales = $validated['bloques_semanales'];
+            $areaFormacion->aula_id = $validated['aula_id'];
             $areaFormacion->save();
 
             return redirect()
@@ -247,7 +236,7 @@ class AreaFormacionController extends Controller
     public function destroy($id)
     {
         try {
-            $areaFormacion = AreaFormacion::find($id);
+            $areaFormacion = AreaFormacion::with('aula')->find($id);
 
 
             if ($areaFormacion) {

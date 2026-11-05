@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Actions\Usuarios\RegistrarUsuarioAction;
+use App\Http\Requests\RegistroUsuarioRequest;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
 {
@@ -41,6 +45,34 @@ class RegisterController extends Controller
     }
 
     /**
+     * Show the application registration form.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showRegistrationForm()
+    {
+        $tipoDocumentos = \App\Models\TipoDocumento::where('status', 1)->get();
+
+        return view('auth.register', compact('tipoDocumentos'));
+    }
+
+    /**
+     * Handle a registration request for the application.
+     *
+     * @param  \App\Http\Requests\RegistroUsuarioRequest  $request
+     * @param  \App\Actions\Usuarios\RegistrarUsuarioAction  $action
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function register(RegistroUsuarioRequest $request, RegistrarUsuarioAction $action)
+    {
+        $user = $action->ejecutar($request->validated());
+
+        Auth::login($user);
+
+        return redirect($user->rutaDashboard());
+    }
+
+    /**
      * Get a validator for an incoming registration request.
      *
      * @param  array  $data
@@ -51,7 +83,7 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255', 'min:3'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'max:16', 'confirmed'],
+            'password' => ['required', 'string', 'min:8', 'max:16', 'confirmed', Password::min(8)->letters()->numbers()],
         ], [
             'name.required' => 'El campo nombre es obligatorio.',
             'name.string' => 'El nombre debe ser una cadena de texto.',
@@ -67,6 +99,8 @@ class RegisterController extends Controller
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
             'password.max' => 'La contraseña no puede tener más de 16 caracteres.',
             'password.confirmed' => 'La confirmación de contraseña no coincide.',
+            'password.letters' => 'La contraseña debe contener al menos una letra.',
+            'password.numbers' => 'La contraseña debe contener al menos un número.',
         ]);
     }
 
@@ -82,6 +116,8 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'debe_cambiar_password' => true,
+            'activo' => true,
         ]);
     }
 }

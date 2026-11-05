@@ -6,11 +6,17 @@ use Diglactic\Breadcrumbs\Generator as Trail;
 use App\Models\Docente;
 use App\Models\Inscripcion;
 use App\Models\Representante;
+use App\Models\Aula;
+use App\Models\ActaEntrevista;
+
 
 // Inicio (Home)
 Breadcrumbs::for('home', function (Trail $trail) {
     $trail->push('Inicio', route('home'));
+
 });
+
+
 
 // Calendario Escolar
 Breadcrumbs::for('admin.anio_escolar.index', function (Trail $trail) {
@@ -126,7 +132,7 @@ Breadcrumbs::for('admin.docente.index', function (Trail $trail) {
     $trail->push('Docentes', route('admin.docente.index'));
 });
 
-// Docente crear 
+// Docente crear
 Breadcrumbs::for('admin.docente.create', function (Trail $trail) {
     $trail->parent('admin.docente.index');
     $trail->push('Crear Docente', route('admin.docente.create'));
@@ -152,13 +158,13 @@ Breadcrumbs::for('admin.transacciones.docente_area_grado.index', function (Trail
     $trail->push('Asignacion de Areas', route('admin.transacciones.docente_area_grado.index'));
 });
 
-// Docente crear 
+// Docente crear
 Breadcrumbs::for('admin.transacciones.docente_area_grado.create', function (Trail $trail) {
     $trail->parent('admin.transacciones.docente_area_grado.index');
     $trail->push('Crear Asignacion', route('admin.transacciones.docente_area_grado.create'));
 });
 
-// Docente editar 
+// Docente editar
 Breadcrumbs::for('admin.transacciones.docente_area_grado.edit', function (Trail $trail, $docenteId) {
     $docente = Docente::with('persona')->findOrFail($docenteId);
     $trail->parent('admin.transacciones.docente_area_grado.index');
@@ -209,12 +215,12 @@ Breadcrumbs::for('admin.alumnos.edit', function (Trail $trail, Alumno $alumno) {
     $trail->parent('admin.alumnos.index');
 
     $trail->push('Editar Alumno', route('admin.alumnos.edit', $alumno));
-}); 
+});
 
 // Historico
 Breadcrumbs::for('admin.historico.index', function (Trail $trail) {
     $trail->parent('home');
-    $trail->push('Historico', route('admin.historico.index'));
+    $trail->push('Histórico de Inscripciones Estudiantil', route('admin.historico.index'));
 });
 
 // Historial del percentil
@@ -272,4 +278,98 @@ Breadcrumbs::for('admin.transacciones.inscripcion_prosecucion.create', function 
     );
 });
 
+Breadcrumbs::for('admin.permisos_reposos.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Gestión de Inasistencias', route('admin.permisos_reposos.index'));
+});
 
+Breadcrumbs::for('admin.permisos_reposos.create', function (Trail $trail) {
+    $trail->parent('admin.permisos_reposos.index');
+    $trail->push('Registrar Permiso o Reposo', route('admin.permisos_reposos.create'));
+});
+
+// Portal del Representante
+Breadcrumbs::for('portal-representante.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Portal del Representante', route('portal-representante.index'));
+});
+
+Breadcrumbs::for('portal-representante.prosecucion.index', function (Trail $trail) {
+    $trail->parent('portal-representante.index');
+    $trail->push('Inscripción por Prosecución', route('portal-representante.prosecucion.index'));
+});
+
+Breadcrumbs::for('portal-representante.prosecucion.create', function (Trail $trail) {
+    $trail->parent('portal-representante.prosecucion.index');
+    $trail->push('Nueva Inscripción', route('portal-representante.prosecucion.create'));
+});
+
+Breadcrumbs::for('portal-representante.carnet.index', function (Trail $trail) {
+    $trail->parent('portal-representante.index');
+    $trail->push('Mi Carnet Estudiantil', route('portal-representante.carnet.index'));
+});
+
+// Dashboard Docente
+Breadcrumbs::for('dashboard.docente', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Panel de Docente', route('dashboard.docente'));
+});
+
+// Acta de Entrevista - crear
+Breadcrumbs::for('admin.acta.create', function (Trail $trail) {
+    $trail->parent('home'); // cambiamos luego a 'admin.acta.index' si esa ruta existe xd
+    $trail->push('Crear Acta de Entrevista', route('admin.acta.create'));
+});
+
+// Aulas - listado
+Breadcrumbs::for('aulas.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Aulas', route('aulas.index'));
+});
+
+// Horario
+Breadcrumbs::for('admin.horario.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Gestión de Horarios', route('admin.horario.index'));
+});
+
+// Horario crear
+Breadcrumbs::for('admin.horario.create', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Nuevo Horario', route('admin.horario.create'));
+});
+
+// Horario configuración
+Breadcrumbs::for('admin.horario.configuracion', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Configuración de Bloques', route('admin.horario.configuracion'));
+});
+
+// Horario posiciones pedagógicas por materia
+Breadcrumbs::for('admin.horario.posiciones', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Posiciones por Materia', route('admin.horario.posiciones'));
+});
+
+// Inasistencia
+Breadcrumbs::for('admin.inasistencia.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Gestión de Inasistencias', route('admin.inasistencia.index'));
+});
+
+// Inasistencia justificación
+Breadcrumbs::for('admin.inasistencia.justificacion', function (Trail $trail) {
+    $trail->parent('admin.inasistencia.index');
+    $trail->push('Inasistencias Diarias', route('admin.inasistencia.justificacion'));
+});
+
+// Bloque Horario
+Breadcrumbs::for('admin.bloque_horario.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Gestión de Bloques Horarios', route('admin.bloque_horario.index'));
+});
+
+// ===== MAESTROS DE NOTAS Y CALENDARIO (un archivo por persona) =====
+require __DIR__ . '/breadcrumbs/stephania.php';
+require __DIR__ . '/breadcrumbs/maria.php';
+require __DIR__ . '/breadcrumbs/jose.php';

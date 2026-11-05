@@ -14,6 +14,7 @@ use App\Models\RepresentanteLegal;
 use App\Models\Inscripcion;
 use App\Models\InscripcionNuevoIngreso;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
@@ -23,16 +24,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Iniciando seeders...');
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('12345678'),
-        ]);
 
         $this->call([
+            SeguridadSeeder::class, // Ejecuta PermisosSeeder, RoleSeeder y Administrador
             PaisSeeder::class,
             AnioEscolarSeeder::class,
             GradoSeeder::class,
+            AulaSeeder::class,
             AreaFormacionSeeder::class,
             EstadoSeeder::class,
             MunicipioSeeder::class,
@@ -46,7 +44,6 @@ class DatabaseSeeder extends Seeder
             ExpresionLiterariaSeeder::class,
             BancoSeeder::class,
             PrefijoTelefonoSeeder::class,
-            RoleSeeder::class,
             InstitucionProcedenciaSeeder::class,
             GeneroSeeder::class,
             LateralidadSeeder::class,
@@ -66,12 +63,70 @@ class DatabaseSeeder extends Seeder
             RepresentanteLegalSeeder::class,
             InscripcionSeeder::class,
             InscripcionNuevoIngresoSeeder::class,
+            DiasSemanaSeeder::class,
+            BloqueHorarioSeeder::class,
+            DocenteAreaGradoSeeder::class,
+            SeccionAulaSeeder::class,
+            // ===== Maestros de notas y calendario (un seeder por persona) =====
+            StephaniaMaestrosSeeder::class,
+            MariaMaestrosSeeder::class,
+            JoseMaestrosSeeder::class,
+            CalendarioPalabraClaveSeeder::class,
 
-            
             /*InscripcionProsecucionSeeder::class,
             ProsecucionAreaSeeder::class,  */
-            /*  DocenteAreaGrado::class, */
         ]);
+
+        /* 
+        |--------------------------------------------------------------------------
+        | GENERACIÓN DINÁMICA DE USUARIOS PARA REPRESENTANTES
+        |--------------------------------------------------------------------------
+        | Recorremos todos los representantes que fueron registrados por los seeders.
+        | Para cada uno, creamos una cuenta en la tabla 'users' utilizando su email
+        | y le asignamos el rol 'Representante' para que puedan loguearse.
+        | Solo se ejecuta en entorno local.
+        */
+        $entorno = app()->environment();
+        if ($entorno === 'local') {
+            $representantes = \App\Models\Representante::with('persona')->get();
+            $passwordDev = config('seguridad.password_desarrollo', '12345678');
+            
+            foreach ($representantes as $rep) {
+                // Verificamos que el representante tenga datos personales y una dirección de correo válida
+                if ($rep->persona && $rep->persona->email) {
+                    $user = User::firstOrCreate(
+                        ['email' => $rep->persona->email],
+                        [
+                            'name' => $rep->persona->primer_nombre . ' ' . $rep->persona->primer_apellido,
+                            'password' => Hash::make($passwordDev),
+                            'rol_principal' => 'Representante',
+                            'activo' => true,
+                            'debe_cambiar_password' => false,
+                            'email_verified_at' => now(),
+                        ]
+                    );
+                    
+                    if (!$user->rol_principal || $user->rol_principal !== 'Representante') {
+                        $user->update(['rol_principal' => 'Representante']);
+                    }
+                    if (!$user->activo) {
+                        $user->update(['activo' => true]);
+                    }
+                    if ($user->debe_cambiar_password) {
+                        $user->update(['debe_cambiar_password' => false]);
+                    }
+                    if (empty($user->email_verified_at)) {
+                        $user->update(['email_verified_at' => now()]);
+                    }
+                    
+                    // Asignamos el rol 'Representante' usando syncRoles
+                    $user->syncRoles(['Representante']);
+                }
+            }
+        } else {
+            $this->command->info("[DatabaseSeeder] Entorno '{$entorno}' detectado. Saltando creación de usuarios de prueba.");
+        }
+
         $this->command->info('¡Base de datos poblada con éxito!');
     }
 }

@@ -21,10 +21,16 @@
                 </div>
             </div>
 
-            <a href="{{ route('admin.docente.index') }}" class="btn-create" style="background: var(--gray-500);">
-                <i class="fas fa-arrow-left"></i>
-                <span>Volver</span>
-            </a>
+            <div class="header-actions">
+                <a href="{{ route('admin.docente.disponibilidad', $docente->id) }}" class="btn-create" style="background: var(--blue-500);">
+                    <i class="fas fa-calendar-times"></i>
+                    <span>Disponibilidad</span>
+                </a>
+                <a href="{{ route('admin.docente.index') }}" class="btn-create" style="background: var(--gray-500);">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Volver</span>
+                </a>
+            </div>
         </div>
     </div>
 @stop
@@ -406,6 +412,15 @@
                                 </div>
                             @enderror
                         </div>
+                         <div class="col-md-6 mb-2">
+                        <label class="form-label-modern">
+                            <i class=""></i>
+                            Horas academicas disponibles
+                        </label>
+                        <input type="number" name="horas_academicas" id="horas_academicas" required
+                                class=" text-capitalize form-control-modern"
+                                value="{{ old('hora_academica', $docente->horas_academicas) }}" placeholder="Ej: 5" >
+                    </div>
                     </div> 
                     <div class="form-actions-modern">
                         <a href="{{ route('admin.docente.index') }}" class="btn-secondary-modern">

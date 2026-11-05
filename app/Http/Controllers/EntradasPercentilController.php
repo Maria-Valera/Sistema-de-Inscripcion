@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AnioEscolar;
 use App\Models\EntradasPercentil;
+use App\Support\AnioEscolarSeleccionado;
 use Illuminate\Http\Request;
 use App\Models\Inscripcion;
 use App\Models\Grado;
@@ -14,16 +15,15 @@ class EntradasPercentilController extends Controller
 {
     private function verificarAnioEscolar()
     {
-        return \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->exists();
+        return AnioEscolarSeleccionado::esActual();
     }
 
     public function index(Request $request)
     {
         $gradoId = $request->grado_id;
 
-        $anioEscolarActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
+        $esActual = AnioEscolarSeleccionado::esActual();
 
         if (!$anioEscolarActivo) {
 
@@ -70,12 +70,14 @@ class EntradasPercentilController extends Controller
 
         return view(
             'admin.transacciones.percentil.index',
-            compact(
-                'entradasPercentil',
-                'gradoId',
-                'seccionesResumen',
-                'anioEscolarActivo'
-            )
+            [
+                'entradasPercentil' => $entradasPercentil,
+                'gradoId' => $gradoId,
+                'seccionesResumen' => $seccionesResumen,
+                'anioEscolarActivo' => (bool) $anioEscolarActivo,
+                'anioEscolar' => $anioEscolarActivo,
+                'esActual' => $esActual,
+            ]
         );
     }
 
@@ -100,7 +102,7 @@ class EntradasPercentilController extends Controller
         }
 
         $grado = Grado::findOrFail($request->grado_id);
-        $anioEscolarActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
         $totalEstudiantes = Inscripcion::where('grado_id', $grado->id)
             ->whereIn('status', ['Activo', 'Pendiente'])

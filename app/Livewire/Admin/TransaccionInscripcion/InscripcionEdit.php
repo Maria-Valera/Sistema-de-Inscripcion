@@ -196,6 +196,8 @@ class InscripcionEdit extends Component
 
     public function mount($inscripcionId)
     {
+        abort_unless(auth()->user()?->can('inscripciones.gestionar'), 403);
+
         $this->inscripcionId = $inscripcionId;
         $this->documentosDisponibles = $this->documentoService->obtenerDocumentosDisponibles();
         $this->documentosEtiquetas = $this->documentoService->obtenerEtiquetas();
@@ -565,6 +567,8 @@ class InscripcionEdit extends Component
 
     public function actualizar()
     {
+        abort_unless(auth()->user()?->can('inscripciones.gestionar'), 403);
+
         if (!$this->esVenezolano && empty(trim($this->otroPaisNombre))) {
             $this->dispatch('swal', [
                 'icon' => 'error',

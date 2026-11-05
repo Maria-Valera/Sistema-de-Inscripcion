@@ -13,14 +13,21 @@ use App\Models\InscripcionProsecucion;
 use App\Models\Grado;
 use App\Models\InstitucionProcedencia;
 use App\Models\Seccion;
+use App\Support\AnioEscolarSeleccionado;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
  
 class InscripcionProsecucionController extends Controller
 {
+    private function verificarAnioEscolar()
+    {
+        return AnioEscolarSeleccionado::esActual();
+    }
+
     public function index(Request $request)
     {
-        $anioEscolarActivo = \App\Models\AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
+        $anioId = AnioEscolarSeleccionado::id();
         $buscar = $request->buscar;
         $gradoId = $request->grado_id;
         $seccionId = $request->seccion_id;
@@ -45,12 +52,21 @@ class InscripcionProsecucionController extends Controller
             'grado',
             'seccion',
             'anioEscolar',
-        ])
-            ->whereHas('inscripcion', function ($q) use ($anioEscolarActivo) {
+        ]);
+
+        $user = auth()->user();
+        if ($user && $user->hasRole('Representante')) {
+            $prosecuciones->whereHas('inscripcion.alumno', fn($q) => $q->visiblesParaRepresentante($user));
+        } elseif ($user && $user->hasRole('Docente')) {
+            $prosecuciones->whereHas('inscripcion.alumno', fn($q) => $q->visiblesParaDocente($user));
+        }
+
+        $prosecuciones = $prosecuciones
+            ->whereHas('inscripcion', function ($q) use ($anioId) {
                 $q->where('tipo_inscripcion', 'prosecucion');
 
-                if ($anioEscolarActivo) {
-                    $q->where('anio_escolar_id', $anioEscolarActivo->id);
+                if ($anioId) {
+                    $q->where('inscripcions.anio_escolar_id', $anioId);
                 }
             })
             ->when($gradoId, fn($q) => $q->where('grado_id', $gradoId))
@@ -85,6 +101,7 @@ class InscripcionProsecucionController extends Controller
         return view('admin.transacciones.inscripcion_prosecucion.index', [
             'anioEscolarActivo' => (bool) $anioEscolarActivo,
             'anioEscolar' => $anioEscolarActivo,
+            'esActual' => AnioEscolarSeleccionado::esActual(),
             'prosecuciones' => $prosecuciones,
             'grados' => $grados,
             'secciones' => $secciones,
@@ -107,6 +124,11 @@ class InscripcionProsecucionController extends Controller
 
     public function create()
     {
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->route('admin.transacciones.inscripcion_prosecucion.index')
+                ->with('warning', 'No puedes registrar nuevas prosecuciones en un año escolar anterior (solo lectura).');
+        }
+
         $this->verificarAnioEscolar();
         $personas = Persona::all();
         $generos = Genero::all();
@@ -173,9 +195,7 @@ class InscripcionProsecucionController extends Controller
             'materias_pendientes' => $prosecucion->prosecucionAreas->where('status', 'pendiente'),
             'materias_reprobadas' => $prosecucion->prosecucionAreas->where('status', 'reprobada'),
         ];
-        $anioEscolarActivo = \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
         $pdf = PDF::loadview('admin.transacciones.inscripcion_prosecucion.reportes.ficha_inscripcion', compact('datosCompletos', 'anioEscolarActivo'));
         $pdf->setOption('isPhpEnabled', true);
         return $pdf->stream('ficha_inscripcion_prosecucion.pdf');
@@ -183,9 +203,7 @@ class InscripcionProsecucionController extends Controller
 
     public function reporteGeneralProsecucionPDF(Request $request)
     {
-        $anioEscolarActivo = \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
         $filtro = $request->all();
         if (!isset($filtro['anio_escolar_id']) && $anioEscolarActivo) {
             $filtro['anio_escolar_id'] = $anioEscolarActivo->id;

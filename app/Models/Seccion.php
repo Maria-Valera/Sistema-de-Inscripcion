@@ -44,4 +44,15 @@ class Seccion extends Model
     {
         return $this->hasMany(EntradasPercentil::class, 'seccion_id');
     }
+
+    public function seccion(){
+        return $this->belongsTo(seccion_aulas::class, "id_seccion", "id");
+    }
+
+    public function aulaFija()
+    {
+        return $this->hasOne(seccion_aula::class, 'id_seccion', 'id')
+                    ->where('status', true)
+                    ->with('aula');
+    }
 }

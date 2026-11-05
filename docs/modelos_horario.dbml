@@ -1,0 +1,443 @@
+// =====================================================================
+// Modulo de Horario - MODELO FINAL (decisiones acordadas)
+// Sistema de Inscripcion (Liceo Juan Guillermo Iribarren)
+// Pegar en https://dbdiagram.io para ver el diagrama.
+//
+// DECISIONES QUE DEFINEN ESTE MODELO
+//  - dia: enum de PHP guardado como tinyint (1 Lunes ... 5 Viernes). Sin tabla dias_semana.
+//  - bloque: numero (1..numero_bloques). Sin tabla bloque_horarios. Las horas se calculan
+//    desde configuracion_horario + receso_horario (como GHC: inicio, periodos, duracion).
+//  - 1 bloque = unidad de clase. bloques_semanales = dias por semana que se ve el area.
+//  - seccion_id se mantiene en horario_asignaciones.
+//  - Grupos estables = bloque reservado, igual para todos los grados.
+//
+// RETIRADAS (ya no existen en este modelo): dias_semana, bloque_horarios, horario,
+//   horario__bloque_hora, horario__dias_semana, horario__docente__area__formacion,
+//   horario__seccion. Las dos ultimas pivotes no dependen de las tablas eliminadas,
+//   pero el esquema anterior completo queda sin uso (retirar tambien IndexApi()).
+//
+// Colores de cabecera:
+//   turquesa = configuracion de bloques   azul    = operativo (lo escribe el generador)
+//   naranja  = restricciones              verde   = catalogos existentes
+//   morado   = fase opcional              blanco  = tablas externas al modulo
+// =====================================================================
+
+Project horario_liceo_final {
+  database_type: 'MySQL'
+  Note: 'dia y bloque no tienen llave foranea: se validan en codigo (dia 1-5, bloque 1..numero_bloques).'
+}
+
+// ---------------------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------------------
+Enum tipo_posicion {
+  prohibido
+  no_preferente
+  no_preferente_fuerte
+}
+
+Enum tipo_disponibilidad {
+  prohibido
+  no_preferente
+}
+
+Enum estado_aprobacion {
+  pendiente
+  aprobada
+  rechazada
+}
+
+Enum estado_horario {
+  borrador
+  publicado
+  archivado
+}
+
+Enum estado_suplencia {
+  propuesta
+  aceptada
+  registrada
+}
+
+// =====================================================================
+// 1. CONFIGURACION DE BLOQUES (reemplaza bloque_horarios)
+// =====================================================================
+Table configuracion_horario [headercolor: #1F6F8B] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [not null, unique, note: 'Una configuracion por anio escolar']
+  hora_inicio time [not null, note: 'Ej. 07:00']
+  numero_bloques tinyint [not null, note: 'Bloques por dia. Ej. 4']
+  duracion_bloque_min smallint [not null, note: 'Ej. 90 (2 horas academicas de 45). Se escribe directo: evita la duda 40 vs 45']
+  minutos_entre_bloques smallint [not null, default: 0]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: '''
+  QUE ES: parametros para calcular las horas de cada bloque, como la pantalla de marco horario de GHC.
+  QUIEN ESCRIBE: formulario de configuracion (subdirectora/administrador).
+  QUIEN LEE: el generador (recorre 1..numero_bloques), el modal, el PDF y el editor.
+  REGLAS: no se puede reducir numero_bloques por debajo del mayor bloque con asignaciones.
+  Cambiar hora_inicio o duracion es libre: no toca ningun horario guardado.
+  '''
+}
+
+Table receso_horario [headercolor: #1F6F8B] {
+  id bigint [pk, increment]
+  configuracion_horario_id bigint [not null]
+  despues_de_bloque tinyint [not null, note: 'Receso tras este bloque. Ej. 2']
+  duracion_min smallint [not null, note: 'Ej. 20']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (configuracion_horario_id, despues_de_bloque) [unique]
+  }
+
+  Note: '''
+  QUE ES: pausas dentro de la jornada (recreo). Solo desplazan las horas de los bloques siguientes.
+  Como cada materia ocupa un solo bloque por dia, el receso no afecta la logica del generador.
+  Ejemplo: inicio 07:00, bloques de 90 min, 4 bloques, receso de 20 tras el 2 ->
+  07:00-08:30, 08:30-10:00, 10:20-11:50, 11:50-13:20.
+  '''
+}
+
+// =====================================================================
+// 2. OPERATIVO (resultado del generador)
+// =====================================================================
+Table horario_asignaciones [headercolor: #2E6DA4] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [not null]
+  docente_id bigint [not null]
+  materia_id bigint [not null, note: 'FK a area_formacions']
+  seccion_id bigint [not null]
+  aula_id bigint [null, note: 'Debe aceptar NULL (el generador puede insertar null)']
+  dia tinyint [not null, note: 'Enum Dia: 1 Lunes ... 5 Viernes']
+  bloque tinyint [not null, note: '1..numero_bloques de configuracion_horario']
+  conflicto_manual boolean [not null, default: false, note: 'Fila forzada con solapamiento intencional']
+  motivo_conflicto text [null]
+  fijada boolean [not null, default: false, note: 'Posicion fija: generar() no la borra ni la mueve']
+  slot_seccion varchar [null, note: 'Columna generada: concat(anio, seccion, dia, bloque) si conflicto_manual = 0; si no, NULL']
+  slot_docente varchar [null, note: 'Columna generada: concat(anio, docente, dia, bloque) si conflicto_manual = 0; si no, NULL']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (anio_escolar_id, docente_id)
+    (anio_escolar_id, seccion_id)
+    (anio_escolar_id, dia, bloque)
+    (docente_id, dia, bloque)
+    (seccion_id, dia, bloque)
+    slot_seccion [unique]
+    slot_docente [unique]
+  }
+
+  Note: '''
+  QUE ES: la tabla central. Una fila = un bloque de una seccion en un dia, con docente, materia y aula.
+  QUIEN ESCRIBE: GeneradorHorarioService, el drag and drop y el formulario de crear/editar.
+  QUIEN LEE: listado, modal "Ver Horario", PDF, horario del docente y del estudiante.
+  REGLAS: una materia ocupa como maximo un bloque por seccion y dia.
+  Los unique sobre slot_seccion y slot_docente impiden solapamientos normales en la base de datos;
+  las filas forzadas (conflicto_manual = 1) quedan exentas porque su slot es NULL.
+  Aun asi, la validacion principal vive en un servicio unico que usan todos los caminos de escritura.
+  '''
+}
+
+// =====================================================================
+// 3. RESTRICCIONES
+// =====================================================================
+Table docente_indisponibilidad [headercolor: #C77D1A] {
+  id bigint [pk, increment]
+  docente_id bigint [not null]
+  anio_escolar_id bigint [not null]
+  dia tinyint [not null, note: 'Enum Dia']
+  bloque tinyint [not null]
+  tipo tipo_disponibilidad [not null, default: 'prohibido']
+  estado estado_aprobacion [not null, default: 'aprobada', note: 'El generador solo lee las aprobadas']
+  motivo varchar [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (docente_id, anio_escolar_id, dia, bloque) [unique]
+  }
+
+  Note: '''
+  QUE ES: lista negra de disponibilidad (antes _docente__no_disponibilidad). Solo se registran
+  las EXCEPCIONES ("el martes no viene", "el viernes a ultima hora no puede"); lo que no esta
+  en la tabla se asume disponible. Es la plantilla de profesor de GHC.
+  tipo: prohibido bloquea la celda; no_preferente solo la penaliza en el costo.
+  estado: permite que el docente la registre desde su portal y la subdirectora la apruebe.
+  Un boton "dia completo" en la interfaz inserta una fila por cada bloque del dia.
+  '''
+}
+
+Table bloque_reservados [headercolor: #C77D1A] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [not null]
+  dia tinyint [not null]
+  bloque tinyint [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (anio_escolar_id, dia, bloque) [unique]
+  }
+
+  Note: '''
+  QUE ES: bloques que quedan ocupados para TODAS las secciones y grados (grupos estables).
+  Sin docente, nombre ni aula: es solo un hueco. Se configura con una cuadricula dia x bloque.
+  El generador, el drag and drop y el validador lo tratan como celda no disponible.
+  El acto civico del lunes no se modela aqui: no altera los bloques.
+  '''
+}
+
+Table area_formacion_posiciones [headercolor: #C77D1A] {
+  id bigint [pk, increment]
+  area_formacion_id bigint [not null]
+  grado_id bigint [null, note: 'NULL = todos los grados']
+  grado_key bigint [not null, note: 'Columna generada: IFNULL(grado_id, 0). Permite el unique con NULL']
+  dia tinyint [not null]
+  bloque tinyint [not null]
+  tipo tipo_posicion [not null, note: 'prohibido bloquea; no_preferente cuesta 1; no_preferente_fuerte cuesta 3']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (area_formacion_id, grado_key, dia, bloque) [unique]
+  }
+
+  Note: '''
+  QUE ES: plantilla de posiciones por materia y grado (fase 3), como la cuadricula de materia de GHC.
+  Ej.: Educacion Fisica no a primera hora; Matematicas mejor temprano.
+  Se recomienda usar no_preferente en vez de prohibir, para no volver imposible el horario.
+  Una regla de un grado especifico gana sobre la general (grado_id NULL).
+  El modelo debe declarar protected $table = 'area_formacion_posiciones'.
+  '''
+}
+
+// =====================================================================
+// 4. CATALOGOS EXISTENTES
+// =====================================================================
+Table area_formacions [headercolor: #4C9A6A] {
+  id bigint [pk, increment]
+  nombre_area_formacion varchar [not null]
+  bloques_semanales int [not null, note: 'Renombrada desde horas_semanales: dias (bloques) por semana. Maximo 5']
+  aula_id bigint [null, note: 'Aula especializada requerida, si la materia la exige']
+  status boolean [not null, default: true]
+  // otras columnas del modelo no revisadas
+  // se eliminan en migracion posterior: bloques_maximos_por_dia, dias_max_semana
+
+  Note: '''
+  QUE ES: la materia / area de formacion y lo que el horario necesita saber de ella.
+  bloques_semanales = cuantos bloques hay que colocar por seccion (uno por dia, sin repetir dia).
+  aula_id: si no es nula y el tipo no es regular, el generador busca un aula libre de ese tipo.
+  Revisar los datos ya cargados: si estaban en horas academicas (4, 6...) hay que corregirlos.
+  '''
+}
+
+Table aulas [headercolor: #4C9A6A] {
+  id_aula bigint [pk, increment]
+  nombre_aula varchar [not null]
+  tipo_aula varchar [not null, note: "Unificar el valor para 'regular' vs 'Aula Regular'"]
+  capacidad_maxima int [null]
+  status boolean [not null, default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: '''
+  QUE ES: salones y espacios fisicos. El generador valida que la capacidad alcance para la seccion.
+  Las aulas especializadas (laboratorio, cancha) se comparten entre secciones: una por bloque.
+  '''
+}
+
+Table seccion_aula [headercolor: #4C9A6A] {
+  id bigint [pk, increment]
+  id_aula bigint [not null]
+  id_seccion bigint [not null]
+  status boolean [not null, default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: '''
+  QUE ES: aula fija (regular) de cada seccion. Las materias sin aula especializada se dan ahi.
+  Si una seccion no tiene aula asignada, el generador no puede colocarle clases regulares.
+  '''
+}
+
+// =====================================================================
+// 5. FASE OPCIONAL: publicacion y suplencias
+// =====================================================================
+Table horario_estados [headercolor: #7B5EA7] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [not null]
+  seccion_id bigint [not null]
+  estado estado_horario [not null, default: 'borrador']
+  publicado_en timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (anio_escolar_id, seccion_id) [unique]
+  }
+
+  Note: '''
+  QUE ES: estado de publicacion del horario de cada seccion (borrador -> publicado -> archivado).
+  Solo el publicado lo ven docentes y representantes (RF-12, RF-13).
+  Es una transaccion con cambio de estado, util para el requisito academico de procesos que mueven estados.
+  '''
+}
+
+Table suplencias [headercolor: #7B5EA7] {
+  id bigint [pk, increment]
+  anio_escolar_id bigint [not null]
+  horario_asignacion_id bigint [not null]
+  fecha date [not null]
+  docente_titular_id bigint [not null]
+  docente_suplente_id bigint [null]
+  permiso_id bigint [null, note: 'Vinculo con la tabla de permisos/reposos: por confirmar']
+  estado estado_suplencia [not null, default: 'propuesta']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: '''
+  QUE ES: cobertura de un bloque cuando el titular falta (RF-05 permisos, RF-39 alerta).
+  El sistema propone docentes con hueco libre ese dia y bloque, bajo su tope y con competencia en el area.
+  Estados: propuesta -> aceptada -> registrada.
+  '''
+}
+
+// =====================================================================
+// 6. EXTERNAS (solo lo que el horario usa)
+// =====================================================================
+Table anio_escolars {
+  id bigint [pk, increment]
+  // estado y fechas: no revisados
+  Note: 'Anio escolar. Toda la configuracion y los horarios cuelgan de el.'
+}
+
+Table grados {
+  id bigint [pk, increment, note: 'Confirmar nombre de la tabla']
+  numero_grado int
+  status boolean
+}
+
+Table seccions {
+  id bigint [pk, increment]
+  nombre varchar
+  grado_id bigint
+  cantidad_actual int
+  status boolean
+}
+
+Table docentes {
+  id bigint [pk, increment]
+  persona_id bigint
+  horas_academicas int [note: 'Por defecto 36 en el generador: tope de 18 bloques']
+  status boolean
+}
+
+Table detalle_docente_estudios {
+  id bigint [pk, increment]
+  docente_id bigint
+  status boolean
+}
+
+Table area_estudio_realizados {
+  id bigint [pk, increment]
+  area_formacion_id bigint
+}
+
+Table docente_area_grados {
+  id bigint [pk, increment]
+  docente_estudio_realizado_id bigint [note: 'Apunta a detalle_docente_estudios.id']
+  area_estudio_realizado_id bigint
+  grado_id bigint
+  seccion_id bigint
+  status boolean
+  // columnas parciales
+  Note: 'Asignacion docente - area - grado - seccion. De aqui salen las clases que el generador debe colocar.'
+}
+
+// =====================================================================
+// RELACIONES
+// =====================================================================
+
+// configuracion
+Ref: configuracion_horario.anio_escolar_id > anio_escolars.id [delete: cascade]
+Ref: receso_horario.configuracion_horario_id > configuracion_horario.id [delete: cascade]
+
+// horario_asignaciones (docente/materia/seccion/anio se mantienen en cascade como hoy;
+// aula pasa a set null para no borrar horarios al borrar un aula)
+Ref: horario_asignaciones.anio_escolar_id > anio_escolars.id [delete: cascade]
+Ref: horario_asignaciones.docente_id > docentes.id [delete: cascade]
+Ref: horario_asignaciones.materia_id > area_formacions.id [delete: cascade]
+Ref: horario_asignaciones.seccion_id > seccions.id [delete: cascade]
+Ref: horario_asignaciones.aula_id > aulas.id_aula [delete: set null]
+
+// restricciones
+Ref: docente_indisponibilidad.docente_id > docentes.id [delete: cascade]
+Ref: docente_indisponibilidad.anio_escolar_id > anio_escolars.id [delete: cascade]
+Ref: bloque_reservados.anio_escolar_id > anio_escolars.id [delete: cascade]
+Ref: area_formacion_posiciones.area_formacion_id > area_formacions.id [delete: cascade]
+Ref: area_formacion_posiciones.grado_id > grados.id [delete: cascade]
+
+// catalogos
+Ref: seccion_aula.id_aula > aulas.id_aula [delete: cascade]
+Ref: seccion_aula.id_seccion > seccions.id [delete: cascade]
+Ref: area_formacions.aula_id > aulas.id_aula [delete: set null]
+
+// fase opcional
+Ref: horario_estados.anio_escolar_id > anio_escolars.id
+Ref: horario_estados.seccion_id > seccions.id
+Ref: suplencias.anio_escolar_id > anio_escolars.id
+Ref: suplencias.horario_asignacion_id > horario_asignaciones.id
+Ref: suplencias.docente_titular_id > docentes.id
+Ref: suplencias.docente_suplente_id > docentes.id
+
+// externas
+Ref: seccions.grado_id > grados.id
+Ref: detalle_docente_estudios.docente_id > docentes.id
+Ref: area_estudio_realizados.area_formacion_id > area_formacions.id
+Ref: docente_area_grados.docente_estudio_realizado_id > detalle_docente_estudios.id
+Ref: docente_area_grados.area_estudio_realizado_id > area_estudio_realizados.id
+Ref: docente_area_grados.grado_id > grados.id
+Ref: docente_area_grados.seccion_id > seccions.id
+
+// =====================================================================
+// GRUPOS
+// =====================================================================
+TableGroup configuracion {
+  configuracion_horario
+  receso_horario
+}
+
+TableGroup operativo {
+  horario_asignaciones
+}
+
+TableGroup restricciones {
+  docente_indisponibilidad
+  bloque_reservados
+  area_formacion_posiciones
+}
+
+TableGroup catalogos {
+  area_formacions
+  aulas
+  seccion_aula
+}
+
+TableGroup fase_opcional {
+  horario_estados
+  suplencias
+}
+
+TableGroup externas {
+  anio_escolars
+  grados
+  seccions
+  docentes
+  detalle_docente_estudios
+  area_estudio_realizados
+  docente_area_grados
+}

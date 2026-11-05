@@ -14,8 +14,12 @@ class AreaFormacion extends Model
         'nombre_area_formacion',
         'codigo_area',
         'siglas',
+        'bloques_semanales',
+        'aula_id',
         'status',
     ];
+
+    protected $appends = ['es_especializada'];
 
     public function grados()
     {
@@ -24,5 +28,24 @@ class AreaFormacion extends Model
                     ->withTimestamps();
     }
 
+    public function aula()
+    {
+        return $this->belongsTo(Aula::class, 'aula_id', 'id_aula');
+    }
 
+    public function posiciones()
+    {
+        return $this->hasMany(AreaFormacionPosicion::class, 'area_formacion_id');
+    }
+
+    public function getEsEspecializadaAttribute(): bool
+    {
+        if (!$this->aula_id) {
+            return false;
+        }
+        $tipoAula = $this->relationLoaded('aula')
+            ? $this->aula?->tipo_aula
+            : $this->aula()->value('tipo_aula');
+        return $tipoAula !== 'Aula Regular';
+    }
 }

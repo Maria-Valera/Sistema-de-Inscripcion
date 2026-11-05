@@ -59,6 +59,58 @@
                         @enderror
                     </div>
 
+                    <div class="form-group-modern">
+                        <label for="bloques_semanales_{{ $datos->id }}" class="form-label-modern">
+                            <i class="fas fa-clock"></i>
+                            Bloques Semanales
+                        </label>
+                        <input type="number" class="form-control-modern" id="bloques_semanales_{{ $datos->id }}"
+                            name="bloques_semanales" value="{{ $datos->bloques_semanales }}" required
+                            min="1" max="40">
+                        @error('bloques_semanales')
+                            <div class="error-message">
+                                Este campo es obligatorio.
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label for="bloques_maximos_por_dia_{{ $datos->id }}" class="form-label-modern">
+                            <i class="fas fa-calendar-day"></i>
+                            Bloques Máximos por Día
+                        </label>
+                        <input type="number" class="form-control-modern" id="bloques_maximos_por_dia_{{ $datos->id }}"
+                            name="bloques_maximos_por_dia" value="{{ $datos->bloques_maximos_por_dia ?? 2 }}" required
+                            min="1" max="8">
+                        <small class="text-muted">Cantidad máxima de bloques de esta materia que se pueden asignar en un mismo día.</small>
+                        @error('bloques_maximos_por_dia')
+                            <div class="error-message">
+                                Este campo es obligatorio (mínimo 1, máximo 8).
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label for="aula_id_{{ $datos->id }}" class="form-label-modern">
+                            <i class="fas fa-door-open"></i>
+                            Aula Asignada
+                        </label>
+                        <select name="aula_id" id="aula_id_{{ $datos->id }}" class="form-control-modern" required>
+                            <option value="">Seleccione un aula</option>
+                            @foreach($aulas ?? [] as $aula)
+                                <option value="{{ $aula->id_aula }}" {{ $datos->aula_id == $aula->id_aula ? 'selected' : '' }}>
+                                    {{ $aula->nombre_aula }} - {{ $aula->tipo_aula }}
+                                </option>
+                            @endforeach
+                        </select>
+                        
+                        @error('aula_id')
+                            <div class="error-message">
+                                Este campo es obligatorio.
+                            </div>
+                        @enderror
+                    </div>
+
                     <div class="modal-footer-edit">
                         <div class="footer-buttons">
                             <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">

@@ -22,6 +22,7 @@ class DocenteEstudioRealizado extends Component
 
     public function mount(Docente $docente)
     {
+        abort_unless(auth()->user()?->can('personal.ver'), 403, 'No tiene permiso para ver personal.');
         $this->docente = $docente;
         $this->cargarDatos();
     }
@@ -42,7 +43,9 @@ class DocenteEstudioRealizado extends Component
     
     public function agregarEstudio()
     {
+        abort_unless(auth()->user()?->can('personal.gestionar'), 403, 'No tiene permiso para gestionar personal.');
         $this->validate([
+
             'estudiosId' => 'required|exists:estudios_realizados,id',
         ], [
             'estudiosId.required' => 'Debe seleccionar un estudio',
@@ -90,7 +93,9 @@ class DocenteEstudioRealizado extends Component
 
     public function eliminarEstudio($detalleId)
     {
+        abort_unless(auth()->user()?->can('personal.gestionar'), 403, 'No tiene permiso para gestionar personal.');
         DB::beginTransaction();
+
         try {
             $detalle = DetalleDocenteEstudio::where('id', $detalleId)
                 ->where('docente_id', $this->docente->id)

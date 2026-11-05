@@ -21,12 +21,13 @@
                     <p class="title-subtitle">Administración de los Niveles académicos</p>
                 </div>
             </div>
-            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearGrado"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ !$anioEscolarActivo ? 'Debe registrar un año escolar activo' : 'Nuevo Nivel' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nuevo Nivel</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearGrado"
+                    title="Nuevo Nivel">
+                    <i class="fas fa-plus"></i>
+                    <span>Nuevo Nivel</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop
@@ -34,21 +35,7 @@
 @section('content')
     <div class="main-container">
         @include('admin.grado.modales.createModal')
-        @if (!$anioEscolarActivo)
-            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1">Atención: No hay año escolar activo</h5>
-                        <p class="mb-0">
-                            Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong> hasta que se
-                            registre un año escolar activo.
-                            <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Año Escolar</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
+        @include('partials.alerta-modo-consulta')
         @if (session('success') || session('error'))
             <div class="alerts-container">
                 @if (session('success'))
@@ -96,7 +83,7 @@
             </div>
             <div class="card-body-modern">
                 <div class="table-wrapper">
-                    <table class="table-modern overflow-hidden hidden">
+                    <table class="table-modern overflow-hidden ">
                         <thead>
                             <tr style="text-align: center">
                                 <th style="text-align: center">Nivel Academico</th>
@@ -147,36 +134,33 @@
                                                                 class="dropdown-item d-flex align-items-center text-primary"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#viewModal{{ $datos->id }}"
-                                                                title="Ver mas"
-                                                                @if (!$anioEscolarActivo) disabled @endif
-                                                                title="{{ !$anioEscolarActivo ? 'Debe registrar un año escolar activo' : 'Ver mas' }}">
+                                                                title="Ver mas">
                                                                 <i class="fas fa-eye me-2"></i>
                                                                 Ver mas
                                                             </button>
                                                         </li>
-                                                        <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-warning"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#viewModalEditar{{ $datos->id }}"
-                                                                title="Editar"
-                                                                @if (!$anioEscolarActivo) disabled @endif
-                                                                title="{{ !$anioEscolarActivo ? 'Debe registrar un año escolar activo' : 'Editar' }}">
-                                                                <i class="fas fa-pen me-2"></i>
-                                                                Editar
-                                                            </button>
-                                                        </li>
-                                                        <li>
-                                                            <button type="button"
-                                                                class="dropdown-item d-flex align-items-center text-danger btn-inactivar-grado"
-                                                                data-tiene-estudiantes="{{ $datos->inscripciones_count > 0 ? '1' : '0' }}"
-                                                                data-modal-id="confirmarEliminar{{ $datos->id }}"
-                                                                @disabled(!$anioEscolarActivo)>
-                                                                <i class="fas fa-ban me-2"></i>
-                                                                Inactivar
-                                                            </button>
-
-                                                        </li>
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            <li>
+                                                                <button
+                                                                    class="dropdown-item d-flex align-items-center text-warning"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#viewModalEditar{{ $datos->id }}"
+                                                                    title="Editar">
+                                                                    <i class="fas fa-pen me-2"></i>
+                                                                    Editar
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button type="button"
+                                                                    class="dropdown-item d-flex align-items-center text-danger btn-inactivar-grado"
+                                                                    data-tiene-estudiantes="{{ $datos->inscripciones_count > 0 ? '1' : '0' }}"
+                                                                    data-modal-id="confirmarEliminar{{ $datos->id }}"
+                                                                    title="Inactivar">
+                                                                    <i class="fas fa-ban me-2"></i>
+                                                                    Inactivar
+                                                                </button>
+                                                            </li>
+                                                        @endif
                                                     </ul>
                                                 </div>
                                             </div>

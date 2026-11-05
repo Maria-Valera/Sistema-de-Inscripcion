@@ -21,33 +21,20 @@
                     <p class="title-subtitle">Administración de los docentes</p>
                 </div>
             </div>
-            <a type="button" class="btn-create" href="{{ route('admin.docente.create') }}"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Crear nuevo registro' }}">
-                <i class="fas fa-plus"></i>
-                <span>Registrar</span>
-            </a>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <a type="button" class="btn-create" href="{{ route('admin.docente.create') }}"
+                    title="Crear nuevo registro">
+                    <i class="fas fa-plus"></i>
+                    <span>Registrar</span>
+                </a>
+            @endif
         </div>
     </div>
 @stop
 
 @section('content')
     <div class="main-container">
-        @if (!$anioEscolarActivo)
-            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                        <p class="mb-0">
-                            Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong> hasta que se
-                            registre un Calendario Escolar activo.
-                            <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
+        @include('partials.alerta-modo-consulta')
 
         @if (session('success') || session('error'))
             <div class="alerts-container">
@@ -96,7 +83,7 @@
                 </div>
 
                 <div class="header-right d-flex align-items-center gap-2 flex-wrap">
-                   
+
                     <form action="{{ route('admin.docente.index') }}" class="mb-0 search-sm">
                         <div class="search-modern">
                             <i class="fas fa-search"></i>
@@ -114,7 +101,7 @@
 
             <div class="card-body-modern">
                 <div class="table-wrapper">
-                    <table class="table-modern overflow-hidden hidden">
+                    <table class="table-modern overflow-hidden ">
                         <thead>
                             <tr style="text-align: center">
                                 <th style="text-align: center">Cédula</th>
@@ -179,26 +166,34 @@
                                                                 Ver más
                                                             </button>
                                                         </li>
-                                                        <a class="dropdown-item d-flex align-items-center text-warning"
-                                                            type="button"
-                                                            href="{{ route('admin.docente.edit', $datos->id) }}"
-                                                            title="Editar"
-                                                            @if (!$anioEscolarActivo) disabled @endif
-                                                            title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Editar' }}">
-                                                            <i class="fas fa-pen me-2"></i>
-                                                            Editar
-                                                        </a>
-                                                        </li>
-                                                        <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-danger"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#confirmarEliminar{{ $datos->id }}"
-                                                                @disabled(!$anioEscolarActivo) title="Inactivar Calendario Escolar">
-                                                                <i class="fas fa-ban me-2"></i>
-                                                                Inactivar
-                                                            </button>
-                                                        </li>
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center text-warning"
+                                                                    href="{{ route('admin.docente.edit', $datos->id) }}"
+                                                                    title="Editar">
+                                                                    <i class="fas fa-pen me-2"></i>
+                                                                    Editar
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center text-info"
+                                                                    href="{{ route('admin.docente.disponibilidad', $datos->id) }}"
+                                                                    title="Disponibilidad">
+                                                                    <i class="fas fa-calendar-times me-2"></i>
+                                                                    Disponibilidad
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <button
+                                                                    class="dropdown-item d-flex align-items-center text-danger"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#confirmarEliminar{{ $datos->id }}"
+                                                                    title="Inactivar Docente">
+                                                                    <i class="fas fa-ban me-2"></i>
+                                                                    Inactivar
+                                                                </button>
+                                                            </li>
+                                                        @endif
                                                         <li>
                                                             <a class="dropdown-item d-flex align-items-center text-danger"
                                                                 type="button"
