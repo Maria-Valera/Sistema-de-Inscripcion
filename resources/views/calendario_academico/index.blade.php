@@ -20,17 +20,22 @@
                     <p class="title-subtitle">Gestión de calendarios académicos</p>
                 </div>
             </div>
+
             @can('calendario_academico.gestionar')
-                <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create_manual') }}'">
-                    <i class="fas fa-calendar-plus"></i> <span>Crear nuevo calendario</span>
-                </button>
+                @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                    <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create_manual') }}'">
+                        <i class="fas fa-calendar-plus"></i> <span>Crear nuevo calendario</span>
+                    </button>
+                @endif
             @endcan
+
         </div>
     </div>
 @stop
 
 @section('content')
     <div class="main-container">
+        @include('partials.alerta-modo-consulta')
 
         {{-- Alertas modernas --}}
         @if (session('exito'))

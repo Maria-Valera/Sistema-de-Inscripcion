@@ -5,8 +5,12 @@
 return [
     'Admin' => [
         'anio_escolar' => '*',
+        'institucion' => '*',
+        'escala_literal' => '*',
+        'autoridad_firmante' => '*',
     ],
     'Subdirectora' => [
         'anio_escolar' => '*',
+        'escala_literal' => '*',
     ],
 ];

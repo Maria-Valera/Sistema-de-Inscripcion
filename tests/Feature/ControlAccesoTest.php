@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Auditoria;
+use App\Models\AnioEscolar;
 use App\Models\User;
 use Database\Seeders\PermisosSeeder;
 use Database\Seeders\RoleSeeder;
@@ -135,23 +136,35 @@ class ControlAccesoTest extends TestCase
      */
     public function test_home_admin_accede_y_otros_roles_son_redirigidos()
     {
+        $anio = AnioEscolar::firstOrCreate(
+            ['status' => 'Activo'],
+            [
+                'inicio_anio_escolar' => '2026-09-01',
+                'cierre_anio_escolar' => '2027-07-31',
+            ]
+        );
+
         $admin = $this->crearUsuarioConRol('Admin');
         $this->actingAs($admin)
+            ->withSession(['anio_escolar_id' => $anio->id])
             ->get(route('home'))
             ->assertOk();
 
         $subdirectora = $this->crearUsuarioConRol('Subdirectora');
         $this->actingAs($subdirectora)
+            ->withSession(['anio_escolar_id' => $anio->id])
             ->get(route('home'))
             ->assertRedirect($subdirectora->rutaDashboard());
 
         $docente = $this->crearUsuarioConRol('Docente');
         $this->actingAs($docente)
+            ->withSession(['anio_escolar_id' => $anio->id])
             ->get(route('home'))
             ->assertRedirect($docente->rutaDashboard());
 
         $representante = $this->crearUsuarioConRol('Representante');
         $this->actingAs($representante)
+            ->withSession(['anio_escolar_id' => $anio->id])
             ->get(route('home'))
             ->assertRedirect($representante->rutaDashboard());
     }

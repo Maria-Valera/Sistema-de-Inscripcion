@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Dia;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\BloqueReservado;
 use App\Models\ConfiguracionHorario;
 use App\Services\ConfiguracionHorarioService;
@@ -22,11 +23,11 @@ class ConfiguracionHorarioController extends Controller
      */
     public function index(): View|RedirectResponse
     {
-        $anioActivo = AnioEscolar::activos()->orderByDesc('id')->first();
+        $anioActivo = AnioEscolarSeleccionado::modelo();
 
         if (!$anioActivo) {
             return redirect()->route('admin.anio_escolar.index')
-                ->with('error', 'Debe existir un año escolar activo para configurar el horario.');
+                ->with('error', 'Debe existir un año escolar seleccionado para ver la configuración del horario.');
         }
 
         $configuracion = $this->configuracionService->actual($anioActivo->id);
@@ -94,10 +95,14 @@ class ConfiguracionHorarioController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        $anioActivo = AnioEscolar::activos()->orderByDesc('id')->first();
+        $anioActivo = AnioEscolarSeleccionado::modelo();
 
         if (!$anioActivo) {
-            return redirect()->back()->with('error', 'No hay un año escolar activo.');
+            return redirect()->back()->with('error', 'No hay un año escolar seleccionado.');
+        }
+
+        if (!AnioEscolarSeleccionado::esActual()) {
+            return redirect()->back()->with('error', 'No puedes modificar la configuración de un año escolar anterior.');
         }
 
         $request->validate([

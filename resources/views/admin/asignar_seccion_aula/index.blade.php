@@ -20,12 +20,13 @@
                 <p class="title-subtitle">Administración de asignaciones de aulas a secciones</p>
             </div>
         </div>
-        <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearSeccionAula"
-            @if (!$anioEscolarActivo) disabled @endif
-            title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Nueva asignación' }}">
-            <i class="fas fa-plus"></i>
-            <span>Nueva Asignación</span>
-        </button>
+        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearSeccionAula"
+                title="Nueva asignación">
+                <i class="fas fa-plus"></i>
+                <span>Nueva Asignación</span>
+            </button>
+        @endif
     </div>
 </div>
 @stop
@@ -33,20 +34,7 @@
 @section('content')
 <div class="main-container">
     @include('admin.asignar_seccion_aula.modales.createModal')
-    @if (!$anioEscolarActivo)
-        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                    <p class="mb-0">
-                        Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong> asignaciones hasta que se registre un Calendario Escolar activo.
-                        <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    @endif
+    @include('partials.alerta-modo-consulta')
     @if (session('success') || session('error'))
         <div class="alerts-container">
             @if (session('success'))
@@ -131,27 +119,27 @@
                                                     <i class="fas fa-ellipsis-v"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                    <li>
-                                                        <button
-                                                            class="dropdown-item d-flex align-items-center text-warning"
-                                                            onclick="editarAsignacion({{ $asignacion->id }}, {{ $asignacion->seccion->grado_id ?? 'null' }}, {{ $asignacion->id_seccion }}, {{ $asignacion->id_aula }})"
-                                                            @if (!$anioEscolarActivo) disabled @endif
-                                                            title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Editar asignación' }}">
-                                                            <i class="fas fa-pen me-2"></i>
-                                                            Editar
-                                                        </button>
-                                                    </li>
-                                                    <li>
-                                                        <button
-                                                            class="dropdown-item d-flex align-items-center text-danger"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#confirmarEliminar{{ $asignacion->id }}"
-                                                            @if (!$anioEscolarActivo) disabled @endif
-                                                            title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Eliminar asignación' }}">
-                                                            <i class="fas fa-trash-alt me-2"></i>
-                                                            Eliminar
-                                                        </button>
-                                                    </li>
+                                                    @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                        <li>
+                                                            <button
+                                                                class="dropdown-item d-flex align-items-center text-warning"
+                                                                onclick="editarAsignacion({{ $asignacion->id }}, {{ $asignacion->seccion->grado_id ?? 'null' }}, {{ $asignacion->id_seccion }}, {{ $asignacion->id_aula }})"
+                                                                title="Editar asignación">
+                                                                <i class="fas fa-pen me-2"></i>
+                                                                Editar
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button
+                                                                class="dropdown-item d-flex align-items-center text-danger"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#confirmarEliminar{{ $asignacion->id }}"
+                                                                title="Eliminar asignación">
+                                                                <i class="fas fa-trash-alt me-2"></i>
+                                                                Eliminar
+                                                            </button>
+                                                        </li>
+                                                    @endif
                                                 </ul>
                                             </div>
                                         </div>

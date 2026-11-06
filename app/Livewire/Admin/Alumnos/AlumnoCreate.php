@@ -14,6 +14,7 @@ use App\Models\Localidad;
 use App\Models\OrdenNacimiento;
 use App\Models\Lateralidad;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\EtniaIndigena;
 use App\Models\Talla;
 use Livewire\Attributes\On;
@@ -290,7 +291,7 @@ class AlumnoCreate extends Component
 
     private function verificarAnioEscolar()
     {
-        $this->anioEscolarActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->exists();
+        $this->anioEscolarActivo = AnioEscolarSeleccionado::esActual();
     }
 
     public function cargarDatosIniciales()
@@ -408,6 +409,8 @@ class AlumnoCreate extends Component
 
     public function save()
     {
+        abort_unless(AnioEscolarSeleccionado::esActual(), 403, 'No puedes modificar o registrar alumnos en un año anterior.');
+
         $this->talla_estudiante = (float) str_replace(',', '.', $this->talla_estudiante);
         $this->validate();
 

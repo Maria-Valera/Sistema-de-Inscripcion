@@ -29,20 +29,7 @@
 
     @include('admin.area_formacion.modales.createModal')
 
-    @if (!$anioEscolarActivo)
-        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                    <p class="mb-0">
-                        Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong> bancos hasta que se registre un Calendario Escolar activo.
-                        <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    @endif
+    @include('partials.alerta-modo-consulta')
 
     @if (session('success') || session('error'))
         <div class="alerts-container">
@@ -83,15 +70,16 @@
                 </div>
             </div>
 
-            <button type="button"
-                    class="btn-create"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalCrearAreaFormacion"
-                    @if(!$anioEscolarActivo) disabled @endif
-                    title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Crear nueva área de formación' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nueva Área</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button"
+                        class="btn-create"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalCrearAreaFormacion"
+                        title="Crear nueva área de formación">
+                    <i class="fas fa-plus"></i>
+                    <span>Nueva Área</span>
+                </button>
+            @endif
         </div>
 
         <div class="card-body-modern">
@@ -160,29 +148,29 @@
                                                         <i class="fas fa-ellipsis-v"></i>
                                                     </button>
                                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                        <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-warning"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#viewModalEditar{{ $datos->id }}"
-                                                                title="Editar"
-                                                                @if (!$anioEscolarActivo) disabled @endif
-                                                                title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Editar' }}">
-                                                                <i class="fas fa-pen me-2"></i>
-                                                                Editar
-                                                            </button>
-                                                        </li>
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            <li>
+                                                                <button
+                                                                    class="dropdown-item d-flex align-items-center text-warning"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#viewModalEditar{{ $datos->id }}"
+                                                                    title="Editar">
+                                                                    <i class="fas fa-pen me-2"></i>
+                                                                    Editar
+                                                                </button>
+                                                            </li>
 
-                                                        <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-danger"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#confirmarEliminar{{ $datos->id }}"
-                                                                @disabled(!$anioEscolarActivo) title="Inactivar Calendario Escolar">
-                                                                <i class="fas fa-ban me-2"></i>
-                                                                Inactivar
-                                                            </button>
-                                                        </li>
+                                                            <li>
+                                                                <button
+                                                                    class="dropdown-item d-flex align-items-center text-danger"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#confirmarEliminar{{ $datos->id }}"
+                                                                    title="Inactivar Área de Formación">
+                                                                    <i class="fas fa-ban me-2"></i>
+                                                                    Inactivar
+                                                                </button>
+                                                            </li>
+                                                        @endif
                                                     </ul>
                                                 </div>
                                             </div>
@@ -240,15 +228,16 @@
                     <p>{{ $grupoEstable->total() }} registros encontrados</p>
                 </div>
             </div>
-            <button type="button"
-             class="btn-create"
-             data-bs-toggle="modal"
-             data-bs-target="#modalCrearGrupoEstable"
-             @if(!$anioEscolarActivo) disabled @endif
-             title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Crear nuevo grupo estable' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nuevo Grupo Estable</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button"
+                 class="btn-create"
+                 data-bs-toggle="modal"
+                 data-bs-target="#modalCrearGrupoEstable"
+                 title="Crear nuevo grupo estable">
+                    <i class="fas fa-plus"></i>
+                    <span>Nuevo Grupo Estable</span>
+                </button>
+            @endif
         </div>
 
         <div class="card-body-modern">
@@ -256,16 +245,17 @@
                 <table class="table-modern overflow-hidden ">
                     <thead>
                         <tr style="text-align: center">
-                            <th style="text-align: center">#</th>
-                            <th style="text-align: center">Grupo estable</th>
-                            <th style="text-align: center">Estado</th>
-                            <th style="text-align: center">Acciones</th>
+                            <th style="text-align: center; width: 60px;">#</th>
+                            <th style="text-align: center; width: 120px;">Código</th>
+                            <th style="text-align: left;">Grupo Estable</th>
+                            <th style="text-align: center; width: 120px;">Estado</th>
+                            <th style="text-align: center; width: 120px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody style="text-align: center">
                         @if($grupoEstable->isEmpty())
                             <tr>
-                                <td colspan="4">
+                                <td colspan="5">
                                     <div class="empty-state">
                                         <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                                         <h4>No hay grupos estables registrados</h4>
@@ -276,9 +266,16 @@
                         @else
                             @foreach($grupoEstable as $index => $grupo)
                                 @if($grupo->status)
-                                    <tr class="  row-12">
-                                        <td>{{ $index + 1 }}</td>
-                                        <td class="title-main">{{ $grupo->nombre_grupo_estable }}</td>
+                                    <tr class="row-12">
+                                        <td>{{ $grupoEstable->firstItem() ? ($grupoEstable->firstItem() + $index) : ($index + 1) }}</td>
+                                        <td>
+                                            @if($grupo->codigo)
+                                                <span class="badge badge-light border text-primary font-weight-bold" style="font-size: 0.85rem; padding: 0.35rem 0.6rem;">{{ $grupo->codigo }}</span>
+                                            @else
+                                                <span class="text-muted font-italic">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="title-main" style="text-align: left;">{{ $grupo->nombre_grupo_estable }}</td>
                                         <td>
                                             @if ($grupo->status)
                                                 <span class="status-badge status-active">
@@ -300,29 +297,29 @@
                                                         <i class="fas fa-ellipsis-v"></i>
                                                     </button>
                                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                        <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-warning"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#viewModalEditarGrupoEstable{{ $grupo->id }}"
-                                                                title="Editar"
-                                                                @if (!$anioEscolarActivo) disabled @endif
-                                                                title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Editar' }}">
-                                                                <i class="fas fa-pen me-2"></i>
-                                                                Editar
-                                                            </button>
-                                                        </li>
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            <li>
+                                                                <button
+                                                                    class="dropdown-item d-flex align-items-center text-warning"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#viewModalEditarGrupoEstable{{ $grupo->id }}"
+                                                                    title="Editar">
+                                                                    <i class="fas fa-pen me-2"></i>
+                                                                    Editar
+                                                                </button>
+                                                            </li>
 
-                                                        <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-danger"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#confirmarEliminarGrupo{{ $grupo->id }}"
-                                                                @disabled(!$anioEscolarActivo) title="Inactivar Calendario Escolar">
-                                                                <i class="fas fa-ban me-2"></i>
-                                                                Inactivar
-                                                            </button>
-                                                        </li>
+                                                            <li>
+                                                                <button
+                                                                    class="dropdown-item d-flex align-items-center text-danger"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#confirmarEliminarGrupo{{ $grupo->id }}"
+                                                                    title="Inactivar Grupo Estable">
+                                                                    <i class="fas fa-ban me-2"></i>
+                                                                    Inactivar
+                                                                </button>
+                                                            </li>
+                                                        @endif
                                                     </ul>
                                                 </div>
                                             </div>

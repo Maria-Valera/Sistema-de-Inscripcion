@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AreaFormacion;
 use App\Models\GrupoEstable;
+use App\Http\Requests\GrupoEstableRequest;
 use Illuminate\Http\Request;
 
 class AreaFormacionController extends Controller
@@ -35,27 +36,14 @@ class AreaFormacionController extends Controller
         return view('admin.area_formacion.index', compact('areaFormacion', 'grupoEstable', 'aulas', 'anioEscolarActivo'));
     }
 
-    public function storeGrupoEstable(Request $request)
+    public function storeGrupoEstable(GrupoEstableRequest $request)
     {
-        $validated = $request->validate([
-            'nombre_grupo_estable' => 'required|string|max:255',
-            
-        ]);
-
-        $existe = GrupoEstable::where('nombre_grupo_estable', $validated['nombre_grupo_estable'])
-            ->where('status', true)
-            ->exists();
-
-        if ($existe) {
-            return redirect()
-                ->route('admin.area_formacion.index')
-                ->with('error', 'Ya existe un grupo estable activo con este nombre.');
-        }
+        $validated = $request->validated();
 
         try {
             $grupoEstable = new GrupoEstable();
+            $grupoEstable->codigo = $validated['codigo'] ?? null;
             $grupoEstable->nombre_grupo_estable = $validated['nombre_grupo_estable'];
-            
             $grupoEstable->status = true;
             $grupoEstable->save();
 
@@ -109,25 +97,13 @@ class AreaFormacionController extends Controller
         }
     }
 
-    public function updateGrupoEstable(Request $request, $id)
+    public function updateGrupoEstable(GrupoEstableRequest $request, $id)
     {
-        $validated = $request->validate([
-            'nombre_grupo_estable' => 'required|string|max:255',
-        ]);
-
-        $existe = GrupoEstable::where('nombre_grupo_estable', $validated['nombre_grupo_estable'])
-            ->where('status', true)
-            ->where('id', '!=', $id)
-            ->exists();
-
-        if ($existe) {
-            return redirect()
-                ->route('admin.area_formacion.index')
-                ->with('error', 'Ya existe otro grupo estable activo con este nombre.');
-        }
+        $validated = $request->validated();
 
         try {
             $grupoEstable = GrupoEstable::findOrFail($id);
+            $grupoEstable->codigo = $validated['codigo'] ?? null;
             $grupoEstable->nombre_grupo_estable = $validated['nombre_grupo_estable'];
             $grupoEstable->save();
 

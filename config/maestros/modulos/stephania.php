@@ -13,4 +13,34 @@ return [
             'anio_escolar.cambiar',
         ],
     ],
+    'institucion' => [
+        'nombre' => 'Datos del Plantel',
+        'icono' => 'fas fa-school',
+        'ruta' => 'admin.institucion.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'institucion.ver',
+            'institucion.gestionar',
+        ],
+    ],
+    'escala_literal' => [
+        'nombre' => 'Escala Literal',
+        'icono' => 'fas fa-sort-alpha-down',
+        'ruta' => 'admin.escala-literal.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'escala_literal.ver',
+            'escala_literal.gestionar',
+        ],
+    ],
+    'autoridad_firmante' => [
+        'nombre' => 'Autoridades Firmantes',
+        'icono' => 'fas fa-signature',
+        'ruta' => 'admin.autoridad-firmante.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'autoridad_firmante.ver',
+            'autoridad_firmante.gestionar',
+        ],
+    ],
 ];

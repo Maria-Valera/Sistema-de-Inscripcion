@@ -45,9 +45,7 @@
                     </div>
                     <div class="header-right">
                         @php
-                            $anioActivo = \App\Models\AnioEscolar::activos()->first();
-                            $anioExtendido = \App\Models\AnioEscolar::where('status', 'Extendido')->first();
-                            $mostrarAnio = $anioActivo ?? $anioExtendido;
+                            $mostrarAnio = \App\Support\AnioEscolarSeleccionado::modelo();
                         @endphp
                         @if ($mostrarAnio)
                             <div

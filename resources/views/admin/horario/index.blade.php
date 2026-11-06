@@ -22,36 +22,38 @@
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                @can('horarios.gestionar')
-                    <a href="{{ route('admin.horario.configuracion') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px; font-weight: 500;">
-                        <i class="fas fa-sliders-h"></i>
-                        <span>Configurar Bloques</span>
-                    </a>
-                    <a href="{{ route('admin.horario.posiciones') }}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px; font-weight: 500;">
-                        <i class="fas fa-th"></i>
-                        <span>Posiciones por Materia</span>
-                    </a>
-                @endcan
+                @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                    @can('horarios.gestionar')
+                        <a href="{{ route('admin.horario.configuracion') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px; font-weight: 500;">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Configurar Bloques</span>
+                        </a>
+                        <a href="{{ route('admin.horario.posiciones') }}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px; font-weight: 500;">
+                            <i class="fas fa-th"></i>
+                            <span>Posiciones por Materia</span>
+                        </a>
+                    @endcan
 
-                @if ($hayErroresCriticos ?? false)
-                    <div class="d-inline-flex flex-column align-items-end text-end">
-                        <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 text-white shadow-none" disabled style="border-radius: 6px; font-weight: 600; cursor: not-allowed; background-color: #94a3b8; border: none; opacity: 0.85;">
+                    @if ($hayErroresCriticos ?? false)
+                        <div class="d-inline-flex flex-column align-items-end text-end">
+                            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 text-white shadow-none" disabled style="border-radius: 6px; font-weight: 600; cursor: not-allowed; background-color: #94a3b8; border: none; opacity: 0.85;">
+                                <i class="fas fa-plus"></i>
+                                <span>Nuevo Horario</span>
+                            </button>
+                            <span class="text-danger fw-semibold mt-1 d-inline-flex align-items-center gap-1" style="font-size: 0.8rem; line-height: 1.2;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>⚠️ No puedes crear un horario porque hay errores en la carga académica.</span>
+                            </span>
+                            <span class="text-muted" style="font-size: 0.74rem; line-height: 1.2;">
+                                Corrige los errores en el panel inferior para habilitar este botón.
+                            </span>
+                        </div>
+                    @else
+                        <a href="{{ route('admin.horario.create') }}" class="btn-create">
                             <i class="fas fa-plus"></i>
                             <span>Nuevo Horario</span>
-                        </button>
-                        <span class="text-danger fw-semibold mt-1 d-inline-flex align-items-center gap-1" style="font-size: 0.8rem; line-height: 1.2;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>⚠️ No puedes crear un horario porque hay errores en la carga académica.</span>
-                        </span>
-                        <span class="text-muted" style="font-size: 0.74rem; line-height: 1.2;">
-                            Corrige los errores en el panel inferior para habilitar este botón.
-                        </span>
-                    </div>
-                @else
-                    <a href="{{ route('admin.horario.create') }}" class="btn-create">
-                        <i class="fas fa-plus"></i>
-                        <span>Nuevo Horario</span>
-                    </a>
+                        </a>
+                    @endif
                 @endif
             </div>
         </div>
@@ -60,6 +62,7 @@
 
 @section('content')
     <div class="main-container">
+        @include('partials.alerta-modo-consulta')
         @php
             $erroresMostrar = session('errores_validacion') ?? ($erroresCriticos ?? []);
         @endphp
@@ -314,13 +317,15 @@
                                                                 Ver Horario
                                                             </button>
                                                         </li>
-                                                        <li>
-                                                            <a href="{{ route('admin.horario.edit', ['grado_id' => $horario['grado_id'], 'seccion_id' => $horario['seccion_id']]) }}"
-                                                                class="dropdown-item d-flex align-items-center text-warning">
-                                                                <i class="fas fa-pen me-2"></i>
-                                                                Editar
-                                                            </a>
-                                                        </li>
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            <li>
+                                                                <a href="{{ route('admin.horario.edit', ['grado_id' => $horario['grado_id'], 'seccion_id' => $horario['seccion_id']]) }}"
+                                                                    class="dropdown-item d-flex align-items-center text-warning">
+                                                                    <i class="fas fa-pen me-2"></i>
+                                                                    Editar
+                                                                </a>
+                                                            </li>
+                                                        @endif
                                                         <li>
                                                             <button class="dropdown-item d-flex align-items-center text-danger"
                                                                 onclick="generarPDF({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
@@ -328,14 +333,16 @@
                                                                 PDF Horario
                                                             </button>
                                                         </li>
-                                                        <li>
-                                                            <button class="dropdown-item d-flex align-items-center text-danger"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#confirmarEliminar{{ $horario['id'] }}">
-                                                                <i class="fas fa-trash me-2"></i>
-                                                                Eliminar
-                                                            </button>
-                                                        </li>
+                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                            <li>
+                                                                <button class="dropdown-item d-flex align-items-center text-danger"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#confirmarEliminar{{ $horario['id'] }}">
+                                                                    <i class="fas fa-trash me-2"></i>
+                                                                    Eliminar
+                                                                </button>
+                                                            </li>
+                                                        @endif
                                                     </ul>
                                                 </div>
                                             </div>

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\TransaccionInscripcion;
 
 use Livewire\Component;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\Inscripcion;
 use App\Models\Alumno;
 use App\Models\Grado;
@@ -116,7 +117,7 @@ class InscripcionProsecucion extends Component
 
     public function cargarDatosIniciales()
     {
-        $anioActual = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioActual = AnioEscolarSeleccionado::modelo();
 
         if (!$anioActual) {
             $this->alumnos = collect();
@@ -252,7 +253,7 @@ class InscripcionProsecucion extends Component
         }
 
         // Obtener el año escolar actual
-        $anioActual = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioActual = AnioEscolarSeleccionado::modelo();
 
         if (!$anioActual) {
             session()->flash('error', 'No hay un Calendario Escolar activo.');
@@ -555,9 +556,11 @@ class InscripcionProsecucion extends Component
             abort(403);
         }
 
+        abort_unless(AnioEscolarSeleccionado::esActual(), 403, 'No puedes registrar prosecuciones en un año anterior.');
+
         $this->validate();
 
-        $anioActual = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioActual = AnioEscolarSeleccionado::modelo();
         if (!$anioActual) {
             $this->addError('general', 'No hay un Calendario Escolar activo.');
             return;

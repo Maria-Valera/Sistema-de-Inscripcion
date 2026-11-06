@@ -17,15 +17,16 @@
             </div>
 
             {{-- Botón crear --}}
-            <button type="button"
-                class="btn-create"
-                data-bs-toggle="modal"
-                data-bs-target="#modalCrear"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ $anioEscolarActivo ? 'Crear Institución' : 'Debe registrar un Calendario Escolar activo para realizar esta acción.' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nueva Institución</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button"
+                    class="btn-create"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalCrear"
+                    title="Crear Institución">
+                    <i class="fas fa-plus"></i>
+                    <span>Nueva Institución</span>
+                </button>
+            @endif
 
         </div>
     </div>

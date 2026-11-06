@@ -33,7 +33,7 @@
 @section('content')
     <div class="main-container">
         @php
-            $anoActivo = App\Models\AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+            $anoActivo = \App\Support\AnioEscolarSeleccionado::modelo();
         @endphp
         @if (!$anoActivo)
             <div class="alert alert-warning">

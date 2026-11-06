@@ -36,6 +36,9 @@
             {{-- Custom right links --}}
             @yield('content_top_nav_right')
 
+            {{-- Indicador de Año Escolar Seleccionado --}}
+            @include('partials.indicador-anio')
+
             {{-- Configured right links --}}
             @each('adminlte::partials.navbar.menu-item', $adminlte->menu('navbar-right'), 'item')
 

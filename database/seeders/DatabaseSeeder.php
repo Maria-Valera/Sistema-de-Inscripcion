@@ -72,7 +72,6 @@ class DatabaseSeeder extends Seeder
             MariaMaestrosSeeder::class,
             JoseMaestrosSeeder::class,
 
-
             /*InscripcionProsecucionSeeder::class,
             ProsecucionAreaSeeder::class,  */
         ]);
