@@ -73,6 +73,19 @@ class SeleccionarAnioEscolarTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Seleccionar Año Escolar');
         $response->assertSee('Solo consulta');
+        // Con año activo, no se debe mostrar el botón de crear en el selector
+        $response->assertDontSee('Crear Nuevo Año Escolar');
+    }
+
+    public function test_pantalla_seleccion_muestra_boton_crear_cuando_no_hay_anio_activo(): void
+    {
+        $this->anioActivo->update(['status' => 'Inactivo']);
+
+        $response = $this->actingAs($this->adminUser)->get(route('admin.anio-escolar.seleccionar'));
+
+        $response->assertStatus(200);
+        $response->assertSee('No hay ningún año escolar activo');
+        $response->assertSee('Crear Nuevo Año Escolar');
     }
 
     public function test_guardar_anio_escolar_guarda_en_sesion_y_redirige_a_dashboard(): void

@@ -26,5 +26,11 @@ return [
             'icon' => 'fas fa-signature',
             'can'  => 'autoridad_firmante.ver',
         ],
+        [
+            'text' => 'Años Escolares',
+            'url'  => 'admin/anio-escolar',
+            'icon' => 'fas fa-calendar-alt',
+            'can'  => 'anio_escolar.gestionar',
+        ],
     ],
 ];
