@@ -213,6 +213,15 @@ class SeleccionarAnioEscolarTest extends TestCase
         $responsePost->assertStatus(403);
     }
 
+    public function test_middleware_solo_lectura_bloquea_get_create_en_anio_anterior(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->get(route('admin.alumnos.create'));
+
+        $response->assertStatus(403);
+    }
+
     public function test_es_actual_retorna_true_si_no_hay_anios_activos_en_la_bd(): void
     {
         $this->anioActivo->update(['status' => 'Inactivo']);

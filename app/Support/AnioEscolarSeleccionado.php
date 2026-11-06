@@ -38,14 +38,10 @@ class AnioEscolarSeleccionado
      */
     public static function esActual(): bool
     {
-        $hayActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->exists();
-        if (! $hayActivo) {
-            return true;
-        }
-
         $modelo = self::modelo();
         if (!$modelo) {
-            return false;
+            $hayActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->exists();
+            return ! $hayActivo;
         }
 
         return in_array($modelo->status, ['Activo', 'Extendido']);

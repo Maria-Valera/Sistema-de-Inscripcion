@@ -23,9 +23,14 @@ class SoloLecturaAnioEscolar
 
         // Si el año escolar no es el actual (es un año anterior / de solo consulta)
         if (! AnioEscolarSeleccionado::esActual()) {
-            // 1. Bloquear formularios directos de creación (GET /create)
-            if ($request->isMethod('GET') && ($request->routeIs('*.create') || str_ends_with($request->path(), '/create'))) {
-                return back()->with('warning', 'No puedes registrar nuevos datos en un año escolar anterior (solo lectura).');
+            // 1. Bloquear formularios directos de creación y edición (GET /create, GET /edit)
+            if ($request->isMethod('GET') && (
+                $request->routeIs('*.create') || 
+                str_ends_with($request->path(), '/create') ||
+                $request->routeIs('*.edit') ||
+                str_ends_with($request->path(), '/edit')
+            )) {
+                abort(403, 'No puedes registrar ni editar datos en un año escolar anterior (solo lectura).');
             }
 
             // 2. Para peticiones Livewire (POST /livewire/update):
