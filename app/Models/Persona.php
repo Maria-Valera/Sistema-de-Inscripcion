@@ -101,13 +101,13 @@ class Persona extends Model
 
     public function getNombreCompletoAttribute()
     {
-        return trim(
-            $this->primer_nombre . ' ' .
-                ($this->segundo_nombre ?? '') . ' ' .
-                ($this->tercer_nombre ?? '') . ' ' .
-                $this->primer_apellido . ' ' .
-                ($this->segundo_apellido ?? '')
-        );
+        return implode(' ', array_filter([
+            $this->primer_nombre,
+            $this->segundo_nombre,
+            $this->tercer_nombre,
+            $this->primer_apellido,
+            $this->segundo_apellido,
+        ], fn($v) => filled($v)));
     }
 
     public function getEdadAttribute()

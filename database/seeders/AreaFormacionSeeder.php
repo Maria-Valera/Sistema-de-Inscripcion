@@ -34,14 +34,13 @@ class AreaFormacionSeeder extends Seeder
         $this->command->info('Areas de Formación insertados correctamente.');
 
         DB::table('grupo_estables')->insert([
-            ['nombre_grupo_estable' =>  'Domino', 'status' => true], /* 1 */
-            ['nombre_grupo_estable' => 'Ajedrez', 'status' => true], /* 2 */
-            ['nombre_grupo_estable' => 'Kikimbol', 'status' => true], /* 3 */
-            ['nombre_grupo_estable' => 'Taekwondo', 'status' => true], /* 4 */
-            ['nombre_grupo_estable' => 'Futbol', 'status' => true], /* 5 */
-            ['nombre_grupo_estable' => 'Baloncesto', 'status' => true], /* 6 */
-            ['nombre_grupo_estable' => 'Manos a la Siembra', 'status' => true], /* 7 */
-
+            ['codigo' => 'AP-01', 'nombre_grupo_estable' => 'Domino', 'status' => true], /* 1 */
+            ['codigo' => 'AP-02', 'nombre_grupo_estable' => 'Ajedrez', 'status' => true], /* 2 */
+            ['codigo' => 'AP-03', 'nombre_grupo_estable' => 'Kikimbol', 'status' => true], /* 3 */
+            ['codigo' => 'AP-04', 'nombre_grupo_estable' => 'Taekwondo', 'status' => true], /* 4 */
+            ['codigo' => 'AP-05', 'nombre_grupo_estable' => 'Futbol', 'status' => true], /* 5 */
+            ['codigo' => 'AP-06', 'nombre_grupo_estable' => 'Baloncesto', 'status' => true], /* 6 */
+            ['codigo' => 'AP-07', 'nombre_grupo_estable' => 'Manos a la Siembra', 'status' => true], /* 7 */
         ]);
         $this->command->info('Grupos estables insertados correctamente.');
     }

@@ -19,6 +19,17 @@ class HomeController extends Controller
 
     public function index()
     {
+        if (!session()->has('anio_escolar_id')) {
+            if (auth()->check() && !auth()->user()->can('anio_escolar.cambiar')) {
+                $anioActivo = \App\Models\AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+                if ($anioActivo) {
+                    session(['anio_escolar_id' => $anioActivo->id]);
+                }
+            } else {
+                return redirect()->route('admin.anio-escolar.seleccionar');
+            }
+        }
+
         // Si el usuario autenticado no es Admin, redirigir a su dashboard correspondiente
         if (auth()->check() && !auth()->user()->hasRole('Admin')) {
             return redirect(auth()->user()->rutaDashboard());
@@ -59,6 +70,10 @@ class HomeController extends Controller
 
     public function subdirectora()
     {
+        if (!session()->has('anio_escolar_id')) {
+            return redirect()->route('admin.anio-escolar.seleccionar');
+        }
+
         $anioEscolar = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
 
         $totalGrados = Grado::where('status', true)->count();

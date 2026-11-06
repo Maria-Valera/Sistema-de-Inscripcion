@@ -22,8 +22,10 @@ return new class extends Migration
         });
 
         // "categoria" es un enum de mysql de valores tipicos. en la ruta del pdf solo se genera "no laborable" o "dudoso" que requiere revision humano
-    // mientras tanto en el camino manual tiene que tener "laborable" como opcion tambien
-    DB::statement("ALTER TABLE calendario_dias MODIFY categoria ENUM('no_laborable', 'dudoso','laborable') NOT NULL");
+        // mientras tanto en el camino manual tiene que tener "laborable" como opcion tambien
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE calendario_dias MODIFY categoria ENUM('no_laborable', 'dudoso','laborable') NOT NULL");
+        }
     }
 
 

@@ -145,7 +145,9 @@ class MenuDinamicoTest extends TestCase
     {
         $admin = $this->crearUsuario('Admin User', 'admin@test.com', 'Admin');
 
-        $response = $this->actingAs($admin)->get(route('home'));
+        $response = $this->actingAs($admin)
+            ->withSession(['anio_escolar_id' => $this->anioEscolar->id])
+            ->get(route('home'));
 
         $response->assertStatus(200);
         $response->assertSee('Alumnos');

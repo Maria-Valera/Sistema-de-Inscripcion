@@ -188,10 +188,12 @@
                     <i class="fas fa-arrow-left"></i>
                     <span>Volver a Horarios</span>
                 </a>
-                <button type="button" id="btnGuardarPosiciones" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2" style="border-radius: 6px; font-weight: 600;">
-                    <i class="fas fa-save"></i>
-                    <span>Guardar Reglas</span>
-                </button>
+                @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                    <button type="button" id="btnGuardarPosiciones" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2" style="border-radius: 6px; font-weight: 600;">
+                        <i class="fas fa-save"></i>
+                        <span>Guardar Reglas</span>
+                    </button>
+                @endif
             </div>
         </div>
     </div>
@@ -283,12 +285,14 @@
                 <span>Prohibido (Bloqueado)</span>
             </div>
 
-            <div class="ms-auto">
-                <button type="button" id="btnLimpiarCuadricula" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
-                    <i class="fas fa-eraser"></i>
-                    <span>Restablecer Todo a Disponible</span>
-                </button>
-            </div>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <div class="ms-auto">
+                    <button type="button" id="btnLimpiarCuadricula" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                        <i class="fas fa-eraser"></i>
+                        <span>Restablecer Todo a Disponible</span>
+                    </button>
+                </div>
+            @endif
         </div>
 
         <!-- Cuadrícula Días x Bloques -->
@@ -405,11 +409,14 @@
         }
 
         // Limpiar toda la cuadrícula a disponible
-        document.getElementById('btnLimpiarCuadricula').addEventListener('click', function() {
-            document.querySelectorAll('.celda-posicion').forEach(celda => {
-                aplicarEstadoACelda(celda, 'disponible');
+        const btnLimpiar = document.getElementById('btnLimpiarCuadricula');
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', function() {
+                document.querySelectorAll('.celda-posicion').forEach(celda => {
+                    aplicarEstadoACelda(celda, 'disponible');
+                });
             });
-        });
+        }
 
         // Al cambiar Área o Grado, consultar vía AJAX
         const selectArea = document.getElementById('selectArea');
@@ -451,7 +458,9 @@
         selectGrado.addEventListener('change', cargarPosiciones);
 
         // Guardar reglas en backend
-        document.getElementById('btnGuardarPosiciones').addEventListener('click', function() {
+        const btnGuardar = document.getElementById('btnGuardarPosiciones');
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', function() {
             const areaId = selectArea.value;
             const gradoId = selectGrado.value;
 
@@ -523,6 +532,7 @@
                     text: 'Ocurrió un error al comunicarse con el servidor.'
                 });
             });
-        });
+            });
+        }
     </script>
 @stop

@@ -30,16 +30,19 @@
                     <p class="title-subtitle">Módulo universal para la justificación de inasistencias</p>
                 </div>
             </div>
-            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear">
-                <i class="fas fa-plus"></i>
-                <span>Registrar Permiso/Reposo</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear">
+                    <i class="fas fa-plus"></i>
+                    <span>Registrar Permiso/Reposo</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop
 
 @section('content')
     <div class="main-container">
+        @include('partials.alerta-modo-consulta')
         @include('admin.permisos_reposos.modales.create')
         @include('admin.permisos_reposos.modales.edit')
         @include('admin.permisos_reposos.modales.delete')
@@ -112,8 +115,8 @@
                                     <td>{{ $permiso->nombre_reposo }}</td>
                                     <td>{{ $permiso->dias_reposo }}</td>
                                     <td>
-                                        <div class="action-buttons d-flex justify-content-center gap-2">
-                                            @if($anioEscolarActivo)
+                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                            <div class="action-buttons d-flex justify-content-center gap-2">
                                                 <button type="button" class="btn btn-sm btn-primary"
                                                     onclick="abrirModalEditar({{ $permiso->id }}, '{{ $permiso->nombre_reposo }}', '{{ $permiso->tipo }}', {{ $permiso->dias_reposo }})"
                                                     data-bs-toggle="modal" data-bs-target="#modalEditar"
@@ -126,17 +129,8 @@
                                                     title="Eliminar">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
-                                            @else
-                                                <button type="button" class="btn btn-sm btn-secondary" disabled
-                                                    title="No hay año escolar activo">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-sm btn-secondary" disabled
-                                                    title="No hay año escolar activo">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            @endif
-                                        </div>
+                                            </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

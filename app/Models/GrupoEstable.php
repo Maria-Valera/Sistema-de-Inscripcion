@@ -12,6 +12,7 @@ class GrupoEstable extends Model
     protected $table = 'grupo_estables';
 
     protected $fillable = [
+        'codigo',
         'nombre_grupo_estable',
         'status',
     ];

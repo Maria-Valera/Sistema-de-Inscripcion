@@ -14,12 +14,13 @@
                     <p class="title-subtitle">Administración de los paises del sistema</p>
                 </div>
             </div>
-            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ !$anioEscolarActivo ? 'Requiere Calendario Escolar activo' : 'Nuevo pais' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nuevo Pais</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
+                    title="Nuevo pais">
+                    <i class="fas fa-plus"></i>
+                    <span>Nuevo Pais</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop

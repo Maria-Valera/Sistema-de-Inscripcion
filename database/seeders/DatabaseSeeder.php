@@ -73,7 +73,6 @@ class DatabaseSeeder extends Seeder
             JoseMaestrosSeeder::class,
             CalendarioPalabraClaveSeeder::class,
 
-
             /*InscripcionProsecucionSeeder::class,
             ProsecucionAreaSeeder::class,  */
         ]);

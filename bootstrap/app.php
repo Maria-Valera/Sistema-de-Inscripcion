@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'solo.lectura.anio' => \App\Http\Middleware\SoloLecturaAnioEscolar::class,
         ]);
 
         // Agregar el middleware de verificación de años vencidos
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SecurityHeadersMiddleware::class);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\ForzarCambioPassword::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\SoloLecturaAnioEscolar::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {

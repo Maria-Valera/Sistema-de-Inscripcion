@@ -255,13 +255,14 @@
             </div>
 
             {{-- Botón crear --}}
-            <button type="button" class="btn-create"
-                onclick="window.location.href='{{ route('representante.formulario') }}'"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ !$anioEscolarActivo ? 'Requiere Calendario Escolar activo' : 'Registrar Representante' }}">
-                <i class="fas fa-plus"></i>
-                <span>Registrar</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" class="btn-create"
+                    onclick="window.location.href='{{ route('representante.formulario') }}'"
+                    title="Registrar Representante">
+                    <i class="fas fa-plus"></i>
+                    <span>Registrar</span>
+                </button>
+            @endif
 
         </div>
     </div>
@@ -271,23 +272,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <div class="main-container">
-        {{-- Alerta si NO hay Calendario Escolar activo --}}
-        @if (!$anioEscolarActivo)
-            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                        <p class="mb-0">
-                            Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong>
-                            representantes hasta
-                            que se registre un Calendario Escolar activo.
-                            <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
+        @include('partials.alerta-modo-consulta')
 
         <div class="card-modern">
             <div class="card-header-modern d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -404,28 +389,28 @@
                                                         </button>
                                                     </li>
 
-                                                    {{-- Editar --}}
-                                                    <li>
-                                                        <a href="{{ route('representante.editar', $rep->id) }}"
-                                                            class="dropdown-item d-flex align-items-center text-warning"
-                                                            @if (!$anioEscolarActivo) disabled @endif
-                                                            title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Editar' }}">
-                                                            <i class="fas fa-pen me-2"></i>
-                                                            Editar
-                                                        </a>
-                                                    </li>
+                                                    @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                        {{-- Editar --}}
+                                                        <li>
+                                                            <a href="{{ route('representante.editar', $rep->id) }}"
+                                                                class="dropdown-item d-flex align-items-center text-warning"
+                                                                title="Editar">
+                                                                <i class="fas fa-pen me-2"></i>
+                                                                Editar
+                                                            </a>
+                                                        </li>
 
-                                                    {{-- Inactivar --}}
-                                                    <li>
-                                                        <button class="dropdown-item d-flex align-items-center text-danger"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#confirmarEliminarRepresentante{{ $rep->id }}"
-                                                            @disabled(!$anioEscolarActivo)
-                                                            title="{{ !$anioEscolarActivo ? 'Debe registrar un Calendario Escolar activo' : 'Eliminar' }}">
-                                                            <i class="fas fa-trash me-2"></i>
-                                                            Eliminar
-                                                        </button>
-                                                    </li>
+                                                        {{-- Inactivar --}}
+                                                        <li>
+                                                            <button class="dropdown-item d-flex align-items-center text-danger"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#confirmarEliminarRepresentante{{ $rep->id }}"
+                                                                title="Eliminar">
+                                                                <i class="fas fa-trash me-2"></i>
+                                                                Eliminar
+                                                            </button>
+                                                        </li>
+                                                    @endif
                                                 </ul>
                                             </div>
                                         </div>

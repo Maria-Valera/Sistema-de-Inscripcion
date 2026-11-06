@@ -1,21 +1,7 @@
 <div class="main-container">
     @include('admin.localidad.modales.createModal')
     @include('admin.localidad.modales.editModal')
-    @if (!$anioEscolarActivo)
-        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                    <p class="mb-0">
-                        Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong> estados hasta
-                        que se registre un Calendario Escolar activo.
-                        <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    @endif
+    @include('partials.alerta-modo-consulta')
     @if (session('success') || session('error'))
         <div class="alerts-container">
             @if (session('success'))
@@ -149,20 +135,20 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <button wire:click="edit({{ $datos->id }})" class="action-btn btn-edit"
-                                            data-bs-toggle="modal" data-bs-target="#modalEditar"
-                                            @if (!$anioEscolarActivo) disabled @endif
-                                            title="{{ !$anioEscolarActivo ? 'Requiere Calendario Escolar activo' : 'Editar' }}">
-                                            <i class="fas fa-pen text-white"></i>
-                                        </button>
-                                        <button class="action-btn btn-delete" data-bs-toggle="modal"
-                                            data-bs-target="#confirmarEliminar{{ $datos->id }}"
-                                            @if (!$anioEscolarActivo) disabled @endif
-                                            title="{{ !$anioEscolarActivo ? 'Requiere Calendario Escolar activo' : 'Eliminar' }}">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </div>
+                                    @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                        <div class="action-buttons">
+                                            <button wire:click="edit({{ $datos->id }})" class="action-btn btn-edit"
+                                                data-bs-toggle="modal" data-bs-target="#modalEditar"
+                                                title="Editar">
+                                                <i class="fas fa-pen text-white"></i>
+                                            </button>
+                                            <button class="action-btn btn-delete" data-bs-toggle="modal"
+                                                data-bs-target="#confirmarEliminar{{ $datos->id }}"
+                                                title="Eliminar">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                             <div wire:ignore.self class="modal fade" id="confirmarEliminar{{ $datos->id }}"

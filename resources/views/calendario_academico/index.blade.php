@@ -22,15 +22,18 @@
                     <p class="title-subtitle">Gestión de calendarios cargados desde PDF</p>
                 </div>
             </div>
-            <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create') }}'">
-                <i class="fas fa-upload"></i> <span>Cargar nuevo calendario</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create') }}'">
+                    <i class="fas fa-upload"></i> <span>Cargar nuevo calendario</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop
 
 @section('content')
     <div class="main-container">
+        @include('partials.alerta-modo-consulta')
 
         {{-- Alertas modernas --}}
         @if (session('exito'))
