@@ -13,7 +13,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body-edit">
+            <div class="modal-body-edit" style="overflow-y: auto;">
                 <form action="{{ route('admin.configuracion_evaluacion.update', $config) }}" method="POST">
                     @csrf
                     @method('PUT')

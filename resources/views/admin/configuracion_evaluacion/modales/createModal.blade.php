@@ -10,7 +10,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body-create">
+            <div class="modal-body-create" style="overflow-y: auto;">
                 <form action="{{ route('admin.configuracion_evaluacion.store') }}" method="POST">
                     @csrf
 
