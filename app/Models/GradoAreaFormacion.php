@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class GradoAreaFormacion extends Model
@@ -11,28 +12,82 @@ class GradoAreaFormacion extends Model
 
     protected $fillable = [
         'codigo',
+        'pensum_id',
         'grado_id',
         'area_formacion_id',
+        'horas',
+        'nota_aprobatoria',
+        'escala',
+        'componente',
+        'orden',
         'status',
     ];
 
-    public function grado()
+    protected $casts = [
+        'horas'            => 'integer',
+        'nota_aprobatoria' => 'decimal:2',
+        'orden'            => 'integer',
+        'status'           => 'boolean',
+    ];
+
+    /**
+     * Plan de estudio (pensum) al que pertenece.
+     */
+    public function pensum(): BelongsTo
+    {
+        return $this->belongsTo(Pensum::class, 'pensum_id', 'id');
+    }
+
+    /**
+     * Grado o año escolar (1ero a 5to año).
+     */
+    public function grado(): BelongsTo
     {
         return $this->belongsTo(Grado::class, 'grado_id', 'id');
     }
 
-    public function area_formacion()
+    /**
+     * Área de formación o asignatura.
+     */
+    public function area_formacion(): BelongsTo
     {
         return $this->belongsTo(AreaFormacion::class, 'area_formacion_id', 'id');
+    }
+
+    /**
+     * Scope para filtrar por pensum.
+     */
+    public function scopeDelPensum($query, $pensumId)
+    {
+        return $query->where('pensum_id', $pensumId);
+    }
+
+    /**
+     * Scope para filtrar por grado.
+     */
+    public function scopeDelGrado($query, $gradoId)
+    {
+        return $query->where('grado_id', $gradoId);
+    }
+
+    /**
+     * Scope para ordenar según la secuencia oficial.
+     */
+    public function scopeOrdenados($query)
+    {
+        return $query->orderBy('orden', 'asc')->orderBy('id', 'asc');
     }
 
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->generarCodigo();
+            if (empty($model->codigo)) {
+                $model->generarCodigo();
+            }
         });
+
         static::updating(function ($model) {
-            if ($model->isDirty(['grado_id', 'area_formacion_id'])) {
+            if ($model->isDirty(['grado_id', 'area_formacion_id']) && empty($model->codigo)) {
                 $model->generarCodigo();
             }
         });
@@ -82,7 +137,7 @@ class GradoAreaFormacion extends Model
         );
         $contador = 1;
         $codigoFinal = $codigoBase;
-        while (self::where('codigo', $codigoFinal)->exists()) {
+        while (self::where('codigo', $codigoFinal)->where('id', '!=', $this->id ?? 0)->exists()) {
             $codigoFinal = $codigoBase . $contador;
             $contador++;
         }
