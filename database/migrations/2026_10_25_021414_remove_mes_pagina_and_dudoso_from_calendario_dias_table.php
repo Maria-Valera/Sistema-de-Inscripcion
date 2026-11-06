@@ -27,12 +27,18 @@ return new class extends Migration
             ->where('categoria', 'dudoso')
             ->update(['categoria' => 'laborable']);
 
-        DB::statement("ALTER TABLE calendario_dias MODIFY categoria ENUM('no_laborable', 'laborable') NOT NULL");
+                // SQLite (base de las pruebas automaticas) no entiende MODIFY
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE calendario_dias MODIFY categoria ENUM('no_laborable', 'laborable') NOT NULL");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE calendario_dias MODIFY categoria ENUM('no_laborable', 'dudoso', 'laborable') NOT NULL");
+                // SQLite (base de las pruebas automaticas) no entiende MODIFY
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE calendario_dias MODIFY categoria ENUM('no_laborable', 'dudoso', 'laborable') NOT NULL");
+        }
 
         Schema::table('calendario_dias', function (Blueprint $table) {
             $table->string('mes_pagina', 20)->nullable();
