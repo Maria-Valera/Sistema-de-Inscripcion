@@ -21,7 +21,7 @@ $entradasMaestros = array_values(array_filter([
     ['text' => 'Institución', 'icon' => 'fas fa-fw fa-school', 'submenu' => $opcionesDe('institucion')],
 ], fn ($entrada) => ! empty($entrada['submenu'])));
 if ($entradasMaestros) {
-    array_unshift($entradasMaestros, ['header' => 'PANEL DE NOTAS']);
+    array_unshift($entradasMaestros, ['header' => 'MAESTROS DE NOTAS']);
 }
 
 return [
