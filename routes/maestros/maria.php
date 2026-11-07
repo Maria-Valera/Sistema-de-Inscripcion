@@ -39,10 +39,11 @@ Route::get('configuracion_evaluacion', [ConfiguracionEvaluacionController::class
 Route::middleware(['permission:configuracion_evaluacion.gestionar'])->group(function () {
     Route::post('configuracion_evaluacion', [ConfiguracionEvaluacionController::class, 'store'])->name('configuracion_evaluacion.store');
     Route::put('configuracion_evaluacion/{configuracionEvaluacion}', [ConfiguracionEvaluacionController::class, 'update'])->name('configuracion_evaluacion.update');
-    Route::delete('configuracion_evaluacion/{configuracionEvaluacion}', [ConfiguracionEvaluacionController::class, 'destroy'])->name('configuracion_evaluacion.destroy');
-
+        Route::delete('configuracion_evaluacion/{configuracionEvaluacion}', [ConfiguracionEvaluacionController::class, 'destroy'])->name('configuracion_evaluacion.destroy');
+});
 
 // ===== M4: Lapsos del año escolar seleccionado =====
+
 Route::get('lapsos', [LapsoController::class, 'index'])
     ->middleware('permission:lapsos.ver')->name('lapsos.index');
 
@@ -73,4 +74,4 @@ Route::middleware(['permission:titulo_seriales.gestionar'])->group(function () {
     Route::put('titulo_seriales/{tituloSerial}', [TituloSerialController::class, 'update'])->name('titulo_seriales.update');
     Route::delete('titulo_seriales/{tituloSerial}', [TituloSerialController::class, 'destroy'])->name('titulo_seriales.destroy');
 });
-});
+
