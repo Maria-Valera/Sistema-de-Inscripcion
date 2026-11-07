@@ -258,14 +258,7 @@ return [
             'can'  => 'calendario.ver',
         ],
 
-        // ---------------------------
-            [
-            'text' => 'Calendario Académico',
-            'url'  => 'admin/calendario_academico',
-            'icon' => 'fas fa-calendar-alt',
-            'active' => ['admin/calendario_academico*'],
-        ],
-        // ---------------------------
+
 
         // ============================================================
         //  HORARIOS
