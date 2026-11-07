@@ -84,6 +84,19 @@ class LapsoRequest extends FormRequest
                 $validator->errors()->add('fecha_inicio', "Las fechas se cruzan con las de {$cruce->nombre} ({$cruce->fecha_inicio->format('d/m/Y')} al {$cruce->fecha_fin->format('d/m/Y')}).");
             }
 
+                        // Al editar, los cortes que ya tiene el lapso tienen que seguir dentro de sus nuevas fechas.
+            if ($lapso) {
+                $fuera = $lapso->cortes()
+                    ->where(fn ($q) => $q->where('fecha_inicio', '<', $this->input('fecha_inicio'))
+                        ->orWhere('fecha_fin', '>', $this->input('fecha_fin')))
+                    ->get();
+
+                if ($fuera->isNotEmpty()) {
+                    $lista = $fuera->map(fn ($c) => "{$c->nombre} ({$c->fecha_inicio?->format('d/m/Y')} al {$c->fecha_fin?->format('d/m/Y')})")->join(', ');
+                    $validator->errors()->add('fecha_fin', "Con esas fechas quedarían cortes fuera del lapso: {$lista}. Ajusta primero las fechas de esos cortes.");
+                }
+            }
+
             // Un lapso solo se abre si sus cortes ya suman la nota máxima (ej.: 4 cortes de 5 = 20).
             if ($this->input('estado') === EstadoLapso::Abierto->value) {
                 $notaMaxima = ConfiguracionEvaluacion::where('anio_escolar_id', $anio->id)->value('nota_maxima');
