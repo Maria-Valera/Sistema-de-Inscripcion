@@ -81,20 +81,26 @@
                     </div>
                     <div>
                         <h3 class="mb-0">Seriales{{ $estado ? ' · ' . $estado->label() . 's' : '' }}</h3>
-                        <p class="mb-0 text-muted">{{ $seriales->total() }} registros encontrados</p>
+                        <p class="mb-0 text-muted" id="total-resultados">{{ $seriales->total() }} registros encontrados</p>
                     </div>
                 </div>
-                <form method="GET" action="{{ route('admin.titulo_seriales.index') }}" class="d-flex gap-2">
+                {{-- Búsqueda en tiempo real: la tabla se actualiza mientras se escribe (ver el script de abajo) --}}
+                <form method="GET" action="{{ route('admin.titulo_seriales.index') }}" class="d-flex gap-2" id="form-buscar">
                     @if ($estado) <input type="hidden" name="estado" value="{{ $estado->value }}"> @endif
-                    <input type="text" name="buscar" value="{{ $buscar }}" class="form-control" placeholder="Buscar serial..." style="max-width: 220px">
+                    <input type="search" name="buscar" id="buscar-serial" value="{{ $buscar }}" class="form-control"
+                        placeholder="Buscar serial..." autocomplete="off" style="max-width: 220px">
                     <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
-                    @if ($buscar !== '')
-                        <a href="{{ route('admin.titulo_seriales.index', array_filter(['estado' => $estado?->value])) }}" class="btn btn-outline-secondary" title="Quitar búsqueda">
-                            <i class="fas fa-times"></i>
-                        </a>
-                    @endif
                 </form>
             </div>
+
+                        @can('titulo_seriales.gestionar')
+                @if ($anio)
+                    @include('admin.titulo_seriales.modales.createModal')
+                @endif
+            @endcan
+
+            {{-- Lo que cambia al buscar: la tabla, sus modales y la paginación --}}
+            <div id="resultados">
 
             <div class="card-body-modern">
                 <div class="table-wrapper">
@@ -154,10 +160,7 @@
                 </div>
             </div>
 
-            @can('titulo_seriales.gestionar')
-                @if ($anio)
-                    @include('admin.titulo_seriales.modales.createModal')
-                @endif
+                        @can('titulo_seriales.gestionar')
                 @foreach ($seriales as $serial)
                     @include('admin.titulo_seriales.modales.editModal')
                     @if ($serial->estado === \App\Enums\EstadoSerialTitulo::Disponible)
@@ -166,8 +169,9 @@
                 @endforeach
             @endcan
 
-            <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between">
+                        <div class="card-footer-modern d-flex flex-wrap align-items-center justify-content-between">
                 <div>{{ $seriales->links() }}</div>
+            </div>
             </div>
         </div>
     </div>
@@ -219,8 +223,9 @@
                 });
             });
 
-            // ----- Editar: mostrar u ocultar motivo y fecha de devolución según el estado -----
-            document.querySelectorAll('form.form-serial-editar').forEach((form) => {
+                        // ----- Editar: mostrar u ocultar motivo y fecha de devolución según el estado -----
+            // Es una función porque la búsqueda en tiempo real trae modales nuevos y hay que prepararlos otra vez.
+            const prepararEdicion = (raiz) => raiz.querySelectorAll('form.form-serial-editar').forEach((form) => {
                 const selector = form.querySelector('.selector-estado');
                 const ajustarCampos = () => {
                     form.querySelectorAll('[data-solo-estados]').forEach((bloque) => {
@@ -259,6 +264,45 @@
                     return e;
                 });
             });
+
+                        prepararEdicion(document);
+
+            // ----- Búsqueda en tiempo real -----
+            // Al escribir, espera 300 ms y pide la misma página con ?buscar=...; solo reemplaza la tabla, sin recargar.
+            const formBuscar = document.getElementById('form-buscar');
+            const cajaBuscar = document.getElementById('buscar-serial');
+            let espera = null;
+            let ultimaBusqueda = cajaBuscar.value.trim();
+
+            const buscar = async () => {
+                const texto = cajaBuscar.value.trim();
+                if (texto === ultimaBusqueda) return;
+                ultimaBusqueda = texto;
+
+                const parametros = new URLSearchParams(new FormData(formBuscar));
+                if (texto === '') parametros.delete('buscar');
+                const url = `${formBuscar.action}?${parametros.toString()}`.replace(/\?$/, '');
+
+                const respuesta = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!respuesta.ok) return;
+                const pagina = new DOMParser().parseFromString(await respuesta.text(), 'text/html');
+
+                document.getElementById('resultados').innerHTML = pagina.getElementById('resultados').innerHTML;
+                document.getElementById('total-resultados').textContent = pagina.getElementById('total-resultados').textContent;
+                history.replaceState(null, '', url); // la dirección queda con la búsqueda (sirve para recargar o compartir)
+                prepararEdicion(document.getElementById('resultados'));
+            };
+
+            cajaBuscar.addEventListener('input', () => {
+                clearTimeout(espera);
+                espera = setTimeout(buscar, 300);
+            });
+            formBuscar.addEventListener('submit', (evento) => {
+                evento.preventDefault();
+                clearTimeout(espera);
+                buscar();
+            });
+
         });
     </script>
 @stop
