@@ -12,7 +12,7 @@
                 </button>
             </div>
             <div class="modal-body-edit" style="overflow-y: auto;">
-                <form action="{{ route('admin.cortes.update', [$lapso, $corte]) }}" method="POST">
+                    <form action="{{ route('admin.cortes.update', [$lapso, $corte]) }}" method="POST" class="form-corte" data-corte-id="{{ $corte->id }}">
                     @csrf
                     @method('PUT')
 

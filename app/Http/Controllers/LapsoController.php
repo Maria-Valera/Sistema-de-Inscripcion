@@ -24,6 +24,8 @@ class LapsoController extends Controller
             ? Lapso::where('anio_escolar_id', $anio->id)
                 ->withCount('cortes')
                 ->withSum('cortes', 'peso_lapso')
+                ->withMin('cortes', 'fecha_inicio')
+                ->withMax('cortes', 'fecha_fin')
                 ->orderBy('numero')
                 ->get()
             : collect();

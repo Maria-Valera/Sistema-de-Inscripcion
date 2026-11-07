@@ -11,7 +11,7 @@
                 </button>
             </div>
             <div class="modal-body-create" style="overflow-y: auto;">
-                <form action="{{ route('admin.cortes.store', $lapso) }}" method="POST">
+                    <form action="{{ route('admin.cortes.store', $lapso) }}" method="POST" class="form-corte" data-corte-id="">
                     @csrf
 
                     @include('admin.cortes.modales._campos', ['corte' => null, 'idModal' => 'crearCorte', 'numeroPorDefecto' => $siguienteNumero, 'pesoPorDefecto' => $pesoSugerido])

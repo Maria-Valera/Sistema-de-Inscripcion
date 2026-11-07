@@ -11,7 +11,7 @@
                 </button>
             </div>
             <div class="modal-body-create" style="overflow-y: auto;">
-                <form action="{{ route('admin.lapsos.store') }}" method="POST">
+                                <form action="{{ route('admin.lapsos.store') }}" method="POST" class="form-lapso" data-lapso-id="" data-suma="0" data-cortes-inicio="" data-cortes-fin="">
                     @csrf
 
                     @include('admin.lapsos.modales._campos', ['lapso' => null, 'idModal' => 'crearLapso', 'numeroPorDefecto' => $siguienteNumero])

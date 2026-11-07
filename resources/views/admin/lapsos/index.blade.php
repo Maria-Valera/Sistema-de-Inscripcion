@@ -13,6 +13,8 @@
         .badge-cerrado { background: #fee2e2; color: #991b1b; }
         .suma-ok { color: #059669; font-weight: 600; }
         .suma-pendiente { color: #d97706; font-weight: 600; }
+        .suma-alerta { color: #dc2626; font-weight: 700; }
+        .form-control-modern.campo-invalido { border-color: #dc3545; }
     </style>
 @stop
 
@@ -56,6 +58,25 @@
                 Este año escolar no tiene configuración de evaluación. Créala primero en
                 <a href="{{ route('admin.configuracion_evaluacion.index') }}">Configuración de Evaluación</a>
                 para poder cargar sus lapsos.
+            </div>
+        @endif
+
+                @php
+            // Lapsos abiertos cuyos cortes no suman la nota máxima: los docentes cargarían notas sobre una base incompleta.
+            $abiertosIncompletos = $config
+                ? $lapsos->filter(fn ($l) => $l->estado === \App\Enums\EstadoLapso::Abierto
+                    && abs((float) ($l->cortes_sum_peso_lapso ?? 0) - $config->nota_maxima) > 0.001)
+                : collect();
+        @endphp
+        @if ($abiertosIncompletos->isNotEmpty())
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                <strong>Atención:</strong>
+                @foreach ($abiertosIncompletos as $l)
+                    {{ $l->nombre }} está abierto pero sus cortes suman
+                    {{ rtrim(rtrim(number_format((float) $l->cortes_sum_peso_lapso, 2, '.', ''), '0'), '.') }} de {{ $config->nota_maxima }} puntos.
+                @endforeach
+                Complétalos antes de que los docentes carguen notas.
             </div>
         @endif
 
@@ -104,7 +125,10 @@
                                     <td style="text-align: center">{{ $lapso->fecha_limite_carga->format('d/m/Y') }}</td>
                                     <td style="text-align: center">
                                         {{ $lapso->cortes_count }} cortes ·
-                                        <span class="{{ $completo ? 'suma-ok' : 'suma-pendiente' }}">
+                                                                                @php $alerta = ! $completo && $lapso->estado === \App\Enums\EstadoLapso::Abierto; @endphp
+                                        <span class="{{ $completo ? 'suma-ok' : ($alerta ? 'suma-alerta' : 'suma-pendiente') }}"
+                                            @if ($alerta) title="El lapso está abierto y sus cortes no suman la nota máxima" @endif>
+                                            @if ($alerta) <i class="fas fa-exclamation-circle"></i> @endif
                                             {{ rtrim(rtrim(number_format($suma, 2, '.', ''), '0'), '.') }} de {{ $config?->nota_maxima ?? '?' }} pts
                                         </span>
                                     </td>
@@ -164,4 +188,81 @@
 
 @section('js')
     @include('admin.lapsos._reabrir_modal')
+    @include('admin.lapsos._validacion_tiempo_real')
+
+    @if ($anio && $config)
+        @php
+            // Los demás lapsos del año, para revisar en el navegador que no se crucen ni repitan número.
+            $datosLapsos = $lapsos->map(fn ($l) => [
+                'id' => (string) $l->id,
+                'numero' => $l->numero,
+                'nombre' => $l->nombre,
+                'inicio' => $l->fecha_inicio->toDateString(),
+                'fin' => $l->fecha_fin->toDateString(),
+            ])->values();
+        @endphp
+        <script>
+            // Validación en tiempo real de los lapsos: las mismas reglas que LapsoRequest.
+            document.addEventListener('DOMContentLoaded', () => {
+                const anio = { inicio: @json($anio->inicio_anio_escolar->toDateString()), cierre: @json($anio->cierre_anio_escolar->toDateString()) };
+                const maxLapsos = {{ $config->num_lapsos }};
+                const notaMaxima = {{ (float) $config->nota_maxima }};
+                const lapsos = @json($datosLapsos);
+
+                document.querySelectorAll('form.form-lapso').forEach((form) => {
+                    ValidacionTiempoReal(form, (f) => {
+                        const valor = (nombre) => f.querySelector(`[name="${nombre}"]`).value.trim();
+                        const id = f.dataset.lapsoId;
+                        const otros = lapsos.filter((l) => l.id !== id);
+                        const e = {};
+
+                        const numero = valor('numero');
+                        if (numero === '') e.numero = 'Debes indicar el número del lapso.';
+                        else if (!/^\d+$/.test(numero)) e.numero = 'Debe ser un número entero.';
+                        else if (+numero < 1) e.numero = 'El número del lapso debe ser como mínimo 1.';
+                        else if (+numero > maxLapsos) e.numero = `El número del lapso no puede pasar del número de lapsos configurado (${maxLapsos}).`;
+                        else if (otros.some((l) => l.numero === +numero)) e.numero = 'Ya existe un lapso con ese número en este año escolar.';
+
+                        if (valor('nombre') === '') e.nombre = 'Debes indicar el nombre del lapso.';
+
+                        const inicio = valor('fecha_inicio');
+                        const fin = valor('fecha_fin');
+                        const limite = valor('fecha_limite_carga');
+
+                        if (!inicio) e.fecha_inicio = 'Debes indicar la fecha de inicio.';
+                        else if (inicio < anio.inicio) e.fecha_inicio = `El lapso no puede empezar antes del inicio del año escolar (${fechaLegible(anio.inicio)}).`;
+                        else if (inicio > anio.cierre) e.fecha_inicio = `El lapso no puede empezar después del cierre del año escolar (${fechaLegible(anio.cierre)}).`;
+
+                        if (!fin) e.fecha_fin = 'Debes indicar la fecha de fin.';
+                        else if (inicio && fin <= inicio) e.fecha_fin = 'La fecha de fin debe ser posterior a la fecha de inicio.';
+                        else if (fin > anio.cierre) e.fecha_fin = `El lapso no puede terminar después del cierre del año escolar (${fechaLegible(anio.cierre)}).`;
+
+                        if (!limite) e.fecha_limite_carga = 'Debes indicar la fecha límite de carga de notas.';
+                        else if (fin && limite < fin) e.fecha_limite_carga = 'La fecha límite de carga no puede ser anterior al fin del lapso.';
+
+                        // Cruce con otro lapso del año
+                        if (inicio && fin && !e.fecha_inicio && !e.fecha_fin) {
+                            const cruce = otros.find((l) => l.inicio <= fin && l.fin >= inicio);
+                            if (cruce) e.fecha_inicio = `Las fechas se cruzan con las de ${cruce.nombre} (${fechaLegible(cruce.inicio)} al ${fechaLegible(cruce.fin)}).`;
+                        }
+
+                        // Cortes que quedarían fuera del lapso
+                        const cortesInicio = f.dataset.cortesInicio;
+                        const cortesFin = f.dataset.cortesFin;
+                        if (!e.fecha_fin && ((cortesInicio && inicio && cortesInicio < inicio) || (cortesFin && fin && cortesFin > fin))) {
+                            e.fecha_fin = `Con esas fechas quedarían cortes fuera del lapso (sus cortes van del ${fechaLegible(cortesInicio)} al ${fechaLegible(cortesFin)}). Ajusta primero las fechas de esos cortes.`;
+                        }
+
+                        // Abrir exige que los cortes sumen la nota máxima
+                        const suma = parseFloat(f.dataset.suma || '0');
+                        if (valor('estado') === 'abierto' && Math.abs(suma - notaMaxima) > 0.001) {
+                            e.estado = `Para abrir el lapso, sus cortes deben sumar ${numeroLegible(notaMaxima)} puntos (ahora suman ${numeroLegible(suma)}).`;
+                        }
+
+                        return e;
+                    });
+                });
+            });
+        </script>
+    @endif
 @stop

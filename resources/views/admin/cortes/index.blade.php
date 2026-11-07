@@ -14,7 +14,9 @@
         .resumen-puntos { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 12px; margin-bottom: 1.25rem; font-weight: 600; }
         .resumen-ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
         .resumen-pendiente { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
-        .resumen-puntos .cifra { font-size: 1.6rem; font-weight: 800; }
+        .resumen-puntos .cifra { font-size: 1.6rem; font-weight: 800; white-space: nowrap; }
+        .resumen-alerta { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .form-control-modern.campo-invalido { border-color: #dc3545; }
     </style>
 @stop
 
@@ -56,10 +58,14 @@
 
         @if ($config)
             @php $texto = fn ($n) => rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.'); @endphp
-            <div class="resumen-puntos {{ $faltan <= 0 ? 'resumen-ok' : 'resumen-pendiente' }}">
+            @php $abiertoIncompleto = $faltan > 0 && $lapso->estado === \App\Enums\EstadoLapso::Abierto; @endphp
+            <div class="resumen-puntos {{ $faltan <= 0 ? 'resumen-ok' : ($abiertoIncompleto ? 'resumen-alerta' : 'resumen-pendiente') }}">
                 <span class="cifra">{{ $texto($suma) }} / {{ $texto($notaMaxima) }}</span>
                 <span>
-                    @if ($faltan <= 0)
+                    @if ($abiertoIncompleto)
+                        <i class="fas fa-exclamation-circle"></i> {{ $lapso->nombre }} está abierto pero sus cortes suman {{ $texto($suma) }} de {{ $texto($notaMaxima) }}:
+                        faltan {{ $texto($faltan) }} puntos. Complétalos antes de que los docentes carguen notas.
+                    @elseif ($faltan <= 0)
                         <i class="fas fa-check-circle"></i> Los cortes suman la nota máxima: el lapso ya se puede abrir.
                     @else
                         <i class="fas fa-exclamation-triangle"></i> Faltan {{ $texto($faltan) }} puntos para completar el lapso.
@@ -170,4 +176,68 @@
 
 @section('js')
     @include('admin.lapsos._reabrir_modal')
+    @include('admin.lapsos._validacion_tiempo_real')
+
+    @if ($config)
+        @php
+            // Los cortes del lapso, para revisar en el navegador números repetidos y puntos disponibles.
+            $datosCortes = $cortes->map(fn ($c) => [
+                'id' => (string) $c->id,
+                'numero' => $c->numero,
+                'peso' => (float) $c->peso_lapso,
+            ])->values();
+        @endphp
+        <script>
+            // Validación en tiempo real de los cortes: las mismas reglas que CorteRequest.
+            document.addEventListener('DOMContentLoaded', () => {
+                const lapso = { inicio: @json($lapso->fecha_inicio->toDateString()), fin: @json($lapso->fecha_fin->toDateString()) };
+                const maxCortes = {{ $config->num_cortes }};
+                const notaMaxima = {{ (float) $notaMaxima }};
+                const cortes = @json($datosCortes);
+
+                document.querySelectorAll('form.form-corte').forEach((form) => {
+                    ValidacionTiempoReal(form, (f) => {
+                        const valor = (nombre) => f.querySelector(`[name="${nombre}"]`).value.trim();
+                        const otros = cortes.filter((c) => c.id !== f.dataset.corteId);
+                        const e = {};
+
+                        const numero = valor('numero');
+                        if (numero === '') e.numero = 'Debes indicar el número del corte.';
+                        else if (!/^\d+$/.test(numero)) e.numero = 'Debe ser un número entero.';
+                        else if (+numero < 1) e.numero = 'El número del corte debe ser como mínimo 1.';
+                        else if (+numero > maxCortes) e.numero = `El número del corte no puede pasar del número de cortes configurado (${maxCortes}).`;
+                        else if (otros.some((c) => c.numero === +numero)) e.numero = 'Ya existe un corte con ese número en este lapso.';
+
+                        if (valor('nombre') === '') e.nombre = 'Debes indicar el nombre del corte.';
+
+                        // Puntos: más de 0 y sin pasar de lo que dejan libre los demás cortes
+                        const peso = valor('peso_lapso');
+                        const disponible = notaMaxima - otros.reduce((total, c) => total + c.peso, 0);
+                        if (peso === '') e.peso_lapso = 'Debes indicar cuántos puntos vale el corte.';
+                        else if (isNaN(peso)) e.peso_lapso = 'Los puntos deben ser un número.';
+                        else if (+peso <= 0) e.peso_lapso = 'El corte debe valer más de 0 puntos.';
+                        else if (+peso - disponible > 0.001) e.peso_lapso = `Los cortes de este lapso no pueden sumar más de ${numeroLegible(notaMaxima)} puntos: a este corte le quedan como máximo ${numeroLegible(disponible)}.`;
+
+                        // Fechas (opcionales) dentro del lapso
+                        const inicio = valor('fecha_inicio');
+                        const fin = valor('fecha_fin');
+                        const limite = valor('fecha_limite_carga');
+                        const rango = `(${fechaLegible(lapso.inicio)} al ${fechaLegible(lapso.fin)})`;
+
+                        if (inicio && inicio < lapso.inicio) e.fecha_inicio = `El corte no puede empezar antes que el lapso ${rango}.`;
+                        else if (inicio && inicio > lapso.fin) e.fecha_inicio = `El corte no puede empezar después de que termine el lapso ${rango}.`;
+
+                        if (fin && fin < lapso.inicio) e.fecha_fin = `El corte no puede terminar antes de que empiece el lapso ${rango}.`;
+                        else if (fin && fin > lapso.fin) e.fecha_fin = `El corte no puede terminar después del lapso ${rango}.`;
+                        else if (inicio && fin && fin < inicio) e.fecha_fin = 'La fecha de fin no puede ser anterior a la fecha de inicio.';
+
+                        if (!limite) e.fecha_limite_carga = 'Debes indicar la fecha límite de carga de notas.';
+                        else if (fin && limite < fin) e.fecha_limite_carga = 'La fecha límite de carga no puede ser anterior al fin del corte.';
+
+                        return e;
+                    });
+                });
+            });
+        </script>
+    @endif
 @stop
