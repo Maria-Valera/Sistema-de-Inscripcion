@@ -8,7 +8,7 @@
                     <i class="fas fa-pen"></i>
                 </div>
                 <h5 class="modal-title-edit" id="editarCalendarioLabel{{ $calendario->id }}">
-                    Editar calendario
+                    Editar estado del Calendario
                 </h5>
                 <button type="button" class="btn-close-modal" data-bs-dismiss="modal" aria-label="Cerrar">
                     <i class="fas fa-times"></i>

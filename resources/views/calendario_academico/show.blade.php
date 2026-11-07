@@ -88,12 +88,22 @@
         /*  Modal de detalle del día  */
         #modal-dia-cuerpo .fila-evento { padding: 12px 0; }
         #modal-dia-cuerpo .fila-evento:not(:last-child) { border-bottom: 1px solid #e9ecef; }
-        #modal-dia-cuerpo .fila-evento-texto { display: block; margin-bottom: 8px; word-break: break-word; font-size: 0.95rem; }
+        #modal-dia-cuerpo .fila-evento-texto { display: block; margin-bottom: 8px; word-break: break-word; font-size: 1.15rem; font-weight: 700; color: #1f2937; }
         #modal-dia-cuerpo .fila-evento-badges { margin-bottom: 10px; }
         #modal-dia-cuerpo .fila-evento-badges .badge { margin-right: 4px; margin-bottom: 4px; font-weight: 500; }
         #modal-dia-cuerpo .badge-light { background-color: #e9ecef; color: #495057; border: 1px solid #dee2e6; }
         #modal-dia-cuerpo .fila-evento-accion { display: flex; justify-content: flex-end; gap: 8px; }
         #modal-dia-cuerpo .fila-evento-accion .btn { min-width: 90px; }
+
+        /* Pestañas Calendario / Semana: más visibles */
+        #tabs-revision { border-bottom: 2px solid #e5e7eb; margin-bottom: 1rem; gap: 0.5rem; }
+        #tabs-revision .nav-link {
+            font-size: 1.05rem; font-weight: 600; color: #4b5563;
+            border: none; border-bottom: 3px solid transparent;
+            border-radius: 8px 8px 0 0; padding: 0.65rem 1.25rem;
+        }
+        #tabs-revision .nav-link:hover { color: #4f46e5; background-color: #eef2ff; }
+        #tabs-revision .nav-link.active { color: #4f46e5; background-color: #eef2ff; border-bottom-color: #4f46e5; }
 
         /*  Selector de colores  */
         .selector-colores {
@@ -386,8 +396,7 @@
             {{-- Pestañas --}}
             <ul class="nav nav-tabs" id="tabs-revision" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link" id="tab-calendario-link" data-toggle="tab" href="#tab-calendario" role="tab">
-                        <i class="fas fa-calendar-alt mr-1"></i> Calendario
+                    <a class="nav-link active" id="tab-calendario-link" data-toggle="tab" href="#tab-calendario" role="tab">                        <i class="fas fa-calendar-alt mr-1"></i> Calendario
                     </a>
                 </li>
                 <li class="nav-item">
@@ -1727,7 +1736,7 @@ function renderizarLista() {
                     <span class="fila-evento-texto">${evento.texto}</span>
                     <div class="fila-evento-badges">
                         <span class="badge ${evento.categoria === 'no_laborable' ? 'badge-danger' : 'badge-secondary'}">${evento.categoriaLabel}</span>
-                        ${evento.esManual ? '<span class="badge badge-light">Manual</span>' : `<span class="badge badge-light">${evento.confianzaLabel}</span>`}
+
                         ${evento.esEfemeride ? '<span class="badge badge-light">Efeméride</span>' : ''}
                     </div>
                 `;

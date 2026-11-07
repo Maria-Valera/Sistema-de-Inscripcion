@@ -143,8 +143,8 @@
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                                     <li>
                                                         <a href="{{ route('admin.calendario_academico.show', $calendario) }}"
-                                                           class="dropdown-item d-flex align-items-center text-primary">
-                                                            <i class="fas fa-eye me-2"></i> Revisar
+                                                            class="dropdown-item d-flex align-items-center text-success">
+                                                            <i class="fas fa-calendar-check me-2"></i> Revisar eventos
                                                         </a>
                                                     </li>
 
@@ -153,8 +153,7 @@
                                                             <li>
                                                                 <button type="button" class="dropdown-item d-flex align-items-center text-warning"
                                                                     data-bs-toggle="modal" data-bs-target="#editarCalendario{{ $calendario->id }}">
-                                                                    <i class="fas fa-pen me-2"></i> Editar
-                                                                </button>
+                                                                    <i class="fas fa-pen me-2"></i> Editar estado                                                                </button>
                                                             </li>
                                                             <li>
                                                                 <button type="button" class="dropdown-item d-flex align-items-center text-danger"

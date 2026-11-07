@@ -6,6 +6,11 @@
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+    <style>
+        /* Validación en tiempo real de M3 */
+        .form-control-modern.campo-invalido { border-color: #dc3545; }
+        .mensaje-error { display: block; color: #dc3545; font-size: 0.8rem; margin-top: 4px; }
+    </style>
 @stop
 
 @section('content_header')
@@ -162,4 +167,89 @@
             </div>
         </div>
     </div>
+@stop
+
+
+@section('js')
+    <script>
+        // Validación en tiempo real (en español) de los formularios de crear y editar de M3.
+        // Son las mismas reglas que ConfiguracionEvaluacionRequest: el servidor vuelve a validar al guardar.
+        document.addEventListener('DOMContentLoaded', () => {
+            const reglas = {
+                nota_minima:          { min: 0, max: 99,  nombre: 'La nota mínima' },
+                nota_maxima:          { min: 1, max: 100, nombre: 'La nota máxima' },
+                nota_aprobatoria:     { min: 1, max: 99,  nombre: 'La nota aprobatoria' },
+                num_lapsos:           { min: 2, max: 4,   nombre: 'El número de lapsos' },
+                num_cortes:           { min: 1, max: 10,  nombre: 'El número de cortes' },
+                puntos_corte:         { min: 1, max: 100, nombre: 'Los puntos por corte' },
+                momentos_quedada:     { min: 1, max: 6,   nombre: 'Los momentos para áreas quedadas' },
+                max_areas_pendientes: { min: 0, max: 5,   nombre: 'El máximo de áreas pendientes' },
+            };
+
+            function errorDe(campo, form) {
+                const regla = reglas[campo.name];
+                const texto = campo.value.trim();
+                if (texto === '') return 'Este campo es obligatorio.';
+                if (!/^-?\d+$/.test(texto)) return 'Debe ser un número entero.';
+                const valor = parseInt(texto, 10);
+                if (valor < regla.min) return `${regla.nombre} debe ser como mínimo ${regla.min}.`;
+                if (valor > regla.max) return `${regla.nombre} debe ser como máximo ${regla.max}.`;
+
+                const leer = (nombre) => parseInt(form.querySelector(`[name="${nombre}"]`).value, 10);
+                const minima = leer('nota_minima');
+                const maxima = leer('nota_maxima');
+                if (campo.name === 'nota_maxima' && !isNaN(minima) && valor <= minima) {
+                    return 'La nota máxima debe ser mayor que la nota mínima.';
+                }
+                if (campo.name === 'nota_aprobatoria') {
+                    if (!isNaN(minima) && valor <= minima) return 'La nota aprobatoria debe ser mayor que la nota mínima.';
+                    if (!isNaN(maxima) && valor >= maxima) return 'La nota aprobatoria debe ser menor que la nota máxima.';
+                }
+                return '';
+            }
+
+            function mostrar(campo, mensaje) {
+                let aviso = campo.parentElement.querySelector('.mensaje-error');
+                if (!aviso) {
+                    aviso = document.createElement('small');
+                    aviso.className = 'mensaje-error';
+                    campo.insertAdjacentElement('afterend', aviso);
+                }
+                aviso.textContent = mensaje;
+                campo.classList.toggle('campo-invalido', mensaje !== '');
+            }
+
+            function validar(form, soloTocados) {
+                let primero = null;
+                form.querySelectorAll('input[type="number"]').forEach((campo) => {
+                    if (!reglas[campo.name]) return;
+                    const mensaje = errorDe(campo, form);
+                    if (!soloTocados || campo.dataset.tocado) mostrar(campo, mensaje);
+                    if (mensaje && !primero) primero = campo;
+                });
+                return primero;
+            }
+
+            document.querySelectorAll('form').forEach((form) => {
+                if (!form.querySelector('[name="num_lapsos"]')) return; // solo los formularios de M3
+                form.setAttribute('novalidate', 'novalidate'); // sin los avisos del navegador (salen en su idioma)
+
+                form.querySelectorAll('input[type="number"]').forEach((campo) => {
+                    campo.addEventListener('input', () => {
+                        campo.dataset.tocado = '1';
+                        validar(form, true);
+                    });
+                });
+
+                form.addEventListener('submit', (evento) => {
+                    form.querySelectorAll('input[type="number"]').forEach((campo) => campo.dataset.tocado = '1');
+                    const primero = validar(form, false);
+                    if (primero) {
+                        evento.preventDefault();
+                        primero.focus();
+                    }
+                });
+            });
+        });
+    </script>
 @stop
