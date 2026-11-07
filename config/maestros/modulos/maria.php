@@ -47,4 +47,15 @@ return [
             'cortes.gestionar',
         ],
     ],
+
+    'titulo_seriales' => [
+        'nombre' => 'Seriales de Título',
+        'icono' => 'fas fa-barcode',
+        'ruta' => 'admin.titulo_seriales.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'titulo_seriales.ver',
+            'titulo_seriales.gestionar',
+        ],
+    ],
 ];

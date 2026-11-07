@@ -8,6 +8,7 @@ use App\Http\Controllers\CalendarioAcademicoController;
 use App\Http\Controllers\ConfiguracionEvaluacionController;
 use App\Http\Controllers\CorteController;
 use App\Http\Controllers\LapsoController;
+use App\Http\Controllers\TituloSerialController;
 use Illuminate\Support\Facades\Route;
 
 // ===== M1 y M2: Calendario académico y sus eventos =====
@@ -60,5 +61,16 @@ Route::middleware(['permission:cortes.gestionar'])->scopeBindings()->group(funct
     Route::post('lapsos/{lapso}/cortes', [CorteController::class, 'store'])->name('cortes.store');
     Route::put('lapsos/{lapso}/cortes/{corte}', [CorteController::class, 'update'])->name('cortes.update');
     Route::delete('lapsos/{lapso}/cortes/{corte}', [CorteController::class, 'destroy'])->name('cortes.destroy');
+});
+
+
+// ===== M6: Seriales de título que entrega la Zona Educativa =====
+Route::get('titulo_seriales', [TituloSerialController::class, 'index'])
+    ->middleware('permission:titulo_seriales.ver')->name('titulo_seriales.index');
+
+Route::middleware(['permission:titulo_seriales.gestionar'])->group(function () {
+    Route::post('titulo_seriales', [TituloSerialController::class, 'store'])->name('titulo_seriales.store');
+    Route::put('titulo_seriales/{tituloSerial}', [TituloSerialController::class, 'update'])->name('titulo_seriales.update');
+    Route::delete('titulo_seriales/{tituloSerial}', [TituloSerialController::class, 'destroy'])->name('titulo_seriales.destroy');
 });
 });

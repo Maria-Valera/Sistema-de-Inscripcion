@@ -27,6 +27,14 @@ return [
             'can' => 'lapsos.ver',
         ],
     ],
-    'notas' => [],
+        'notas' => [
+        [
+            'text' => 'Seriales de Título',
+            'url' => 'admin/titulo_seriales',
+            'icon' => 'fas fa-fw fa-barcode',
+            'active' => ['admin/titulo_seriales*'],
+            'can' => 'titulo_seriales.ver',
+        ],
+    ],
     'institucion' => [],
 ];

@@ -6,7 +6,7 @@
 <script>
     window.ValidacionTiempoReal = function (form, revisar) {
         form.setAttribute('novalidate', 'novalidate'); // sin los avisos del navegador (salen en su idioma)
-        const campos = () => form.querySelectorAll('input:not([type="hidden"]), select');
+                const campos = () => form.querySelectorAll('input:not([type="hidden"]), select, textarea');
 
         function mostrar(campo, mensaje) {
             let aviso = campo.parentElement.querySelector('.mensaje-error');
