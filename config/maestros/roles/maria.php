@@ -7,9 +7,13 @@ return [
     'Admin' => [
         'calendario_academico' => '*',
         'configuracion_evaluacion' => '*',
+        'lapsos' => '*',
+        'cortes' => '*',
     ],
     'Subdirectora' => [
         'calendario_academico' => '*',
         'configuracion_evaluacion' => '*',
+        'lapsos' => '*',
+        'cortes' => '*',
     ],
 ];

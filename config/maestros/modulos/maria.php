@@ -24,4 +24,27 @@ return [
             'configuracion_evaluacion.gestionar',
         ],
     ],
+
+
+    'lapsos' => [
+        'nombre' => 'Lapsos',
+        'icono' => 'fas fa-layer-group',
+        'ruta' => 'admin.lapsos.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'lapsos.ver',
+            'lapsos.gestionar',
+        ],
+    ],
+
+    'cortes' => [
+        'nombre' => 'Cortes',
+        'icono' => 'fas fa-cut',
+        'ruta' => 'admin.lapsos.index',
+        'grupo' => 'configuracion',
+        'permisos' => [
+            'cortes.ver',
+            'cortes.gestionar',
+        ],
+    ],
 ];
