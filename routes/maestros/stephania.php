@@ -5,6 +5,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Horario\SeleccionarAnioEscolarController;
+use App\Http\Controllers\Horario\AnioEscolarController;
 use App\Http\Controllers\InstitucionController;
 use App\Http\Controllers\EscalaLiteralController;
 use App\Http\Controllers\AutoridadFirmanteController;
@@ -36,4 +37,9 @@ Route::middleware('permission:autoridad_firmante.ver')->group(function () {
 });
 Route::middleware('permission:autoridad_firmante.gestionar')->group(function () {
     Route::resource('autoridad-firmante', AutoridadFirmanteController::class)->except(['index', 'show']);
+});
+
+// Maestro S0: Gestión de Años Escolares
+Route::middleware(['permission:anio_escolar.gestionar'])->group(function () {
+    Route::resource('anio-escolar', AnioEscolarController::class);
 });

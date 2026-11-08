@@ -4,13 +4,14 @@
 
 return [
     'anio_escolar' => [
-        'nombre' => 'Año Escolar',
+        'nombre' => 'Años Escolares',
         'icono' => 'fas fa-calendar-alt',
-        'ruta' => null,
+        'ruta' => 'admin.anio-escolar.index',
         'grupo' => 'configuracion',
         'permisos' => [
             'anio_escolar.ver',
             'anio_escolar.cambiar',
+            'anio_escolar.gestionar',
         ],
     ],
     'institucion' => [

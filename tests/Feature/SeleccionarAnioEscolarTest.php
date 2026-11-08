@@ -73,6 +73,19 @@ class SeleccionarAnioEscolarTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Seleccionar Año Escolar');
         $response->assertSee('Solo consulta');
+        // Con año activo, no se debe mostrar el botón de crear en el selector
+        $response->assertDontSee('Crear Nuevo Año Escolar');
+    }
+
+    public function test_pantalla_seleccion_muestra_boton_crear_cuando_no_hay_anio_activo(): void
+    {
+        $this->anioActivo->update(['status' => 'Inactivo']);
+
+        $response = $this->actingAs($this->adminUser)->get(route('admin.anio-escolar.seleccionar'));
+
+        $response->assertStatus(200);
+        $response->assertSee('No hay ningún año escolar activo');
+        $response->assertSee('Crear Nuevo Año Escolar');
     }
 
     public function test_guardar_anio_escolar_guarda_en_sesion_y_redirige_a_dashboard(): void
@@ -211,6 +224,15 @@ class SeleccionarAnioEscolarTest extends TestCase
             'anio_escolar_id' => $this->anioAnterior->id,
         ]);
         $responsePost->assertStatus(403);
+    }
+
+    public function test_middleware_solo_lectura_bloquea_get_create_en_anio_anterior(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioAnterior->id])
+            ->get(route('admin.alumnos.create'));
+
+        $response->assertStatus(403);
     }
 
     public function test_es_actual_retorna_true_si_no_hay_anios_activos_en_la_bd(): void

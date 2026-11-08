@@ -16,19 +16,16 @@ class SeleccionarAnioEscolarController extends Controller
     public function index()
     {
         $anios = AnioEscolar::orderBy('inicio_anio_escolar', 'desc')->get();
+        $anioActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
 
-        // Si solo hay un año, se asigna en sesión y se redirige directamente al dashboard
-        if ($anios->count() <= 1) {
-            $activo = $anios->first();
-            if ($activo) {
-                session(['anio_escolar_id' => (int) $activo->id]);
-            }
+        // Si solo hay un año registrado y además está activo, se asigna en sesión y se redirige directamente al dashboard
+        if ($anios->count() === 1 && $anioActivo && $anios->first()->id === $anioActivo->id) {
+            session(['anio_escolar_id' => (int) $anioActivo->id]);
 
             return redirect()->to(auth()->user()->rutaDashboard());
         }
 
         $anioSeleccionadoId = AnioEscolarSeleccionado::id();
-        $anioActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
 
         return view('admin.maestros.stephania.seleccionar-anio', compact('anios', 'anioSeleccionadoId', 'anioActivo'));
     }

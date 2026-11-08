@@ -6,6 +6,7 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <style>
         /* Ocultar barra lateral y resetear márgenes */
         .main-sidebar, 
@@ -163,47 +164,79 @@
                     </div>
                 @endif
 
-                <form action="{{ route('admin.anio-escolar.guardar') }}" method="POST" id="formSeleccionarAnio">
-                    @csrf
-                    <div class="form-group mb-3">
-                        <label for="anio_escolar_id" class="font-weight-bold text-secondary mb-2" style="font-size: 0.9rem;">
-                            <i class="fas fa-layer-group text-primary mr-1"></i> Período Académico
-                        </label>
-                        <select name="anio_escolar_id" id="anio_escolar_id" class="form-control form-select-styled" required>
-                            @foreach($anios as $anio)
-                                @php
-                                    $esActivo = in_array($anio->status, ['Activo', 'Extendido']);
-                                    $esSeleccionado = ($anio->id === $anioSeleccionadoId);
-                                    $inicioAnio = $anio->inicio_anio_escolar ? \Carbon\Carbon::parse($anio->inicio_anio_escolar)->format('Y') : '';
-                                    $cierreAnio = $anio->cierre_anio_escolar ? \Carbon\Carbon::parse($anio->cierre_anio_escolar)->format('Y') : '';
-                                    $etiqueta = $esActivo ? 'Activo' : 'Solo consulta';
-                                @endphp
-                                <option value="{{ $anio->id }}" 
-                                        data-activo="{{ $esActivo ? '1' : '0' }}"
-                                        {{ $esSeleccionado || ($loop->first && !$anioSeleccionadoId) ? 'selected' : '' }}>
-                                    Período {{ $inicioAnio }} - {{ $cierreAnio }} ({{ $etiqueta }})
-                                </option>
-                            @endforeach
-                        </select>
+                {{-- Aviso y botón de creación cuando no hay ningún año escolar activo --}}
+                @if(!$anioActivo)
+                    <div class="alert alert-warning py-3 px-3 mb-3 border-0 shadow-sm" style="background-color: #fffbeb; color: #b45309; border-left: 4px solid #f59e0b !important; border-radius: 8px;">
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="fas fa-exclamation-triangle mr-2 text-warning"></i>
+                            <span class="font-weight-bold">No hay ningún año escolar activo</span>
+                        </div>
+                        <p class="small mb-0">Actualmente no existe un período académico activo en el sistema. Puedes crear y activar un nuevo año escolar para comenzar a operar.</p>
                     </div>
 
-                    {{-- Banner dinámico según el período elegido --}}
-                    <div id="banner-estado" class="mb-4">
-                        <div id="estado-consulta" class="alert alert-warning py-2 px-3 small border-0 d-none" style="background-color: #fffbeb; color: #b45309; border-left: 4px solid #f59e0b !important; border-radius: 8px;">
-                            <i class="fas fa-lock mr-1.5"></i>
-                            <span>Ha seleccionado un <strong>año anterior</strong>. El sistema operará en modo de <strong>solo consulta</strong> (lectura).</span>
-                        </div>
-                        <div id="estado-activo" class="alert alert-success py-2 px-3 small border-0 d-none" style="background-color: #ecfdf5; color: #047857; border-left: 4px solid #10b981 !important; border-radius: 8px;">
-                            <i class="fas fa-check-circle mr-1.5"></i>
-                            <span>Ha seleccionado el <strong>año activo</strong>. Podrá realizar inscripciones y modificaciones normalmente.</span>
-                        </div>
-                    </div>
+                    @can('anio_escolar.gestionar')
+                        <button type="button" 
+                                class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm"
+                                style="font-size: 1rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalCrearAnioEscolar"
+                                data-toggle="modal" 
+                                data-target="#modalCrearAnioEscolar">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Crear Nuevo Año Escolar</span>
+                        </button>
+                    @endcan
+                @endif
 
-                    <button type="submit" class="btn btn-ingresar">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Ingresar al sistema</span>
-                    </button>
-                </form>
+                @if($anios->isEmpty())
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-calendar-times fa-3x mb-3 text-secondary" style="opacity: 0.6;"></i>
+                        <h6 class="font-weight-bold mb-1">Sin años escolares disponibles</h6>
+                        <p class="small text-muted mb-0">Crea el primer año escolar usando el botón superior para ingresar al sistema.</p>
+                    </div>
+                @else
+                    <form action="{{ route('admin.anio-escolar.guardar') }}" method="POST" id="formSeleccionarAnio">
+                        @csrf
+                        <div class="form-group mb-3">
+                            <label for="anio_escolar_id" class="font-weight-bold text-secondary mb-2" style="font-size: 0.9rem;">
+                                <i class="fas fa-layer-group text-primary mr-1"></i> Período Académico
+                            </label>
+                            <select name="anio_escolar_id" id="anio_escolar_id" class="form-control form-select-styled" required>
+                                @foreach($anios as $anio)
+                                    @php
+                                        $esActivo = in_array($anio->status, ['Activo', 'Extendido']);
+                                        $esSeleccionado = ($anio->id === $anioSeleccionadoId);
+                                        $inicioAnio = $anio->inicio_anio_escolar ? \Carbon\Carbon::parse($anio->inicio_anio_escolar)->format('Y') : '';
+                                        $cierreAnio = $anio->cierre_anio_escolar ? \Carbon\Carbon::parse($anio->cierre_anio_escolar)->format('Y') : '';
+                                        $etiqueta = $esActivo ? 'Activo' : 'Solo consulta';
+                                    @endphp
+                                    <option value="{{ $anio->id }}" 
+                                            data-activo="{{ $esActivo ? '1' : '0' }}"
+                                            {{ $esSeleccionado || ($loop->first && !$anioSeleccionadoId) ? 'selected' : '' }}>
+                                        Período {{ $inicioAnio }} - {{ $cierreAnio }} ({{ $etiqueta }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Banner dinámico según el período elegido --}}
+                        <div id="banner-estado" class="mb-4">
+                            <div id="estado-consulta" class="alert alert-warning py-2 px-3 small border-0 d-none" style="background-color: #fffbeb; color: #b45309; border-left: 4px solid #f59e0b !important; border-radius: 8px;">
+                                <i class="fas fa-lock mr-1.5"></i>
+                                <span>Ha seleccionado un <strong>año anterior</strong>. El sistema operará en modo de <strong>solo consulta</strong> (lectura).</span>
+                            </div>
+                            <div id="estado-activo" class="alert alert-success py-2 px-3 small border-0 d-none" style="background-color: #ecfdf5; color: #047857; border-left: 4px solid #10b981 !important; border-radius: 8px;">
+                                <i class="fas fa-check-circle mr-1.5"></i>
+                                <span>Ha seleccionado el <strong>año activo</strong>. Podrá realizar inscripciones y modificaciones normalmente.</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-ingresar">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Ingresar al sistema</span>
+                        </button>
+                    </form>
+                @endif
             </div>
 
             {{-- Pie de tarjeta con info de usuario y cierre de sesión --}}
@@ -222,6 +255,11 @@
             </div>
         </div>
     </div>
+
+    {{-- Modal para crear nuevo año escolar --}}
+    @can('anio_escolar.gestionar')
+        @include('admin.maestros.stephania.anio_escolar.modales.createModal')
+    @endcan
 @stop
 
 @section('js')
