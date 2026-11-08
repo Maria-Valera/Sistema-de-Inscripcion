@@ -19,7 +19,22 @@ return [
             'active' => ['admin/configuracion_evaluacion*'],
             'can' => 'configuracion_evaluacion.ver',
         ],
+                [
+            'text' => 'Lapsos y Cortes',
+            'url' => 'admin/lapsos',
+            'icon' => 'fas fa-fw fa-layer-group',
+            'active' => ['admin/lapsos*'],
+            'can' => 'lapsos.ver',
+        ],
     ],
-    'notas' => [],
+        'notas' => [
+        [
+            'text' => 'Seriales de Título',
+            'url' => 'admin/titulo_seriales',
+            'icon' => 'fas fa-fw fa-barcode',
+            'active' => ['admin/titulo_seriales*'],
+            'can' => 'titulo_seriales.ver',
+        ],
+    ],
     'institucion' => [],
 ];
