@@ -71,13 +71,12 @@ class DatabaseSeeder extends Seeder
             StephaniaMaestrosSeeder::class,
             MariaMaestrosSeeder::class,
             JoseMaestrosSeeder::class,
-            CalendarioPalabraClaveSeeder::class,
 
             /*InscripcionProsecucionSeeder::class,
             ProsecucionAreaSeeder::class,  */
         ]);
 
-        /* 
+        /*
         |--------------------------------------------------------------------------
         | GENERACIÓN DINÁMICA DE USUARIOS PARA REPRESENTANTES
         |--------------------------------------------------------------------------
@@ -90,7 +89,7 @@ class DatabaseSeeder extends Seeder
         if ($entorno === 'local') {
             $representantes = \App\Models\Representante::with('persona')->get();
             $passwordDev = config('seguridad.password_desarrollo', '12345678');
-            
+
             foreach ($representantes as $rep) {
                 // Verificamos que el representante tenga datos personales y una dirección de correo válida
                 if ($rep->persona && $rep->persona->email) {
@@ -105,7 +104,7 @@ class DatabaseSeeder extends Seeder
                             'email_verified_at' => now(),
                         ]
                     );
-                    
+
                     if (!$user->rol_principal || $user->rol_principal !== 'Representante') {
                         $user->update(['rol_principal' => 'Representante']);
                     }
@@ -118,7 +117,7 @@ class DatabaseSeeder extends Seeder
                     if (empty($user->email_verified_at)) {
                         $user->update(['email_verified_at' => now()]);
                     }
-                    
+
                     // Asignamos el rol 'Representante' usando syncRoles
                     $user->syncRoles(['Representante']);
                 }
