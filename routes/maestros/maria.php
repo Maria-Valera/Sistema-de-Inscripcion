@@ -3,7 +3,7 @@
 // Maestros de María Valera. Solo María edita este archivo.
 // Se carga dentro del grupo admin de routes/web.php: prefijo /admin, nombre admin.*,
 // auth, verified y forzar.cambio.password.
-
+use App\Http\Controllers\AsistenteAnioEscolarController;
 use App\Http\Controllers\CalendarioAcademicoController;
 use App\Http\Controllers\ConfiguracionEvaluacionController;
 use App\Http\Controllers\CorteController;
@@ -75,3 +75,15 @@ Route::middleware(['permission:titulo_seriales.gestionar'])->group(function () {
     Route::delete('titulo_seriales/{tituloSerial}', [TituloSerialController::class, 'destroy'])->name('titulo_seriales.destroy');
 });
 
+
+// ===== Asistente de año escolar nuevo: lapsos y calendario antes de entrar al sistema =====
+// (El paso 1, crear el año, es de Stephania. Ver AsistenteAnioEscolarPendiente.)
+Route::middleware(['permission:lapsos.gestionar'])->group(function () {
+    Route::get('asistente/lapsos', [AsistenteAnioEscolarController::class, 'lapsos'])->name('asistente.lapsos');
+    Route::post('asistente/lapsos', [AsistenteAnioEscolarController::class, 'guardarLapsos'])->name('asistente.lapsos.store');
+});
+
+Route::middleware(['permission:calendario_academico.gestionar'])->group(function () {
+    Route::get('asistente/calendario', [AsistenteAnioEscolarController::class, 'calendario'])->name('asistente.calendario');
+    Route::post('asistente/calendario', [AsistenteAnioEscolarController::class, 'guardarCalendario'])->name('asistente.calendario.store');
+});
