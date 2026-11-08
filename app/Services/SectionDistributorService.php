@@ -7,6 +7,7 @@ use App\Models\Seccion;
 use App\Models\EjecucionesPercentil;
 use App\Models\EntradasPercentil;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Services\PercentilService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,10 +25,8 @@ class SectionDistributorService
     {
         return DB::transaction(function () use ($grado) {
 
-            // Verificar Calendario Escolar activo
-            $anioEscolarActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])
-                ->orWhere('status', 'Extendido')
-                ->first();
+            // Verificar Calendario Escolar activo o seleccionado
+            $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
             if (!$anioEscolarActivo) {
                 throw new \Exception('No hay un Calendario Escolar activo');
@@ -42,13 +41,13 @@ class SectionDistributorService
                         // NUEVO INGRESO
                         $q->where(function ($qq) use ($anioEscolarActivo) {
                             $qq->whereHas('nuevoIngreso')
-                            ->where('anio_escolar_id', $anioEscolarActivo->id);
+                            ->where('inscripcions.anio_escolar_id', $anioEscolarActivo->id);
                         })
 
                         // REPITIENTE (NO promovido)
                         ->orWhere(function ($qq) use ($anioEscolarActivo) {
                             $qq->whereHas('prosecucion', function ($p) use ($anioEscolarActivo) {
-                                $p->where('anio_escolar_id', $anioEscolarActivo->id)
+                                $p->where('inscripcion_prosecucions.anio_escolar_id', $anioEscolarActivo->id)
                                 ->where('status', 'Activo')
                                 ->where('promovido', 0);
                             });

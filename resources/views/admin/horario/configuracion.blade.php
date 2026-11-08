@@ -311,12 +311,19 @@
                     </div>
 
                     {{-- Botón Guardar Todo --}}
-                    <div class="d-grid mb-4">
-                        <button type="submit" class="btn btn-primary btn-lg shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px;">
-                            <i class="fas fa-save"></i>
-                            <span>Guardar Configuración de Horario</span>
-                        </button>
-                    </div>
+                    @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                        <div class="d-grid mb-4">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px;">
+                                <i class="fas fa-save"></i>
+                                <span>Guardar Configuración de Horario</span>
+                            </button>
+                        </div>
+                    @else
+                        <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert">
+                            <i class="fas fa-info-circle"></i>
+                            <span>El año escolar seleccionado está en modo <strong>Solo consulta</strong>. No se pueden modificar los parámetros de horario.</span>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Columna Derecha: Vista Previa en Vivo (Estilo GHC) --}}

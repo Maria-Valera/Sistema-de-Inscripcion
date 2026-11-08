@@ -12,6 +12,10 @@ class StephaniaMaestrosSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $this->call([
+            InstitucionSeeder::class,
+            EscalaLiteralSeeder::class,
+            AutoridadFirmanteSeeder::class,
+        ]);
     }
 }

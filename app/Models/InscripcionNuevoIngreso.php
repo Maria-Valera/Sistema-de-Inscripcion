@@ -53,7 +53,7 @@ class InscripcionNuevoIngreso extends Model
             ])
             ->whereHas('inscripcion', function ($q) use ($anioEscolarId, $gradoId, $seccionId, $estatusInscripcion) {
                 if ($anioEscolarId) {
-                    $q->where('anio_escolar_id', $anioEscolarId);
+                    $q->where('inscripcions.anio_escolar_id', $anioEscolarId);
                 }
                 if ($gradoId) {
                     $q->where('grado_id', $gradoId);

@@ -227,8 +227,8 @@ class Alumno extends Model
     {
         $ultimaProsecucion = $this->inscripcionProsecucions()
             ->where('inscripcion_prosecucions.status', 'Activo')
-            ->orderByDesc('anio_escolar_id')
-            ->orderByDesc('created_at')
+            ->orderByDesc('inscripcion_prosecucions.anio_escolar_id')
+            ->orderByDesc('inscripcion_prosecucions.created_at')
             ->first();
 
         if (!$ultimaProsecucion) {

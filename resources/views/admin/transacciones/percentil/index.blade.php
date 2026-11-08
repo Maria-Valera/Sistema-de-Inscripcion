@@ -25,22 +25,7 @@
 
 @section('content')
     <div class="main-container">
-        @if (!$anioEscolarActivo)
-            <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-                    <div>
-                        <h5 class="alert-heading mb-1">Atención: No hay Calendario Escolar activo</h5>
-                        <p class="mb-0">
-                            Puedes ver los registros, pero <strong>no podrás crear, editar o eliminar</strong>
-                            entradasPercentil hasta que se registre un Calendario Escolar activo.
-                            <a href="{{ route('admin.anio_escolar.index') }}" class="alert-link">Ir a Calendario Escolar</a>
-                        </p>
-                    </div>
-
-                </div>
-            </div>
-        @endif
+        @include('partials.alerta-modo-consulta')
         @if (session('success') || session('error'))
             <div class="alerts-container">
                 @if (session('success'))
@@ -85,14 +70,12 @@
                     </div>
                 </div>
                 <div class="header-right d-flex align-items-center gap-2">
-                    <button @if (!$anioEscolarActivo) disabled @endif type="button" class="btn-create"
+                    <button @if (!$anioEscolar) disabled @endif type="button" class="btn-create"
                         data-bs-toggle="modal" data-bs-target="#viewModal" title="Ver Detalles">
                         <i class="fas fa-eye"></i> Resumen de secciones
                     </button>
                     @php
-                        $anioActivo = \App\Models\AnioEscolar::activos()->first();
-                        $anioExtendido = \App\Models\AnioEscolar::where('status', 'Extendido')->first();
-                        $mostrarAnio = $anioActivo ?? $anioExtendido;
+                        $mostrarAnio = \App\Support\AnioEscolarSeleccionado::modelo();
                     @endphp
 
                     @if ($mostrarAnio)

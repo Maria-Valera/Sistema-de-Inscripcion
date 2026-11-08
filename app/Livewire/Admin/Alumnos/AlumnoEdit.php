@@ -560,6 +560,7 @@ class AlumnoEdit extends Component
     public function guardar()
     {
         abort_unless(auth()->user()?->can('alumnos.gestionar'), 403, 'No tiene permiso para gestionar alumnos.');
+        abort_unless(\App\Support\AnioEscolarSeleccionado::esActual(), 403, 'No puedes editar alumnos en un año anterior.');
 
         if (!$this->localidad_id) {
 

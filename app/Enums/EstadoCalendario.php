@@ -14,8 +14,8 @@ enum EstadoCalendario : string{
     public function label(): string
     {
     return match($this){
-        self::PendienteRevision => 'Pendiente de Revision',
-        self::Confirmado => 'confirmado',
+        self::PendienteRevision => 'Pendiente de revisión',
+        self::Confirmado => 'Confirmado',
     };
 
     }

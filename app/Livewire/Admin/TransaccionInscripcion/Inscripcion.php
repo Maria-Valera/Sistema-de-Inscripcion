@@ -10,6 +10,7 @@ use App\Repositories\RepresentanteRepository;
 use App\DTOs\InscripcionData;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
+use App\Support\AnioEscolarSeleccionado;
 
 class Inscripcion extends Component
 {
@@ -710,6 +711,8 @@ class Inscripcion extends Component
 
     public function guardarTodo($datos = [])
     {
+        abort_unless(AnioEscolarSeleccionado::esActual(), 403, 'No puedes registrar inscripciones en un año anterior.');
+
         try {
             if (empty($datos)) {
                 $this->dispatch('swal', [
