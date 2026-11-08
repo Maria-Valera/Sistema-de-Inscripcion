@@ -3,6 +3,7 @@
 @section('title', 'Revisar calendario académico')
 
 @section('css')
+    @include('calendario_academico._colores_lapsos')
     <style>
         .calendario-cabecera-semana,
         .calendario-grid {
@@ -516,6 +517,16 @@
                                     <span class="calendario-leyenda-punto ml-3" style="background:#117A8B"></span> Efeméride
                                     <span class="text-muted ml-3">— Arrastra eventos de la paleta o haz clic en un día para gestionarlo</span>
                                 </div>
+                                    @if ($lapsos->isNotEmpty())
+                                       <div class="mt-2">
+                                           @foreach ($lapsos as $lapso)
+                                               <span class="leyenda-lapso">
+                                                   <span class="muestra lapso-color-{{ ($lapso->numero - 1) % 4 + 1 }}"></span>
+                                                   {{ $lapso->nombre }} ({{ $lapso->fecha_inicio->format('d/m') }} al {{ $lapso->fecha_fin->format('d/m/Y') }})
+                                               </span>
+                                           @endforeach
+                                       </div>
+                                   @endif
                             </div>
                         </div>
                     </div>
@@ -861,6 +872,9 @@
     <script>
         const CSRF_TOKEN = '{{ csrf_token() }}';
         const DIAS = {!! $diasParaCalendarioJson !!};
+        // Lapsos del año: cada uno pinta sus días con una franja de color (ver _colores_lapsos).
+        const LAPSOS = {!! $lapsosParaCalendarioJson !!};
+        const lapsoDeFecha = (fechaStr) => LAPSOS.find((l) => fechaStr >= l.inicio && fechaStr <= l.fin);
         const INICIO_ANIO_ESCOLAR = '{{ \Carbon\Carbon::parse($inicioAnioEscolar)->startOfMonth()->toDateString() }}';
         const CIERRE_ANIO_ESCOLAR = '{{ \Carbon\Carbon::parse($cierreAnioEscolar)->endOfMonth()->toDateString() }}';
         let draggedEventPayload = null;
@@ -1403,6 +1417,20 @@
             numero.className = 'numero-dia';
             numero.textContent = numeroDia;
             div.appendChild(numero);
+
+
+               // Franja del lapso, con una etiqueta el primer y el último día.
+               const lapso = lapsoDeFecha(fechaStr);
+               if (lapso) {
+                   div.classList.add('lapso-color-' + lapso.color);
+                   div.title = lapso.nombre;
+                   if (fechaStr === lapso.inicio || fechaStr === lapso.fin) {
+                       const etiqueta = document.createElement('span');
+                       etiqueta.className = 'lapso-etiqueta';
+                       etiqueta.textContent = (fechaStr === lapso.inicio ? 'Inicio ' : 'Fin ') + lapso.nombre;
+                       div.appendChild(etiqueta);
+                   }
+               }
 
             eventos.forEach((evento, index) => {
                 const chip = document.createElement('div');
