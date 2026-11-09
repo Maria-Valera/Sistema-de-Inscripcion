@@ -31,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->appendToGroup('web', \App\Http\Middleware\ForzarCambioPassword::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\SoloLecturaAnioEscolar::class);
+                // Asistente de año nuevo (María): lapsos y calendario antes de entrar al sistema
+        $middleware->appendToGroup('web', \App\Http\Middleware\AsistenteAnioEscolarPendiente::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {

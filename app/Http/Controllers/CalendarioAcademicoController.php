@@ -73,8 +73,22 @@ class CalendarioAcademicoController extends Controller
         ])
         ->values();
 
+                // Lapsos del año: se pintan como una franja de color en el calendario.
+        $lapsos = \App\Models\Lapso::where('anio_escolar_id', $calendarioAcademico->anio_escolar_id)
+            ->orderBy('numero')
+            ->get();
+
+        $lapsosParaCalendario = $lapsos->map(fn ($lapso) => [
+            'nombre' => $lapso->nombre,
+            'color' => ($lapso->numero - 1) % 4 + 1,
+            'inicio' => $lapso->fecha_inicio->toDateString(),
+            'fin' => $lapso->fecha_fin->toDateString(),
+        ])->values();
+
         return view('calendario_academico.show',[
             'calendario' =>$calendarioAcademico,
+            'lapsos' => $lapsos,
+            'lapsosParaCalendarioJson' => $lapsosParaCalendario->toJson(),
             'diasParaCalendarioJson' => $diasParaCalendario->toJson(),
             'inicioAnioEscolar' => $calendarioAcademico->anioEscolar->inicio_anio_escolar,
             'cierreAnioEscolar' => $calendarioAcademico->anioEscolar->cierre_anio_escolar,
@@ -99,6 +113,10 @@ class CalendarioAcademicoController extends Controller
             'estado' => EstadoCalendario::Confirmado,
             'fecha_confirmacion' => now(),
         ]);
+
+
+        // Los lapsos que ya tenga ese año quedan enlazados al calendario nuevo.
+        \App\Models\Lapso::where('anio_escolar_id', $calendario->anio_escolar_id)->update(['calendario_academico_id' => $calendario->id]);
 
         return redirect()
             ->route('admin.calendario_academico.show',$calendario)
