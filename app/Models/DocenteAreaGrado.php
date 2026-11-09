@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Models\Concerns\Auditable;
 
 class DocenteAreaGrado extends Model
 {
+    use Auditable;
     protected $table = 'docente_area_grados';
 
     protected $fillable = [
@@ -72,5 +74,10 @@ class DocenteAreaGrado extends Model
     public function grupoEstable()
     {
         return $this->belongsTo(GrupoEstable::class);
+    }
+    
+    public function horarios()
+    {
+        return $this->hasMany(HorarioDocenteAreaFormacion::class, 'docente_area_grado_id');
     }
 }

@@ -220,7 +220,7 @@ Breadcrumbs::for('admin.alumnos.edit', function (Trail $trail, Alumno $alumno) {
 // Historico
 Breadcrumbs::for('admin.historico.index', function (Trail $trail) {
     $trail->parent('home');
-    $trail->push('Historico', route('admin.historico.index'));
+    $trail->push('Histórico de Inscripciones Estudiantil', route('admin.historico.index'));
 });
 
 // Historial del percentil
@@ -339,6 +339,18 @@ Breadcrumbs::for('admin.horario.create', function (Trail $trail) {
     $trail->push('Nuevo Horario', route('admin.horario.create'));
 });
 
+// Horario configuración
+Breadcrumbs::for('admin.horario.configuracion', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Configuración de Bloques', route('admin.horario.configuracion'));
+});
+
+// Horario posiciones pedagógicas por materia
+Breadcrumbs::for('admin.horario.posiciones', function (Trail $trail) {
+    $trail->parent('admin.horario.index');
+    $trail->push('Posiciones por Materia', route('admin.horario.posiciones'));
+});
+
 // Inasistencia
 Breadcrumbs::for('admin.inasistencia.index', function (Trail $trail) {
     $trail->parent('home');
@@ -356,3 +368,8 @@ Breadcrumbs::for('admin.bloque_horario.index', function (Trail $trail) {
     $trail->parent('home');
     $trail->push('Gestión de Bloques Horarios', route('admin.bloque_horario.index'));
 });
+
+// ===== MAESTROS DE NOTAS Y CALENDARIO (un archivo por persona) =====
+require __DIR__ . '/breadcrumbs/stephania.php';
+require __DIR__ . '/breadcrumbs/maria.php';
+require __DIR__ . '/breadcrumbs/jose.php';

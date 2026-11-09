@@ -44,9 +44,12 @@ class AulaController extends Controller
     {
         $request->validate([
             'nombre_aula' => 'required|string|max:100',
+            'tipo_aula' => 'required|string|max:100',
         ], [
             'nombre_aula.required' => 'El nombre del aula es obligatorio.',
             'nombre_aula.max'      => 'El nombre no puede superar los 100 caracteres.',
+            'tipo_aula.required' => 'El tipo de aula es obligatorio.',
+            'tipo_aula.max'      => 'El tipo no puede superar los 100 caracteres.',
         ]);
 
         $existe = Aula::where('nombre_aula', $request->nombre_aula)
@@ -60,6 +63,7 @@ class AulaController extends Controller
 
         Aula::create([
             'nombre_aula' => $request->nombre_aula,
+            'tipo_aula' => $request->tipo_aula,
             'status'      => true,
         ]);
 
@@ -71,9 +75,12 @@ class AulaController extends Controller
     {
         $request->validate([
             'nombre_aula' => 'required|string|max:100',
+            'tipo_aula' => 'required|string|max:100',
         ], [
             'nombre_aula.required' => 'El nombre del aula es obligatorio.',
             'nombre_aula.max'      => 'El nombre no puede superar los 100 caracteres.',
+            'tipo_aula.required' => 'El tipo de aula es obligatorio.',
+            'tipo_aula.max'      => 'El tipo no puede superar los 100 caracteres.',
         ]);
 
         $existe = Aula::where('nombre_aula', $request->nombre_aula)
@@ -86,7 +93,10 @@ class AulaController extends Controller
                 ->with('error', 'Ya existe un aula activa con ese nombre.');
         }
 
-        $aula->update(['nombre_aula' => $request->nombre_aula]);
+        $aula->update([
+            'nombre_aula' => $request->nombre_aula,
+            'tipo_aula' => $request->tipo_aula,
+        ]);
 
         return redirect()->route('aulas.index')
             ->with('success', 'Aula actualizada correctamente.');

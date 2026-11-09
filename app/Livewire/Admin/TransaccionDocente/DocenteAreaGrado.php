@@ -49,6 +49,8 @@ class DocenteAreaGrado extends Component
 
     public function mount($docenteId = null)
     {
+        abort_unless(auth()->user()?->can('asignacion_docente.ver'), 403);
+
         $this->cargarGruposEstables();
 
         if ($docenteId) {
@@ -288,6 +290,8 @@ class DocenteAreaGrado extends Component
 
     public function agregarAsignacionArea()
     {
+        abort_unless(auth()->user()?->can('asignacion_docente.gestionar'), 403);
+
         $this->validate([
             'materiaId' => 'required|exists:area_estudio_realizados,id',
             'gradoAreaId' => 'required|exists:grados,id',
@@ -385,6 +389,8 @@ class DocenteAreaGrado extends Component
 
     public function agregarAsignacionGrupo()
     {
+        abort_unless(auth()->user()?->can('asignacion_docente.gestionar'), 403);
+
         $this->validate([
             'grupoEstableId' => 'required|exists:grupo_estables,id',
             'gradoGrupoId'   => 'required|exists:grados,id',
@@ -465,6 +471,8 @@ class DocenteAreaGrado extends Component
 
     public function eliminarAsignacion($asignacionId)
     {
+        abort_unless(auth()->user()?->can('asignacion_docente.gestionar'), 403);
+
         DB::beginTransaction();
         try {
             $asignacion = ModeloDocenteAreaGrado::findOrFail($asignacionId);

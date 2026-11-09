@@ -1,0 +1,26 @@
+<?php
+
+// Breadcrumbs de los maestros de Stephania. Solo Stephania edita este archivo.
+
+use Diglactic\Breadcrumbs\Breadcrumbs;
+use Diglactic\Breadcrumbs\Generator as Trail;
+
+Breadcrumbs::for('admin.institucion.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Datos del Plantel', route('admin.institucion.index'));
+});
+
+Breadcrumbs::for('admin.escala-literal.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Escala Literal', route('admin.escala-literal.index'));
+});
+
+Breadcrumbs::for('admin.autoridad-firmante.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Autoridades Firmantes', route('admin.autoridad-firmante.index'));
+});
+
+Breadcrumbs::for('admin.anio-escolar.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Años Escolares', route('admin.anio-escolar.index'));
+});

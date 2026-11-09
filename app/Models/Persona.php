@@ -6,12 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\ConvierteAMayusculas;
 use App\Traits\Capitalizar;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\Auditable;
 
 class Persona extends Model
 {
     use HasFactory;
     use ConvierteAMayusculas;
     use Capitalizar;
+    use Auditable;
     protected $table = 'personas';
     protected $fillable = [
         'primer_nombre',
@@ -98,13 +101,13 @@ class Persona extends Model
 
     public function getNombreCompletoAttribute()
     {
-        return trim(
-            $this->primer_nombre . ' ' .
-                ($this->segundo_nombre ?? '') . ' ' .
-                ($this->tercer_nombre ?? '') . ' ' .
-                $this->primer_apellido . ' ' .
-                ($this->segundo_apellido ?? '')
-        );
+        return implode(' ', array_filter([
+            $this->primer_nombre,
+            $this->segundo_nombre,
+            $this->tercer_nombre,
+            $this->primer_apellido,
+            $this->segundo_apellido,
+        ], fn($v) => filled($v)));
     }
 
     public function getEdadAttribute()
@@ -133,4 +136,9 @@ class Persona extends Model
             ($this->prefijoDos->prefijo ?? '') . ' ' . $this->telefono_dos
         );
     }
+
+    public function palabrasClaveAgregadas(): HasMany
+{
+    return $this->hasMany(CalendarioPalabraClave::class, 'agregada_por');
+}
 }

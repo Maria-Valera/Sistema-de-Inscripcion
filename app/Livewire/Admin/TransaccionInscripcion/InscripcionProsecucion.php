@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\TransaccionInscripcion;
 
 use Livewire\Component;
 use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\Inscripcion;
 use App\Models\Alumno;
 use App\Models\Grado;
@@ -92,13 +93,31 @@ class InscripcionProsecucion extends Component
 
     public function mount()
     {
+        $puedeGestionar = auth()->user()?->can('prosecucion.gestionar')
+            || auth()->user()?->can('portal_prosecucion.registrar');
+
+        if (!$puedeGestionar) {
+            \App\Models\Auditoria::registrar(
+                'acceso_denegado',
+                null,
+                null,
+                [
+                    'componente' => static::class,
+                    'metodo' => 'mount',
+                    'permiso_requerido' => request()->routeIs('portal-representante.*') ? 'portal_prosecucion.registrar' : 'prosecucion.gestionar',
+                ],
+                'Intento de acceso denegado en componente Livewire'
+            );
+            abort(403);
+        }
+
         $this->cargarDatosIniciales();
         $this->cargarGrados();
     }
 
     public function cargarDatosIniciales()
     {
-        $anioActual = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioActual = AnioEscolarSeleccionado::modelo();
 
         if (!$anioActual) {
             $this->alumnos = collect();
@@ -123,23 +142,9 @@ class InscripcionProsecucion extends Component
                 $q->where('anio_escolar_id', $anioActual->id);
             });
 
-        // En el portal del representante, limitar a sus representados por correo registrado
-        if (request()->routeIs('portal-representante.*') && auth()->check() && auth()->user()->hasRole('Representante')) {
-            $userEmail = auth()->user()->email;
-            $query->whereHas('inscripciones', function ($q) use ($userEmail, $anioAnterior) {
-                $q->where('anio_escolar_id', $anioAnterior->id)
-                  ->where(function ($sub) use ($userEmail) {
-                      $sub->whereHas('padre.persona', function ($p) use ($userEmail) {
-                          $p->where('email', $userEmail);
-                      })
-                      ->orWhereHas('madre.persona', function ($p) use ($userEmail) {
-                          $p->where('email', $userEmail);
-                      })
-                      ->orWhereHas('representanteLegal.representante.persona', function ($p) use ($userEmail) {
-                          $p->where('email', $userEmail);
-                      });
-                  });
-            });
+        // Limitar a sus representados mediante el scope del modelo para usuarios Representante
+        if (auth()->check() && auth()->user()->hasRole('Representante')) {
+            $query->visiblesParaRepresentante(auth()->user());
         }
 
         $this->alumnos = $query->with([
@@ -224,8 +229,31 @@ class InscripcionProsecucion extends Component
             return;
         }
 
+        // Si el usuario tiene rol Representante, verificar que el alumno sea efectivamente un representado
+        if (auth()->check() && auth()->user()->hasRole('Representante')) {
+            $esHijoValido = Alumno::visiblesParaRepresentante(auth()->user())
+                ->where('alumnos.id', $alumnoId)
+                ->exists();
+
+            if (!$esHijoValido) {
+                \App\Models\Auditoria::registrar(
+                    'acceso_denegado',
+                    $this->alumnoSeleccionado,
+                    null,
+                    [
+                        'componente' => static::class,
+                        'metodo' => 'seleccionarAlumno',
+                        'alumno_id' => $alumnoId,
+                        'user_id' => auth()->id(),
+                    ],
+                    'Intento de seleccionar alumno no autorizado en Prosecución'
+                );
+                abort(403, 'No tiene permisos para gestionar la inscripción de este estudiante.');
+            }
+        }
+
         // Obtener el año escolar actual
-        $anioActual = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioActual = AnioEscolarSeleccionado::modelo();
 
         if (!$anioActual) {
             session()->flash('error', 'No hay un Calendario Escolar activo.');
@@ -510,9 +538,29 @@ class InscripcionProsecucion extends Component
 
     public function finalizar()
     {
+        $puedeGestionar = auth()->user()?->can('prosecucion.gestionar')
+            || auth()->user()?->can('portal_prosecucion.registrar');
+
+        if (!$puedeGestionar) {
+            \App\Models\Auditoria::registrar(
+                'acceso_denegado',
+                null,
+                null,
+                [
+                    'componente' => static::class,
+                    'metodo' => 'finalizar',
+                    'permiso_requerido' => request()->routeIs('portal-representante.*') ? 'portal_prosecucion.registrar' : 'prosecucion.gestionar',
+                ],
+                'Intento de acceso denegado en componente Livewire'
+            );
+            abort(403);
+        }
+
+        abort_unless(AnioEscolarSeleccionado::esActual(), 403, 'No puedes registrar prosecuciones en un año anterior.');
+
         $this->validate();
 
-        $anioActual = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $anioActual = AnioEscolarSeleccionado::modelo();
         if (!$anioActual) {
             $this->addError('general', 'No hay un Calendario Escolar activo.');
             return;

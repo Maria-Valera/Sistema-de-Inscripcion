@@ -86,8 +86,6 @@ class Seccion extends Model
     {
         return $this->hasMany(EntradasPercentil::class, 'seccion_id');
     }
-<<<<<<< Updated upstream
-=======
 
     public function seccion()
     {
@@ -100,5 +98,4 @@ class Seccion extends Model
                     ->where('status', true)
                     ->with('aula');
     }
->>>>>>> Stashed changes
 }

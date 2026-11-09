@@ -10,24 +10,27 @@ class AulaSeeder extends Seeder
     public function run(): void
     {
         $aulas = [
-            'Aula 101',
-            'Aula 102',
-            'Aula 103',
-            'Aula 201',
-            'Aula 202',
-            'Aula 203',
-            'Aula 301',
-            'Aula 302',
-            'Laboratorio de Computación',
-            'Sala de Música',
-            'Biblioteca',
-            'Aula Magna',
+            ['nombre_aula' => 'Aula 101', 'tipo_aula' => 'Aula Regular'],
+            ['nombre_aula' => 'Aula 102', 'tipo_aula' => 'Aula Regular'],
+            ['nombre_aula' => 'Aula 103', 'tipo_aula' => 'Aula Regular'],
+            ['nombre_aula' => 'Aula 201', 'tipo_aula' => 'Aula Regular'],
+            ['nombre_aula' => 'Aula 202', 'tipo_aula' => 'Aula Regular'],
+            ['nombre_aula' => 'Aula 203', 'tipo_aula' => 'Aula Regular'],
+            ['nombre_aula' => 'Aula 301', 'tipo_aula' => 'Aula Regular'],
+            ['nombre_aula' => 'Aula 302', 'tipo_aula' => 'Aula Regular'],
+            ['nombre_aula' => 'Laboratorio de Computación', 'tipo_aula' => 'Laboratorio'],
+            ['nombre_aula' => 'Sala de Música', 'tipo_aula' => 'Sala Especializada'],
+            ['nombre_aula' => 'Biblioteca', 'tipo_aula' => 'Biblioteca'],
+            ['nombre_aula' => 'Aula Magna', 'tipo_aula' => 'Aula Magna'],
         ];
 
-        foreach ($aulas as $nombre) {
+        foreach ($aulas as $aula) {
             Aula::firstOrCreate(
-                ['nombre_aula' => $nombre],
-                ['status'      => true]
+                ['nombre_aula' => $aula['nombre_aula']],
+                [
+                    'tipo_aula' => $aula['tipo_aula'],
+                    'status'    => true
+                ]
             );
         }
 

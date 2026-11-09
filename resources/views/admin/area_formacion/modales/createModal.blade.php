@@ -71,6 +71,69 @@
                                 Este campo es obligatorio.
                             </div>
                         @enderror
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label for="bloques_semanales" class="form-label-modern">
+                            <i class="fas fa-clock"></i>
+                            Bloques Semanales
+                        </label>
+                        <input type="number" 
+                            name="bloques_semanales" 
+                            id="bloques_semanales" 
+                            class="form-control-modern" 
+                            placeholder="Ingrese los bloques semanales"
+                            required
+                            min="1"
+                            max="40">
+                        
+                        @error('bloques_semanales')
+                            <div class="error-message">
+                                Este campo es obligatorio.
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label for="bloques_maximos_por_dia" class="form-label-modern">
+                            <i class="fas fa-calendar-day"></i>
+                            Bloques Máximos por Día
+                        </label>
+                        <input type="number" 
+                            name="bloques_maximos_por_dia" 
+                            id="bloques_maximos_por_dia" 
+                            class="form-control-modern" 
+                            placeholder="Máximo de bloques por día (1-8)"
+                            required
+                            min="1"
+                            max="8"
+                            value="2">
+                        <small class="text-muted">Cantidad máxima de bloques de esta materia que se pueden asignar en un mismo día.</small>
+                        
+                        @error('bloques_maximos_por_dia')
+                            <div class="error-message">
+                                Este campo es obligatorio (mínimo 1, máximo 8).
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label for="aula_id" class="form-label-modern">
+                            <i class="fas fa-door-open"></i>
+                            Aula Asignada
+                        </label>
+                        <select name="aula_id" id="aula_id" class="form-control-modern" required>
+                            <option value="">Seleccione un aula</option>
+                            @foreach($aulas ?? [] as $aula)
+                                <option value="{{ $aula->id_aula }}">{{ $aula->nombre_aula }} - {{ $aula->tipo_aula }}</option>
+                            @endforeach
+                        </select>
+                        
+                        @error('aula_id')
+                            <div class="error-message">
+                                Este campo es obligatorio.
+                            </div>
+                        @enderror
                     </div> 
 
                     <div class="modal-footer-create">

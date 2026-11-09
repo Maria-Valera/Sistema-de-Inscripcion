@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\Auditable;
 
 class InscripcionProsecucion extends Model
 {
+    use Auditable;
     protected $table = 'inscripcion_prosecucions';
     protected $fillable = [
         'inscripcion_id',
@@ -132,7 +134,7 @@ class InscripcionProsecucion extends Model
                 'prosecucionAreas.gradoAreaFormacion.area_formacion',
             ])
             ->when($anioEscolarId, function ($q) use ($anioEscolarId) {
-                $q->where('anio_escolar_id', $anioEscolarId);
+                $q->where('inscripcion_prosecucions.anio_escolar_id', $anioEscolarId);
             })
             ->when($gradoId, function ($q) use ($gradoId) {
                 $q->where('grado_id', $gradoId);

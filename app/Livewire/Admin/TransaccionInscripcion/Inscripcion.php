@@ -10,6 +10,7 @@ use App\Repositories\RepresentanteRepository;
 use App\DTOs\InscripcionData;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
+use App\Support\AnioEscolarSeleccionado;
 
 class Inscripcion extends Component
 {
@@ -82,8 +83,10 @@ class Inscripcion extends Component
 
     public function mount()
     {
+        abort_unless(auth()->user()?->can('inscripciones.gestionar'), 403, 'No tiene permiso para gestionar inscripciones.');
         $this->acepta_normas_contrato = true;
         $this->discapacidadesAgregadas = [];
+
         $this->discapacidadSeleccionada = null;
         $this->documentosDisponibles = $this->documentoService->obtenerDocumentosDisponibles();
         $this->documentosEtiquetas = $this->documentoService->obtenerEtiquetas();
@@ -708,6 +711,8 @@ class Inscripcion extends Component
 
     public function guardarTodo($datos = [])
     {
+        abort_unless(AnioEscolarSeleccionado::esActual(), 403, 'No puedes registrar inscripciones en un año anterior.');
+
         try {
             if (empty($datos)) {
                 $this->dispatch('swal', [

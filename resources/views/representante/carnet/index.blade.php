@@ -273,6 +273,22 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @media (max-width: 576px) {
+            .carnet-preview-container {
+                padding: 1rem 0.5rem;
+                overflow-x: auto;
+            }
+
+            .carnet-cards {
+                gap: 1.5rem;
+            }
+
+            .badge-card {
+                width: 100%;
+                max-width: 320px;
+            }
+        }
     </style>
 @stop
 

@@ -12,12 +12,13 @@
                     <p class="title-subtitle">Administración de los municipios del sistema</p>
                 </div>
             </div>
-            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ !$anioEscolarActivo ? 'Requiere Calendario Escolar activo' : 'Nuevo Municipio' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nuevo Municipio</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
+                    title="Nuevo Municipio">
+                    <i class="fas fa-plus"></i>
+                    <span>Nuevo Municipio</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop

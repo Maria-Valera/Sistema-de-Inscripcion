@@ -19,10 +19,16 @@
                     <p class="title-subtitle">Información registrada en el sistema</p>
                 </div>
             </div>
-            <a href="{{ route('admin.docente.index') }}" class="btn-create" style="background: var(--gray-500);">
-                <i class="fas fa-arrow-left"></i>
-                <span>Volver</span>
-            </a>
+            <div class="header-actions">
+                <a href="{{ route('admin.docente.disponibilidad', $docentes->id) }}" class="btn-create" style="background: var(--blue-500);">
+                    <i class="fas fa-calendar-times"></i>
+                    <span>Disponibilidad</span>
+                </a>
+                <a href="{{ route('admin.docente.index') }}" class="btn-create" style="background: var(--gray-500);">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Volver</span>
+                </a>
+            </div>
         </div>
     </div>
 @stop
@@ -123,6 +129,11 @@
                     <div class="info-item info-wide">
                         <span class="info-label"><i class="fas fa-map-marker-alt"></i> Dirección:</span>
                         <span class="info-value">{{ $docentes->persona->direccion ?? '—' }}</span>
+                    </div>
+
+                    <div class="info-item info-wide">
+                        <span class="info-label"><i class="fas fa-map-marker-alt"></i> Horas academicas</span>
+                        <span class="info-value">{{ $docentes->horas_academicas ?? '—' }}</span>
                     </div>
                 </div>
             </div>

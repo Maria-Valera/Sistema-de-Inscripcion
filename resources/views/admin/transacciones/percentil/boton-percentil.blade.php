@@ -1,13 +1,12 @@
+@if (\App\Support\AnioEscolarSeleccionado::esActual())
 <form id="form-percentil" action="{{ route('admin.transacciones.percentil.boton-percentil') }}" method="POST"
     class="d-inline">
     @csrf
 
     <input type="hidden" name="grado_id" value="{{ $gradoId }}">
 
-    <button type="button" onclick="confirmarEnvio()" class="btn-percentil" {{ !$anioEscolarActivo ? 'disabled' : '' }}
-        title="{{ !$anioEscolarActivo
-            ? 'Debe registrar un Calendario Escolar activo'
-            : 'Ejecutar percentil y distribución de secciones' }}">
+    <button type="button" onclick="confirmarEnvio()" class="btn-percentil"
+        title="Ejecutar percentil y distribución de secciones">
         <i class="fas fa-calculator me-1"></i>
         Ejecutar Percentil
     </button>
@@ -32,3 +31,4 @@
         });
     }
 </script>
+@endif

@@ -12,12 +12,13 @@
                     <p class="title-subtitle">Administración de las localidades del sistema</p>
                 </div>
             </div>
-            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
-                @if (!$anioEscolarActivo) disabled @endif
-                title="{{ $anioEscolarActivo ? 'Crear Localidad' : 'Debe registrar un Calendario Escolar activo para realizar esta acción.' }}">
-                <i class="fas fa-plus"></i>
-                <span>Nueva Localidad</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
+                    title="Crear Localidad">
+                    <i class="fas fa-plus"></i>
+                    <span>Nueva Localidad</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop

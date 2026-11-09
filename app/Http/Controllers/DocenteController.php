@@ -16,6 +16,8 @@ use App\Models\AnioEscolar;
 use App\Models\Grado;
 use App\Models\Seccion;
 use App\Models\AreaFormacion;
+use App\Enums\Dia;
+use App\Services\ConfiguracionHorarioService;
 use Illuminate\Http\JsonResponse;
 
 class DocenteController extends Controller
@@ -25,6 +27,136 @@ class DocenteController extends Controller
         return AnioEscolar::where('status', 'Activo')
             ->orWhere('status', 'Extendido')
             ->exists();
+    }
+
+    public function apiIndex(Request $request)
+    {
+        $gradoId = $request->query('grado_id');
+        $areaFormacionId = $request->query('area_formacion_id');
+        $seccionId = $request->query('seccion_id');
+
+        $query = Docente::with(['persona', 'cargasAcademicas.areaFormacion', 'cargasAcademicas.seccion'])
+            ->where('status', true)
+            ->whereHas('persona', function ($query) {
+                $query->where('status', true);
+            });
+
+        // Filtrar por grado, área y/o sección usando CargaAcademica (con fallback a docente_area_grados)
+        if ($seccionId || $areaFormacionId || $gradoId) {
+            $query->where(function ($q) use ($gradoId, $areaFormacionId, $seccionId) {
+                // 1. Carga Académica (modelo normalizado)
+                $q->whereHas('cargasAcademicas', function ($cq) use ($gradoId, $areaFormacionId, $seccionId) {
+                    if ($seccionId) {
+                        $cq->where('seccion_id', $seccionId);
+                    }
+                    if ($areaFormacionId) {
+                        $cq->where('area_formacion_id', $areaFormacionId);
+                    }
+                    if ($gradoId) {
+                        $cq->whereHas('seccion', fn($sq) => $sq->where('grado_id', $gradoId));
+                    }
+                })
+                // 2. Fallback: docente_area_grados (histórico)
+                ->orWhereHas('detalleDocenteEstudio.docenteAreaGrados', function ($dq) use ($gradoId, $areaFormacionId, $seccionId) {
+                    $dq->where('status', true);
+                    if ($seccionId) {
+                        $dq->where('seccion_id', $seccionId);
+                    }
+                    if ($gradoId) {
+                        $dq->where('grado_id', $gradoId);
+                    }
+                    if ($areaFormacionId) {
+                        $dq->whereHas('areaEstudios', fn($aq) => $aq->where('area_formacion_id', $areaFormacionId));
+                    }
+                });
+            });
+        }
+
+        $docentes = $query->get();
+
+        // Transformar los datos para incluir nombre completo, áreas y secciones
+        $resultado = $docentes->map(function ($docente) use ($gradoId, $areaFormacionId, $seccionId) {
+            $cargas = $docente->cargasAcademicas;
+
+            if ($cargas && $cargas->isNotEmpty()) {
+                $areas = $cargas->pluck('areaFormacion.nombre_area_formacion')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                $secciones = $cargas->map(function ($c) use ($gradoId) {
+                    if (!$c->seccion) return null;
+                    if ($gradoId && $c->seccion->grado_id != $gradoId) return null;
+                    return [
+                        'id' => $c->seccion->id,
+                        'nombre' => $c->seccion->nombre,
+                        'grado_id' => $c->seccion->grado_id,
+                    ];
+                })->filter()->unique('id')->values()->all();
+            } else {
+                // Fallback histórico para registros sin cargas académicas migradas
+                $areas = DB::table('docentes as d')
+                    ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
+                    ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
+                    ->join('area_estudio_realizados as aer', 'dag.area_estudio_realizado_id', '=', 'aer.id')
+                    ->join('area_formacions as af', 'aer.area_formacion_id', '=', 'af.id')
+                    ->where('d.id', $docente->id)
+                    ->where('dde.status', true)
+                    ->where('dag.status', true)
+                    ->where('af.status', true)
+                    ->distinct()
+                    ->pluck('af.nombre_area_formacion')
+                    ->toArray();
+
+                $seccionesQuery = DB::table('docentes as d')
+                    ->join('detalle_docente_estudios as dde', 'd.id', '=', 'dde.docente_id')
+                    ->join('docente_area_grados as dag', 'dde.id', '=', 'dag.docente_estudio_realizado_id')
+                    ->join('seccions as s', 'dag.seccion_id', '=', 's.id')
+                    ->where('d.id', $docente->id)
+                    ->where('dde.status', true)
+                    ->where('dag.status', true)
+                    ->where('s.status', true);
+
+                if ($gradoId) {
+                    $seccionesQuery->where('dag.grado_id', $gradoId);
+                }
+
+                if ($areaFormacionId) {
+                    $seccionesQuery->join('area_estudio_realizados as aer', 'dag.area_estudio_realizado_id', '=', 'aer.id')
+                        ->where('aer.area_formacion_id', $areaFormacionId);
+                }
+
+                $secciones = $seccionesQuery
+                    ->select('s.id', 's.nombre')
+                    ->distinct()
+                    ->get()
+                    ->toArray();
+            }
+
+            $persona = $docente->persona;
+            $rawNombre = preg_replace('/\s+/', ' ', trim($docente->nombre_completo));
+            if (empty($rawNombre) && $persona) {
+                $rawNombre = preg_replace('/\s+/', ' ', trim(
+                    ($persona->primer_nombre ?? '') . ' ' . ($persona->primer_apellido ?? '')
+                ));
+            }
+
+            return [
+                'id' => $docente->id,
+                'nombre' => $rawNombre,
+                'nombre_completo' => $rawNombre,
+                'cedula' => $persona ? $persona->numero_documento : 'N/A',
+                'area' => !empty($areas) ? implode(', ', $areas) : 'Sin área asignada',
+                'areas' => $areas,
+                'secciones' => $secciones,
+                'horas_academicas' => (int) ($docente->horas_academicas ?? 0),
+                'persona_id' => $docente->persona_id,
+                'codigo' => $docente->codigo,
+            ];
+        });
+
+        return response()->json($resultado);
     }
 
     public function index()
@@ -125,6 +257,7 @@ class DocenteController extends Controller
             'telefono_dos' => 'nullable|string|max:20',
             'codigo' => 'nullable|numeric',
             'dependencia' => 'nullable|string|max:100',
+            'horas_academicas' => 'nullable',
         ], [
             'tipo_documento_id.required' => 'El tipo de documento es obligatorio',
             'numero_documento.required' => 'La cédula es obligatoria',
@@ -141,33 +274,83 @@ class DocenteController extends Controller
 
         try {
             $anioEscolar = $this->obtenerAnioEscolarActivo();
-            $persona = Persona::create([
-                'primer_nombre' => $request->primer_nombre,
-                'segundo_nombre' => $request->segundo_nombre,
-                'tercer_nombre' => $request->tercer_nombre,
-                'primer_apellido' => $request->primer_apellido,
-                'segundo_apellido' => $request->segundo_apellido,
-                'numero_documento' => $request->numero_documento,
-                'fecha_nacimiento' => $request->fecha_nacimiento,
-                'direccion' => $request->direccion,
-                'email' => $request->correo,
-                'telefono' => $request->primer_telefono,
-                'telefono_dos' => $request->telefono_dos,
-                'prefijo_id' => $request->prefijo_id,
-                'prefijo_dos_id' => $request->prefijo_dos_id,
-                'tipo_documento_id' => $request->tipo_documento_id,
-                'genero_id' => $request->genero,
-                'status' => true,
-            ]);
 
-            $docente = Docente::create([
-                'anio_escolar_id' => $anioEscolar->id,
-                'codigo' => $request->codigo,
-                'dependencia' => $request->dependencia,
-                'persona_id' => $persona->id,
-                'status' => true,
-            ]);
+            // Verificar si la Persona ya existe en el sistema (por ejemplo, es Representante o Alumno)
+            $persona = Persona::where('tipo_documento_id', $request->tipo_documento_id)
+                ->where('numero_documento', $request->numero_documento)
+                ->first();
 
+            if (!$persona) {
+                // Fallback por si la cédula coincide aunque varíe el tipo_documento_id
+                $persona = Persona::where('numero_documento', $request->numero_documento)->first();
+            }
+
+            if ($persona) {
+                // Validar que no exista ya un registro en docentes para ese persona_id
+                $docenteExistente = Docente::where('persona_id', $persona->id)
+                    ->where('status', '!=', 0)
+                    ->first();
+
+                if ($docenteExistente) {
+                    DB::rollBack();
+                    return back()
+                        ->withInput()
+                        ->with('error', 'Este docente ya está registrado.');
+                }
+
+                // Si existe un registro eliminado de docente para esta persona, se puede reactivar o actualizar
+                $docenteInactivo = Docente::where('persona_id', $persona->id)
+                    ->where('status', 0)
+                    ->first();
+
+                if ($docenteInactivo) {
+                    $docenteInactivo->update([
+                        'anio_escolar_id'  => $anioEscolar->id,
+                        'codigo'           => $request->codigo,
+                        'dependencia'      => $request->dependencia,
+                        'horas_academicas' => $request->horas_academicas,
+                        'status'           => true,
+                    ]);
+                    $docente = $docenteInactivo;
+                } else {
+                    $docente = Docente::create([
+                        'anio_escolar_id'  => $anioEscolar->id,
+                        'codigo'           => $request->codigo,
+                        'dependencia'      => $request->dependencia,
+                        'persona_id'       => $persona->id,
+                        'horas_academicas' => $request->horas_academicas,
+                        'status'           => true,
+                    ]);
+                }
+            } else {
+                $persona = Persona::create([
+                    'primer_nombre'     => $request->primer_nombre,
+                    'segundo_nombre'    => $request->segundo_nombre,
+                    'tercer_nombre'     => $request->tercer_nombre,
+                    'primer_apellido'   => $request->primer_apellido,
+                    'segundo_apellido'  => $request->segundo_apellido,
+                    'numero_documento'  => $request->numero_documento,
+                    'fecha_nacimiento'  => $request->fecha_nacimiento,
+                    'direccion'         => $request->direccion,
+                    'email'             => $request->correo,
+                    'telefono'          => $request->primer_telefono,
+                    'telefono_dos'      => $request->telefono_dos,
+                    'prefijo_id'        => $request->prefijo_id,
+                    'prefijo_dos_id'    => $request->prefijo_dos_id,
+                    'tipo_documento_id' => $request->tipo_documento_id,
+                    'genero_id'         => $request->genero,
+                    'status'            => true,
+                ]);
+
+                $docente = Docente::create([
+                    'anio_escolar_id'  => $anioEscolar->id,
+                    'codigo'           => $request->codigo,
+                    'dependencia'      => $request->dependencia,
+                    'persona_id'       => $persona->id,
+                    'horas_academicas' => $request->horas_academicas,
+                    'status'           => true,
+                ]);
+            }
 
             DB::commit();
 
@@ -220,6 +403,7 @@ class DocenteController extends Controller
                 'telefono_dos' => 'nullable|string|max:20',
                 'codigo' => 'nullable|numeric',
                 'dependencia' => 'nullable|string|max:100',
+                'horas_academicas' => 'nullable',
             ],
             [
                 'tipo_documento_id.required' => 'El tipo de documento es obligatorio',
@@ -260,6 +444,7 @@ class DocenteController extends Controller
                 'anio_escolar_id' => $anioEscolar->id,
                 'codigo' => $request->codigo,
                 'dependencia' => $request->dependencia,
+                'horas_academicas' => $request->horas_academicas,
             ]);
 
             DB::commit();
@@ -285,7 +470,10 @@ class DocenteController extends Controller
             'detalleEstudios' => function ($q) {
                 $q->where('status', true);
             },
-            'detalleEstudios.estudiosRealizado'
+            'detalleEstudios.estudiosRealizado',
+            'noDisponibilidades.diaSemana',
+            'noDisponibilidades.bloqueHorario',
+            'noDisponibilidades.anioEscolar'
         ])
             ->findOrFail($id);
 
@@ -307,6 +495,47 @@ class DocenteController extends Controller
         $docenteEstudios = DetalleDocenteEstudio::all();
 
         return view('admin.docente.estudios', compact('docentes', 'estudios', 'docenteEstudios'));
+    }
+
+    public function disponibilidad($id, ConfiguracionHorarioService $configService)
+    {
+        $docente = Docente::with([
+            'persona.tipoDocumento',
+            'noDisponibilidades.anioEscolar'
+        ])->findOrFail($id);
+
+        $aniosEscolares = AnioEscolar::activos()->get();
+        $anioEscolarActivo = AnioEscolar::activos()->first();
+
+        $config = $anioEscolarActivo ? $configService->obtenerConfiguracion($anioEscolarActivo->id) : null;
+        $numeroBloques = $config ? (int)$config->numero_bloques : 7;
+        $bloquesCalculados = $config ? $configService->calcularHorasBloques($config) : collect();
+
+        $diasSemana = collect(Dia::cases())->map(fn(Dia $d) => (object)[
+            'id' => $d->value,
+            'dia' => $d->value,
+            'nombre_dia' => $d->label(),
+            'nombre' => $d->label()
+        ]);
+
+        $bloquesHorario = collect(range(1, $numeroBloques))->map(function($b) use ($bloquesCalculados) {
+            $info = $bloquesCalculados->get($b, ['inicio' => '07:00', 'fin' => '07:45']);
+            return (object)[
+                'id' => $b,
+                'bloque' => $b,
+                'hora_inicio' => $info['inicio'],
+                'hora_fin' => $info['fin']
+            ];
+        });
+
+        return view('admin.docente.disponibilidad', compact(
+            'docente',
+            'diasSemana',
+            'bloquesHorario',
+            'aniosEscolares',
+            'anioEscolarActivo',
+            'numeroBloques'
+        ));
     }
 
     public function destroy($id)
@@ -716,13 +945,41 @@ class DocenteController extends Controller
 
             $personaExistente = $query->first();
 
+            // 1. Si la persona existe Y ya es docente activo:
             if ($personaExistente) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Esta cédula ya está registrada en el sistema',
+                    'message' => 'Este docente ya está registrado en el sistema',
                 ], 409);
             }
 
+            // 2. Si la persona existe en el sistema (por ejemplo, es Representante o Alumno) pero NO es docente activo:
+            $personaGeneral = Persona::where('numero_documento', $numero_documento)->first();
+            if ($personaGeneral) {
+                return response()->json([
+                    'status' => 'persona_existente',
+                    'message' => 'Persona encontrada en el sistema. Los datos personales han sido bloqueados.',
+                    'persona' => [
+                        'id' => $personaGeneral->id,
+                        'primer_nombre' => $personaGeneral->primer_nombre,
+                        'segundo_nombre' => $personaGeneral->segundo_nombre,
+                        'tercer_nombre' => $personaGeneral->tercer_nombre,
+                        'primer_apellido' => $personaGeneral->primer_apellido,
+                        'segundo_apellido' => $personaGeneral->segundo_apellido,
+                        'fecha_nacimiento' => $personaGeneral->fecha_nacimiento ? substr($personaGeneral->fecha_nacimiento, 0, 10) : '',
+                        'genero_id' => $personaGeneral->genero_id,
+                        'tipo_documento_id' => $personaGeneral->tipo_documento_id,
+                        'email' => $personaGeneral->email,
+                        'direccion' => $personaGeneral->direccion,
+                        'telefono' => $personaGeneral->telefono,
+                        'telefono_dos' => $personaGeneral->telefono_dos,
+                        'prefijo_id' => $personaGeneral->prefijo_id,
+                        'prefijo_dos_id' => $personaGeneral->prefijo_dos_id,
+                    ]
+                ], 200);
+            }
+
+            // 3. Si la persona pertenecía a un docente eliminado:
             $registroEliminado = Persona::where('numero_documento', $numero_documento)
                 ->whereHas('docente', function ($q) {
                     $q->where('status', 0);

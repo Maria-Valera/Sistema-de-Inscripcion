@@ -28,10 +28,12 @@
                     <p class="title-subtitle">Administración de periodos académicos</p>
                 </div>
             </div>
-            <button type="button" id="btnNuevoAnioEscolar" class="btn-create">
-                <i class="fas fa-plus"></i>
-                <span>Nuevo Calendario Escolar</span>
-            </button>
+            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                <button type="button" id="btnNuevoAnioEscolar" class="btn-create">
+                    <i class="fas fa-plus"></i>
+                    <span>Nuevo Calendario Escolar</span>
+                </button>
+            @endif
         </div>
     </div>
 @stop
@@ -40,16 +42,28 @@
     @include('admin.anio_escolar.modales.createModal')
 
     @php
-        $anioEscolarActivo = \App\Models\AnioEscolar::activos()->exists();
+        $anioEscolarExiste = \App\Support\AnioEscolarSeleccionado::modelo() !== null || \App\Models\AnioEscolar::exists();
     @endphp
-    @if (!$anioEscolarActivo)
+    @if (!$anioEscolarExiste)
         <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
             <div class="d-flex align-items-center">
                 <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
                 <div>
-                    <h5 class="alert-heading mb-1">No hay Calendario Escolar activo</h5>
-                    <p class="mb-0">Debe registrar un Calendario Escolar activo para poder utilizar los demás módulos del
+                    <h5 class="alert-heading mb-1">No hay Calendario Escolar registrado</h5>
+                    <p class="mb-0">Debe registrar un Calendario Escolar para poder utilizar los demás módulos del
                         sistema.</p>
+                </div>
+            </div>
+        </div>
+    @elseif (!\App\Support\AnioEscolarSeleccionado::esActual())
+        <div class="alert alert-info alert-dismissible fade show mb-4 shadow-sm" role="alert" style="background-color: #f0f9ff; border-left: 4px solid #0284c7; color: #0c4a6e;">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle fa-2x me-3 text-info"></i>
+                <div>
+                    <h5 class="alert-heading mb-1 fw-bold text-info">Modo Solo Consulta</h5>
+                    <p class="mb-0">
+                        Estás viendo un año escolar anterior en modo Solo Consulta. No puedes crear, editar ni eliminar registros.
+                    </p>
                 </div>
             </div>
         </div>
@@ -119,7 +133,7 @@
 
         <div class="card-body-modern">
             <div class="table-wrapper">
-                <table class="table-modern overflow-hidden hidden">
+                <table class="table-modern overflow-hidden ">
                     <thead>
                         <tr style="text-align: center">
                             <th width="60">#</th>
@@ -188,7 +202,7 @@
                                                 </li>
 
                                                 <li>
-                                                    @if (in_array($datos->status, ['Activo', 'Extendido']))
+                                                    @if (\App\Support\AnioEscolarSeleccionado::esActual() && in_array($datos->status, ['Activo', 'Extendido']))
                                                         <button class="dropdown-item d-flex align-items-center text-warning"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#viewModalExtender{{ $datos->id }}"
@@ -200,11 +214,11 @@
                                                 </li>
 
                                                 <li>
-                                                    @if (in_array($datos->status, ['Activo', 'Extendido']))
+                                                    @if (\App\Support\AnioEscolarSeleccionado::esActual() && in_array($datos->status, ['Activo', 'Extendido']))
                                                         <button class="dropdown-item d-flex align-items-center text-danger"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#deleteModal{{ $datos->id }}"
-                                                            @disabled(!$anioEscolarActivo) title="Inactivar Calendario Escolar">
+                                                            title="Inactivar Calendario Escolar">
                                                             <i class="fas fa-ban me-2"></i>
                                                             Inactivar
                                                         </button>
