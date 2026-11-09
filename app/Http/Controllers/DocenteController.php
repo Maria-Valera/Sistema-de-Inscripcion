@@ -12,7 +12,7 @@ use App\Models\PrefijoTelefono;
 use App\Models\TipoDocumento;
 use App\Models\EstudiosRealizado;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\Grado;
 use App\Models\Seccion;
 use App\Models\AreaFormacion;
@@ -22,13 +22,6 @@ use Illuminate\Http\JsonResponse;
 
 class DocenteController extends Controller
 {
-    private function verificarAnioEscolar()
-    {
-        return AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->exists();
-    }
-
     public function apiIndex(Request $request)
     {
         $gradoId = $request->query('grado_id');
@@ -204,7 +197,7 @@ class DocenteController extends Controller
 
         $docentes = $docentesQuery->buscar($buscar)->paginate(10);
 
-        $anioEscolarActivo = $this->verificarAnioEscolar();
+        $anioEscolarActivo = AnioEscolarSeleccionado::esActual();
 
         return view('admin.docente.index', compact('docentes', 'anioEscolarActivo', 'personas', 'buscar', 'grados', 'secciones', 'materias'));
     }
@@ -220,19 +213,6 @@ class DocenteController extends Controller
         return view('admin.docente.create', compact('personas', 'prefijos', 'generos', 'tipoDocumentos', 'docentes'));
     }
 
-    public function obtenerAnioEscolarActivo()
-    {
-        $anioEscolar = AnioEscolar::activos()
-            ->whereIn('status',[ 'Activo', 'Extendido'])
-            ->first();
-
-        if (!$anioEscolar) {
-            throw new \Exception('No hay un Calendario Escolar activo. Por favor, contacte al administrador.');
-        }
-
-        return $anioEscolar;
-    }
- 
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -270,11 +250,14 @@ class DocenteController extends Controller
             'correo.email' => 'El correo electrónico no tiene un formato válido',
         ]);
 
+        $anioEscolar = AnioEscolarSeleccionado::modelo();
+        if (!$anioEscolar) {
+            return redirect()->back()->withInput()->with('error', 'No hay un año escolar seleccionado.');
+        }
+
         DB::beginTransaction();
 
         try {
-            $anioEscolar = $this->obtenerAnioEscolarActivo();
-
             // Verificar si la Persona ya existe en el sistema (por ejemplo, es Representante o Alumno)
             $persona = Persona::where('tipo_documento_id', $request->tipo_documento_id)
                 ->where('numero_documento', $request->numero_documento)
@@ -418,10 +401,14 @@ class DocenteController extends Controller
             ]
         );
 
+        $anioEscolar = AnioEscolarSeleccionado::modelo();
+        if (!$anioEscolar) {
+            return redirect()->back()->withInput()->with('error', 'No hay un año escolar seleccionado.');
+        }
+
         DB::beginTransaction();
 
         try {
-            $anioEscolar = $this->obtenerAnioEscolarActivo();
             $persona->update([
                 'primer_nombre' => $request->primer_nombre,
                 'segundo_nombre' => $request->segundo_nombre,
@@ -504,12 +491,17 @@ class DocenteController extends Controller
             'noDisponibilidades.anioEscolar'
         ])->findOrFail($id);
 
-        $aniosEscolares = AnioEscolar::activos()->get();
-        $anioEscolarActivo = AnioEscolar::activos()->first();
+        $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
+        if (!$anioEscolarActivo) {
+            return redirect()->route('admin.docente.index')
+                ->with('error', 'Debe existir un año escolar seleccionado para ver la disponibilidad.');
+        }
 
-        $config = $anioEscolarActivo ? $configService->obtenerConfiguracion($anioEscolarActivo->id) : null;
+        $aniosEscolares = collect([$anioEscolarActivo]);
+
+        $config = $configService->actual($anioEscolarActivo->id);
         $numeroBloques = $config ? (int)$config->numero_bloques : 7;
-        $bloquesCalculados = $config ? $configService->calcularHorasBloques($config) : collect();
+        $bloquesCalculados = $config ? $configService->bloques($config) : collect();
 
         $diasSemana = collect(Dia::cases())->map(fn(Dia $d) => (object)[
             'id' => $d->value,

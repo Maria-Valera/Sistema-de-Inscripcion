@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Dia;
-use App\Models\AnioEscolar;
 use App\Support\AnioEscolarSeleccionado;
 use App\Models\AreaFormacion;
 use App\Models\AreaFormacionPosicion;

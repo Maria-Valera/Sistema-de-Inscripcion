@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\ConfiguracionHorario;
 use App\Services\ConfiguracionHorarioService;
 
@@ -11,9 +11,9 @@ class BloqueHorarioController extends Controller
 {
     public function apiIndex()
     {
-        $anio = AnioEscolar::activos()->first();
-        if ($anio) {
-            $config = ConfiguracionHorario::where('anio_escolar_id', $anio->id)->first();
+        $anioId = AnioEscolarSeleccionado::id();
+        if ($anioId) {
+            $config = ConfiguracionHorario::where('anio_escolar_id', $anioId)->first();
             if ($config) {
                 $bloquesService = app(ConfiguracionHorarioService::class);
                 $calculados = $bloquesService->bloques($config);

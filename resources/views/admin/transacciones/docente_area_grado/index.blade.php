@@ -111,12 +111,6 @@
                     </button>
 
                     <!-- Calendario Escolar -->
-                    @php
-                        $anioActivo = \App\Models\AnioEscolar::activos()->first();
-                        $anioExtendido = \App\Models\AnioEscolar::where('status', 'Extendido')->first();
-                        $mostrarAnio = $anioActivo ?? $anioExtendido;
-                    @endphp
-
                     @if ($mostrarAnio)
                         <div class="d-flex align-items-center bg-light rounded px-2 py-1 border">
                             <span class="badge bg-primary me-2" style="font-size: 0.7rem;">

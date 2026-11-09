@@ -3,26 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\AnioEscolar;
 use App\Models\seccion_aula;
 use App\Models\Seccion;
 use App\Models\Aula;
+use App\Support\AnioEscolarSeleccionado;
 
 class Seccion_AulaController extends Controller
 {
-    private function verificarAnioEscolar()
-    {
-        return AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->exists();
-    }
-
     public function index()
     {
         $seccionAulas = seccion_aula::with(['seccion.grado', 'aula'])
             ->orderBy('id', 'desc')
             ->paginate(10);
-        $anioEscolarActivo = $this->verificarAnioEscolar();
+        $anioEscolarActivo = AnioEscolarSeleccionado::esActual();
         return view('admin.asignar_seccion_aula.index', compact('seccionAulas', 'anioEscolarActivo'));
     }
 

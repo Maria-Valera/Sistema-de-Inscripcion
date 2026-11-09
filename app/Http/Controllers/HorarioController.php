@@ -9,7 +9,6 @@ use App\Models\Seccion;
 use App\Models\Docente;
 use App\Models\HorarioAsignacion;
 use App\Models\Aula;
-use App\Models\AnioEscolar;
 use App\Support\AnioEscolarSeleccionado;
 use App\Models\ConfiguracionHorario;
 use App\Models\BloqueReservado;
