@@ -60,18 +60,23 @@
             @php $texto = fn ($n) => rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.'); @endphp
             @php $abiertoIncompleto = $faltan > 0 && $lapso->estado === \App\Enums\EstadoLapso::Abierto; @endphp
             <div class="resumen-puntos {{ $faltan <= 0 ? 'resumen-ok' : ($abiertoIncompleto ? 'resumen-alerta' : 'resumen-pendiente') }}">
-                <span class="cifra">{{ $texto($suma) }} / {{ $texto($notaMaxima) }}</span>
+                <span class="cifra">{{ $texto($suma) }} / {{ $texto($totalLapso) }}</span>
                 <span>
                     @if ($abiertoIncompleto)
-                        <i class="fas fa-exclamation-circle"></i> {{ $lapso->nombre }} está abierto pero sus cortes suman {{ $texto($suma) }} de {{ $texto($notaMaxima) }}:
+                        <i class="fas fa-exclamation-circle"></i> {{ $lapso->nombre }} está abierto pero sus cortes suman {{ $texto($suma) }} de {{ $texto($totalLapso) }}:
                         faltan {{ $texto($faltan) }} puntos. Complétalos antes de que los docentes carguen notas.
                     @elseif ($faltan <= 0)
-                        <i class="fas fa-check-circle"></i> Los cortes suman la nota máxima: el lapso ya se puede abrir.
+                        <i class="fas fa-check-circle"></i> Los cortes suman los {{ $texto($totalLapso) }} puntos del lapso: ya se puede abrir.
                     @else
                         <i class="fas fa-exclamation-triangle"></i> Faltan {{ $texto($faltan) }} puntos para completar el lapso.
                     @endif
                 </span>
-            </div>
+                        </div>
+            <p class="text-muted mb-3" style="margin-top: -0.5rem">
+                <i class="fas fa-calculator me-1"></i>
+                Nota del lapso = suma de los cortes ÷ {{ $config->num_cortes }}
+                (ej.: {{ $texto($totalLapso) }} ÷ {{ $config->num_cortes }} = {{ $texto($totalLapso / max(1, $config->num_cortes)) }}).
+            </p>
         @else
             <div class="alert alert-warning">
                 Este año escolar no tiene configuración de evaluación. Créala primero en
@@ -151,7 +156,7 @@
                                         <div class="empty-state">
                                             <div class="empty-icon"><i class="fas fa-cut"></i></div>
                                             <h4>Este lapso no tiene cortes</h4>
-                                            <p>Crea sus cortes hasta completar la nota máxima.</p>
+                                            <p>Crea sus cortes hasta completar los puntos del lapso.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -192,7 +197,7 @@
             document.addEventListener('DOMContentLoaded', () => {
                 const lapso = { inicio: @json($lapso->fecha_inicio->toDateString()), fin: @json($lapso->fecha_fin->toDateString()) };
                 const maxCortes = {{ $config->num_cortes }};
-                const notaMaxima = {{ (float) $notaMaxima }};
+                const totalLapso = {{ (float) $totalLapso }};
                 const cortes = @json($datosCortes);
 
                 document.querySelectorAll('form.form-corte').forEach((form) => {
@@ -212,11 +217,11 @@
 
                         // Puntos: más de 0 y sin pasar de lo que dejan libre los demás cortes
                         const peso = valor('peso_lapso');
-                        const disponible = notaMaxima - otros.reduce((total, c) => total + c.peso, 0);
+                        const disponible = totalLapso - otros.reduce((total, c) => total + c.peso, 0);
                         if (peso === '') e.peso_lapso = 'Debes indicar cuántos puntos vale el corte.';
                         else if (isNaN(peso)) e.peso_lapso = 'Los puntos deben ser un número.';
                         else if (+peso <= 0) e.peso_lapso = 'El corte debe valer más de 0 puntos.';
-                        else if (+peso - disponible > 0.001) e.peso_lapso = `Los cortes de este lapso no pueden sumar más de ${numeroLegible(notaMaxima)} puntos: a este corte le quedan como máximo ${numeroLegible(disponible)}.`;
+                        else if (+peso - disponible > 0.001) e.peso_lapso = `Los cortes de este lapso no pueden sumar más de ${numeroLegible(totalLapso)} puntos: a este corte le quedan como máximo ${numeroLegible(disponible)}.`;
 
                         // Fechas (opcionales) dentro del lapso
                         const inicio = valor('fecha_inicio');

@@ -87,10 +87,10 @@ class MariaMaestrosSeeder extends Seeder
                 ]
             );
 
-                        // M5. Cortes: el lapso se divide en partes iguales; cada corte vale 20 / num_cortes puntos
+            // M5. Cortes: el lapso se divide en partes iguales; cada corte vale los puntos por corte (20), en total 4 × 20 = 80
             $diasLapso = $lapso->fecha_inicio->diffInDays($lapso->fecha_fin) + 1;
             $diasPorCorte = intdiv($diasLapso, $config->num_cortes);
-            $peso = round($config->nota_maxima / $config->num_cortes, 2);
+            $peso = $config->puntos_corte;
 
             for ($c = 1; $c <= $config->num_cortes; $c++) {
                 $inicioCorte = $lapso->fecha_inicio->copy()->addDays(($c - 1) * $diasPorCorte);

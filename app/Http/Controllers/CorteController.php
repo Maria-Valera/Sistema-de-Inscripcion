@@ -20,19 +20,20 @@ class CorteController extends Controller
         $config = ConfiguracionEvaluacion::where('anio_escolar_id', $lapso->anio_escolar_id)->first();
         $cortes = $lapso->cortes()->get();
 
-        $notaMaxima = (float) ($config?->nota_maxima ?? 0);
+        // Total del lapso: cortes × puntos por corte (4 × 20 = 80).
+        $totalLapso = $config?->puntosPorLapso() ?? 0;
         $suma = (float) $cortes->sum('peso_lapso');
-        $faltan = round($notaMaxima - $suma, 2);
+        $faltan = round($totalLapso - $suma, 2);
 
         $puedeCrear = $config && $cortes->count() < $config->num_cortes && $faltan > 0;
         $siguienteNumero = $config
             ? collect(range(1, $config->num_cortes))->diff($cortes->pluck('numero'))->first()
             : null;
 
-        // Puntos que se proponen al crear: lo que toca por corte (20 / 4 = 5), sin pasar de lo que falta.
-        $pesoSugerido = $config ? min(round($notaMaxima / $config->num_cortes, 2), $faltan) : null;
+        // Puntos que se proponen al crear: los puntos por corte de la configuración (20), sin pasar de lo que falta.
+        $pesoSugerido = $config ? min((float) $config->puntos_corte, $faltan) : null;
 
-        return view('admin.cortes.index', compact('lapso', 'config', 'cortes', 'notaMaxima', 'suma', 'faltan', 'puedeCrear', 'siguienteNumero', 'pesoSugerido'));
+        return view('admin.cortes.index', compact('lapso', 'config', 'cortes', 'totalLapso', 'suma', 'faltan', 'puedeCrear', 'siguienteNumero', 'pesoSugerido'));
     }
 
     public function store(CorteRequest $request, Lapso $lapso): RedirectResponse

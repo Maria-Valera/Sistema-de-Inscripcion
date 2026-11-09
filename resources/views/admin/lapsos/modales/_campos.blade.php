@@ -58,5 +58,5 @@
         @endforeach
     </select>
     @if ($error('estado')) <small class="mensaje-error">{{ $error('estado') }}</small> @endif
-    <small class="text-muted d-block mt-1">Para abrir un lapso, sus cortes deben sumar la nota máxima.</small>
+    <small class="text-muted d-block mt-1">Para abrir un lapso, sus cortes deben sumar el total del lapso (cortes × puntos por corte).</small>
 </div>

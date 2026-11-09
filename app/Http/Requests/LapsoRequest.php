@@ -97,13 +97,14 @@ class LapsoRequest extends FormRequest
                 }
             }
 
-            // Un lapso solo se abre si sus cortes ya suman la nota máxima (ej.: 4 cortes de 5 = 20).
+                        // Un lapso solo se abre si sus cortes ya suman el total del lapso (4 cortes de 20 = 80).
             if ($this->input('estado') === EstadoLapso::Abierto->value) {
-                $notaMaxima = ConfiguracionEvaluacion::where('anio_escolar_id', $anio->id)->value('nota_maxima');
+                $totalLapso = ConfiguracionEvaluacion::where('anio_escolar_id', $anio->id)->first()->puntosPorLapso();
                 $suma = $lapso ? (float) $lapso->cortes()->sum('peso_lapso') : 0;
+                $texto = fn ($n) => rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.');
 
-                if (abs($suma - $notaMaxima) > 0.001) {
-                    $validator->errors()->add('estado', "Para abrir el lapso, sus cortes deben sumar {$notaMaxima} puntos (ahora suman " . rtrim(rtrim(number_format($suma, 2, '.', ''), '0'), '.') . ').');
+                if (abs($suma - $totalLapso) > 0.001) {
+                    $validator->errors()->add('estado', "Para abrir el lapso, sus cortes deben sumar {$texto($totalLapso)} puntos (ahora suman {$texto($suma)}).");
                 }
             }
         });
