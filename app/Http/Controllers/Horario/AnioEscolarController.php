@@ -42,6 +42,14 @@ class AnioEscolarController extends Controller
         }
 
         if ($request->header('referer') && str_contains($request->header('referer'), 'seleccionar-anio')) {
+            // Asistente de año nuevo (María): si el año quedó activo, siguen sus lapsos y su calendario.
+            if ($request->status === 'Activo' && $nuevoAnio && auth()->user()->can('lapsos.gestionar')) {
+                \App\Support\AsistenteAnioEscolar::iniciar($nuevoAnio);
+
+                return redirect()->route('admin.asistente.lapsos')
+                    ->with('success', 'Año escolar creado y activado. Ahora carga sus lapsos.');
+            }
+
             return redirect()->to(auth()->user()->rutaDashboard())
                 ->with('success', 'Año escolar creado y activado exitosamente.');
         }

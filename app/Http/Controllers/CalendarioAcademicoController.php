@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ConfianzaDia;
+use App\Enums\EstadoCalendario;
 use App\Models\AnioEscolar;
 use App\Support\AnioEscolarSeleccionado;
 use App\Models\CalendarioAcademico;
 use App\Models\CalendarioDia;
-use App\Services\CalendarioPdfExtractorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,53 +14,30 @@ use Illuminate\View\View;
 
 class CalendarioAcademicoController extends Controller
 {
-    public function __construct(
-        private readonly CalendarioPdfExtractorService $extractorService,
-    ) {
-    }
-
     /**
      * Lista todos los calendarios cargados, con su año escolar y estado.
      */
     public function index(): View
     {
         $calendarios = CalendarioAcademico::with('anioEscolar')
-            ->withCount(['dias', 'diasConfirmados'])
+            ->withCount('dias')
             ->latest()
             ->paginate(15);
 
-        return view('calendario_academico.index', compact('calendarios'));
+                // Años que todavía no tienen calendario: los usa el modal de editar para cambiar de año.
+        $aniosSinCalendario = AnioEscolar::whereDoesntHave('calendarioAcademico')
+            ->orderByDesc('inicio_anio_escolar')
+            ->get();
+
+        return view('calendario_academico.index', compact('calendarios', 'aniosSinCalendario'));
     }
 
-
-
-    // aqui tenemos la entrada de una pantalla de decision : o el usuario se va por el camino de extraer el calendario por pdf o hacerlo de manera manual
-    // para cargar un calendario nuevo
-
-    public function create(): View|\Illuminate\Http\RedirectResponse {
-        if (!AnioEscolarSeleccionado::esActual()) {
-            return redirect()->route('admin.calendario_academico.index')
-                ->with('warning', 'No puedes cargar calendarios en un año escolar anterior (solo lectura).');
-        }
-
-        $hayAniosDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->exists();
-
-        return view('calendario_academico.create', compact('hayAniosDisponibles'));
-    }
 
 
     /**
-     * Muestra el formulario para subir el PDF de un año escolar.
+     * Muestra el formulario para empezar un calendario 100% manual
+     * — solo pide el año escolar, el resto se construye evento por evento.
      */
-    public function createPdf(): View
-    {
-        // Solo se ofrecen años escolares que todavía no tienen un calendario asociado,
-        // porque la relación es de uno a uno ( ANIO_ESCOLARS ||--o| CALENDARIOS_ACADEMICOS).
-        $aniosEscolaresDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->get();
-
-        return view('calendario_academico.create-pdf', compact('aniosEscolaresDisponibles'));
-    }
-
     public function createManual(): View{
         $aniosEscolaresDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->get();
 
@@ -69,47 +45,17 @@ class CalendarioAcademicoController extends Controller
     }
 
     /**
-     * Recibe el PDF y redirige a la
-     * pantalla de revisión con los candidatos generados.
+     *  Entrega los días ya registrados para las vistas de Calendario y Semana.
      */
-    public function store(Request $request): RedirectResponse
-    {
-        $validado = $request->validate([
-            'anio_escolar_id' => ['required', 'exists:anio_escolars,id'],
-            'archivo_pdf' => ['required', 'file', 'mimes:pdf', 'max:20480'], // 20 MB máx.
-        ]);
-
-        $anioEscolar = AnioEscolar::findOrFail($validado['anio_escolar_id']);
-
-        $calendario = $this->extractorService->procesarPdf(
-            archivo: $request->file('archivo_pdf'),
-            anioEscolar: $anioEscolar,
-        );
-
-        return redirect()
-            ->route('admin.calendario_academico.show', $calendario)
-            ->with('exito', 'PDF procesado. Revisa los candidatos antes de confirmar el calendario.');
-    }
-
-    /**
-     *  se muestran los candidatos agrupados por mes,
-     * con los de confianza "alta" pre-marcados y los "dudosos" sin marcar.
-     */
-
-
     public function show(CalendarioAcademico $calendarioAcademico):View{
 
         $calendarioAcademico->load('anioEscolar');
 
         $dias = $calendarioAcademico->dias()
-        ->orderBy('mes_pagina')
         ->orderBy('fecha')
         ->get();
 
-        $candidatosPorMes = $dias->groupBy('mes_pagina');
-
-        // solo los que tienen una fecha real (ejemplo los manuales) se excluye en este caso por el momento "mes completo"
-        // ya que no tiene un dia puntual y no puede ubicarse en una celda sola del calendario ( en el camino pdf tengo que arreglar bug de "sin mes" por este mismo detalle)
+        // solo los que tienen una fecha real (todos los eventos manuales la tienen)
 
         $diasParaCalendario = $dias
         ->whereNotNull('fecha')
@@ -119,22 +65,30 @@ class CalendarioAcademicoController extends Controller
             'texto' => $dia->texto_extraido,
             'categoria' => $dia->categoria->value,
             'categoriaLabel' => $dia->categoria->label(),
-            'confianza' => $dia->confianza->value,
-            'confianzaLabel' => $dia->confianza->label(),
-            'confirmado' => $dia->confirmado,
             'esEfemeride' => $dia->es_efemeride,
             'colorHex' => $dia->color?->hex(),
             'colorValue'      => $dia->color?->value,
-            'esManual' => $dia->confianza === \App\Enums\ConfianzaDia::Manual,
             'aplica_personal'    => $dia->aplica_personal,      // <-- nuevo
         'aplica_estudiantes' => $dia->aplica_estudiantes,   // <-- nuevo
-        'mesPagina'          => $dia->mes_pagina,
         ])
         ->values();
 
+                // Lapsos del año: se pintan como una franja de color en el calendario.
+        $lapsos = \App\Models\Lapso::where('anio_escolar_id', $calendarioAcademico->anio_escolar_id)
+            ->orderBy('numero')
+            ->get();
+
+        $lapsosParaCalendario = $lapsos->map(fn ($lapso) => [
+            'nombre' => $lapso->nombre,
+            'color' => ($lapso->numero - 1) % 4 + 1,
+            'inicio' => $lapso->fecha_inicio->toDateString(),
+            'fin' => $lapso->fecha_fin->toDateString(),
+        ])->values();
+
         return view('calendario_academico.show',[
             'calendario' =>$calendarioAcademico,
-            'candidatosPorMes' => $candidatosPorMes,
+            'lapsos' => $lapsos,
+            'lapsosParaCalendarioJson' => $lapsosParaCalendario->toJson(),
             'diasParaCalendarioJson' => $diasParaCalendario->toJson(),
             'inicioAnioEscolar' => $calendarioAcademico->anioEscolar->inicio_anio_escolar,
             'cierreAnioEscolar' => $calendarioAcademico->anioEscolar->cierre_anio_escolar,
@@ -144,47 +98,11 @@ class CalendarioAcademicoController extends Controller
     }
 
     /**
-     * (confirmar): marca como confirmados
-     * los candidatos que la subdirectora aprobó desde los checkboxes.
+     * Crea un calendario_academico para un año escolar que todavía no tiene
+     * ninguno. Como ya no existe revisión de candidatos de PDF, el
+     * calendario nace directamente confirmado: cada evento manual se
+     * confirma por su cuenta en el momento en que se registra.
      */
-    public function confirmar(Request $request, CalendarioAcademico $calendarioAcademico): RedirectResponse
-    {
-        $validado = $request->validate([
-            'ids_aprobados' => ['array'],
-            'ids_aprobados.*' => ['integer', 'exists:calendario_dias,id'],
-        ]);
-
-        $this->extractorService->confirmar(
-            calendario: $calendarioAcademico,
-            idsAprobados: $validado['ids_aprobados'] ?? [],
-        );
-
-        return redirect()
-            ->route('admin.calendario_academico.index')
-            ->with('exito', 'Calendario confirmado correctamente.');
-    }
-
-
-    //  se confirma ( o se revierte ) Un solo dia ( no mas ) desde la vista del calendario, lo hacemos por via AJAX
-    // esta funcion en especifico no usa la funcion confirmar por completo,por que ese cierra todo el calendario a la vez ; esto como tal
-    // es solo una confirmacion puntual nada mas, mucho mas rapida para cuando el usuario este revisando visualmente dia por dia
-    public function confirmarDia(Request $request,CalendarioAcademico $calendarioAcademico, CalendarioDia $calendarioDia): JsonResponse{
-
-
-        abort_if($calendarioDia->calendario_id !==  $calendarioAcademico->id,404);
-
-        $validado = $request->validate([
-            'confirmado' => ['required', 'boolean'],
-        ]);
-
-        $calendarioDia->update(['confirmado' => $validado['confirmado']]);
-
-        return response()->json([
-            'id' => $calendarioDia->id,
-            'confirmado' => $calendarioDia->confirmado,
-        ]);
-    }
-
     public function storeManual(Request $request) : RedirectResponse {
         $validado = $request->validate([
             'anio_escolar_id' => ['required','exists:anio_escolars,id'],
@@ -192,17 +110,76 @@ class CalendarioAcademicoController extends Controller
 
         $calendario = CalendarioAcademico::create([
             'anio_escolar_id' => $validado['anio_escolar_id'],
-            'origen' => \App\Enums\OrigenCalendario::Manual,
-            'pdf_original' => null,
-            'estado' => \App\Enums\EstadoCalendario::PendienteRevision,
+            'estado' => EstadoCalendario::Confirmado,
+            'fecha_confirmacion' => now(),
         ]);
+
+
+        // Los lapsos que ya tenga ese año quedan enlazados al calendario nuevo.
+        \App\Models\Lapso::where('anio_escolar_id', $calendario->anio_escolar_id)->update(['calendario_academico_id' => $calendario->id]);
 
         return redirect()
             ->route('admin.calendario_academico.show',$calendario)
             ->with('exito','Calendario creado de manera manual. Ahora puedes agregar los días uno por uno.');
+    }
 
+        /**
+     * Edita un calendario: su estado y, solo si todavía no tiene eventos, su año escolar
+     * (los eventos ya cargados tienen fechas del año original).
+     */
+    public function update(Request $request, CalendarioAcademico $calendarioAcademico): RedirectResponse
+    {
+        $validado = $request->validate([
+            'anio_escolar_id' => [
+                'required',
+                'exists:anio_escolars,id',
+                \Illuminate\Validation\Rule::unique('calendario_academico', 'anio_escolar_id')->ignore($calendarioAcademico->id),
+            ],
+            'estado' => ['required', \Illuminate\Validation\Rule::enum(EstadoCalendario::class)],
+        ], [
+            'anio_escolar_id.required' => 'Debes elegir el año escolar.',
+            'anio_escolar_id.exists' => 'El año escolar elegido no existe.',
+            'anio_escolar_id.unique' => 'Ese año escolar ya tiene un calendario.',
+            'estado.required' => 'Debes elegir el estado.',
+            'estado.enum' => 'El estado elegido no es válido.',
+        ]);
 
+        $cambiaDeAnio = (int) $validado['anio_escolar_id'] !== $calendarioAcademico->anio_escolar_id;
 
+        if ($cambiaDeAnio && $calendarioAcademico->dias()->exists()) {
+            return redirect()
+                ->route('admin.calendario_academico.index')
+                ->with('error', 'No se puede cambiar el año escolar de un calendario que ya tiene eventos. Elimina sus eventos primero.');
+        }
+
+        $estado = EstadoCalendario::from($validado['estado']);
+
+        $calendarioAcademico->update([
+            'anio_escolar_id' => $validado['anio_escolar_id'],
+            'estado' => $estado,
+            // La fecha de confirmación se pone al confirmar y se borra si vuelve a pendiente.
+            'fecha_confirmacion' => $estado === EstadoCalendario::Confirmado
+                ? ($calendarioAcademico->fecha_confirmacion ?? now())
+                : null,
+        ]);
+
+        return redirect()
+            ->route('admin.calendario_academico.index')
+            ->with('exito', 'Calendario actualizado correctamente.');
+    }
+
+    /**
+     * Elimina un calendario y, por la llave foránea en cascada, todos sus eventos.
+     * Los lapsos que lo usaban quedan sin calendario (nullOnDelete), no se borran.
+     */
+    public function destroy(CalendarioAcademico $calendarioAcademico): RedirectResponse
+    {
+        $totalEventos = $calendarioAcademico->dias()->count();
+        $calendarioAcademico->delete();
+
+        return redirect()
+            ->route('admin.calendario_academico.index')
+            ->with('exito', "Calendario eliminado junto con sus {$totalEventos} eventos.");
     }
 
     // funcio 8 : aqui se crea un envento manual, si es un rango de dias , genera  UNA fila por cada dia del rango
@@ -239,13 +216,10 @@ class CalendarioAcademicoController extends Controller
                 'fecha' => $fecha,
                 'texto_extraido' => $datos['nombre'],
                 'categoria' => $datos['categoria']->value,
-                'confianza' => \App\Enums\ConfianzaDia::Manual->value,
-                'confirmado' => true,
                 'aplica_personal' => $datos['aplica_personal'],
                 'aplica_estudiantes' => $datos['aplica_estudiantes'],
                 'es_efemeride' => $datos['es_efemeride'],
                 'color' => $datos['color']?->value,
-                'mes_pagina' => (int) \Carbon\Carbon::parse($fecha)->format('n'),
             ]);
 
         }
@@ -289,12 +263,10 @@ class CalendarioAcademicoController extends Controller
             'texto_extraido' => $datos['nombre'],
             'fecha' => $datos['fecha_inicio'],
             'categoria' => $datos['categoria']->value,
-            'confianza' => \App\Enums\ConfianzaDia::Manual->value,
             'aplica_personal' => $datos['aplica_personal'],
             'aplica_estudiantes' => $datos['aplica_estudiantes'],
             'es_efemeride' => $datos['es_efemeride'],
             'color' => $datos['color']?->value,
-            'mes_pagina' => (int) \Carbon\Carbon::parse($datos['fecha_inicio'])->format('n'),
         ]);
 
         return response()->json($this->serializarDia($calendarioDia));
@@ -419,16 +391,11 @@ class CalendarioAcademicoController extends Controller
         'texto' => $dia->texto_extraido,
         'categoria' => $dia->categoria->value,
         'categoriaLabel' => $dia->categoria->label(),
-        'confianza' => $dia->confianza->value,
-        'confianzaLabel' => $dia->confianza->label(),
-        'confirmado' => $dia->confirmado,
         'esEfemeride' => $dia->es_efemeride,
         'colorHex' => $dia->color?->hex(),
         'colorValue'       => $dia->color?->value,
-        'esManual' => true,
         'aplica_personal'    => $dia->aplica_personal,
         'aplica_estudiantes' => $dia->aplica_estudiantes,
-        'mesPagina'          => $dia->mes_pagina,
     ];
     }
 
