@@ -53,7 +53,7 @@ return [
         'array'   => 'El campo :attribute debe tener más de :value elementos.',
     ],
     'gte'                  => [
-        'numeric' => 'El campo :attribute debe ser como mínimo :value.',
+        'numeric' => 'El campo :attribute debe ser mayor o igual que :value.',
         'file'    => 'El campo :attribute debe tener como mínimo :value kilobytes.',
         'string'  => 'El campo :attribute debe tener como mínimo :value caracteres.',
         'array'   => 'El campo :attribute debe tener como mínimo :value elementos.',
@@ -88,7 +88,7 @@ return [
     'mimes'                => 'El campo :attribute debe ser un archivo con formato: :values.',
     'mimetypes'            => 'El campo :attribute debe ser un archivo con formato: :values.',
     'min'                  => [
-        'numeric' => 'El tamaño de :attribute debe ser de al menos :min.',
+        'numeric' => 'El campo :attribute debe ser al menos :min.',
         'file'    => 'El tamaño de :attribute debe ser de al menos :min kilobytes.',
         'string'  => 'El campo :attribute debe contener al menos :min caracteres.',
         'array'   => 'El campo :attribute debe tener al menos :min elementos.',
@@ -160,6 +160,19 @@ return [
         'roles_crear'         => 'roles asignados',
         'rol_principal_crear' => 'rol principal',
         'password'            => 'contraseña',
+        'letra'               => 'Letra',
+        'descripcion'         => 'Descripción',
+        'nota_desde'          => 'Nota Desde',
+        'nota_hasta'          => 'Nota Hasta',
+        'cargo'               => 'Cargo',
+        'persona_id'          => 'Persona',
+        'encargado'           => 'Condición de Encargado',
+        'gaceta'              => 'Gaceta Oficial / Resolución',
+        'desde'               => 'Vigencia Desde',
+        'hasta'               => 'Vigencia Hasta',
+        'vigencia_desde'      => 'Vigencia Desde',
+        'vigencia_hasta'      => 'Vigencia Hasta',
+        'anio_escolar_id'     => 'Año Escolar',
     ],
 
 ];

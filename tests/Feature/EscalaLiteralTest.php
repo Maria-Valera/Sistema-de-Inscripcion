@@ -182,4 +182,122 @@ class EscalaLiteralTest extends TestCase
             'id' => $escala->id,
         ]);
     }
+
+    public function test_crear_escala_literal_ajax_retorna_201_json(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->postJson(route('admin.escala-literal.store'), [
+                'letra' => 'A',
+                'descripcion' => 'Excelente',
+                'nota_desde' => 19,
+                'nota_hasta' => 20,
+            ]);
+
+        $response->assertStatus(201);
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Escala literal registrada exitosamente.',
+        ]);
+        $this->assertDatabaseHas('escala_literals', [
+            'letra' => 'A',
+            'nota_desde' => 19,
+            'nota_hasta' => 20,
+        ]);
+    }
+
+    public function test_error_validacion_ajax_retorna_422_json_con_mensajes_en_espanol(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->postJson(route('admin.escala-literal.store'), [
+                'letra' => '',
+                'nota_desde' => 25,
+                'nota_hasta' => 10,
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['letra', 'nota_desde', 'nota_hasta']);
+        $json = $response->json();
+        $this->assertStringContainsString('obligatori', $json['errors']['letra'][0]);
+        $this->assertStringContainsString('mayor a 20', $json['errors']['nota_desde'][0]);
+        $this->assertStringContainsString('mayor o igual', $json['errors']['nota_hasta'][0]);
+    }
+
+    public function test_error_solapamiento_ajax_retorna_422_con_mensaje_en_espanol(): void
+    {
+        EscalaLiteral::create([
+            'anio_escolar_id' => $this->anioActivo->id,
+            'letra' => 'A',
+            'descripcion' => 'Excelente',
+            'nota_desde' => 17,
+            'nota_hasta' => 20,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->postJson(route('admin.escala-literal.store'), [
+                'letra' => 'B',
+                'descripcion' => 'Bueno',
+                'nota_desde' => 15,
+                'nota_hasta' => 18,
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['nota_desde']);
+        $this->assertStringContainsString('se cruza con la escala [A]', $response->json()['errors']['nota_desde'][0]);
+    }
+
+    public function test_actualizar_escala_literal_ajax_retorna_200_json(): void
+    {
+        $escala = EscalaLiteral::create([
+            'anio_escolar_id' => $this->anioActivo->id,
+            'letra' => 'C',
+            'descripcion' => 'Aprobado',
+            'nota_desde' => 10,
+            'nota_hasta' => 13,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->putJson(route('admin.escala-literal.update', $escala), [
+                'letra' => 'C',
+                'descripcion' => 'Aprobado Regular',
+                'nota_desde' => 10,
+                'nota_hasta' => 14,
+            ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Escala literal actualizada exitosamente.',
+        ]);
+        $this->assertDatabaseHas('escala_literals', [
+            'id' => $escala->id,
+            'descripcion' => 'Aprobado Regular',
+            'nota_hasta' => 14,
+        ]);
+    }
+
+    public function test_error_validacion_actualizar_escala_literal_ajax_retorna_422_json(): void
+    {
+        $escala = EscalaLiteral::create([
+            'anio_escolar_id' => $this->anioActivo->id,
+            'letra' => 'D',
+            'descripcion' => 'Deficiente',
+            'nota_desde' => 1,
+            'nota_hasta' => 9,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->putJson(route('admin.escala-literal.update', $escala), [
+                'letra' => '',
+                'nota_desde' => 12,
+                'nota_hasta' => 5,
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['letra', 'nota_hasta']);
+    }
 }

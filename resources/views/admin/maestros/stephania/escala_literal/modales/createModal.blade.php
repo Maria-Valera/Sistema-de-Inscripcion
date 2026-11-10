@@ -16,7 +16,7 @@
                 </button>
             </div>
 
-            <form action="{{ route('admin.escala-literal.store') }}" method="POST" id="formCrearEscala">
+            <form action="{{ route('admin.escala-literal.store') }}" method="POST" id="formCrearEscala" novalidate>
                 @csrf
                 <div class="modal-body-create p-4">
                     <div class="row g-3">
@@ -36,8 +36,9 @@
                                    value="{{ old('letra') }}"
                                    placeholder="A"
                                    required>
+                            <div class="invalid-feedback error-message"></div>
                             @error('letra')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -54,8 +55,9 @@
                                    name="descripcion"
                                    value="{{ old('descripcion') }}"
                                    placeholder="Ej: Excelente, Aprobado...">
+                            <div class="invalid-feedback error-message"></div>
                             @error('descripcion')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -75,8 +77,9 @@
                                    max="20"
                                    value="{{ old('nota_desde', 1) }}"
                                    required>
+                            <div class="invalid-feedback error-message"></div>
                             @error('nota_desde')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -96,8 +99,9 @@
                                    max="20"
                                    value="{{ old('nota_hasta', 20) }}"
                                    required>
+                            <div class="invalid-feedback error-message"></div>
                             @error('nota_hasta')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>

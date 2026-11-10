@@ -16,7 +16,7 @@
                 </button>
             </div>
 
-            <form action="{{ route('admin.autoridad-firmante.store') }}" method="POST" id="formCrearAutoridad">
+            <form action="{{ route('admin.autoridad-firmante.store') }}" method="POST" id="formCrearAutoridad" novalidate>
                 @csrf
                 <div class="modal-body-create p-4">
                     <div class="row g-3">
@@ -39,8 +39,9 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div class="invalid-feedback error-message"></div>
                             @error('cargo')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -63,8 +64,9 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div class="invalid-feedback error-message"></div>
                             @error('persona_id')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -81,8 +83,9 @@
                                    name="gaceta"
                                    value="{{ old('gaceta') }}"
                                    placeholder="Ej: Gaceta N° 42.100 o Resolución DM/045">
+                            <div class="invalid-feedback error-message"></div>
                             @error('gaceta')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -117,8 +120,9 @@
                                    name="desde"
                                    value="{{ old('desde', date('Y-m-d')) }}"
                                    required>
+                            <div class="invalid-feedback error-message"></div>
                             @error('desde')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -134,9 +138,10 @@
                                    id="hasta"
                                    name="hasta"
                                    value="{{ old('hasta') }}">
+                            <div class="invalid-feedback error-message"></div>
                             <small class="text-muted d-block mt-1">Opcional. Dejar vacío si la vigencia es indefinida / en curso.</small>
                             @error('hasta')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>

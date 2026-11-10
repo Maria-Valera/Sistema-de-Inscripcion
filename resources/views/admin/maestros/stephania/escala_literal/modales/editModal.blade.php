@@ -16,7 +16,7 @@
                 </button>
             </div>
 
-            <form action="{{ route('admin.escala-literal.update', $escala) }}" method="POST">
+            <form action="{{ route('admin.escala-literal.update', $escala) }}" method="POST" id="formEditarEscala{{ $escala->id }}" novalidate>
                 @csrf
                 @method('PUT')
                 <div class="modal-body-create p-4">
@@ -36,6 +36,7 @@
                                    maxlength="1"
                                    value="{{ old('letra', $escala->letra) }}"
                                    required>
+                            <div class="invalid-feedback error-message"></div>
                         </div>
 
                         {{-- Descripción --}}
@@ -51,6 +52,7 @@
                                    name="descripcion"
                                    value="{{ old('descripcion', $escala->descripcion) }}"
                                    placeholder="Ej: Excelente, Aprobado...">
+                            <div class="invalid-feedback error-message"></div>
                         </div>
 
                         {{-- Nota Desde --}}
@@ -69,6 +71,7 @@
                                    max="20"
                                    value="{{ old('nota_desde', $escala->nota_desde) }}"
                                    required>
+                            <div class="invalid-feedback error-message"></div>
                         </div>
 
                         {{-- Nota Hasta --}}
@@ -87,6 +90,7 @@
                                    max="20"
                                    value="{{ old('nota_hasta', $escala->nota_hasta) }}"
                                    required>
+                            <div class="invalid-feedback error-message"></div>
                         </div>
                     </div>
                 </div>

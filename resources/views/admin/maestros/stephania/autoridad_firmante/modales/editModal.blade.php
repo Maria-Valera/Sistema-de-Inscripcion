@@ -16,7 +16,7 @@
                 </button>
             </div>
 
-            <form action="{{ route('admin.autoridad-firmante.update', $aut) }}" method="POST" id="formEditarAutoridad{{ $aut->id }}">
+            <form action="{{ route('admin.autoridad-firmante.update', $aut) }}" method="POST" id="formEditarAutoridad{{ $aut->id }}" novalidate>
                 @csrf
                 @method('PUT')
                 <div class="modal-body-create p-4">
@@ -39,8 +39,9 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div class="invalid-feedback error-message"></div>
                             @error('cargo')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -62,8 +63,9 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div class="invalid-feedback error-message"></div>
                             @error('persona_id')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -80,8 +82,9 @@
                                    name="gaceta"
                                    value="{{ old('gaceta', $aut->gaceta) }}"
                                    placeholder="Ej: Gaceta N° 42.100 o Resolución DM/045">
+                            <div class="invalid-feedback error-message"></div>
                             @error('gaceta')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -116,8 +119,9 @@
                                    name="desde"
                                    value="{{ old('desde', $aut->desde ? \Carbon\Carbon::parse($aut->desde)->format('Y-m-d') : '') }}"
                                    required>
+                            <div class="invalid-feedback error-message"></div>
                             @error('desde')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -133,9 +137,10 @@
                                    id="hasta_edit_{{ $aut->id }}"
                                    name="hasta"
                                    value="{{ old('hasta', $aut->hasta ? \Carbon\Carbon::parse($aut->hasta)->format('Y-m-d') : '') }}">
+                            <div class="invalid-feedback error-message"></div>
                             <small class="text-muted d-block mt-1">Opcional. Dejar vacío si la vigencia es indefinida / en curso.</small>
                             @error('hasta')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                <div class="text-danger small mt-1 server-error">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>

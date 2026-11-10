@@ -33,6 +33,7 @@ Route::middleware('permission:escala_literal.gestionar')->group(function () {
 
 // Maestro S4: Autoridades Firmantes
 Route::middleware('permission:autoridad_firmante.ver')->group(function () {
+    Route::get('autoridad-firmante/personas-por-cargo', [AutoridadFirmanteController::class, 'personasPorCargo'])->name('autoridad-firmante.personas-por-cargo');
     Route::get('autoridad-firmante', [AutoridadFirmanteController::class, 'index'])->name('autoridad-firmante.index');
 });
 Route::middleware('permission:autoridad_firmante.gestionar')->group(function () {

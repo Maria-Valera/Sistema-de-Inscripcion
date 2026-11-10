@@ -29,6 +29,9 @@ class EscalaLiteralRequest extends FormRequest
         $escalaLiteral = $this->route('escala_literal');
         $escalaLiteralId = $escalaLiteral instanceof EscalaLiteral ? $escalaLiteral->id : $escalaLiteral;
         $anioId = AnioEscolarSeleccionado::id();
+        if (!$anioId && $escalaLiteral instanceof EscalaLiteral) {
+            $anioId = $escalaLiteral->anio_escolar_id;
+        }
 
         return [
             'letra' => [
@@ -45,6 +48,16 @@ class EscalaLiteralRequest extends FormRequest
         ];
     }
 
+    public function attributes(): array
+    {
+        return [
+            'letra' => 'Letra',
+            'descripcion' => 'Descripción',
+            'nota_desde' => 'Nota Desde',
+            'nota_hasta' => 'Nota Hasta',
+        ];
+    }
+
     public function messages(): array
     {
         return [
@@ -52,15 +65,15 @@ class EscalaLiteralRequest extends FormRequest
             'letra.size' => 'La letra debe ser un único carácter (ej. A, B, C, D).',
             'letra.unique' => 'Ya existe una escala con esta letra para el año escolar seleccionado.',
             'descripcion.max' => 'La descripción no debe exceder los 60 caracteres.',
-            'nota_desde.required' => 'La nota mínima es obligatoria.',
-            'nota_desde.integer' => 'La nota mínima debe ser un número entero.',
-            'nota_desde.min' => 'La nota mínima no puede ser menor a 1.',
-            'nota_desde.max' => 'La nota mínima no puede ser mayor a 20.',
-            'nota_hasta.required' => 'La nota máxima es obligatoria.',
-            'nota_hasta.integer' => 'La nota máxima debe ser un número entero.',
-            'nota_hasta.min' => 'La nota máxima no puede ser menor a 1.',
-            'nota_hasta.max' => 'La nota máxima no puede ser mayor a 20.',
-            'nota_hasta.gte' => 'La nota máxima debe ser mayor o igual a la nota mínima.',
+            'nota_desde.required' => 'El campo Nota Desde es obligatorio.',
+            'nota_desde.integer' => 'El campo Nota Desde debe ser un número entero.',
+            'nota_desde.min' => 'El campo Nota Desde debe ser al menos 1.',
+            'nota_desde.max' => 'El campo Nota Desde no debe ser mayor a 20.',
+            'nota_hasta.required' => 'El campo Nota Hasta es obligatorio.',
+            'nota_hasta.integer' => 'El campo Nota Hasta debe ser un número entero.',
+            'nota_hasta.min' => 'El campo Nota Hasta debe ser al menos 1.',
+            'nota_hasta.max' => 'El campo Nota Hasta no debe ser mayor a 20.',
+            'nota_hasta.gte' => 'El campo Nota Hasta debe ser mayor o igual que Nota Desde.',
         ];
     }
 
@@ -75,6 +88,9 @@ class EscalaLiteralRequest extends FormRequest
                 $anioId = AnioEscolarSeleccionado::id();
                 $escalaLiteral = $this->route('escala_literal');
                 $escalaLiteralId = $escalaLiteral instanceof EscalaLiteral ? $escalaLiteral->id : $escalaLiteral;
+                if (!$anioId && $escalaLiteral instanceof EscalaLiteral) {
+                    $anioId = $escalaLiteral->anio_escolar_id;
+                }
 
                 $notaDesde = (int) $this->input('nota_desde');
                 $notaHasta = (int) $this->input('nota_hasta');
@@ -87,10 +103,10 @@ class EscalaLiteralRequest extends FormRequest
                     ->first();
 
                 if ($solapada) {
-                    $validator->errors()->add(
-                        'nota_desde',
-                        "El rango de notas se cruza con la escala [{$solapada->letra}] existente ({$solapada->nota_desde} - {$solapada->nota_hasta})."
-                    );
+                    $msg = "El rango de notas se cruza con la escala [{$solapada->letra}] existente ({$solapada->nota_desde} - {$solapada->nota_hasta}).";
+                    $validator->errors()->add('nota_desde', $msg);
+                    $validator->errors()->add('nota_hasta', $msg);
+                    $validator->errors()->add('rango', $msg);
                 }
             },
         ];
