@@ -31,4 +31,14 @@ class ConfiguracionEvaluacion extends Model
     {
         return $this->belongsTo(AnioEscolar::class, 'anio_escolar_id');
     }
+
+
+    /**
+     * Total de puntos de un lapso: cortes × puntos por corte (4 × 20 = 80).
+     * La nota del lapso es esa suma entre la cantidad de cortes (80 / 4 = 20).
+     */
+    public function puntosPorLapso(): float
+    {
+        return (float) $this->num_cortes * (float) $this->puntos_corte;
+    }
 }

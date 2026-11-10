@@ -62,10 +62,10 @@
         @endif
 
                 @php
-            // Lapsos abiertos cuyos cortes no suman la nota máxima: los docentes cargarían notas sobre una base incompleta.
+            // Lapsos abiertos cuyos cortes no suman el total del lapso (cortes × puntos por corte): los docentes cargarían notas sobre una base incompleta.
             $abiertosIncompletos = $config
                 ? $lapsos->filter(fn ($l) => $l->estado === \App\Enums\EstadoLapso::Abierto
-                    && abs((float) ($l->cortes_sum_peso_lapso ?? 0) - $config->nota_maxima) > 0.001)
+                    && abs((float) ($l->cortes_sum_peso_lapso ?? 0) - $config->puntosPorLapso()) > 0.001)
                 : collect();
         @endphp
         @if ($abiertosIncompletos->isNotEmpty())
@@ -74,7 +74,7 @@
                 <strong>Atención:</strong>
                 @foreach ($abiertosIncompletos as $l)
                     {{ $l->nombre }} está abierto pero sus cortes suman
-                    {{ rtrim(rtrim(number_format((float) $l->cortes_sum_peso_lapso, 2, '.', ''), '0'), '.') }} de {{ $config->nota_maxima }} puntos.
+                    {{ rtrim(rtrim(number_format((float) $l->cortes_sum_peso_lapso, 2, '.', ''), '0'), '.') }} de {{ $config->puntosPorLapso() }} puntos.
                 @endforeach
                 Complétalos antes de que los docentes carguen notas.
             </div>
@@ -115,7 +115,7 @@
                             @forelse ($lapsos as $lapso)
                                 @php
                                     $suma = (float) ($lapso->cortes_sum_peso_lapso ?? 0);
-                                    $completo = $config && abs($suma - $config->nota_maxima) < 0.001;
+                                    $completo = $config && abs($suma - $config->puntosPorLapso()) < 0.001;
                                 @endphp
                                 <tr>
                                     <td style="text-align: center"><strong>{{ $lapso->numero }}</strong></td>
@@ -127,9 +127,9 @@
                                         {{ $lapso->cortes_count }} cortes ·
                                                                                 @php $alerta = ! $completo && $lapso->estado === \App\Enums\EstadoLapso::Abierto; @endphp
                                         <span class="{{ $completo ? 'suma-ok' : ($alerta ? 'suma-alerta' : 'suma-pendiente') }}"
-                                            @if ($alerta) title="El lapso está abierto y sus cortes no suman la nota máxima" @endif>
+                                            @if ($alerta) title="El lapso está abierto y sus cortes no suman el total del lapso" @endif>
                                             @if ($alerta) <i class="fas fa-exclamation-circle"></i> @endif
-                                            {{ rtrim(rtrim(number_format($suma, 2, '.', ''), '0'), '.') }} de {{ $config?->nota_maxima ?? '?' }} pts
+                                            {{ rtrim(rtrim(number_format($suma, 2, '.', ''), '0'), '.') }} de {{ $config?->puntosPorLapso() ?? '?' }} pts
                                         </span>
                                     </td>
                                     <td style="text-align: center">
@@ -206,7 +206,7 @@
             document.addEventListener('DOMContentLoaded', () => {
                 const anio = { inicio: @json($anio->inicio_anio_escolar->toDateString()), cierre: @json($anio->cierre_anio_escolar->toDateString()) };
                 const maxLapsos = {{ $config->num_lapsos }};
-                const notaMaxima = {{ (float) $config->nota_maxima }};
+                const totalLapso = {{ $config->puntosPorLapso() }};
                 const lapsos = @json($datosLapsos);
 
                 document.querySelectorAll('form.form-lapso').forEach((form) => {
@@ -253,10 +253,10 @@
                             e.fecha_fin = `Con esas fechas quedarían cortes fuera del lapso (sus cortes van del ${fechaLegible(cortesInicio)} al ${fechaLegible(cortesFin)}). Ajusta primero las fechas de esos cortes.`;
                         }
 
-                        // Abrir exige que los cortes sumen la nota máxima
+                       // Abrir exige que los cortes sumen el total del lapso
                         const suma = parseFloat(f.dataset.suma || '0');
-                        if (valor('estado') === 'abierto' && Math.abs(suma - notaMaxima) > 0.001) {
-                            e.estado = `Para abrir el lapso, sus cortes deben sumar ${numeroLegible(notaMaxima)} puntos (ahora suman ${numeroLegible(suma)}).`;
+                        if (valor('estado') === 'abierto' && Math.abs(suma - totalLapso) > 0.001) {
+                            e.estado = `Para abrir el lapso, sus cortes deben sumar ${numeroLegible(totalLapso)} puntos (ahora suman ${numeroLegible(suma)}).`;
                         }
 
                         return e;

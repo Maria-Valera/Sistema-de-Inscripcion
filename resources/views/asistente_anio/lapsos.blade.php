@@ -31,7 +31,7 @@
                         Se usa la configuración de evaluación por defecto:
                     @endif
                     <strong>{{ $config->num_lapsos }} lapsos</strong>, cada uno con
-                    <strong>{{ $config->num_cortes }} cortes</strong> que suman {{ $config->nota_maxima }} puntos.
+                    <strong>{{ $config->num_cortes }} cortes de {{ $config->puntos_corte }} puntos</strong> ({{ $config->puntosPorLapso() }} en total).
                     Los cortes se crean solos; podrás ajustarlos luego en <em>Lapsos y Cortes</em>.
                 </div>
 

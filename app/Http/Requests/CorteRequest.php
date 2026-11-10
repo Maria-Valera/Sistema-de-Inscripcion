@@ -24,7 +24,7 @@ class CorteRequest extends FormRequest
         $corte = $this->route('corte');
         $config = ConfiguracionEvaluacion::where('anio_escolar_id', $lapso->anio_escolar_id)->first();
         $maxCortes = $config?->num_cortes ?? 0;
-        $notaMaxima = $config?->nota_maxima ?? 0;
+        $totalLapso = $config?->puntosPorLapso() ?? 0;
         $inicioLapso = $lapso->fecha_inicio->toDateString();
         $finLapso = $lapso->fecha_fin->toDateString();
 
@@ -34,7 +34,7 @@ class CorteRequest extends FormRequest
                 Rule::unique('cortes', 'numero')->where('lapso_id', $lapso->id)->ignore($corte?->id),
             ],
             'nombre' => ['required', 'string', 'max:50'],
-            'peso_lapso' => ['required', 'numeric', 'gt:0', "max:{$notaMaxima}"],
+            'peso_lapso' => ['required', 'numeric', 'gt:0', "max:{$totalLapso}"],
             'fecha_inicio' => ['nullable', 'date', "after_or_equal:{$inicioLapso}", "before_or_equal:{$finLapso}"],
             'fecha_fin' => ['nullable', 'date', "after_or_equal:{$inicioLapso}", "before_or_equal:{$finLapso}"],
             'fecha_limite_carga' => ['required', 'date'],
@@ -67,14 +67,15 @@ class CorteRequest extends FormRequest
                 $validator->errors()->add('fecha_limite_carga', 'La fecha límite de carga no puede ser anterior al fin del corte.');
             }
 
-            // La suma de los pesos de los cortes del lapso no puede pasar de la nota máxima (20).
-            $notaMaxima = (float) ConfiguracionEvaluacion::where('anio_escolar_id', $lapso->anio_escolar_id)->value('nota_maxima');
+            // La suma de los cortes del lapso no puede pasar del total del lapso (cortes × puntos por corte = 80).
+            $totalLapso = (float) ConfiguracionEvaluacion::where('anio_escolar_id', $lapso->anio_escolar_id)->first()?->puntosPorLapso();
             $otros = (float) $lapso->cortes()->when($corte, fn ($q) => $q->where('id', '!=', $corte->id))->sum('peso_lapso');
-            $disponible = $notaMaxima - $otros;
+            $disponible = $totalLapso - $otros;
 
             if ((float) $this->input('peso_lapso') - $disponible > 0.001) {
                 $texto = rtrim(rtrim(number_format($disponible, 2, '.', ''), '0'), '.');
-                $validator->errors()->add('peso_lapso', "Los cortes de este lapso no pueden sumar más de {$notaMaxima} puntos: a este corte le quedan como máximo {$texto}.");
+                $texto80 = rtrim(rtrim(number_format($totalLapso, 2, '.', ''), '0'), '.');
+                $validator->errors()->add('peso_lapso', "Los cortes de este lapso no pueden sumar más de {$texto80} puntos: a este corte le quedan como máximo {$texto}.");
             }
         });
     }

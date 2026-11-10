@@ -110,20 +110,19 @@ class AsistenteAnioEscolar
         ])->all();
     }
 
-    /** Crea los cortes de un lapso: fechas en partes iguales y los puntos repartidos hasta sumar la nota máxima. */
+    /** Crea los cortes de un lapso: fechas en partes iguales y cada corte con los puntos por corte de la configuración (20). */
     public static function crearCortes(Lapso $lapso, ConfiguracionEvaluacion $config): void
     {
         $cantidad = $config->num_cortes;
         $partes = self::dividir($lapso->fecha_inicio, $lapso->fecha_fin, $cantidad);
-        $peso = floor($config->nota_maxima / $cantidad * 100) / 100;
+
 
         foreach ($partes as $i => [$inicio, $fin]) {
-            $esUltimo = $i === $cantidad - 1;
+
             $lapso->cortes()->create([
                 'numero' => $i + 1,
                 'nombre' => 'Corte ' . ($i + 1),
-                // El último se queda con lo que falte, para que la suma dé exacto la nota máxima.
-                'peso_lapso' => $esUltimo ? round($config->nota_maxima - $peso * ($cantidad - 1), 2) : $peso,
+                'peso_lapso' => $config->puntos_corte,
                 'fecha_inicio' => $inicio->toDateString(),
                 'fecha_fin' => $fin->toDateString(),
                 'fecha_limite_carga' => $fin->copy()->endOfDay(),
