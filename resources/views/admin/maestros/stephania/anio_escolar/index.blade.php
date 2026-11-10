@@ -19,10 +19,10 @@
 
             @can('anio_escolar.gestionar')
                 @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                    <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearAnioEscolar">
+                    <a href="{{ route('admin.anio-escolar.create') }}" class="btn-create text-decoration-none">
                         <i class="fas fa-plus"></i>
                         <span>Nuevo Año Escolar</span>
-                    </button>
+                    </a>
                 @endif
             @endcan
         </div>

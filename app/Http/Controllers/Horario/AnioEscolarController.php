@@ -22,7 +22,15 @@ class AnioEscolarController extends Controller
     }
 
     /**
-     * Almacena un nuevo año escolar.
+     * Muestra la vista de formulario con asistente (wizard) para crear un nuevo año escolar (Paso 1).
+     */
+    public function create(): View
+    {
+        return view('admin.maestros.stephania.anio_escolar.create');
+    }
+
+    /**
+     * Almacena un nuevo año escolar y avanza al paso 2 del asistente (Lapsos).
      * Regla de negocio: Si se crea con status = 'Activo', desactiva todos los demás años escolares.
      */
     public function store(AnioEscolarRequest $request): RedirectResponse
@@ -37,21 +45,18 @@ class AnioEscolarController extends Controller
             $nuevoAnio = AnioEscolar::create($request->validated());
         });
 
-        if ($request->status === 'Activo' && $nuevoAnio) {
+        if ($nuevoAnio) {
             session(['anio_escolar_id' => (int) $nuevoAnio->id]);
-        }
+            \App\Support\AsistenteAnioEscolar::iniciar($nuevoAnio);
 
-        if ($request->header('referer') && str_contains($request->header('referer'), 'seleccionar-anio')) {
-            // Asistente de año nuevo (María): si el año quedó activo, siguen sus lapsos y su calendario.
-            if ($request->status === 'Activo' && $nuevoAnio && auth()->user()->can('lapsos.gestionar')) {
-                \App\Support\AsistenteAnioEscolar::iniciar($nuevoAnio);
-
+            // Redirige directamente al asistente de configuración de lapsos (Paso 2)
+            if (auth()->user()->can('lapsos.gestionar')) {
                 return redirect()->route('admin.asistente.lapsos')
-                    ->with('success', 'Año escolar creado y activado. Ahora carga sus lapsos.');
+                    ->with('success', 'Año escolar creado exitosamente. Ahora configura sus lapsos.');
             }
 
             return redirect()->to(auth()->user()->rutaDashboard())
-                ->with('success', 'Año escolar creado y activado exitosamente.');
+                ->with('success', 'Año escolar creado exitosamente.');
         }
 
         return redirect()->route('admin.anio-escolar.index')

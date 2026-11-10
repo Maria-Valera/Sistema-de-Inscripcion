@@ -42,5 +42,6 @@ Route::middleware('permission:autoridad_firmante.gestionar')->group(function () 
 
 // Maestro S0: Gestión de Años Escolares
 Route::middleware(['permission:anio_escolar.gestionar'])->group(function () {
-    Route::resource('anio-escolar', AnioEscolarController::class);
+    Route::get('anio-escolar/crear', [AnioEscolarController::class, 'create'])->name('anio-escolar.create');
+    Route::resource('anio-escolar', AnioEscolarController::class)->except(['create']);
 });

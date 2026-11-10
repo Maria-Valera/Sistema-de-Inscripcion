@@ -24,3 +24,8 @@ Breadcrumbs::for('admin.anio-escolar.index', function (Trail $trail) {
     $trail->parent('home');
     $trail->push('Años Escolares', route('admin.anio-escolar.index'));
 });
+
+Breadcrumbs::for('admin.anio-escolar.create', function (Trail $trail) {
+    $trail->parent('admin.anio-escolar.index');
+    $trail->push('Nuevo Año Escolar', route('admin.anio-escolar.create'));
+});
