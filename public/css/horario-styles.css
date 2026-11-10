@@ -499,8 +499,8 @@
 }
 
 .drop-zone .assigned-docente {
-    background: var(--horario-dark);
-    color: white;
+    background: rgba(79, 70, 229, 0.15); /* Púrpura/índigo translúcido suave armonizado con el encabezado */
+    color: #1e1b4b;                      /* Texto oscuro para contraste */
     padding: 0.35rem 0.55rem;
     border-radius: 0.375rem;
     font-size: 0.75rem;
@@ -517,6 +517,14 @@
     width: auto;
     min-width: 80px;
     max-width: 100%;
+    border: 1px solid rgba(79, 70, 229, 0.3);
+    box-shadow: 0 1px 3px rgba(79, 70, 229, 0.08);
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.drop-zone .assigned-docente:hover {
+    background: rgba(79, 70, 229, 0.24);
+    border-color: rgba(79, 70, 229, 0.45);
 }
 
 .drop-zone:hover {
@@ -531,8 +539,8 @@
 }
 
 .drop-zone .assigned-docente.clase-fijada {
-    border: 1.5px solid #f59e0b;
-    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+    border: 1.5px solid #d97706;
+    box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
 }
 
 .drop-zone .assigned-docente.clase-fijada[draggable="false"] {
@@ -556,19 +564,19 @@
 
 .btn-lock-toggle:hover {
     transform: scale(1.2);
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(79, 70, 229, 0.15);
 }
 
 .btn-lock-toggle.text-warning {
-    color: #fbbf24 !important;
+    color: #b45309 !important;
 }
 
 .btn-lock-toggle.text-muted {
-    color: #94a3b8 !important;
+    color: #4338ca !important;
 }
 
 .btn-lock-toggle.text-muted:hover {
-    color: #f8fafc !important;
+    color: #1e1b4b !important;
 }
 
 .drop-zone .assigned-docente .adm-mini {
@@ -584,14 +592,17 @@
 
 .drop-zone .assigned-docente .adm-mini .adm-mini-nombre {
     font-weight: 600;
+    color: #1e1b4b;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 90px;
 }
 
 .drop-zone .assigned-docente .adm-mini .adm-mini-seccion {
-    opacity: 0.75;
+    color: #3730a3;
+    opacity: 0.95;
     flex-shrink: 0;
+    font-weight: 700;
 }
 
 .drop-zone .assigned-docente .adm-full {
@@ -599,16 +610,20 @@
     position: fixed;          /* ⬅️ fixed = no lo recorta ningún overflow */
     top: 0;
     left: 0;
-    width: 260px;             /* ⬅️ más ancho y cómodo */
+    width: 270px;             /* ⬅️ ancho cómodo y legible */
     z-index: 99999;           /* ⬅️ por encima de todo */
-    background: #0a1128;
+    background: rgba(79, 70, 229, 0.16); /* ⬅️ mismo color translúcido que los bloques */
+    backdrop-filter: blur(8px);           /* ⬅️ efecto cristal moderno */
+    -webkit-backdrop-filter: blur(8px);
+    color: #1e1b4b;           /* ⬅️ texto oscuro de alto contraste */
+    border: 1px solid rgba(79, 70, 229, 0.35);
     border-radius: 0.75rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
     padding: 0.875rem;
     flex-direction: column;
     align-items: stretch;     /* ⬅️ para que los selects ocupen todo el ancho */
     text-align: center;
-    gap: 0.4rem;
+    gap: 0.45rem;
     pointer-events: auto;
 }
 
@@ -623,31 +638,57 @@
 
 /* Ajustes internos del popup para que no se corte nada */
 .drop-zone .assigned-docente .adm-full .docente-nombre {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.875rem;
-    line-height: 1.2;
+    line-height: 1.25;
+    color: #1e1b4b;
 }
 
-.drop-zone .assigned-docente .adm-full .docente-cedula,
-.drop-zone .assigned-docente .adm-full .docente-materia {
+.drop-zone .assigned-docente .adm-full .docente-cedula {
     font-size: 0.75rem;
-    opacity: 0.85;
+    color: #4338ca;
+    font-weight: 500;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-materia {
+    font-size: 0.78rem;
+    color: #3730a3;
+    font-weight: 600;
     word-break: break-word;
 }
 
 .drop-zone .assigned-docente .adm-full .pildora-selector {
     width: 100%;
-    background: white;
-    color: #212529;
-    border: none;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
     border-radius: 50px;
     padding: 0.35rem 0.6rem;
     font-size: 0.75rem;
+    font-weight: 500;
     box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.drop-zone .assigned-docente .adm-full .pildora-selector:focus {
+    border-color: #4f46e5 !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+.drop-zone .assigned-docente .adm-full .pildora-selector:disabled {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    border-color: #e2e8f0 !important;
+    opacity: 1;
+    cursor: default;
 }
 
 .drop-zone .assigned-docente .adm-full .aula-error-message {
     font-size: 0.6875rem;
+    color: #dc2626;
+    font-weight: 500;
 }
 
 .drop-zone .assigned-docente .adm-full .btn-eliminar-docente {
@@ -655,7 +696,47 @@
     align-self: flex-end;
     width: 22px;
     height: 22px;
-    background: rgba(255, 255, 255, 0.15);
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    line-height: 1;
+    transition: all 0.15s ease;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-eliminar-docente:hover {
+    background: #ef4444;
+    color: #ffffff;
+    border-color: #dc2626;
+    transform: scale(1.1);
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle {
+    background: transparent;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle:hover {
+    background: #f1f5f9;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-warning {
+    color: #d97706 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted {
+    color: #94a3b8 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted:hover {
+    color: #334155 !important;
 }
 
 .drop-zone .assigned-docente .docente-nombre {
@@ -1291,14 +1372,15 @@
    =================================== */
 .conflicto-tooltip {
     position: absolute;
-    background: #212529;
-    color: white;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
+    background: #e9ecef;
+    color: #212529;
+    border: 1px solid #ced4da;
+    padding: 0.6rem 0.85rem;
+    border-radius: 0.5rem;
     font-size: 0.75rem;
-    max-width: 15.625rem;
+    max-width: 16rem;
     z-index: 1000;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -1309,23 +1391,37 @@
 }
 
 .conflicto-tooltip .tooltip-titulo {
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 0.25rem;
-    color: #f8d7da;
+    color: #dc2626;
 }
 
 .conflicto-tooltip .tooltip-motivo {
-    color: #dee2e6;
+    color: #495057;
     margin-bottom: 0.375rem;
+    font-weight: 500;
 }
 
 .conflicto-tooltip .tooltip-sugerencias {
     font-size: 0.6875rem;
-    color: #adb5bd;
+    color: #6c757d;
 }
 
 .conflicto-tooltip .tooltip-sugerencias li {
     margin-bottom: 0.125rem;
+}
+
+/* ===================================
+   Bootstrap Popovers Claros
+   =================================== */
+.popover {
+    --bs-popover-bg: #e9ecef;
+    --bs-popover-border-color: #ced4da;
+    --bs-popover-header-bg: #dee2e6;
+    --bs-popover-header-color: #0f172a;
+    --bs-popover-body-color: #212529;
+    --bs-popover-arrow-border: #ced4da;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 /* ===================================

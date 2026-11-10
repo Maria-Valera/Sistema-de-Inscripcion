@@ -120,9 +120,9 @@ class HorarioController extends Controller
             return response()->json(['message' => 'La sección no pertenece al grado indicado.'], 404);
         }
 
-        $config = ConfiguracionHorario::where('anio_escolar_id', $anioEscolarActivo->id)->first();
-        $numeroBloques = $config ? (int) $config->numero_bloques : 8;
-        $bloquesCalculados = $config ? $this->configuracionHorarioService->bloques($config) : collect();
+        $config = $this->configuracionHorarioService->actual();
+        $numeroBloques = (int) $config->numero_bloques;
+        $bloquesCalculados = $this->configuracionHorarioService->bloques($config);
 
         $asignaciones = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
             ->whereHas('cargaAcademica', function ($q) use ($seccion, $grado_id) {
@@ -281,13 +281,8 @@ class HorarioController extends Controller
 
         $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
-        $numeroBloques = 8;
-        if ($anioEscolarActivo) {
-            $config = ConfiguracionHorario::where('anio_escolar_id', $anioEscolarActivo->id)->first();
-            if ($config) {
-                $numeroBloques = $config->numero_bloques;
-            }
-        }
+        $config = $this->configuracionHorarioService->actual();
+        $numeroBloques = $config->numero_bloques;
         $bloquesHorarios = collect(range(1, $numeroBloques))->map(fn($b) => (object)[
             'id' => $b,
             'bloque' => $b,
@@ -362,7 +357,7 @@ class HorarioController extends Controller
         $erroresCriticos = [];
 
         if ($anioEscolarActivo) {
-            $configuracion = ConfiguracionHorario::where('anio_escolar_id', $anioEscolarActivo->id)->first();
+            $configuracion = ConfiguracionHorario::first();
             if (!$configuracion) {
                 $hayErroresCriticos = true;
                 $erroresCriticos = [
@@ -430,8 +425,8 @@ class HorarioController extends Controller
                 ->with('warning', 'No puedes crear horarios en un año escolar anterior (solo lectura).');
         }
 
-        // 1. Verificar si existe configuración de horario para el año activo
-        $configuracion = ConfiguracionHorario::where('anio_escolar_id', $anioEscolarActivo->id)->first();
+        // 1. Verificar si existe configuración de horario institucional
+        $configuracion = ConfiguracionHorario::first();
         if (!$configuracion) {
             return redirect()->route('admin.horario.configuracion')
                 ->with('warning', 'Debes configurar el marco horario (bloques y recesos) antes de crear un horario.');

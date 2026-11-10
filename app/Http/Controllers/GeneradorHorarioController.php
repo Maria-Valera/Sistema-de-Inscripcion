@@ -736,11 +736,13 @@ class GeneradorHorarioController extends Controller
             'anio_escolar_id' => 'nullable|integer',
         ]);
 
-        // Si no se proporciona anio_escolar_id, usar el seleccionado
-        $anioEscolarId = $validado['anio_escolar_id'] ?? AnioEscolarSeleccionado::id();
+        // Si no se proporciona anio_escolar_id, usar el seleccionado o el activo
+        $anioEscolarId = !empty($validado['anio_escolar_id'])
+            ? (int) $validado['anio_escolar_id']
+            : (AnioEscolarSeleccionado::id() ?: \App\Models\AnioEscolar::where('status', 'Activo')->value('id'));
 
         if (!$anioEscolarId) {
-            return response()->json(['error' => 'No hay año escolar seleccionado'], 400);
+            return response()->json(['error' => 'No hay año escolar seleccionado ni activo en el sistema.'], 422);
         }
 
         return \DB::transaction(function() use ($validado, $anioEscolarId) {
@@ -820,6 +822,7 @@ class GeneradorHorarioController extends Controller
                         'fijada' => !empty($asignacion['fijada']),
                         'conflicto_manual' => false,
                     ]);
+                    $asignacionesGuardadas++;
                 } catch (\Illuminate\Database\QueryException $e) {
                     $msg = ($e->getCode() == 23000 || str_contains($e->getMessage(), 'unique_carga_bloque') || str_contains($e->getMessage(), 'UNIQUE constraint failed'))
                         ? 'La clase ya está asignada en ese día y bloque'

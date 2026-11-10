@@ -82,7 +82,6 @@ class ValidadorHorarioServiceTest extends TestCase
         ]);
 
         ConfiguracionHorario::create([
-            'anio_escolar_id' => $anio->id,
             'hora_inicio' => '07:00:00',
             'numero_bloques' => $numeroBloques,
             'duracion_bloque_min' => 90,

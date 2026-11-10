@@ -92,7 +92,6 @@ class ConfiguracionHorarioControllerTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('configuracion_horario', [
-            'anio_escolar_id' => $this->anio->id,
             'hora_inicio' => '07:30:00',
             'numero_bloques' => 4,
             'duracion_bloque_min' => 90,

@@ -64,11 +64,11 @@ git grep -n -F "AnioEscolar::activos()" -- [archivos_del_alcance] -> 0 coinciden
 
 1. **Suite de Horario:**
    - Comando: `php vendor/phpunit/phpunit/phpunit --filter=Horario`
-   - Resultado: **OK (66 tests, 267 assertions)**
+   - Resultado: **OK (70 tests, 282 assertions)**
 
 2. **Suite de Docentes:**
    - Comando: `php vendor/phpunit/phpunit/phpunit --filter=Docente`
-   - Resultado: **OK (24 tests, 162 assertions)**
+   - Resultado: **OK (28 tests, 177 assertions)**
 
 3. **Nueva suite de pruebas de integración con selector de año:**
    - Archivo: `tests/Feature/HorarioDocentesAnioSeleccionadoTest.php`
@@ -78,4 +78,20 @@ git grep -n -F "AnioEscolar::activos()" -- [archivos_del_alcance] -> 0 coinciden
      - `test_con_anio_actual_seleccionado_creacion_de_docente_asigna_el_anio_seleccionado` (Creación de docente asigna `anio_escolar_id` seleccionado y sigue flujo).
      - `test_api_anio_escolar_activo_retorna_el_anio_seleccionado_en_sesion` (API `/api/anio-escolar/activo` retorna el año escolar de la sesión).
    - Resultado: **OK (4 tests, 15 assertions)**
+
+---
+
+## 6. Ajustes de Configuración Global de Horarios y Población de Cargas (Feedback Usuaria)
+
+### Tarea 1: Configuración de Horario Global y Estática
+- **Migración:** `database/migrations/2026_11_09_000001_make_configuracion_horario_global.php` desvincula la columna `anio_escolar_id` y su índice único de `configuracion_horario`.
+- **Modelo:** `ConfiguracionHorario` opera como registro institucional único.
+- **Servicio:** `ConfiguracionHorarioService::actual()` recupera la configuración única o crea por defecto la jornada institucional (07:00 AM, 4 bloques de 90 min).
+- **Controlador y Vistas:** `ConfiguracionHorarioController` y `resources/views/admin/horario/configuracion.blade.php` ya no dependen del año en sesión para consultar o actualizar los parámetros de la jornada.
+
+### Tarea 2: Población de Cargas Académicas y Eliminación de Errores
+- **Secciones:** Se incluyeron las secciones A, B, C, D, E de 1er año en `SeccionSeeder.php` para completar la oferta académica institucional.
+- **Seeder de Cargas:** Se rediseñó `CargaAcademicaSeeder.php` para vincular docentes activos con títulos universitarios correspondientes (`EstudiosRealizado`, `AreaEstudioRealizado`, `DetalleDocenteEstudio`), aulas fijas de capacidad suficiente (`seccion_aula`), laboratorios y registros en `cargas_academicas` para todas las secciones activas.
+- **Integración:** Incluido en `DatabaseSeeder.php` tras `SeccionAulaSeeder`.
+- **Verificación:** Al correr `php artisan migrate:fresh --seed`, la validación de generación de horarios arroja **0 errores críticos**, permitiendo generar el horario completo.
 

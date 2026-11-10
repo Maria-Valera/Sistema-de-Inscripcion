@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\Dia;
 use App\Models\BloqueReservado;
 use App\Models\ConfiguracionHorario;
+use App\Support\AnioEscolarSeleccionado;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -12,14 +13,27 @@ use Illuminate\Support\Facades\DB;
 class ConfiguracionHorarioService
 {
     /**
-     * Obtiene la configuración de horario para el año escolar indicado,
+     * Obtiene la configuración de horario global única,
      * cargando la relación de recesos ordenada.
+     * Si no existe, crea una configuración por defecto (07:00 AM, 4 bloques de 90 min).
      */
-    public function actual(int $anioEscolarId): ?ConfiguracionHorario
+    public function actual(?int $anioEscolarId = null): ConfiguracionHorario
     {
-        return ConfiguracionHorario::with(['recesos' => function ($q) {
+        $config = ConfiguracionHorario::with(['recesos' => function ($q) {
             $q->orderBy('despues_de_bloque');
-        }])->where('anio_escolar_id', $anioEscolarId)->first();
+        }])->first();
+
+        if (!$config) {
+            $config = ConfiguracionHorario::create([
+                'hora_inicio' => '07:00:00',
+                'numero_bloques' => 4,
+                'duracion_bloque_min' => 90,
+                'minutos_entre_bloques' => 0,
+            ]);
+            $config->setRelation('recesos', collect());
+        }
+
+        return $config;
     }
 
     /**
@@ -63,32 +77,44 @@ class ConfiguracionHorarioService
 
     /**
      * Obtiene el número de bloque más alto registrado en asignaciones,
-     * indisponibilidad o bloques reservados para un año escolar.
+     * indisponibilidad o bloques reservados (para un año específico o globalmente).
      */
-    public function maximoBloqueOcupado(int $anioEscolarId): int
+    public function maximoBloqueOcupado(?int $anioEscolarId = null): int
     {
-        $maxAsignaciones = DB::table('horario_asignaciones')
-            ->where('anio_escolar_id', $anioEscolarId)
-            ->max('bloque') ?? 0;
+        $qAsignaciones = DB::table('horario_asignaciones');
+        $qIndisponibilidad = DB::table('docente_indisponibilidad');
+        $qReservados = DB::table('bloque_reservados');
 
-        $maxIndisponibilidad = DB::table('docente_indisponibilidad')
-            ->where('anio_escolar_id', $anioEscolarId)
-            ->max('bloque') ?? 0;
+        if ($anioEscolarId !== null) {
+            $qAsignaciones->where('anio_escolar_id', $anioEscolarId);
+            $qIndisponibilidad->where('anio_escolar_id', $anioEscolarId);
+            $qReservados->where('anio_escolar_id', $anioEscolarId);
+        }
 
-        $maxReservados = DB::table('bloque_reservados')
-            ->where('anio_escolar_id', $anioEscolarId)
-            ->max('bloque') ?? 0;
+        $maxAsignaciones = $qAsignaciones->max('bloque') ?? 0;
+        $maxIndisponibilidad = $qIndisponibilidad->max('bloque') ?? 0;
+        $maxReservados = $qReservados->max('bloque') ?? 0;
 
         return max((int) $maxAsignaciones, (int) $maxIndisponibilidad, (int) $maxReservados);
     }
 
     /**
      * Valida y guarda la configuración de horario y sus recesos en una transacción.
+     * Soporta ser invocado como guardar(array $datos, ?int $anioEscolarId = null)
+     * o mantener compatibilidad guardar(int $anioEscolarId, array $datos).
      *
      * @throws \InvalidArgumentException Si las reglas de negocio no se cumplen.
      */
-    public function guardar(int $anioEscolarId, array $datos): ConfiguracionHorario
+    public function guardar($arg1, $arg2 = null): ConfiguracionHorario
     {
+        if (is_array($arg1)) {
+            $datos = $arg1;
+            $anioEscolarId = is_numeric($arg2) ? (int) $arg2 : AnioEscolarSeleccionado::id();
+        } else {
+            $anioEscolarId = is_numeric($arg1) ? (int) $arg1 : AnioEscolarSeleccionado::id();
+            $datos = is_array($arg2) ? $arg2 : [];
+        }
+
         $numeroBloques = (int) ($datos['numero_bloques'] ?? 0);
         if ($numeroBloques <= 0) {
             throw new \InvalidArgumentException('El número de bloques debe ser mayor a 0.');
@@ -191,7 +217,7 @@ class ConfiguracionHorarioService
         }
 
         // Validación: verificar si algún bloque a reservar ya tiene clases asignadas en horario_asignaciones
-        if (!empty($paresReservados)) {
+        if (!empty($paresReservados) && $anioEscolarId) {
             $conflictos = [];
             foreach ($paresReservados as $par) {
                 $asignaciones = DB::table('horario_asignaciones')
@@ -213,15 +239,19 @@ class ConfiguracionHorarioService
         }
 
         return DB::transaction(function () use ($anioEscolarId, $datos, $horaInicio, $numeroBloques, $duracionBloqueMin, $recesosData, $paresReservados) {
-            $config = ConfiguracionHorario::updateOrCreate(
-                ['anio_escolar_id' => $anioEscolarId],
-                [
-                    'hora_inicio' => $horaInicio,
-                    'numero_bloques' => $numeroBloques,
-                    'duracion_bloque_min' => $duracionBloqueMin,
-                    'minutos_entre_bloques' => max(0, (int) ($datos['minutos_entre_bloques'] ?? 0)),
-                ]
-            );
+            $config = ConfiguracionHorario::first();
+            $payload = [
+                'hora_inicio' => $horaInicio,
+                'numero_bloques' => $numeroBloques,
+                'duracion_bloque_min' => $duracionBloqueMin,
+                'minutos_entre_bloques' => max(0, (int) ($datos['minutos_entre_bloques'] ?? 0)),
+            ];
+
+            if ($config) {
+                $config->update($payload);
+            } else {
+                $config = ConfiguracionHorario::create($payload);
+            }
 
             // Reemplazar recesos
             $config->recesos()->delete();
@@ -241,8 +271,8 @@ class ConfiguracionHorarioService
                 }
             }
 
-            // Sincronizar bloques reservados si se envió la clave en $datos
-            if (array_key_exists('reservados', $datos)) {
+            // Sincronizar bloques reservados si se envió la clave en $datos y hay un año escolar disponible
+            if (array_key_exists('reservados', $datos) && $anioEscolarId) {
                 BloqueReservado::where('anio_escolar_id', $anioEscolarId)->delete();
 
                 foreach ($paresReservados as $par) {
@@ -275,19 +305,19 @@ class ConfiguracionHorarioService
      */
     public function guardarReservados(int $anioEscolarId, array $reservadosRaw): void
     {
-        $config = $this->actual($anioEscolarId);
+        $config = $this->actual();
         $datos = [
-            'hora_inicio' => $config?->hora_inicio ?? '07:00:00',
-            'numero_bloques' => $config?->numero_bloques ?? 4,
-            'duracion_bloque_min' => $config?->duracion_bloque_min ?? 90,
-            'minutos_entre_bloques' => $config?->minutos_entre_bloques ?? 0,
-            'recesos' => $config?->recesos->map(fn($r) => [
+            'hora_inicio' => $config->hora_inicio,
+            'numero_bloques' => $config->numero_bloques,
+            'duracion_bloque_min' => $config->duracion_bloque_min,
+            'minutos_entre_bloques' => $config->minutos_entre_bloques,
+            'recesos' => $config->recesos->map(fn($r) => [
                 'despues_de_bloque' => (int) $r->despues_de_bloque,
                 'duracion_min' => (int) $r->duracion_min,
-            ])->all() ?? [],
+            ])->all(),
             'reservados' => $reservadosRaw,
         ];
 
-        $this->guardar($anioEscolarId, $datos);
+        $this->guardar($datos, $anioEscolarId);
     }
 }

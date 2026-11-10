@@ -499,9 +499,9 @@ class DocenteController extends Controller
 
         $aniosEscolares = collect([$anioEscolarActivo]);
 
-        $config = $configService->actual($anioEscolarActivo->id);
-        $numeroBloques = $config ? (int)$config->numero_bloques : 7;
-        $bloquesCalculados = $config ? $configService->bloques($config) : collect();
+        $config = $configService->actual();
+        $numeroBloques = (int)$config->numero_bloques;
+        $bloquesCalculados = $configService->bloques($config);
 
         $diasSemana = collect(Dia::cases())->map(fn(Dia $d) => (object)[
             'id' => $d->value,

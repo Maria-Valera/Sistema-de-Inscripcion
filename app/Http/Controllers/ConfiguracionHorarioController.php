@@ -18,32 +18,14 @@ class ConfiguracionHorarioController extends Controller
     ) {}
 
     /**
-     * Muestra la vista de configuración de bloques (marco horario).
+     * Muestra la vista de configuración de bloques (marco horario institucional global).
      */
-    public function index(): View|RedirectResponse
+    public function index(): View
     {
         $anioActivo = AnioEscolarSeleccionado::modelo();
-
-        if (!$anioActivo) {
-            return redirect()->route('admin.anio_escolar.index')
-                ->with('error', 'Debe existir un año escolar seleccionado para ver la configuración del horario.');
-        }
-
-        $configuracion = $this->configuracionService->actual($anioActivo->id);
-
-        if (!$configuracion) {
-            $configuracion = new ConfiguracionHorario([
-                'anio_escolar_id' => $anioActivo->id,
-                'hora_inicio' => '07:00:00',
-                'numero_bloques' => 4,
-                'duracion_bloque_min' => 90,
-                'minutos_entre_bloques' => 0,
-            ]);
-            $configuracion->setRelation('recesos', collect());
-        }
-
+        $configuracion = $this->configuracionService->actual();
         $bloques = $this->configuracionService->bloques($configuracion);
-        $maxBloqueOcupado = $this->configuracionService->maximoBloqueOcupado($anioActivo->id);
+        $maxBloqueOcupado = $this->configuracionService->maximoBloqueOcupado($anioActivo?->id);
 
         $numeroBloques = (int) ($configuracion->numero_bloques ?? 4);
         $duracionBloqueMin = (int) ($configuracion->duracion_bloque_min ?? 90);
@@ -57,10 +39,12 @@ class ConfiguracionHorarioController extends Controller
             ];
         })->values()->all();
 
-        $reservados = BloqueReservado::where('anio_escolar_id', $anioActivo->id)
-            ->orderBy('dia')
-            ->orderBy('bloque')
-            ->get();
+        $reservados = $anioActivo
+            ? BloqueReservado::where('anio_escolar_id', $anioActivo->id)
+                ->orderBy('dia')
+                ->orderBy('bloque')
+                ->get()
+            : collect();
 
         $reservadosArray = $reservados->map(function ($r) {
             $bloqueVal = (int) $r->bloque;
@@ -90,20 +74,10 @@ class ConfiguracionHorarioController extends Controller
     }
 
     /**
-     * Guarda y actualiza la configuración de horario, recesos y bloques reservados.
+     * Guarda y actualiza la configuración global de horario, recesos y bloques reservados.
      */
     public function update(Request $request): RedirectResponse
     {
-        $anioActivo = AnioEscolarSeleccionado::modelo();
-
-        if (!$anioActivo) {
-            return redirect()->back()->with('error', 'No hay un año escolar seleccionado.');
-        }
-
-        if (!AnioEscolarSeleccionado::esActual()) {
-            return redirect()->back()->with('error', 'No puedes modificar la configuración de un año escolar anterior.');
-        }
-
         $request->validate([
             'hora_inicio' => ['required', 'regex:/^\d{1,2}:\d{2}(:\d{2})?$/'],
             'numero_bloques' => ['required', 'integer', 'min:1', 'max:12'],
@@ -126,7 +100,8 @@ class ConfiguracionHorarioController extends Controller
         ]);
 
         try {
-            $this->configuracionService->guardar($anioActivo->id, $request->all());
+            $anioActivo = AnioEscolarSeleccionado::modelo();
+            $this->configuracionService->guardar($request->all(), $anioActivo?->id);
 
             return redirect()->route('admin.horario.configuracion')
                 ->with('success', 'Configuración de horario, recesos y bloques reservados actualizada correctamente.');

@@ -45,8 +45,8 @@ class PruebaMasivaHorarioCommand extends Command
             return Command::FAILURE;
         }
 
-        $config = ConfiguracionHorario::where('anio_escolar_id', $anio->id)->first();
-        $totalBloques = $config ? (int)$config->numero_bloques : 7;
+        $config = app(\App\Services\ConfiguracionHorarioService::class)->actual();
+        $totalBloques = (int)$config->numero_bloques;
         $totalDias = 5;
         $intentos = (int) $this->option('intentos');
 

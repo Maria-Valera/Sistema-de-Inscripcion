@@ -293,14 +293,10 @@ class HorarioCreateTest extends TestCase
         $response->assertSee('Corrige los errores en el panel inferior para habilitar este botón.');
         // Panel de errores visible
         $response->assertSee('Creación de Horarios Bloqueada');
-        // Botón para ver detalles de los errores (Bootstrap collapse)
-        $response->assertSee('Ver detalles de los errores');
+        // Acordeón agrupado por sección
+        $response->assertSee('accordion-seccion-error', false);
         $response->assertSee('data-bs-toggle="collapse"', false);
-        $response->assertSee('data-bs-target="#collapseErrores"', false);
-        // Contenedor colapsable (oculto por defecto, sin la clase 'show')
-        $response->assertSee('class="collapse mt-3" id="collapseErrores"', false);
-        $response->assertDontSee('class="collapse mt-3 show" id="collapseErrores"', false);
-        $response->assertSee('Errores críticos que deben solucionarse para habilitar la creación:');
+        $response->assertSee('Ir a Carga Académica');
     }
 
     /**
@@ -1069,5 +1065,108 @@ class HorarioCreateTest extends TestCase
         // Verificar el contenedor de toasts flotantes persistentes
         $response->assertSee('id="toast-container"', false);
         $response->assertSee('toast-container position-fixed top-0 end-0 p-3', false);
+    }
+
+    /**
+     * Verifica que actualizar el aula de una asignación funcione correctamente vía API.
+     */
+    public function test_actualizar_aula_exitoso(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $tipoDocId = \DB::table('tipo_documentos')->insertGetId(['nombre' => 'CI', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $generoId = \DB::table('generos')->insertGetId(['genero' => 'M', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $persona = Persona::create(['primer_nombre' => 'Profesor', 'primer_apellido' => 'Aula', 'tipo_documento_id' => $tipoDocId, 'numero_documento' => 'V33111222', 'fecha_nacimiento' => '1985-01-01', 'genero_id' => $generoId, 'status' => true]);
+        $docente = Docente::create(['persona_id' => $persona->id, 'status' => true]);
+
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 2, 'status' => true]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 15, 'status' => true]);
+
+        $area = AreaFormacion::create(['nombre_area_formacion' => 'Matemática', 'codigo_area' => 'MAT-1', 'siglas' => 'MAT', 'bloques_semanales' => 2, 'status' => true]);
+        $carga = CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docente->id,
+            'area_formacion_id' => $area->id,
+            'seccion_id' => $seccion->id,
+        ]);
+
+        $aula1 = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30]);
+        $aula2 = Aula::create(['nombre_aula' => 'Aula 2', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30]);
+
+        $asignacion = HorarioAsignacion::create([
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga->id,
+            'aula_id' => $aula1->id_aula,
+            'dia' => 1,
+            'bloque' => 1,
+        ]);
+
+        $response = $this->actingAs($admin)->putJson("/api/horario/{$asignacion->id}/aula", [
+            'aula_id' => $aula2->id_aula,
+        ]);
+
+        $response->assertOk();
+        $response->assertJson(['success' => true]);
+        $this->assertEquals($aula2->id_aula, $asignacion->fresh()->aula_id);
+    }
+
+    /**
+     * Verifica que guardar asignaciones persista los datos y retorne conteo correcto.
+     */
+    public function test_guardar_asignaciones_exitoso(): void
+    {
+        $admin = $this->crearAdmin();
+
+        $anio = AnioEscolar::create([
+            'inicio_anio_escolar' => '2026-09-15',
+            'cierre_anio_escolar' => '2027-07-15',
+            'status' => 'Activo',
+        ]);
+
+        $tipoDocId = \DB::table('tipo_documentos')->insertGetId(['nombre' => 'CI', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $generoId = \DB::table('generos')->insertGetId(['genero' => 'M', 'status' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $persona = Persona::create(['primer_nombre' => 'Profesor', 'primer_apellido' => 'Guardar', 'tipo_documento_id' => $tipoDocId, 'numero_documento' => 'V44222333', 'fecha_nacimiento' => '1985-01-01', 'genero_id' => $generoId, 'status' => true]);
+        $docente = Docente::create(['persona_id' => $persona->id, 'status' => true]);
+
+        $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 30, 'min_seccion' => 1, 'max_seccion' => 2, 'status' => true]);
+        $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 15, 'status' => true]);
+
+        $area = AreaFormacion::create(['nombre_area_formacion' => 'Física', 'codigo_area' => 'FIS-1', 'siglas' => 'FIS', 'bloques_semanales' => 2, 'status' => true]);
+        $carga = CargaAcademica::create([
+            'anio_escolar_id' => $anio->id,
+            'docente_id' => $docente->id,
+            'area_formacion_id' => $area->id,
+            'seccion_id' => $seccion->id,
+        ]);
+
+        $response = $this->actingAs($admin)->postJson('/api/horario/guardar-asignaciones', [
+            'anio_escolar_id' => $anio->id,
+            'asignaciones' => [
+                [
+                    'carga_academica_id' => $carga->id,
+                    'dia' => 2,
+                    'bloque' => 3,
+                    'fijada' => false,
+                ]
+            ],
+        ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'guardadas' => 1,
+        ]);
+        $this->assertDatabaseHas('horario_asignaciones', [
+            'anio_escolar_id' => $anio->id,
+            'carga_academica_id' => $carga->id,
+            'dia' => 2,
+            'bloque' => 3,
+        ]);
     }
 }

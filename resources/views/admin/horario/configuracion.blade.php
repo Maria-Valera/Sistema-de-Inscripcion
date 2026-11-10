@@ -114,8 +114,8 @@
                 <div>
                     <h1 class="title-main">Configuración de Bloques Horarios</h1>
                     <p class="title-subtitle">
-                        Marco horario institucional y bloques reservados &bull; Año Escolar: 
-                        <strong>{{ $anioActivo->nombre_completo ?? 'Año Escolar Activo' }}</strong>
+                        Marco horario institucional y bloques de clase &bull;
+                        <strong>Configuración Global</strong>
                     </p>
                 </div>
             </div>
@@ -175,7 +175,7 @@
                                 <i class="fas fa-clock text-primary"></i> Parámetros de la Jornada
                             </h2>
                             <span class="badge badge-kpi">
-                                <i class="fas fa-calendar-check me-1"></i> {{ $anioActivo->status }}
+                                <i class="fas fa-globe me-1"></i> Configuración Global
                             </span>
                         </div>
                         <div class="config-card-body">
@@ -311,19 +311,12 @@
                     </div>
 
                     {{-- Botón Guardar Todo --}}
-                    @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                        <div class="d-grid mb-4">
-                            <button type="submit" class="btn btn-primary btn-lg shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px;">
-                                <i class="fas fa-save"></i>
-                                <span>Guardar Configuración de Horario</span>
-                            </button>
-                        </div>
-                    @else
-                        <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert">
-                            <i class="fas fa-info-circle"></i>
-                            <span>El año escolar seleccionado está en modo <strong>Solo consulta</strong>. No se pueden modificar los parámetros de horario.</span>
-                        </div>
-                    @endif
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px;">
+                            <i class="fas fa-save"></i>
+                            <span>Guardar Configuración de Horario</span>
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Columna Derecha: Vista Previa en Vivo (Estilo GHC) --}}

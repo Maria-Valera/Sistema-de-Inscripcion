@@ -5,6 +5,31 @@
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
     <link rel="stylesheet" href="{{ asset('css/horario-styles.css') }}">
+    <style>
+        .accordion-seccion-error .accordion-button:not(.collapsed) {
+            background-color: #fef3c7 !important;
+            color: #92400e !important;
+            box-shadow: none !important;
+        }
+        .accordion-seccion-error .accordion-button {
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px !important;
+        }
+        .accordion-seccion-error .accordion-item {
+            border: 1px solid #fed7aa !important;
+            border-radius: 6px !important;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        .materia-error-item {
+            transition: background-color 0.15s ease;
+        }
+        .materia-error-item:hover {
+            background-color: #fff7ed !important;
+        }
+    </style>
 @stop
 
 @section('title', 'Gestión de Horarios')
@@ -35,16 +60,18 @@
                     @endcan
 
                     @if ($hayErroresCriticos ?? false)
-                        <div class="d-inline-flex flex-column align-items-end text-end">
-                            <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 text-white shadow-none" disabled style="border-radius: 6px; font-weight: 600; cursor: not-allowed; background-color: #94a3b8; border: none; opacity: 0.85;">
-                                <i class="fas fa-plus"></i>
-                                <span>Nuevo Horario</span>
-                            </button>
-                            <span class="text-danger fw-semibold mt-1 d-inline-flex align-items-center gap-1" style="font-size: 0.8rem; line-height: 1.2;">
+                        <div class="d-inline-flex flex-column align-items-end text-end" style="max-width: 270px;">
+                            <div class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="No puedes crear un horario porque hay errores en la carga académica. Corrige los errores en el panel inferior para habilitar este botón.">
+                                <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 text-white shadow-none" disabled style="border-radius: 6px; font-weight: 600; cursor: not-allowed; background-color: #94a3b8; border: none; opacity: 0.85; pointer-events: none;">
+                                    <i class="fas fa-lock text-warning"></i>
+                                    <span>Nuevo Horario</span>
+                                </button>
+                            </div>
+                            <span class="text-danger fw-semibold mt-1 d-inline-flex align-items-center gap-1" style="font-size: 0.78rem; line-height: 1.2;">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                <span>⚠️ No puedes crear un horario porque hay errores en la carga académica.</span>
+                                <span>No puedes crear un horario porque hay errores en la carga académica.</span>
                             </span>
-                            <span class="text-muted" style="font-size: 0.74rem; line-height: 1.2;">
+                            <span class="text-muted" style="font-size: 0.72rem; line-height: 1.2;">
                                 Corrige los errores en el panel inferior para habilitar este botón.
                             </span>
                         </div>
@@ -65,7 +92,42 @@
         @include('partials.alerta-modo-consulta')
         @php
             $erroresMostrar = session('errores_validacion') ?? ($erroresCriticos ?? []);
+
+            $erroresAgrupados = [];
+            foreach ($erroresMostrar as $err) {
+                $grupoKey = $err['grupo'] ?? null;
+                if (!$grupoKey) {
+                    if (preg_match('/secci[oó]n\s+([A-Za-z0-9]+)\s*\(([^)]+)\)/ui', $err['mensaje'] ?? '', $m)) {
+                        $grupoKey = "{$m[2]}, Sección {$m[1]}";
+                    } elseif (isset($err['codigo']) && str_starts_with($err['codigo'], 'docente_')) {
+                        $grupoKey = 'Docentes y Disponibilidad';
+                    } elseif (isset($err['codigo']) && str_starts_with($err['codigo'], 'demanda_aula_')) {
+                        $grupoKey = 'Aulas Especializadas';
+                    } else {
+                        $grupoKey = 'Configuración General';
+                    }
+                }
+                $erroresAgrupados[$grupoKey][] = $err;
+            }
+            $totalGrupos = count($erroresAgrupados);
         @endphp
+
+        {{-- Banner Verde de Éxito cuando NO hay errores críticos --}}
+        @if (!($hayErroresCriticos ?? false) && empty($erroresMostrar) && !session('warning'))
+            <div class="alert alert-success d-flex align-items-center gap-3 p-3 mb-4 shadow-sm border-0" role="alert" style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-left: 4px solid #10b981 !important; border-radius: 8px;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center bg-white shadow-sm flex-shrink-0" style="width: 44px; height: 44px; color: #059669; font-size: 1.35rem;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.98rem;">
+                        <i class="fas fa-shield-alt me-1"></i> Carga Académica Lista y Validada
+                    </h6>
+                    <p class="mb-0 text-muted" style="font-size: 0.85rem;">
+                        Todas las secciones y áreas de formación cuentan con docentes y aulas asignadas. El sistema está 100% listo para generar horarios académicos.
+                    </p>
+                </div>
+            </div>
+        @endif
 
         @if (session('success') || session('error') || session('warning') || (($hayErroresCriticos ?? false) && !empty($erroresMostrar)))
             <div class="alerts-container">
@@ -84,56 +146,111 @@
                     </div>
                 @endif
 
+                {{-- Acordeón Agrupado de Errores por Sección --}}
                 @if (session('warning') || (($hayErroresCriticos ?? false) && !empty($erroresMostrar)))
-                    <div class="alert alert-warning alert-dismissible fade show shadow-sm mb-4" role="alert" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 1.25rem;">
+                    <div class="alert alert-warning alert-dismissible fade show shadow-sm mb-4" role="alert" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 1.25rem; border-radius: 8px;">
                         <div class="d-flex align-items-start gap-3">
-                            <div style="color: #d97706; font-size: 1.5rem; margin-top: -2px;">
+                            <div style="color: #d97706; font-size: 1.5rem; margin-top: -2px;" class="flex-shrink-0">
                                 <i class="fas fa-exclamation-triangle"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h5 class="fw-bold mb-1" style="color: #92400e;">
-                                    <i class="fas fa-lock me-1"></i> Creación de Horarios Bloqueada
-                                </h5>
-                                <p class="mb-2" style="color: #78350f;">
-                                    {{ session('warning') ?? 'Se han detectado ' . count($erroresMostrar) . ' inconsistencia(s) crítica(s) en la carga académica que impiden crear el horario.' }}
-                                </p>
-                                @if (!empty($erroresMostrar))
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2 pb-2 border-bottom border-warning">
                                     <div>
-                                        <button class="btn btn-sm btn-outline-warning text-dark fw-semibold d-inline-flex align-items-center gap-2 mt-1 shadow-sm"
-                                                type="button"
-                                                data-bs-toggle="collapse"
-                                                data-bs-target="#collapseErrores"
-                                                aria-expanded="false"
-                                                aria-controls="collapseErrores"
-                                                id="btnToggleErrores"
-                                                style="border-color: #d97706; background-color: #fef3c7;">
-                                            <i class="fas fa-eye" id="iconoToggleErrores"></i>
-                                            <span id="textoToggleErrores">Ver detalles de los errores ({{ count($erroresMostrar) }})</span>
-                                        </button>
+                                        <h5 class="fw-bold mb-0" style="color: #92400e;">
+                                            <i class="fas fa-lock me-1"></i> Creación de Horarios Bloqueada
+                                        </h5>
+                                        <small style="color: #78350f;">
+                                            {{ session('warning') ?? 'Se detectaron ' . count($erroresMostrar) . ' materias sin docente asignado en ' . $totalGrupos . ' sección(es).' }}
+                                        </small>
                                     </div>
+                                    <div>
+                                        <a href="{{ route('admin.transacciones.docente_area_grado.index') }}" class="btn btn-sm btn-outline-warning text-dark fw-semibold d-inline-flex align-items-center gap-1 shadow-sm px-3 py-1" style="background: #fef3c7; border-color: #d97706; border-radius: 6px;">
+                                            <i class="fas fa-user-edit"></i>
+                                            <span>Ir a Carga Académica</span>
+                                        </a>
+                                    </div>
+                                </div>
 
-                                    <div class="collapse mt-3" id="collapseErrores">
-                                        <div class="p-3 bg-white rounded border border-warning shadow-sm" style="max-height: 380px; overflow-y: auto;">
-                                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                                                <h6 class="fw-bold text-danger mb-0">
-                                                    <i class="fas fa-times-circle me-1"></i> Errores críticos que deben solucionarse para habilitar la creación:
-                                                </h6>
-                                                <span class="badge bg-danger rounded-pill">{{ count($erroresMostrar) }}</span>
-                                            </div>
-                                            <ul class="mb-0 ps-3 text-danger small">
-                                                @foreach ($erroresMostrar as $err)
-                                                    <li class="mb-2"><strong>{{ $err['mensaje'] }}</strong>: {{ $err['detalle'] }}</li>
-                                                @endforeach
-                                            </ul>
-                                            <div class="text-end mt-2 pt-2 border-top">
-                                                <button class="btn btn-sm btn-link text-muted p-0 text-decoration-none"
+                                @if (!empty($erroresAgrupados))
+                                    <div class="mt-2">
+                                        <div class="accordion accordion-seccion-error" id="accordionErrores">
+                                            @php $grupoIdx = 0; @endphp
+                                            @foreach ($erroresAgrupados as $nombreGrupo => $listaErrores)
+                                                @php $grupoIdx++; @endphp
+                                                @if ($grupoIdx === 6)
+                                                    <div class="collapse" id="collapseMasSecciones">
+                                                @endif
+
+                                                <div class="accordion-item shadow-2xs">
+                                                    <h2 class="accordion-header" id="heading_{{ $grupoIdx }}">
+                                                        <button class="accordion-button collapsed py-2 px-3"
+                                                                type="button"
+                                                                data-bs-toggle="collapse"
+                                                                data-bs-target="#collapse_{{ $grupoIdx }}"
+                                                                aria-expanded="false"
+                                                                aria-controls="collapse_{{ $grupoIdx }}">
+                                                            <div class="d-flex align-items-center justify-content-between w-100 me-2">
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <i class="fas fa-layer-group text-warning"></i>
+                                                                    <span class="text-dark">{{ $nombreGrupo }}</span>
+                                                                </div>
+                                                                <span class="badge bg-danger rounded-pill px-2 py-1" style="font-size: 0.78rem;">
+                                                                    {{ count($listaErrores) }} {{ count($listaErrores) === 1 ? 'materia pendiente' : 'materias pendientes' }}
+                                                                </span>
+                                                            </div>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapse_{{ $grupoIdx }}"
+                                                         class="accordion-collapse collapse"
+                                                         aria-labelledby="heading_{{ $grupoIdx }}">
+                                                        <div class="accordion-body p-2 bg-light">
+                                                            <div class="list-group list-group-flush rounded border">
+                                                                @foreach ($listaErrores as $errItem)
+                                                                    <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3 bg-white materia-error-item">
+                                                                        <div class="d-flex align-items-start gap-2">
+                                                                            <i class="fas fa-exclamation-circle text-danger mt-1"></i>
+                                                                            <div>
+                                                                                <div class="fw-bold text-dark" style="font-size: 0.88rem;">
+                                                                                    {{ $errItem['materia'] ?? $errItem['mensaje'] }}
+                                                                                </div>
+                                                                                <div class="text-muted" style="font-size: 0.78rem;">
+                                                                                    {{ $errItem['detalle'] ?? 'Requiere asignación de docente activo.' }}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <a href="{{ route('admin.transacciones.docente_area_grado.index') }}"
+                                                                           class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 ms-3 px-2 py-1 flex-shrink-0"
+                                                                           style="font-size: 0.76rem; border-radius: 4px;">
+                                                                            <i class="fas fa-user-plus"></i>
+                                                                            <span>Asignar</span>
+                                                                        </a>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                @if ($loop->last && $grupoIdx >= 6)
+                                                    </div>{{-- Fin collapseMasSecciones --}}
+                                                @endif
+                                            @endforeach
+                                        </div>
+
+                                        @if ($totalGrupos > 5)
+                                            <div class="text-center mt-3 pt-2">
+                                                <button class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-semibold px-3 py-1 shadow-sm"
                                                         type="button"
                                                         data-bs-toggle="collapse"
-                                                        data-bs-target="#collapseErrores">
-                                                    <i class="fas fa-chevron-up me-1"></i> Ocultar detalles
+                                                        data-bs-target="#collapseMasSecciones"
+                                                        aria-expanded="false"
+                                                        aria-controls="collapseMasSecciones"
+                                                        id="btnToggleMasSecciones">
+                                                    <i class="fas fa-chevron-down" id="iconoMasSecciones"></i>
+                                                    <span id="textoMasSecciones">Ver todas las secciones con errores ({{ $totalGrupos - 5 }} más)</span>
                                                 </button>
                                             </div>
-                                        </div>
+                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -485,19 +602,28 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            const collapseErrores = document.getElementById('collapseErrores');
-            const textoToggle = document.getElementById('textoToggleErrores');
-            const iconoToggle = document.getElementById('iconoToggleErrores');
-
-            if (collapseErrores && textoToggle && iconoToggle) {
-                const totalItems = collapseErrores.querySelectorAll('li').length;
-                collapseErrores.addEventListener('show.bs.collapse', function () {
-                    textoToggle.textContent = 'Ocultar detalles de los errores';
-                    iconoToggle.className = 'fas fa-eye-slash';
+            // Inicializar Tooltips de Bootstrap
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
-                collapseErrores.addEventListener('hide.bs.collapse', function () {
-                    textoToggle.textContent = 'Ver detalles de los errores (' + totalItems + ')';
-                    iconoToggle.className = 'fas fa-eye';
+            }
+
+            // Toggle para ver más secciones con errores
+            const collapseMas = document.getElementById('collapseMasSecciones');
+            const textoMas = document.getElementById('textoMasSecciones');
+            const iconoMas = document.getElementById('iconoMasSecciones');
+
+            if (collapseMas && textoMas && iconoMas) {
+                const textoOriginal = textoMas.textContent;
+                collapseMas.addEventListener('show.bs.collapse', function () {
+                    textoMas.textContent = 'Mostrar solo las primeras 5 secciones';
+                    iconoMas.className = 'fas fa-chevron-up';
+                });
+                collapseMas.addEventListener('hide.bs.collapse', function () {
+                    textoMas.textContent = textoOriginal;
+                    iconoMas.className = 'fas fa-chevron-down';
                 });
             }
         });

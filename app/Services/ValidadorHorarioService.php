@@ -31,8 +31,8 @@ class ValidadorHorarioService
         $info = [];
 
         // 1. Configuración de horario y bloques reservados
-        $config = ConfiguracionHorario::where('anio_escolar_id', $anio)->first();
-        $numeroBloques = $config ? (int) $config->numero_bloques : 8;
+        $config = app(\App\Services\ConfiguracionHorarioService::class)->actual();
+        $numeroBloques = (int) $config->numero_bloques;
         $totalDias = 5;
         $totalBloquesSemana = $totalDias * $numeroBloques;
 
@@ -196,12 +196,20 @@ class ValidadorHorarioService
             if (!$seccionAula || !$aulaRegular || !$aulaRegular->status) {
                 $errores[] = [
                     'codigo' => 'seccion_sin_aula_regular',
+                    'grupo' => "{$gradoNombre}, Sección {$seccion->nombre}",
+                    'seccion' => $seccion->nombre,
+                    'grado' => $gradoNombre,
+                    'materia' => null,
                     'mensaje' => "La sección {$seccion->nombre} ({$gradoNombre}) no tiene un aula regular asignada o activa.",
                     'detalle' => "Debe asignar un aula regular activa a la sección en la configuración de secciones y aulas.",
                 ];
             } elseif ($seccion->cantidad_actual > $aulaRegular->capacidad_maxima) {
                 $errores[] = [
                     'codigo' => 'seccion_supera_capacidad_aula',
+                    'grupo' => "{$gradoNombre}, Sección {$seccion->nombre}",
+                    'seccion' => $seccion->nombre,
+                    'grado' => $gradoNombre,
+                    'materia' => null,
                     'mensaje' => "La sección {$seccion->nombre} ({$gradoNombre}) tiene {$seccion->cantidad_actual} estudiantes, superando la capacidad máxima de {$aulaRegular->capacidad_maxima} del aula '{$aulaRegular->nombre_aula}'.",
                     'detalle' => "La matrícula actual excede la capacidad física del aula regular asignada.",
                 ];
@@ -223,6 +231,10 @@ class ValidadorHorarioService
                     if (!$cargaMateria || !$docente || !$docente->status) {
                         $errores[] = [
                             'codigo' => 'area_sin_docente',
+                            'grupo' => "{$gradoNombre}, Sección {$seccion->nombre}",
+                            'seccion' => $seccion->nombre,
+                            'grado' => $gradoNombre,
+                            'materia' => $afCurricular->nombre_area_formacion,
                             'mensaje' => "El área '{$afCurricular->nombre_area_formacion}' en la sección {$seccion->nombre} ({$gradoNombre}) no tiene docente asignado.",
                             'detalle' => "Debe asignar un docente activo en Carga Académica para esta sección y área de formación.",
                         ];
@@ -236,6 +248,10 @@ class ValidadorHorarioService
                     if (!$docente || !$docente->status) {
                         $errores[] = [
                             'codigo' => 'area_sin_docente',
+                            'grupo' => "{$gradoNombre}, Sección {$seccion->nombre}",
+                            'seccion' => $seccion->nombre,
+                            'grado' => $gradoNombre,
+                            'materia' => $nombreMateria,
                             'mensaje' => "El área '{$nombreMateria}' en la sección {$seccion->nombre} ({$gradoNombre}) no tiene docente asignado.",
                             'detalle' => "Debe asignar un docente activo en Carga Académica para esta sección y área de formación.",
                         ];
@@ -256,6 +272,10 @@ class ValidadorHorarioService
             if ($sumaBloquesSeccion > $bloquesDisponibles) {
                 $errores[] = [
                     'codigo' => 'seccion_exceso_bloques',
+                    'grupo' => "{$gradoNombre}, Sección {$seccion->nombre}",
+                    'seccion' => $seccion->nombre,
+                    'grado' => $gradoNombre,
+                    'materia' => null,
                     'mensaje' => "La sección {$seccion->nombre} ({$gradoNombre}) requiere {$sumaBloquesSeccion} bloques semanales, superando los {$bloquesDisponibles} disponibles.",
                     'detalle' => "Capacidad semanal: {$totalBloquesSemana} bloques menos {$bloquesReservados} bloques reservados institucionalmente.",
                 ];

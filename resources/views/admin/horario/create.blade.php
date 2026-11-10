@@ -108,6 +108,17 @@
             align-self: flex-start !important;
             padding: 0.3rem 0.5rem !important;
             margin: 0 !important;
+            background: rgba(79, 70, 229, 0.15) !important; /* Púrpura/índigo translúcido suave coordinado */
+            color: #1e1b4b !important;                       /* Texto oscuro para contraste */
+            border: 1px solid rgba(79, 70, 229, 0.3) !important;
+            border-radius: 0.375rem !important;
+            box-shadow: 0 1px 3px rgba(79, 70, 229, 0.08) !important;
+            transition: background-color 0.15s ease, border-color 0.15s ease !important;
+        }
+
+        .drop-zone .assigned-docente:hover {
+            background: rgba(79, 70, 229, 0.24) !important;
+            border-color: rgba(79, 70, 229, 0.45) !important;
         }
 
         .drop-zone .assigned-docente .adm-mini {
@@ -124,6 +135,7 @@
 
         .drop-zone .assigned-docente .adm-mini .adm-mini-nombre {
             font-weight: 600;
+            color: #1e1b4b !important;
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 85px;
@@ -131,12 +143,110 @@
         }
 
         .drop-zone .assigned-docente .adm-mini .adm-mini-seccion {
-            opacity: 0.85;
+            color: #3730a3 !important;
+            opacity: 0.95;
             flex-shrink: 0;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 0.2rem;
+        }
+
+        .drop-zone .assigned-docente .adm-mini .btn-lock-toggle.text-warning {
+            color: #b45309 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-mini .btn-lock-toggle.text-muted {
+            color: #4338ca !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full {
+            background: rgba(79, 70, 229, 0.16) !important; /* Mismo color translúcido que los bloques */
+            backdrop-filter: blur(8px) !important;           /* Efecto cristal elegante */
+            -webkit-backdrop-filter: blur(8px) !important;
+            color: #1e1b4b !important;
+            border: 1px solid rgba(79, 70, 229, 0.35) !important;
+            border-radius: 0.75rem !important;
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .docente-nombre {
+            color: #1e1b4b !important;
+            font-weight: 700 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .docente-cedula {
+            color: #4338ca !important;
+            font-weight: 500 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .docente-materia {
+            color: #3730a3 !important;
+            font-weight: 600 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .pildora-selector {
+            width: 100%;
+            background: #ffffff !important; /* Selectores blancos para destacar dentro de la tarjeta translúcida */
+            color: #1e293b !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 50px;
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+            text-align-last: center;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .drop-zone .assigned-docente .adm-full .pildora-selector:focus {
+            border-color: #4f46e5 !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .drop-zone .assigned-docente .adm-full .pildora-selector:disabled {
+            background: #f8fafc !important;
+            color: #64748b !important;
+            border-color: #e2e8f0 !important;
+            opacity: 1 !important;
+            cursor: default;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-eliminar-docente {
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+            border: 1px solid #fca5a5 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-eliminar-docente:hover {
+            background: #ef4444 !important;
+            color: #ffffff !important;
+            border-color: #dc2626 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle {
+            background: transparent;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle:hover {
+            background: rgba(79, 70, 229, 0.15);
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-warning {
+            color: #b45309 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted {
+            color: #4338ca !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted:hover {
+            color: #1e1b4b !important;
         }
 
         .drop-zone .assigned-docente .pildora-selector {
@@ -684,7 +794,7 @@
                         <option value="">Seleccione nivel académico primero</option>
                     </select>
                 </div>
-                <button class="btn-filter" id="btnContinuar" disabled>
+                <button class="btn-generar-horario" id="btnContinuar" disabled>
                     <i class="fas fa-arrow-right"></i>
                     Continuar
                 </button>
@@ -721,7 +831,7 @@
                                 <span id="contextArea">Área de Formación: No seleccionada</span>
                             </span>
                         </div>
-                        <button class="btn-back-mini" id="btnVolverPaso1">
+                        <button class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-2" id="btnVolverPaso1">
                             <i class="fas fa-arrow-left"></i>
                             Cambiar selección
                         </button>
@@ -1540,6 +1650,23 @@
             window.addEventListener('scroll', () => {
                 if (tarjetaConPopup) posicionarPopup(tarjetaConPopup);
             }, true);
+
+            // Abrir y mantener abierto también al hacer clic en la tarjeta del docente asignado
+            document.addEventListener('click', function(e) {
+                if (typeof modoSeleccionActivo !== 'undefined' && modoSeleccionActivo) return;
+                
+                const tarjeta = e.target.closest('.assigned-docente');
+                if (tarjeta) {
+                    if (!e.target.closest('.adm-full')) {
+                        abrirPopup(tarjeta);
+                    }
+                } else if (!e.target.closest('.adm-full')) {
+                    if (tarjetaConPopup) {
+                        tarjetaConPopup.classList.remove('popup-activo');
+                        tarjetaConPopup = null;
+                    }
+                }
+            });
             // Función para validar ambos campos del Paso 1
             function validarPaso1() {
                 const nivelSeleccionado = nivelSelect.value;
@@ -2198,6 +2325,7 @@
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         }
                     });
@@ -2870,6 +2998,7 @@
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                             },
                             body: JSON.stringify({
@@ -2881,7 +3010,7 @@
                         const data = await response.json();
 
                         if (!response.ok) {
-                            mostrarNotificacion(data.error || 'Error al mover asignación', 'error');
+                            mostrarNotificacion(data.error || data.message || 'Error al mover asignación', 'error');
                             return;
                         }
 
@@ -3048,6 +3177,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
                         body: JSON.stringify({
@@ -3059,7 +3189,7 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        mostrarNotificacion(data.error || 'Error al guardar horario', 'error');
+                        mostrarNotificacion(data.error || data.message || 'Error al guardar horario', 'error');
                         return;
                     }
 
@@ -3098,16 +3228,21 @@
                 try {
                     const response = await fetch(`/api/horario/${asignacionId}/aula`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
                         body: JSON.stringify({ aula_id: nuevaAulaId })
                     });
 
                     const data = await response.json();
 
                     if (!response.ok) {
-                        errorContainer.textContent = data.error || 'Error al actualizar el aula';
+                        const errMsg = data.error || data.message || 'Error al actualizar el aula';
+                        errorContainer.textContent = errMsg;
                         errorContainer.classList.add('visible');
-                        mostrarNotificacion(data.error || 'Error al actualizar el aula', 'error');
+                        mostrarNotificacion(errMsg, 'error');
                         return;
                     }
 
@@ -3281,6 +3416,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
                         body: JSON.stringify({
@@ -3292,7 +3428,7 @@
                     const valData = await valResponse.json();
 
                     if (!valResponse.ok) {
-                        mostrarNotificacion(valData.error || 'Error al validar viabilidad del horario', 'error');
+                        mostrarNotificacion(valData.error || valData.message || 'Error al validar viabilidad del horario', 'error');
                         return;
                     }
 
@@ -3310,6 +3446,7 @@
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
                         body: JSON.stringify({ 
@@ -3324,7 +3461,7 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        mostrarNotificacion(data.error || 'Error al generar horario', 'error');
+                        mostrarNotificacion(data.error || data.message || 'Error al generar horario', 'error');
                         return;
                     }
 
@@ -3393,12 +3530,15 @@
                 try {
                     const response = await fetch(`/api/horario/${asignacionId}`, {
                         method: 'DELETE',
-                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' }
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        }
                     });
                     const data = await response.json();
 
                     if (!response.ok) {
-                        mostrarNotificacion(data.error || 'Error al eliminar asignación', 'error');
+                        mostrarNotificacion(data.error || data.message || 'Error al eliminar asignación', 'error');
                         return;
                     }
 
@@ -3477,6 +3617,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
                         body: JSON.stringify({ ids })
@@ -3484,7 +3625,7 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        mostrarNotificacion(data.error || 'Error al eliminar asignaciones', 'error');
+                        mostrarNotificacion(data.error || data.message || 'Error al eliminar asignaciones', 'error');
                         return;
                     }
 
