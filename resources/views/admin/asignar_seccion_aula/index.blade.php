@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="{{ asset('css/index.css') }}">
 <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
 <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+<link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 @stop
 
 @section('title', 'Gestión de Asignación de Aulas a Secciones')

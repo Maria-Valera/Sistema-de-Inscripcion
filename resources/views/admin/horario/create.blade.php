@@ -715,6 +715,7 @@
         }
 
     </style>
+    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 @stop
 
 @section('title', $modoEdicion ? 'Editar Horario' : 'Crear Horario')

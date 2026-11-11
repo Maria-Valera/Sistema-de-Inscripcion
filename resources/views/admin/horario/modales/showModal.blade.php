@@ -155,6 +155,7 @@
         white-space: nowrap;
     }
 </style>
+<link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 
 <script>
     // Endpoint basado en HorarioAsignacion (lo mismo que genera el servicio y lista index())

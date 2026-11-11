@@ -30,6 +30,7 @@
             background-color: #fff7ed !important;
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 @stop
 
 @section('title', 'Gestión de Horarios')

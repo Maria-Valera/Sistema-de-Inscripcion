@@ -168,6 +168,7 @@
             font-size: 0.7rem;
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 @stop
 
 @section('content_header')

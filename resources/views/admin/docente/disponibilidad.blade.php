@@ -60,6 +60,7 @@
             100% { transform: rotate(360deg); }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 @stop
 
 @section('title', 'Disponibilidad del Docente')

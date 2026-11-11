@@ -1,0 +1,470 @@
+/* =========================================================
+   PILOTO DE DISEÑO - MÓDULO DE HORARIOS
+   Paleta: Azul del uniforme (#4A6FC1) con contraste blanco (#ffffff)
+   Alcance: Solo vistas del módulo de Horarios y subvistas asociadas
+   ========================================================= */
+
+:root {
+    --primary: #4A6FC1;
+    --primary-dark: #3B5BA5;
+    --primary-light: #EDF2FC;
+    --primary-lighter: #D6E2F9;
+
+    --purple: #4A6FC1;
+    --purple-dark: #3B5BA5;
+    --purple-light: #7693D6;
+    --purple-neutral: #4A6FC1;
+    --purple-cool: #5C7FD1;
+    --purple-warm: #3B5BA5;
+    --purple-deep: #335094;
+
+    --horario-primary: #4A6FC1;
+    --horario-primary-dark: #3B5BA5;
+    --horario-primary-light: #EDF2FC;
+
+    --bs-primary: #4A6FC1;
+    --bs-primary-rgb: 74, 111, 193;
+}
+
+/* =========================================================
+   1. BOTONES PRINCIPALES (Nuevo, Guardar, Generar, Filtrar)
+   ========================================================= */
+.btn-primary,
+.btn-filtro,
+.btn-generate,
+.btn-generar-horario,
+.btn-save,
+.btn-modal-create,
+.btn-primary-modern,
+.btn-modal-primario,
+.btn-modo-seleccion.activo {
+    background: #4A6FC1 !important;
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.btn-create:not([style*="background"]) {
+    background: #4A6FC1 !important;
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-create:not([style*="background"]):hover,
+.btn-create:not([style*="background"]):focus,
+.btn-filtro:hover,
+.btn-filtro:focus,
+.btn-generate:hover,
+.btn-generate:focus,
+.btn-generar-horario:hover:not(:disabled),
+.btn-generar-horario:focus:not(:disabled),
+.btn-save:hover,
+.btn-save:focus,
+.btn-modal-create:hover,
+.btn-modal-create:focus,
+.btn-primary-modern:hover:not(:disabled),
+.btn-primary-modern:focus:not(:disabled),
+.btn-modal-primario:hover,
+.btn-modo-seleccion.activo:hover {
+    background: #3B5BA5 !important;
+    background-color: #3B5BA5 !important;
+    border-color: #3B5BA5 !important;
+    color: #ffffff !important;
+}
+
+.btn-primary i,
+.btn-create i,
+.btn-filtro i,
+.btn-generate i,
+.btn-generar-horario i,
+.btn-save i,
+.btn-modal-create i,
+.btn-primary-modern i,
+.btn-modal-primario i,
+.btn-modo-seleccion.activo i {
+    color: #ffffff !important;
+}
+
+.btn-outline-primary {
+    color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active,
+.btn-outline-primary.active {
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-primary:hover i,
+.btn-outline-primary:focus i,
+.btn-outline-primary:active i,
+.btn-outline-primary.active i {
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   2. ICONOS DE CABECERA Y ACENTOS PRIMARIOS
+   ========================================================= */
+.icon-wrapper,
+.header-icon:not([style*="background"]) {
+    background: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.icon-wrapper i,
+.header-icon i {
+    color: #ffffff !important;
+}
+
+.card-header-modern {
+    background: linear-gradient(135deg, #EDF2FC, #ffffff) !important;
+}
+
+.text-primary {
+    color: #4A6FC1 !important;
+}
+
+.bg-primary {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.border-primary {
+    border-color: #4A6FC1 !important;
+}
+
+.section-title i,
+.detail-label i,
+.docente-area i,
+.date-badge i {
+    color: #4A6FC1;
+}
+
+.detail-value.fw-bold {
+    color: #4A6FC1 !important;
+}
+
+.timeline-block-item {
+    border-left: 4px solid #4A6FC1 !important;
+}
+
+.loading-spinner {
+    border-top-color: #4A6FC1 !important;
+}
+
+/* =========================================================
+   3. CABECERAS DE TABLAS Y ENCABEZADOS DE CUADRÍCULA
+   ========================================================= */
+.table-modern thead tr,
+.table-modern thead th,
+.horario-matrix thead th,
+.horario-matrix thead th.time-header,
+.tabla-posiciones thead th,
+.disponibilidad-grid thead th {
+    background: #4A6FC1 !important;
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    border-color: #3B5BA5 !important;
+}
+
+.table-modern thead th i,
+.horario-matrix thead th i,
+.tabla-posiciones thead th i,
+.disponibilidad-grid thead th i {
+    color: #ffffff !important;
+}
+
+.disponibilidad-grid thead th .btn-dia-completo {
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.75) !important;
+    background-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.disponibilidad-grid thead th .btn-dia-completo:hover {
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
+    color: #4A6FC1 !important;
+}
+
+.disponibilidad-grid thead th .btn-dia-completo:hover i {
+    color: #4A6FC1 !important;
+}
+
+/* Encabezados de contexto y paneles laterales de la cuadrícula */
+.context-header,
+.modal-context-header,
+.sidebar-header,
+.modal-sidebar-header,
+.sidebar-docentes .card-header.bg-primary {
+    background: #4A6FC1 !important;
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    border-color: #3B5BA5 !important;
+}
+
+.context-header *,
+.modal-context-header *,
+.sidebar-header *,
+.modal-sidebar-header *,
+.sidebar-docentes .card-header.bg-primary * {
+    color: #ffffff !important;
+}
+
+.context-header .btn-outline-light {
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.context-header .btn-outline-light:hover {
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
+    color: #4A6FC1 !important;
+}
+
+.context-header .btn-outline-light:hover i {
+    color: #4A6FC1 !important;
+}
+
+/* =========================================================
+   4. CABECERAS (HEADER) DE MODALES
+   ========================================================= */
+.modal-header-create,
+.modal-header-view,
+.modal-ver-horario-header,
+#modalValidacionHorario .modal-header,
+#modalFiltros .modal-header,
+.card-header.bg-purple,
+.card-header.bg-padre,
+.card-header.bg-madre,
+.card-header.bg-representante-legal {
+    background: #4A6FC1 !important;
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    border-bottom: none !important;
+}
+
+.modal-header-create *,
+.modal-header-view *,
+.modal-ver-horario-header *,
+#modalValidacionHorario .modal-header .modal-title,
+#modalValidacionHorario .modal-header i,
+#modalFiltros .modal-header .modal-title,
+#modalFiltros .modal-header i,
+.card-header.bg-purple *,
+.card-header.bg-padre *,
+.card-header.bg-madre *,
+.card-header.bg-representante-legal * {
+    color: #ffffff !important;
+}
+
+#modalValidacionHorario .modal-header .btn-close,
+#modalFiltros .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+    opacity: 0.9;
+}
+
+#modalValidacionHorario .modal-header .btn-close:hover,
+#modalFiltros .modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+#modalFiltros .modal-header {
+    padding: 1rem 1.25rem !important;
+    border-radius: calc(var(--radius, 12px) - 1px) calc(var(--radius, 12px) - 1px) 0 0 !important;
+}
+
+#modalFiltros .modal-header + hr {
+    display: none !important;
+}
+
+#modalFiltros .modal-body {
+    padding-top: 1.25rem !important;
+}
+
+/* =========================================================
+   5. BORDES DE INPUTS / SELECTS EN FOCO (:focus)
+   ========================================================= */
+input:focus,
+select:focus,
+textarea:focus,
+.form-control:focus,
+.form-select:focus,
+.form-control-modern:focus,
+.form-select-modern:focus,
+.search-input:focus,
+.aula-selector:focus,
+.drop-zone .assigned-docente .adm-full .pildora-selector:focus,
+.bootstrap-select .dropdown-toggle:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.25) !important;
+    outline: none !important;
+}
+
+.form-check-input:checked {
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+}
+
+.form-check-input:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 0.25rem rgba(74, 111, 193, 0.25) !important;
+}
+
+/* =========================================================
+   6. PESTAÑAS ACTIVAS, BADGES Y PAGINACIÓN
+   ========================================================= */
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link,
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.nav-tabs .nav-link.active i,
+.nav-pills .nav-link.active i {
+    color: #ffffff !important;
+}
+
+.nav-tabs .nav-link:not(.active):hover,
+.nav-pills .nav-link:not(.active):hover {
+    color: #4A6FC1 !important;
+}
+
+.badge.bg-primary,
+.badge-primary,
+.code-badge {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-primary i,
+.badge-primary i,
+.code-badge i {
+    color: #ffffff !important;
+}
+
+.badge-kpi {
+    background-color: #EDF2FC !important;
+    color: #3B5BA5 !important;
+    border: 1px solid rgba(74, 111, 193, 0.25) !important;
+}
+
+.status-parent {
+    background-color: #EDF2FC !important;
+    color: #4A6FC1 !important;
+}
+
+.pagination .page-item.active .page-link {
+    background: #4A6FC1 !important;
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(74, 111, 193, 0.35) !important;
+}
+
+.pagination .page-link:hover {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(74, 111, 193, 0.25) !important;
+}
+
+.pagination-info span {
+    color: #4A6FC1 !important;
+}
+
+/* =========================================================
+   7. PÍLDORAS Y TARJETAS DE CUADRÍCULA (Generador/Create y Ver)
+   ========================================================= */
+.horario-item:hover {
+    border-color: #4A6FC1 !important;
+    background: #EDF2FC !important;
+}
+
+.horario-item-icon {
+    background: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.docente-card:hover {
+    border-color: #4A6FC1 !important;
+}
+
+.docente-card.selected {
+    border-color: #4A6FC1 !important;
+    background: #EDF2FC !important;
+}
+
+.drop-zone:hover {
+    border-color: #4A6FC1 !important;
+}
+
+.drop-zone.drag-over {
+    background: #EDF2FC !important;
+    border-color: #4A6FC1 !important;
+}
+
+.drop-zone .assigned-docente {
+    background: rgba(74, 111, 193, 0.14) !important;
+    color: #1E3A6D !important;
+    border: 1px solid rgba(74, 111, 193, 0.35) !important;
+    box-shadow: 0 1px 3px rgba(74, 111, 193, 0.08) !important;
+}
+
+.drop-zone .assigned-docente:hover {
+    background: rgba(74, 111, 193, 0.22) !important;
+    border-color: rgba(74, 111, 193, 0.5) !important;
+}
+
+.drop-zone .assigned-docente .adm-mini .adm-mini-nombre {
+    color: #1E3A6D !important;
+}
+
+.drop-zone .assigned-docente .adm-mini .adm-mini-seccion {
+    color: #2B4C8C !important;
+}
+
+.drop-zone .assigned-docente .adm-full {
+    background: rgba(74, 111, 193, 0.16) !important;
+    color: #1E3A6D !important;
+    border: 1px solid rgba(74, 111, 193, 0.38) !important;
+    box-shadow: 0 10px 25px -5px rgba(74, 111, 193, 0.22), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-nombre {
+    color: #1E3A6D !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-cedula {
+    color: #3B5BA5 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-materia {
+    color: #2B4C8C !important;
+}
+
+.btn-lock-toggle:hover,
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle:hover {
+    background: rgba(74, 111, 193, 0.15) !important;
+}
+
+.btn-lock-toggle.text-muted,
+.drop-zone .assigned-docente .adm-mini .btn-lock-toggle.text-muted,
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted {
+    color: #3B5BA5 !important;
+}
+
+.btn-lock-toggle.text-muted:hover,
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted:hover {
+    color: #1E3A6D !important;
+}
