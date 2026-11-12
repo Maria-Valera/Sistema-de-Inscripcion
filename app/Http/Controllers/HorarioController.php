@@ -438,6 +438,26 @@ class HorarioController extends Controller
                 ->with('warning', 'No puedes crear horarios en un año escolar anterior (solo lectura).');
         }
 
+        // Detectar modo de edición y parámetros seleccionados desde el modal
+        $modoEdicion = $request->has('modo_edicion') && $request->modo_edicion === 'true';
+        $editGradoId = $request->input('grado_id');
+        $editSeccionId = $request->input('seccion_id');
+        $nivelId = $request->input('nivel_id', $request->input('grado_id'));
+        $areaId = $request->input('area_id', $request->input('area_formacion_id'));
+
+        if (!$modoEdicion && (empty($nivelId) || empty($areaId))) {
+            return redirect()->route('admin.horario.index')
+                ->with('warning', 'Selecciona el Nivel Académico y el Área de Formación antes de crear un horario.');
+        }
+
+        $nivelSeleccionado = $nivelId ? Grado::where('status', true)->find($nivelId) : null;
+        $areaSeleccionada = $areaId ? AreaFormacion::where('status', true)->find($areaId) : null;
+
+        if (!$modoEdicion && (!$nivelSeleccionado || !$areaSeleccionada)) {
+            return redirect()->route('admin.horario.index')
+                ->with('warning', 'El Nivel Académico o Área de Formación seleccionado no es válido.');
+        }
+
         // 1. Verificar si existe configuración de horario institucional
         $configuracion = ConfiguracionHorario::first();
         if (!$configuracion) {
@@ -569,11 +589,6 @@ class HorarioController extends Controller
             ];
         });
 
-        //detecta modo de edición desde parametros
-        $modoEdicion = $request->has('modo_edicion') && $request->modo_edicion === 'true';
-        $editGradoId = $request->input('grado_id');
-        $editSeccionId = $request->input('seccion_id');
-
         $numeroBloques = $configuracion ? (int) $configuracion->numero_bloques : 8;
         $bloquesCalculados = $configuracion ? $this->configuracionHorarioService->bloques($configuracion) : collect();
         $diasCases = Dia::cases();
@@ -589,6 +604,10 @@ class HorarioController extends Controller
             'modoEdicion',
             'editGradoId',
             'editSeccionId',
+            'nivelId',
+            'areaId',
+            'nivelSeleccionado',
+            'areaSeleccionada',
             'configuracion',
             'numeroBloques',
             'bloquesCalculados',

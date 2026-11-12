@@ -765,57 +765,24 @@
         <input type="hidden" id="modoEdicion" value="{{ $modoEdicion ? 'true' : 'false' }}">
 
 
-        <!-- Selección de nivel académico y área de formación -->
-        <div class="selection-section" id="seccionNivel">
-            <h4 class="mb-3">
-                <i class="fas fa-graduation-cap" style="color: var(--primary);"></i>
-                Paso 1: Seleccionar Nivel Académico y Área de Formación
-            </h4>
-            <div class="selection-row">
-                <div class="form-group-modern">
-                    <label class="form-label-modern">
-                        <i class="fas fa-layer-group" style="color: var(--primary);"></i>
-                        Nivel Académico
-                    </label>
-                    <select class="form-select form-control-modern" id="nivelAcademico">
-                        <option value="">Seleccione un nivel académico</option>
-                        @foreach($grados as $grado)
-                            <option value="{{ $grado->id }}" {{ $editGradoId == $grado->id ? 'selected' : '' }}>
-                                {{ $grado->numero_grado }}° Grado
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group-modern">
-                    <label class="form-label-modern">
-                        <i class="fas fa-book" style="color: var(--primary);"></i>
-                        Área de Formación
-                    </label>
-                    <select class="form-select form-control-modern" id="areaFormacion" disabled>
-                        <option value="">Seleccione nivel académico primero</option>
-                    </select>
-                </div>
-                <button class="btn-generar-horario" id="btnContinuar" disabled>
-                    <i class="fas fa-arrow-right"></i>
-                    Continuar
-                </button>
-            </div>
-        </div>
-
-        <!-- Ocultar Paso 1 en modo edición -->
-        <style>
-            @if(isset($modo_edicion) && $modo_edicion)
-                #seccionNivel {
-                    display: none !important;
-                }
-                #vistaCalendario {
-                    display: flex !important;
-                }
+        <!-- Parámetros seleccionados desde el modal (ocultos para mantener compatibilidad con la cuadrícula JS) -->
+        <select class="d-none" id="nivelAcademico" aria-hidden="true">
+            <option value="">Seleccione un nivel académico</option>
+            @foreach($grados as $grado)
+                <option value="{{ $grado->id }}" {{ (string)($nivelId ?? $editGradoId ?? '') === (string)$grado->id ? 'selected' : '' }}>
+                    {{ $grado->numero_grado }}° Grado
+                </option>
+            @endforeach
+        </select>
+        <select class="d-none" id="areaFormacion" aria-hidden="true">
+            <option value="">Seleccione un área de formación</option>
+            @if(!empty($areaSeleccionada))
+                <option value="{{ $areaSeleccionada->id }}" selected>{{ $areaSeleccionada->nombre_area_formacion }}</option>
             @endif
-        </style>
+        </select>
 
-        <!-- Vista del calendario (oculta inicialmente) -->
-        <div class="row" id="vistaCalendario" style="display: none;">
+        <!-- Vista del calendario (visible directamente) -->
+        <div class="row" id="vistaCalendario">
             <!-- Cuadrícula -->
             <div class="col-12 col-lg-8 col-xl-9 mb-4">
                 <div class="main-content">
@@ -824,18 +791,22 @@
                         <div class="context-info">
                             <span class="context-item">
                                 <i class="fas fa-graduation-cap"></i>
-                                <span id="contextNivel">Nivel Académico: No seleccionado</span>
+                                <span id="contextNivel">
+                                    Nivel Académico: {{ !empty($nivelSeleccionado) ? $nivelSeleccionado->numero_grado . '° Grado' : 'No seleccionado' }}
+                                </span>
                             </span>
                             <span class="context-separator">|</span>
                             <span class="context-item">
                                 <i class="fas fa-book"></i>
-                                <span id="contextArea">Área de Formación: No seleccionada</span>
+                                <span id="contextArea">
+                                    Área de Formación: {{ !empty($areaSeleccionada) ? $areaSeleccionada->nombre_area_formacion : 'No seleccionada' }}
+                                </span>
                             </span>
                         </div>
-                        <button class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-2" id="btnVolverPaso1">
+                        <a href="{{ route('admin.horario.index') }}" class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-2" id="btnVolverPaso1">
                             <i class="fas fa-arrow-left"></i>
-                            Cambiar selección
-                        </button>
+                            Volver al listado
+                        </a>
                     </div>
 
                     <!-- Filtros de refinamiento -->
@@ -1047,14 +1018,11 @@
 
             console.log('Modo edición detectado:', { modoEdicion, editGradoId, editSeccionId });
 
-            // Si está en modo edición, ocultar Paso 1 y cargar datos directamente
+            // Si está en modo edición, cargar datos directamente
             if (modoEdicion && editGradoId) {
                 console.log('Iniciando modo edición...');
 
-                // Ocultar Paso 1 inmediatamente
-                seccionNivel.style.display = 'none';
-
-                // Mostrar Paso 2 inmediatamente
+                // Mostrar cuadrícula inmediatamente
                 vistaCalendario.style.display = 'flex';
 
                 // Pre-cargar el grado
@@ -1091,7 +1059,7 @@
                                             if (areaFormacionSelect.options[i].value == areaSeleccionar) {
                                                 areaFormacionSelect.selectedIndex = i;
                                                 areaFormacionSelect.disabled = false;
-                                                btnContinuar.disabled = false;
+                                                if (btnContinuar) btnContinuar.disabled = false;
                                                 console.log('Área seleccionada en índice:', i);
                                                 break;
                                             }
@@ -1668,16 +1636,13 @@
                     }
                 }
             });
-            // Función para validar ambos campos del Paso 1
+            // Función para validar ambos campos (compatibilidad interna)
             function validarPaso1() {
+                if (!btnContinuar) return;
                 const nivelSeleccionado = nivelSelect.value;
                 const areaSeleccionada = areaFormacionSelect.value;
-                
-                if (nivelSeleccionado && areaSeleccionada) {
-                    btnContinuar.disabled = false;
-                } else {
-                    btnContinuar.disabled = true;
-                }
+
+                btnContinuar.disabled = !(nivelSeleccionado && areaSeleccionada);
             }
 
             // Filtrar áreas de formación por nivel académico
@@ -1726,21 +1691,6 @@
                 contextNivel.textContent = `Nivel Académico: ${nivelTexto}`;
                 contextArea.textContent = `Área de Formación: ${areaTexto}`;
             }
-
-            // Volver al Paso 1
-            btnVolverPaso1.addEventListener('click', function() {
-                horarioAsignaciones = {};
-                modoSeleccionActivo = false;
-                asignacionesSeleccionadas.clear();
-                actualizarBarraFlotante();
-                btnModoSeleccion.classList.remove('activo');
-                document.querySelectorAll('.drop-zone').forEach(dz => {
-                    dz.classList.remove('modo-seleccion', 'seleccionado');
-                });
-                vistaCalendario.style.display = 'none';
-                seccionNivel.style.display = 'block';
-                actualizarContexto();
-            });
 
             // Almacenar información de contexto para las asignaciones
             let asignacionesContexto = {};
@@ -2568,27 +2518,20 @@
                 mostrarToast(mensaje, tipo, null, esPersistente);
             }
 
-            // Continuar a la vista del calendario
-            btnContinuar.addEventListener('click', async function() {
-                const nivel = nivelSelect.value;
-                const area = areaFormacionSelect.value;
-                
-                if (!nivel || !area) {
-                    mostrarNotificacion('Por favor, seleccione tanto el nivel académico como el área de formación', 'warning');
-                    return;
-                }
+            // Cargar cuadrícula directamente con los parámetros seleccionados en el modal
+            (async function initCalendarioDirecto() {
+                if (modoEdicion) return;
 
-                // Actualizar header de contexto
+                const nivel = nivelSelect?.value;
+                const area = areaFormacionSelect?.value;
+                if (!nivel || !area) return;
+
                 actualizarContexto();
-
-                // Mostrar vista del calendario pero deshabilitar interacción durante carga
-                seccionNivel.style.display = 'none';
                 vistaCalendario.style.display = 'flex';
                 vistaCalendario.style.pointerEvents = 'none';
                 vistaCalendario.style.opacity = '0.5';
 
                 try {
-                    // Cargar datos en paralelo y esperar a que terminen
                     await Promise.all([
                         cargarDatosAPI(),
                         cargarDocentesAPI(nivel)
@@ -2598,11 +2541,10 @@
                     console.error('Error al cargar datos:', error);
                     mostrarNotificacion('Error al cargar datos del calendario', 'error');
                 } finally {
-                    // Restaurar interacción
                     vistaCalendario.style.pointerEvents = '';
                     vistaCalendario.style.opacity = '';
                 }
-            });
+            })();
 
             // Cambiar nivel académico y recargar grilla
             nivelSelect.addEventListener('change', function() {

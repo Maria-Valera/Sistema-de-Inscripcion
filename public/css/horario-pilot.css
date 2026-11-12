@@ -547,3 +547,48 @@ textarea:focus,
 .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted:hover {
     color: #1E3A6D !important;
 }
+
+/* =========================================================
+   8. SIDEBAR ACTIVO EN AZUL INSTITUCIONAL (#4A6FC1)
+   ========================================================= */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(74, 111, 193, 0.35) !important;
+    border-left: 4px solid #7693D6 !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active:hover {
+    background-color: #3B5BA5 !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-link.active .nav-icon,
+.sidebar-dark-primary .nav-sidebar .nav-link.active .nav-icon {
+    color: #ffffff !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    border-left: 3px solid #D6E2F9 !important;
+    box-shadow: 0 2px 6px rgba(74, 111, 193, 0.25) !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active:hover {
+    background-color: #3B5BA5 !important;
+    color: #ffffff !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background-color: rgba(74, 111, 193, 0.2) !important;
+    color: #ffffff !important;
+    border-left: 3px solid #4A6FC1 !important;
+}
+
+.nav-link.active::before {
+    background: #4A6FC1 !important;
+}
+
+.sidebar-dark-primary .nav-header {
+    color: #7693D6 !important;
+}

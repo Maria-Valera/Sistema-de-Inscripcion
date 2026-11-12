@@ -80,6 +80,84 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
         }
+
+        /* Modal Generar Nuevo Horario (SaaS Blur Compacto) */
+        #modalNuevoHorario.modal {
+            background-color: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        #modalNuevoHorario .modal-dialog {
+            max-width: 580px;
+            width: 100%;
+            margin: 1rem auto;
+        }
+        #modalNuevoHorario .modal-content {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+            overflow: hidden;
+        }
+        #modalNuevoHorario .modal-header {
+            background: #FFFFFF;
+            border-bottom: 1px solid #F1F5F9;
+            padding: 1rem 1.25rem;
+        }
+        #modalNuevoHorario .modal-body {
+            padding: 1.25rem !important;
+        }
+        #modalNuevoHorario .modal-footer {
+            background: #FFFFFF;
+            border-top: none;
+            padding: 0 1.25rem 1.25rem;
+            gap: 0.75rem;
+        }
+        #modalNuevoHorario .form-select {
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid #CBD5E1;
+            padding: 0.5rem 2.25rem 0.5rem 0.85rem;
+            font-size: 0.92rem;
+            color: #0F172A;
+            background-color: #FFFFFF;
+        }
+        #modalNuevoHorario .form-select:disabled {
+            background-color: #F8FAFC;
+            color: #64748B;
+        }
+        #modalNuevoHorario .btn-modal-cancel {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #64748B;
+            font-weight: 600;
+            padding: 0.55rem 1.15rem;
+            border-radius: 10px;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        #modalNuevoHorario .btn-modal-cancel:hover {
+            background: #F1F5F9;
+            color: #0F172A;
+        }
+        #modalNuevoHorario .btn-modal-continue {
+            background-color: #4A6FC1 !important;
+            border-color: #4A6FC1 !important;
+            color: #FFFFFF !important;
+            opacity: 1 !important;
+            font-weight: 600;
+            padding: 0.55rem 1.35rem;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 10px -2px rgba(74, 111, 193, 0.35);
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+        #modalNuevoHorario .btn-modal-continue:hover {
+            background-color: #3B5BA5 !important;
+            border-color: #3B5BA5 !important;
+            transform: translateY(-1px);
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}?v={{ @filemtime(public_path('css/horario-pilot.css')) }}">
 @stop
@@ -122,10 +200,10 @@
                             </span>
                         </div>
                     @else
-                        <a href="{{ route('admin.horario.create') }}" class="btn-hero-white">
+                        <button type="button" class="btn-hero-white" data-bs-toggle="modal" data-bs-target="#modalNuevoHorario">
                             <i class="fas fa-plus"></i>
                             <span>Nuevo Horario</span>
-                        </a>
+                        </button>
                     @endif
                 @endif
             </div>
@@ -186,7 +264,8 @@
                                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2 pb-2 border-bottom border-warning">
                                     <div>
                                         <h5 class="fw-bold mb-0" style="color: #92400e;">
-                                            <i class="fas fa-lock me-1"></i> Creación de Horarios Bloqueada
+                                            <i class="fas fa-{{ !empty($erroresAgrupados) ? 'lock' : 'exclamation-circle' }} me-1"></i>
+                                            {{ !empty($erroresAgrupados) ? 'Creación de Horarios Bloqueada' : 'Atención' }}
                                         </h5>
                                         <small style="color: #78350f;">
                                             {{ session('warning') ?? 'Se detectaron ' . count($erroresMostrar) . ' materias sin docente asignado en ' . $totalGrupos . ' sección(es).' }}
@@ -452,10 +531,10 @@
                                 Organiza los bloques semanales de cada sección manualmente o mediante el generador automático.
                             </p>
                             @if (\App\Support\AnioEscolarSeleccionado::esActual() && !($hayErroresCriticos ?? false))
-                                <a href="{{ route('admin.horario.create') }}" class="btn-saas-primary">
+                                <button type="button" class="btn-saas-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoHorario">
                                     <i class="fas fa-plus"></i>
                                     <span>Crear mi primer horario</span>
-                                </a>
+                                </button>
                             @endif
                         </div>
                     </td>
@@ -558,6 +637,69 @@
 
         <!-- Incluir modal de visualización -->
         @include('admin.horario.modales.showModal')
+
+        <!-- Modal Generar Nuevo Horario -->
+        <div class="modal fade" id="modalNuevoHorario" tabindex="-1" aria-labelledby="modalNuevoHorarioLabel" aria-hidden="true" data-bs-backdrop="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form action="{{ route('admin.horario.create') }}" method="GET" id="formNuevoHorario">
+                        <div class="modal-header">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0" style="width: 38px; height: 38px; background-color: #EFF6FF; color: #4A6FC1;">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </div>
+                                <div>
+                                    <h5 class="modal-title fw-bold mb-0" id="modalNuevoHorarioLabel" style="color: #0F172A; font-size: 1.05rem;">
+                                        Generar Nuevo Horario
+                                    </h5>
+                                    <p class="text-muted mb-0" style="font-size: 0.82rem;">
+                                        Selecciona el nivel y área para abrir la cuadrícula
+                                    </p>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <div class="modal-body p-3">
+                            <div class="row">
+                                <!-- Columna Izquierda -->
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="nivel_id" class="form-label fw-bold text-dark mb-2" style="font-size: 0.88rem;">
+                                        <i class="fas fa-layer-group me-2" style="color: #4A6FC1;"></i>Nivel Académico
+                                    </label>
+                                    <select name="nivel_id" id="nivel_id" class="form-select w-100" required>
+                                        <option value="">Elija nivel...</option>
+                                        @foreach($grados as $grado)
+                                            <option value="{{ $grado->id }}">{{ $grado->numero_grado }}° Grado</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Columna Derecha -->
+                                <div class="col-md-6">
+                                    <label for="area_id" class="form-label fw-bold text-dark mb-2" style="font-size: 0.88rem;">
+                                        <i class="fas fa-book me-2" style="color: #4A6FC1;"></i>Área de Formación
+                                    </label>
+                                    <select name="area_id" id="area_id" class="form-select w-100" disabled required>
+                                        <option value="">Elija área...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-modal-continue" id="btnContinuarModal">
+                                <span>Continuar</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -702,6 +844,55 @@
                 collapseMas.addEventListener('hide.bs.collapse', function () {
                     textoMas.textContent = textoOriginal;
                     iconoMas.className = 'fas fa-chevron-down';
+                });
+            }
+
+            // Modal Generar Nuevo Horario: selects dependientes
+            const modalNuevoHorarioEl = document.getElementById('modalNuevoHorario');
+            const modalNivelSelect = document.getElementById('nivel_id');
+            const modalAreaSelect = document.getElementById('area_id');
+
+            if (modalNivelSelect && modalAreaSelect) {
+                modalNivelSelect.addEventListener('change', async function () {
+                    const nivelId = this.value;
+                    if (nivelId) {
+                        modalAreaSelect.disabled = false;
+                        modalAreaSelect.innerHTML = '<option value="">Cargando áreas...</option>';
+                        try {
+                            const response = await fetch(`/api/areas-formacion/grado?grado_id=${nivelId}`);
+                            const areas = await response.json();
+                            modalAreaSelect.innerHTML = '<option value="">Elija área...</option>';
+                            areas.forEach(area => {
+                                const option = document.createElement('option');
+                                option.value = area.id;
+                                option.textContent = area.nombre;
+                                modalAreaSelect.appendChild(option);
+                            });
+                        } catch (error) {
+                            console.error('Error al cargar áreas de formación:', error);
+                            modalAreaSelect.innerHTML = '<option value="">Error al cargar áreas</option>';
+                        }
+                    } else {
+                        modalAreaSelect.disabled = true;
+                        modalAreaSelect.innerHTML = '<option value="">Elija área...</option>';
+                    }
+                });
+            }
+
+            if (modalNuevoHorarioEl) {
+                modalNuevoHorarioEl.addEventListener('hidden.bs.modal', function () {
+                    if (modalNivelSelect) modalNivelSelect.value = '';
+                    if (modalAreaSelect) {
+                        modalAreaSelect.disabled = true;
+                        modalAreaSelect.innerHTML = '<option value="">Elija área...</option>';
+                    }
+                });
+
+                // Cerrar al hacer clic fuera del cuadro del modal
+                modalNuevoHorarioEl.addEventListener('click', function (e) {
+                    if (e.target === modalNuevoHorarioEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        bootstrap.Modal.getOrCreateInstance(modalNuevoHorarioEl).hide();
+                    }
                 });
             }
 

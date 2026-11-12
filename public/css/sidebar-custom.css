@@ -81,8 +81,14 @@ body,
 
 .content-wrapper {
     background-color: #F4F6F9;
-    padding-top: var(--topbar-height) !important;
+    margin-top: var(--topbar-height) !important;
+    padding-top: 12px !important;
     transition: margin-left 0.3s ease-in-out !important;
+}
+
+.content-wrapper > .content-header {
+    padding-top: 4px !important;
+    padding-bottom: 0.75rem !important;
 }
 
 .main-footer {
