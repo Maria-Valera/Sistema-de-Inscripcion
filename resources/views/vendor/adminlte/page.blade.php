@@ -6,6 +6,7 @@
 @section('adminlte_css')
     @stack('css') 
     @yield('css')
+    <link rel="stylesheet" href="{{ asset('css/sidebar-custom.css') }}?v={{ @filemtime(public_path('css/sidebar-custom.css')) }}">
 @stop
 
 @section('classes_body', $layoutHelper->makeBodyClasses())

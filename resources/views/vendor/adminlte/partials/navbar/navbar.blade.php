@@ -106,3 +106,19 @@
     </ul>
 
 </nav>
+
+<script>
+    (function () {
+        function syncTopbarHeight() {
+            const nav = document.querySelector('.main-header.navbar');
+            if (!nav) return;
+            document.documentElement.style.setProperty('--topbar-height', nav.offsetHeight + 'px');
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', syncTopbarHeight);
+        } else {
+            syncTopbarHeight();
+        }
+        window.addEventListener('resize', syncTopbarHeight);
+    })();
+</script>
