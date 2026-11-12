@@ -5,32 +5,36 @@
 
 @if($anioModel)
     <li class="nav-item d-flex align-items-center mr-2">
-        <div class="d-inline-flex align-items-center px-2.5 py-1 rounded shadow-sm text-white" 
-             style="background: linear-gradient(135deg, #4f46e5, #4338ca); font-size: 0.85rem; line-height: 1.2;">
-            <i class="fas fa-calendar-alt text-white mr-1.5" style="opacity: 0.9;"></i>
-            <span class="font-weight-bold mr-1 text-white">Año:</span>
-            <span class="text-white font-weight-bold">
+        <div class="d-inline-flex align-items-center px-3 py-1"
+             style="background-color: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 999px; font-size: 0.84rem; line-height: 1.25; color: #0F172A; gap: 0.5rem;">
+            <i class="far fa-calendar-alt" style="color: #64748B; font-size: 0.85rem;"></i>
+            <span style="color: #64748B; font-weight: 500;">Año:</span>
+            <span style="color: #0F172A; font-weight: 600;">
                 {{ $anioModel->inicio_anio_escolar?->format('Y') }} - {{ $anioModel->cierre_anio_escolar?->format('Y') }}
             </span>
             @if(!$esActual)
-                <span class="badge badge-danger text-uppercase ml-2 px-1.5 py-0.5 font-weight-bold" 
-                      style="font-size: 0.65rem; letter-spacing: 0.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.2);" 
+                <span class="d-inline-flex align-items-center px-2 py-0.5"
+                      style="background-color: #FEE2E2; color: #991B1B; border-radius: 999px; font-size: 0.72rem; font-weight: 600; gap: 0.35rem;"
                       title="Operando en modo de solo lectura">
-                    <i class="fas fa-lock mr-1"></i>Solo consulta
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #EF4444; display: inline-block;"></span>
+                    Solo consulta
                 </span>
             @else
-                <span class="badge badge-light text-uppercase ml-2 px-1.5 py-0.5 font-weight-bold" 
-                      style="font-size: 0.65rem; color: #4338ca !important;">
+                <span class="d-inline-flex align-items-center px-2 py-0.5"
+                      style="background-color: #DCFCE7; color: #166534; border-radius: 999px; font-size: 0.72rem; font-weight: 600; gap: 0.35rem;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #10B981; display: inline-block;"></span>
                     Activo
                 </span>
             @endif
 
             @if(auth()->check() && auth()->user()->can('anio_escolar.cambiar'))
-                <a href="{{ route('admin.anio-escolar.seleccionar') }}" 
-                   class="btn btn-xs btn-outline-light ml-2 px-2 font-weight-bold" 
-                   style="border-color: rgba(255, 255, 255, 0.7); line-height: 1.3;" 
+                <span style="width: 1px; height: 14px; background-color: #CBD5E1; display: inline-block;"></span>
+                <a href="{{ route('admin.anio-escolar.seleccionar') }}"
+                   class="d-inline-flex align-items-center text-decoration-none"
+                   style="color: #4A6FC1; font-size: 0.8rem; font-weight: 600; gap: 0.3rem;"
                    title="Cambiar año escolar">
-                    <i class="fas fa-sync-alt mr-1"></i>Cambiar
+                    <i class="fas fa-exchange-alt" style="font-size: 0.72rem;"></i>
+                    <span>Cambiar</span>
                 </a>
             @endif
         </div>

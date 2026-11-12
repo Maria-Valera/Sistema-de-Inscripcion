@@ -29,12 +29,32 @@
             background: transparent;
             margin-bottom: 0;
             padding: 0;
-            font-size: 1.5rem;
+            font-size: 14px;
+            line-height: 1.4;
+            align-items: center;
+        }
+
+        .navbar .breadcrumb .breadcrumb-item a {
+            color: #64748B;
+            text-decoration: none;
+            font-weight: 400;
+            transition: color 0.15s ease;
+        }
+
+        .navbar .breadcrumb .breadcrumb-item a:hover {
+            color: #0F172A;
+            text-decoration: none;
+        }
+
+        .navbar .breadcrumb .breadcrumb-item.active {
+            color: #0F172A;
+            font-weight: 500;
         }
 
         .navbar .breadcrumb .breadcrumb-item+.breadcrumb-item::before {
             content: "/";
-            padding: 0 6px 0 0;
+            color: #CBD5E1;
+            padding: 0 8px;
         }
     </style>
 

@@ -36,7 +36,12 @@
 @section('title', 'Gestión de Horarios')
 
 @section('content_header')
-    <div class="content-header-modern">
+    @php
+        $activeFiltersCount = collect(['grado_id', 'seccion_id', 'area_formacion_id'])
+            ->filter(fn ($key) => request()->filled($key))
+            ->count();
+    @endphp
+    <div class="content-header-modern hero-header-horario">
         <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
@@ -47,37 +52,26 @@
                     <p class="title-subtitle">Administración de horarios académicos</p>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center flex-wrap gap-2">
                 @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                    @can('horarios.gestionar')
-                        <a href="{{ route('admin.horario.configuracion') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px; font-weight: 500;">
-                            <i class="fas fa-sliders-h"></i>
-                            <span>Configurar Bloques</span>
-                        </a>
-                        <a href="{{ route('admin.horario.posiciones') }}" class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px; font-weight: 500;">
-                            <i class="fas fa-th"></i>
-                            <span>Posiciones por Materia</span>
-                        </a>
-                    @endcan
-
                     @if ($hayErroresCriticos ?? false)
                         <div class="d-inline-flex flex-column align-items-end text-end" style="max-width: 270px;">
                             <div class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" title="No puedes crear un horario porque hay errores en la carga académica. Corrige los errores en el panel inferior para habilitar este botón.">
-                                <button type="button" class="btn btn-secondary d-inline-flex align-items-center gap-2 px-3 py-2 text-white shadow-none" disabled style="border-radius: 6px; font-weight: 600; cursor: not-allowed; background-color: #94a3b8; border: none; opacity: 0.85; pointer-events: none;">
+                                <button type="button" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white shadow-none" disabled style="border-radius: 10px; font-weight: 600; cursor: not-allowed; background-color: rgba(255, 255, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.35); opacity: 0.9; pointer-events: none;">
                                     <i class="fas fa-lock text-warning"></i>
                                     <span>Nuevo Horario</span>
                                 </button>
                             </div>
-                            <span class="text-danger fw-semibold mt-1 d-inline-flex align-items-center gap-1" style="font-size: 0.78rem; line-height: 1.2;">
+                            <span class="fw-semibold mt-1 d-inline-flex align-items-center gap-1" style="font-size: 0.78rem; line-height: 1.2; color: #FEF3C7;">
                                 <i class="fas fa-exclamation-triangle"></i>
                                 <span>No puedes crear un horario porque hay errores en la carga académica.</span>
                             </span>
-                            <span class="text-muted" style="font-size: 0.72rem; line-height: 1.2;">
+                            <span style="font-size: 0.72rem; line-height: 1.2; color: rgba(255, 255, 255, 0.8);">
                                 Corrige los errores en el panel inferior para habilitar este botón.
                             </span>
                         </div>
                     @else
-                        <a href="{{ route('admin.horario.create') }}" class="btn-create">
+                        <a href="{{ route('admin.horario.create') }}" class="btn-hero-white">
                             <i class="fas fa-plus"></i>
                             <span>Nuevo Horario</span>
                         </a>
@@ -112,23 +106,6 @@
             }
             $totalGrupos = count($erroresAgrupados);
         @endphp
-
-        {{-- Banner Verde de Éxito cuando NO hay errores críticos --}}
-        @if (!($hayErroresCriticos ?? false) && empty($erroresMostrar) && !session('warning'))
-            <div class="alert alert-success d-flex align-items-center gap-3 p-3 mb-4 shadow-sm border-0" role="alert" style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-left: 4px solid #10b981 !important; border-radius: 8px;">
-                <div class="rounded-circle d-flex align-items-center justify-content-center bg-white shadow-sm flex-shrink-0" style="width: 44px; height: 44px; color: #059669; font-size: 1.35rem;">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div>
-                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.98rem;">
-                        <i class="fas fa-shield-alt me-1"></i> Carga Académica Lista y Validada
-                    </h6>
-                    <p class="mb-0 text-muted" style="font-size: 0.85rem;">
-                        Todas las secciones y áreas de formación cuentan con docentes y aulas asignadas. El sistema está 100% listo para generar horarios académicos.
-                    </p>
-                </div>
-            </div>
-        @endif
 
         @if (session('success') || session('error') || session('warning') || (($hayErroresCriticos ?? false) && !empty($erroresMostrar)))
             <div class="alerts-container">
@@ -277,210 +254,259 @@
             </div>
         @endif
 
-        <!-- Encabezado de Filtros Inteligentes -->
-        <div class="card-modern mb-4">
-            <div class="card-header-modern">
-                <div class="header-left">
-                    <div class="header-icon">
-                        <i class="fas fa-filter"></i>
-                    </div>
-                    <div>
-                        <h3>Filtros de Consulta</h3>
-                        <p>Selecciona los parámetros para visualizar horarios (opcional)</p>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body-modern p-3">
-                <form id="filtroHorarioForm" action="{{ route('admin.horario.index') }}" method="GET" class="filtro-form py-2">
-                    <div class="row g-3 justify-content-center align-items-end">
-                        <div class="col-md-3">
-                            <label class="form-label-modern text-center d-block">
-                                <i class="fas fa-graduation-cap" style="color: var(--primary);"></i>
-                                Año / Grado
-                            </label>
-                            <select class="form-select text-center" id="grado_id" name="grado_id">
-                                <option value="">Todos los años</option>
-                                @foreach($grados as $grado)
-                                    <option value="{{ $grado->id }}" {{ request('grado_id') == $grado->id ? 'selected' : '' }}>
-                                        {{ $grado->numero_grado }}° Año
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+        @php
+            $horarioFilterFields = [
+                [
+                    'name' => 'grado_id',
+                    'label' => 'Año / Grado',
+                    'icon' => 'fas fa-graduation-cap',
+                    'placeholder' => 'Todos los años',
+                    'value' => request('grado_id'),
+                    'options' => $grados->map(fn ($g) => [
+                        'value' => (string) $g->id,
+                        'label' => $g->numero_grado . '° Año',
+                    ])->values()->all(),
+                ],
+                [
+                    'name' => 'seccion_id',
+                    'label' => 'Sección',
+                    'icon' => 'fas fa-users',
+                    'placeholder' => 'Todas las secciones',
+                    'value' => request('seccion_id'),
+                    'options' => $secciones->map(fn ($s) => [
+                        'value' => (string) $s->id,
+                        'label' => 'Sección ' . $s->nombre,
+                    ])->values()->all(),
+                ],
+                [
+                    'name' => 'area_formacion_id',
+                    'label' => 'Área de Formación',
+                    'icon' => 'fas fa-book',
+                    'placeholder' => 'Todas las áreas',
+                    'value' => request('area_formacion_id'),
+                    'options' => $areasFormacion->map(fn ($a) => [
+                        'value' => (string) $a->id,
+                        'label' => $a->nombre_area_formacion,
+                    ])->values()->all(),
+                ],
+            ];
 
-                        <div class="col-md-3">
-                            <label class="form-label-modern text-center d-block">
-                                <i class="fas fa-users" style="color: var(--primary);"></i>
-                                Sección
-                            </label>
-                            <select class="form-select text-center" id="seccion_id" name="seccion_id">
-                                <option value="">Todas las secciones</option>
-                                @foreach($secciones as $seccion)
-                                    <option value="{{ $seccion->id }}" {{ request('seccion_id') == $seccion->id ? 'selected' : '' }}>
-                                        Sección {{ $seccion->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+            $activeChips = [];
+            if (request()->filled('buscar')) {
+                $activeChips[] = ['name' => 'buscar', 'label' => 'Búsqueda: ' . request('buscar')];
+            }
+            if (request()->filled('grado_id')) {
+                $gradoSel = $grados->firstWhere('id', request('grado_id'));
+                if ($gradoSel) {
+                    $activeChips[] = ['name' => 'grado_id', 'label' => 'Año: ' . $gradoSel->numero_grado . '° Año'];
+                }
+            }
+            if (request()->filled('seccion_id')) {
+                $seccionSel = $secciones->firstWhere('id', request('seccion_id'));
+                if ($seccionSel) {
+                    $activeChips[] = ['name' => 'seccion_id', 'label' => 'Sección: ' . $seccionSel->nombre];
+                }
+            }
+            if (request()->filled('area_formacion_id')) {
+                $areaSel = $areasFormacion->firstWhere('id', request('area_formacion_id'));
+                if ($areaSel) {
+                    $activeChips[] = ['name' => 'area_formacion_id', 'label' => 'Área: ' . $areaSel->nombre_area_formacion];
+                }
+            }
+        @endphp
 
-                        <div class="col-md-3">
-                            <label class="form-label-modern text-center d-block">
-                                <i class="fas fa-book" style="color: var(--primary);"></i>
-                                Área de Formación
-                            </label>
-                            <select class="form-select text-center" id="area_formacion_id" name="area_formacion_id">
-                                <option value="">Todas las áreas</option>
-                                @foreach($areasFormacion as $area)
-                                    <option value="{{ $area->id }}" {{ request('area_formacion_id') == $area->id ? 'selected' : '' }}>
-                                        {{ $area->nombre_area_formacion }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+        <x-ui.filter-panel
+            id="horarioFilterPanel"
+            title="Filtros de Horarios"
+            :action="route('admin.horario.index')"
+            external-search-selector="#horarioQuickSearch"
+            :filters="$horarioFilterFields"
+            results-target="#horariosResultadosWrapper"
+        />
 
-                        <div class="col-md-3 d-flex justify-content-center gap-2">
-                            <button type="submit" class="btn-generate">
-                                <i class="fas fa-search"></i>
-                                <span>Filtrar</span>
+        <div data-filter-sync-id="horariosActiveChips">
+            @if (!empty($activeChips))
+                <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+                    <span class="text-muted fw-semibold" style="font-size: 0.82rem;">Filtros aplicados:</span>
+                    @foreach ($activeChips as $chip)
+                        <span class="filter-chip-saas">
+                            <span>{{ $chip['label'] }}</span>
+                            <button type="button"
+                                class="filter-chip-remove"
+                                data-panel-id="horarioFilterPanel"
+                                data-quick-remove-filter="{{ $chip['name'] }}"
+                                aria-label="Quitar {{ $chip['label'] }}">
+                                &times;
                             </button>
-                            @if(request()->hasAny(['grado_id', 'seccion_id', 'area_formacion_id']))
-                                <a href="{{ route('admin.horario.index') }}" class="btn btn-light d-flex align-items-center justify-content-center" title="Limpiar filtros">
-                                    <i class="fas fa-undo"></i>
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                </form>
-            </div>
+                        </span>
+                    @endforeach
+                    <button type="button"
+                        class="btn-clear-chips ms-1"
+                        data-panel-id="horarioFilterPanel"
+                        data-quick-remove-filter="__all__">
+                        Limpiar todo
+                    </button>
+                </div>
+            @endif
         </div>
 
         <!-- Listado de Horarios Generados -->
-        <div class="card-modern">
-            <div class="card-header-modern">
-                <div class="header-left">
-                    <div class="header-icon">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div>
-                        <h3 class="mb-0">Listado de Horarios</h3>
-                        <p class="mb-0">{{ $horariosPaginados->total() }} registros encontrados</p>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body-modern">
-                <div class="table-wrapper">
-                    <table class="table-modern overflow-hidden">
-                        <thead>
-                            <tr style="text-align: center">
-                                <th style="text-align: center">#</th>
-                                <th style="text-align: center">Año / Grado</th>
-                                <th style="text-align: center">Sección</th>
-                                <th style="text-align: center">Áreas de Formación</th>
-                                <th style="text-align: center">Total Clases</th>
-                                <th style="text-align: center">Estado</th>
-                                <th style="text-align: center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody style="text-align: center">
-                            @if($horariosPaginados->isEmpty())
-                                <tr>
-                                    <td colspan="7">
-                                        <div class="empty-state">
-                                            <div class="empty-icon mb-2">
-                                                <i class="fas fa-calendar-times fa-3x text-muted"></i>
-                                            </div>
-                                            <h4>No hay horarios asignados</h4>
-                                            <p class="text-muted">Genera o registra un nuevo horario para comenzar.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @else
-                                @foreach($horariosPaginados as $index => $horario)
-                                    <tr class="row-12" style="text-align: center">
-                                        <td>{{ ($horariosPaginados->currentPage() - 1) * $horariosPaginados->perPage() + $index + 1 }}</td>
-                                        <td class="title-main fw-bold">{{ $horario['grado'] }}° Año</td>
-                                        <td>
-                                            <span class="badge bg-light text-dark border px-2 py-1">
-                                                Sección {{ $horario['seccion'] }}
-                                            </span>
-                                        </td>
-                                        <td class="text-truncate" style="max-width: 320px;" title="{{ $horario['areas'] }}">
-                                            {{ $horario['areas'] }}
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary px-2 py-1">
-                                                {{ $horario['total_asignaciones'] }} bloque(s)
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="status-badge status-active">
-                                                <span class="status-dot"></span>
-                                                Activo
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <div class="dropdown dropstart text-center">
-                                                    <button class="btn btn-light btn-sm rounded-circle shadow-sm action-btn"
-                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        <i class="fas fa-ellipsis-v"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                        <li>
-                                                            <button class="dropdown-item d-flex align-items-center text-primary"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#viewModalHorario"
-                                                                onclick="cargarHorarioEnModal({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }}, '{{ $horario['grado'] }}', '{{ $horario['seccion'] }}')">
-                                                                <i class="fas fa-eye me-2"></i>
-                                                                Ver Horario
-                                                            </button>
-                                                        </li>
-                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                                                            <li>
-                                                                <a href="{{ route('admin.horario.edit', ['grado_id' => $horario['grado_id'], 'seccion_id' => $horario['seccion_id']]) }}"
-                                                                    class="dropdown-item d-flex align-items-center text-warning">
-                                                                    <i class="fas fa-pen me-2"></i>
-                                                                    Editar
-                                                                </a>
-                                                            </li>
-                                                        @endif
-                                                        <li>
-                                                            <button class="dropdown-item d-flex align-items-center text-danger"
-                                                                onclick="generarPDF({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
-                                                                <i class="fas fa-file-pdf me-2"></i>
-                                                                PDF Horario
-                                                            </button>
-                                                        </li>
-                                                        @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                                                            <li>
-                                                                <button class="dropdown-item d-flex align-items-center text-danger"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#confirmarEliminar{{ $horario['id'] }}">
-                                                                    <i class="fas fa-trash me-2"></i>
-                                                                    Eliminar
-                                                                </button>
-                                                            </li>
-                                                        @endif
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
+        <x-ui.data-table
+            title="Listado de Horarios"
+            :subtitle="$horariosPaginados->total() . ' registros encontrados'"
+            sync-count-id="horariosTotalCount"
+            icon="fas fa-calendar-alt"
+            search-id="horarioQuickSearch"
+            search-name="buscar"
+            :search-value="request('buscar', '')"
+            search-placeholder="Buscar año, sección o área..."
+            results-wrapper-id="horariosResultadosWrapper"
+        >
+            <x-slot:headerActions>
+                <x-ui.filter-bar target="horarioFilterPanel" label="Filtrar" :active-count="$activeFiltersCount" />
+            </x-slot:headerActions>
+
+            <x-slot:thead>
+                <tr class="text-center">
+                    <th class="text-center" style="width: 64px;">#</th>
+                    <th class="text-start">Año / Grado</th>
+                    <th class="text-center">Sección</th>
+                    <th class="text-start">Áreas de Formación</th>
+                    <th class="text-center">Total Clases</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center" style="width: 96px;">Acciones</th>
+                </tr>
+            </x-slot:thead>
+
+            @if($horariosPaginados->isEmpty())
+                <tr class="row-empty">
+                    <td colspan="7">
+                        <div class="empty-state-saas">
+                            <svg width="92" height="92" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <rect x="14" y="22" width="60" height="54" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2.2"/>
+                                <path d="M14 36C14 29.3726 19.3726 24 26 24H62C68.6274 24 74 29.3726 74 36V40H14V36Z" fill="#EFF6FF"/>
+                                <line x1="14" y1="40" x2="74" y2="40" stroke="#CBD5E1" stroke-width="2"/>
+                                <line x1="30" y1="16" x2="30" y2="27" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="58" y1="16" x2="58" y2="27" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+                                <rect x="24" y="48" width="12" height="8" rx="2.5" fill="#E2E8F0"/>
+                                <rect x="40" y="48" width="12" height="8" rx="2.5" fill="#DBEAFE"/>
+                                <rect x="24" y="60" width="12" height="8" rx="2.5" fill="#E2E8F0"/>
+                                <rect x="40" y="60" width="12" height="8" rx="2.5" fill="#E2E8F0"/>
+                                <circle cx="70" cy="68" r="16" fill="#EFF6FF" stroke="#4A6FC1" stroke-width="2.2"/>
+                                <line x1="70" y1="61" x2="70" y2="75" stroke="#4A6FC1" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="63" y1="68" x2="77" y2="68" stroke="#4A6FC1" stroke-width="2.5" stroke-linecap="round"/>
+                            </svg>
+                            <h4 class="empty-state-saas-title">Aún no hay horarios para este año</h4>
+                            <p class="empty-state-saas-text">
+                                Organiza los bloques semanales de cada sección manualmente o mediante el generador automático.
+                            </p>
+                            @if (\App\Support\AnioEscolarSeleccionado::esActual() && !($hayErroresCriticos ?? false))
+                                <a href="{{ route('admin.horario.create') }}" class="btn-saas-primary">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Crear mi primer horario</span>
+                                </a>
                             @endif
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </div>
+                    </td>
+                </tr>
+            @else
+                @foreach($horariosPaginados as $index => $horario)
+                    <tr data-horario-row
+                        data-grado-id="{{ $horario['grado_id'] }}"
+                        data-seccion-id="{{ $horario['seccion_id'] }}"
+                        data-grado="{{ $horario['grado'] }}"
+                        data-seccion="{{ $horario['seccion'] }}">
+                        <td class="text-center text-muted fw-semibold">
+                            {{ ($horariosPaginados->currentPage() - 1) * $horariosPaginados->perPage() + $index + 1 }}
+                        </td>
+                        <td class="text-start fw-bold text-dark">
+                            {{ $horario['grado'] }}° Año
+                        </td>
+                        <td class="text-center">
+                            <span class="pill-badge pill-solid-primary">
+                                Sección {{ $horario['seccion'] }}
+                            </span>
+                        </td>
+                        <td class="text-start text-muted text-truncate" style="max-width: 340px;" title="{{ $horario['areas'] }}">
+                            {{ $horario['areas'] }}
+                        </td>
+                        <td class="text-center">
+                            <span class="metric-inline-saas">
+                                <i class="fas fa-layer-group text-muted" style="font-size: 0.8rem;"></i>
+                                <span>{{ $horario['total_asignaciones'] }} {{ $horario['total_asignaciones'] === 1 ? 'bloque' : 'bloques' }}</span>
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="pill-badge pill-success">
+                                <span class="pill-dot"></span>
+                                Activo
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="dropdown d-inline-block">
+                                <button class="action-btn-saas"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-display="static"
+                                    data-bs-boundary="viewport"
+                                    aria-expanded="false"
+                                    aria-label="Acciones">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-saas">
+                                    <li>
+                                        <button class="dropdown-item d-flex align-items-center"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewModalHorario"
+                                            onclick="cargarHorarioEnModal({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }}, '{{ $horario['grado'] }}', '{{ $horario['seccion'] }}')">
+                                            <i class="fas fa-eye me-2" style="color: #4A6FC1;"></i>
+                                            Ver Horario
+                                        </button>
+                                    </li>
+                                    @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                        <li>
+                                            <a href="{{ route('admin.horario.edit', ['grado_id' => $horario['grado_id'], 'seccion_id' => $horario['seccion_id']]) }}"
+                                                class="dropdown-item d-flex align-items-center">
+                                                <i class="fas fa-pen me-2 text-warning"></i>
+                                                Editar
+                                            </a>
+                                        </li>
+                                    @endif
+                                    <li>
+                                        <button class="dropdown-item d-flex align-items-center"
+                                            onclick="generarPDF({{ $horario['grado_id'] }}, {{ $horario['seccion_id'] }})">
+                                            <i class="fas fa-file-pdf me-2 text-danger"></i>
+                                            PDF Horario
+                                        </button>
+                                    </li>
+                                    @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                        <li>
+                                            <button class="dropdown-item d-flex align-items-center text-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#confirmarEliminar{{ $horario['id'] }}">
+                                                <i class="fas fa-trash me-2"></i>
+                                                Eliminar
+                                            </button>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            @endif
+        </x-ui.data-table>
+
+        <div data-filter-sync-id="horariosPaginationModals">
+            <x-pagination :paginator="$horariosPaginados" />
+
+            @foreach($horariosPaginados as $horario)
+                @include('admin.horario.modales.inactivarModal', ['horario' => $horario])
+            @endforeach
         </div>
 
-        <x-pagination :paginator="$horariosPaginados" />
-
-        <!-- Incluir modales -->
+        <!-- Incluir modal de visualización -->
         @include('admin.horario.modales.showModal')
-        @foreach($horariosPaginados as $horario)
-            @include('admin.horario.modales.inactivarModal', ['horario' => $horario])
-        @endforeach
     </div>
 
     <script>
@@ -627,6 +653,26 @@
                     iconoMas.className = 'fas fa-chevron-down';
                 });
             }
+
+            // Click en fila de horario para abrir vista previa (ignorando botones/enlaces/dropdown)
+            document.addEventListener('click', function (e) {
+                const row = e.target.closest('tr[data-horario-row]');
+                if (!row) return;
+                if (e.target.closest('a, button, .dropdown, .dropdown-menu, input, select')) return;
+
+                const modalEl = document.getElementById('viewModalHorario');
+                if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                }
+                if (typeof cargarHorarioEnModal === 'function') {
+                    cargarHorarioEnModal(
+                        row.dataset.gradoId,
+                        row.dataset.seccionId,
+                        row.dataset.grado,
+                        row.dataset.seccion
+                    );
+                }
+            });
         });
     </script>
 @endsection

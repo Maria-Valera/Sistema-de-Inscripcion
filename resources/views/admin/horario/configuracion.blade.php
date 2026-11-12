@@ -101,6 +101,177 @@
             border-radius: 20px;
             font-size: 0.8rem;
         }
+
+        /* Pestañas SaaS unificadas */
+        .config-tabs-wrapper {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 0.4rem;
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+        .config-tabs-wrapper .nav-link {
+            border: none;
+            border-radius: 10px;
+            padding: 0.625rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;
+            background: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.18s ease;
+        }
+        .config-tabs-wrapper .nav-link:hover:not(.active) {
+            background: #f8fafc;
+            color: #4A6FC1;
+        }
+        .config-tabs-wrapper .nav-link.active {
+            background-color: #4A6FC1 !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(74, 111, 193, 0.25);
+        }
+        .config-tabs-wrapper .nav-link.active i {
+            color: #ffffff !important;
+        }
+
+        /* Estilos de Posiciones por Materia */
+        .posicion-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        .posicion-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .posicion-card-body {
+            padding: 1.5rem;
+        }
+        .form-select-modern {
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e1;
+            padding: 0.6rem 0.85rem;
+            font-size: 0.95rem;
+            background-color: #fff;
+            transition: all 0.15s ease-in-out;
+            width: 100%;
+        }
+        .form-select-modern:focus {
+            border-color: #4A6FC1;
+            box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.18);
+            outline: none;
+        }
+        .tabla-posiciones {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 6px;
+        }
+        .tabla-posiciones th {
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .tabla-posiciones td.hora-col {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.82rem;
+            text-align: center;
+            border-radius: 8px;
+            padding: 0.75rem 0.5rem;
+            border: 1px solid #e2e8f0;
+            vertical-align: middle;
+            width: 130px;
+        }
+        .celda-posicion {
+            height: 64px;
+            border-radius: 8px;
+            padding: 0.5rem;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .celda-posicion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .estado-disponible {
+            background-color: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            color: #64748b;
+        }
+        .estado-disponible:hover {
+            border-color: #94a3b8;
+        }
+        .estado-no_preferente {
+            background-color: #fef9c3;
+            border: 1.5px solid #eab308;
+            color: #854d0e;
+        }
+        .estado-no_preferente_fuerte {
+            background-color: #ffedd5;
+            border: 1.5px solid #f97316;
+            color: #9a3412;
+        }
+        .estado-prohibido {
+            background-color: #fee2e2;
+            border: 1.5px solid #ef4444;
+            color: #991b1b;
+        }
+        .pos-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+        }
+        .legend-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .legend-color-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
     </style>
     <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 @stop
@@ -115,13 +286,13 @@
                 <div>
                     <h1 class="title-main">Configuración de Bloques Horarios</h1>
                     <p class="title-subtitle">
-                        Marco horario institucional y bloques de clase &bull;
+                        Marco horario institucional, recesos y posiciones pedagógicas &bull;
                         <strong>Configuración Global</strong>
                     </p>
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('admin.horario.index') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 6px;">
+                <a href="{{ route('admin.horario.index') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 10px; background: #ffffff; border-color: #d1d5db; color: #1e293b; font-weight: 600;">
                     <i class="fas fa-arrow-left"></i>
                     <span>Volver al Horario</span>
                 </a>
@@ -131,7 +302,44 @@
 @stop
 
 @section('content')
+    @php
+        $tabActual = $activeTab ?? request('tab', 'bloques');
+    @endphp
     <div class="container-fluid px-0">
+        {{-- Navegación por Pestañas (Tabs) --}}
+        <div class="mb-4">
+            <ul class="nav nav-pills config-tabs-wrapper" id="configHorarioTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ $tabActual === 'bloques' ? 'active' : '' }}"
+                            id="tab-bloques-btn"
+                            data-bs-toggle="tab"
+                            data-bs-target="#pane-bloques"
+                            data-tab-key="bloques"
+                            type="button"
+                            role="tab"
+                            aria-controls="pane-bloques"
+                            aria-selected="{{ $tabActual === 'bloques' ? 'true' : 'false' }}">
+                        <i class="fas fa-clock"></i>
+                        <span>Bloques y Recesos</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ $tabActual === 'posiciones' ? 'active' : '' }}"
+                            id="tab-posiciones-btn"
+                            data-bs-toggle="tab"
+                            data-bs-target="#pane-posiciones"
+                            data-tab-key="posiciones"
+                            type="button"
+                            role="tab"
+                            aria-controls="pane-posiciones"
+                            aria-selected="{{ $tabActual === 'posiciones' ? 'true' : 'false' }}">
+                        <i class="fas fa-th"></i>
+                        <span>Posiciones por Materia</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
         {{-- Alertas --}}
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 shadow-sm" role="alert" style="border-radius: 8px;">
@@ -161,8 +369,15 @@
             </div>
         @endif
 
-        {{-- Formulario Unificado Vertical --}}
-        <form action="{{ route('admin.horario.configuracion.update') }}" method="POST" id="configHorarioForm">
+        <div class="tab-content" id="configHorarioTabsContent">
+            {{-- PESTAÑA 1: BLOQUES Y RECESOS --}}
+            <div class="tab-pane fade {{ $tabActual === 'bloques' ? 'show active' : '' }}"
+                 id="pane-bloques"
+                 role="tabpanel"
+                 aria-labelledby="tab-bloques-btn">
+
+                {{-- Formulario Unificado Vertical --}}
+                <form action="{{ route('admin.horario.configuracion.update') }}" method="POST" id="configHorarioForm">
             @csrf
             @method('PUT')
 
@@ -365,10 +580,21 @@
                 </div>
             </div>
         </form>
+            </div>
+
+            {{-- PESTAÑA 2: POSICIONES POR MATERIA --}}
+            <div class="tab-pane fade {{ $tabActual === 'posiciones' ? 'show active' : '' }}"
+                 id="pane-posiciones"
+                 role="tabpanel"
+                 aria-labelledby="tab-posiciones-btn">
+                @include('admin.horario.partials._posiciones_tab')
+            </div>
+        </div>
     </div>
 @stop
 
 @section('js')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Opciones de Días de la semana desde el Enum
@@ -730,6 +956,175 @@
             if (inputMinEntreBloques) inputMinEntreBloques.addEventListener('input', recalcularVistaPrevia);
 
             recalcularVistaPrevia();
+
+            // Sincronizar parámetro ?tab= al cambiar de pestaña
+            document.querySelectorAll('#configHorarioTabs [data-bs-toggle="tab"]').forEach(tabBtn => {
+                tabBtn.addEventListener('shown.bs.tab', function (e) {
+                    const key = e.target.getAttribute('data-tab-key');
+                    if (key) {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('tab', key);
+                        window.history.replaceState({}, '', url.toString());
+                    }
+                });
+            });
         });
+
+        // ==========================================================
+        // 4. POSICIONES PEDAGÓGICAS POR MATERIA (PESTAÑA 2)
+        // ==========================================================
+        const ESTADOS_POSICION = ['disponible', 'no_preferente', 'no_preferente_fuerte', 'prohibido'];
+
+        const BADGES_POSICION = {
+            'disponible': {
+                html: '<span class="pos-badge text-muted"><i class="fas fa-check"></i> Disponible</span>'
+            },
+            'no_preferente': {
+                html: '<span class="pos-badge" style="background: rgba(234, 179, 8, 0.2); color: #854d0e;"><i class="fas fa-exclamation-circle"></i> No pref. (+1)</span>'
+            },
+            'no_preferente_fuerte': {
+                html: '<span class="pos-badge" style="background: rgba(249, 115, 22, 0.2); color: #9a3412;"><i class="fas fa-exclamation-triangle"></i> No pref. ++ (+3)</span>'
+            },
+            'prohibido': {
+                html: '<span class="pos-badge" style="background: rgba(239, 68, 68, 0.2); color: #991b1b;"><i class="fas fa-ban"></i> Prohibido</span>'
+            }
+        };
+
+        function ciclarEstadoCelda(celda) {
+            const actual = celda.getAttribute('data-tipo') || 'disponible';
+            const indiceActual = ESTADOS_POSICION.indexOf(actual);
+            const nuevoIndice = (indiceActual + 1) % ESTADOS_POSICION.length;
+            const nuevoEstado = ESTADOS_POSICION[nuevoIndice];
+            aplicarEstadoACelda(celda, nuevoEstado);
+        }
+
+        function aplicarEstadoACelda(celda, nuevoEstado) {
+            celda.setAttribute('data-tipo', nuevoEstado);
+            ESTADOS_POSICION.forEach(e => celda.classList.remove('estado-' + e));
+            celda.classList.add('estado-' + nuevoEstado);
+
+            const cfg = BADGES_POSICION[nuevoEstado] || BADGES_POSICION['disponible'];
+            const cont = celda.querySelector('.contenido-celda');
+            if (cont) cont.innerHTML = cfg.html;
+        }
+
+        (function initPosicionesTab() {
+            const btnLimpiar = document.getElementById('btnLimpiarCuadricula');
+            const selectArea = document.getElementById('selectArea');
+            const selectGrado = document.getElementById('selectGrado');
+            const btnGuardar = document.getElementById('btnGuardarPosiciones');
+
+            if (btnLimpiar) {
+                btnLimpiar.addEventListener('click', function () {
+                    document.querySelectorAll('.celda-posicion').forEach(celda => {
+                        aplicarEstadoACelda(celda, 'disponible');
+                    });
+                });
+            }
+
+            function cargarPosiciones() {
+                if (!selectArea || !selectGrado) return;
+                const areaId = selectArea.value;
+                const gradoId = selectGrado.value;
+                if (!areaId) return;
+
+                document.querySelectorAll('.celda-posicion').forEach(c => aplicarEstadoACelda(c, 'disponible'));
+
+                fetch(`{{ route('admin.horario.posiciones.consultar') }}?area_formacion_id=${areaId}&grado_id=${gradoId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.posiciones) {
+                        data.posiciones.forEach(p => {
+                            const celda = document.querySelector(`.celda-posicion[data-dia="${p.dia}"][data-bloque="${p.bloque}"]`);
+                            if (celda) aplicarEstadoACelda(celda, p.tipo);
+                        });
+                    }
+                })
+                .catch(err => console.error('Error al cargar posiciones:', err));
+            }
+
+            if (selectArea) selectArea.addEventListener('change', cargarPosiciones);
+            if (selectGrado) selectGrado.addEventListener('change', cargarPosiciones);
+
+            if (btnGuardar) {
+                btnGuardar.addEventListener('click', function () {
+                    const areaId = selectArea ? selectArea.value : '';
+                    const gradoId = selectGrado ? selectGrado.value : '0';
+
+                    if (!areaId) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Atención',
+                            text: 'Debes seleccionar un área de formación.'
+                        });
+                        return;
+                    }
+
+                    const btn = this;
+                    const textoOriginal = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+                    const posiciones = [];
+                    document.querySelectorAll('.celda-posicion').forEach(c => {
+                        posiciones.push({
+                            dia: parseInt(c.getAttribute('data-dia'), 10),
+                            bloque: parseInt(c.getAttribute('data-bloque'), 10),
+                            tipo: c.getAttribute('data-tipo') || 'disponible'
+                        });
+                    });
+
+                    fetch('{{ route('admin.horario.posiciones.guardar') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            area_formacion_id: parseInt(areaId, 10),
+                            grado_id: gradoId === '0' || gradoId === '' ? null : parseInt(gradoId, 10),
+                            posiciones: posiciones
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        btn.disabled = false;
+                        btn.innerHTML = textoOriginal;
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Guardado!',
+                                text: data.mensaje || 'Reglas guardadas exitosamente.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.mensaje || 'No se pudieron guardar las reglas.'
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = textoOriginal;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de Conexión',
+                            text: 'Ocurrió un error al comunicarse con el servidor.'
+                        });
+                    });
+                });
+            }
+        })();
     </script>
 @stop

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Dia;
-use App\Support\AnioEscolarSeleccionado;
+use App\Models\AreaFormacion;
+use App\Models\AreaFormacionPosicion;
 use App\Models\BloqueReservado;
 use App\Models\ConfiguracionHorario;
+use App\Models\Grado;
 use App\Services\ConfiguracionHorarioService;
+use App\Support\AnioEscolarSeleccionado;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -18,9 +21,20 @@ class ConfiguracionHorarioController extends Controller
     ) {}
 
     /**
-     * Muestra la vista de configuración de bloques (marco horario institucional global).
+     * Muestra la vista unificada de configuración de horarios (Bloques/Recesos + Posiciones por Materia).
      */
-    public function index(): View
+    public function index(Request $request): View
+    {
+        $requestedTab = $request->query('tab', 'bloques');
+        $activeTab = in_array($requestedTab, ['bloques', 'posiciones'], true) ? $requestedTab : 'bloques';
+
+        return view('admin.horario.configuracion', $this->buildUnifiedViewData($request, $activeTab));
+    }
+
+    /**
+     * Construye los datos compartidos para la vista unificada con pestañas.
+     */
+    public function buildUnifiedViewData(Request $request, string $activeTab = 'bloques'): array
     {
         $anioActivo = AnioEscolarSeleccionado::modelo();
         $configuracion = $this->configuracionService->actual();
@@ -58,7 +72,40 @@ class ConfiguracionHorarioController extends Controller
 
         $dias = Dia::cases();
 
-        return view('admin.horario.configuracion', compact(
+        // Datos para la pestaña de Posiciones Pedagógicas por Materia
+        $areas = AreaFormacion::where('status', true)
+            ->orderBy('nombre_area_formacion', 'asc')
+            ->get();
+
+        $grados = Grado::where('status', true)
+            ->orderBy('numero_grado', 'asc')
+            ->get();
+
+        $areaId = $request->query('area_id', $areas->first()?->id);
+        $gradoId = $request->query('grado_id');
+        if ($gradoId === '' || $gradoId === '0') {
+            $gradoId = null;
+        }
+
+        $posicionesMap = [];
+        if ($areaId) {
+            $posiciones = AreaFormacionPosicion::where('area_formacion_id', $areaId)
+                ->where(function ($q) use ($gradoId) {
+                    if ($gradoId !== null) {
+                        $q->where('grado_id', $gradoId);
+                    } else {
+                        $q->whereNull('grado_id');
+                    }
+                })
+                ->get();
+
+            foreach ($posiciones as $pos) {
+                $diaVal = $pos->dia instanceof Dia ? $pos->dia->value : (int) $pos->dia;
+                $posicionesMap[$diaVal . '_' . $pos->bloque] = $pos->tipo;
+            }
+        }
+
+        return compact(
             'anioActivo',
             'configuracion',
             'bloques',
@@ -69,8 +116,14 @@ class ConfiguracionHorarioController extends Controller
             'minutosReceso',
             'reservados',
             'reservadosArray',
-            'dias'
-        ));
+            'dias',
+            'areas',
+            'grados',
+            'areaId',
+            'gradoId',
+            'posicionesMap',
+            'activeTab'
+        );
     }
 
     /**

@@ -347,6 +347,19 @@ class HorarioController extends Controller
                     'asignaciones' => $asignacionesGrupo
                 ];
             })->values();
+
+            if ($request->filled('buscar')) {
+                $termino = mb_strtolower(trim($request->buscar));
+                $horariosAsignados = $horariosAsignados->filter(function ($item) use ($termino) {
+                    $gradoTexto = mb_strtolower(($item['grado'] ?? '') . '° año');
+                    $seccionTexto = mb_strtolower('sección ' . ($item['seccion'] ?? ''));
+                    $areasTexto = mb_strtolower($item['areas'] ?? '');
+
+                    return str_contains($gradoTexto, $termino)
+                        || str_contains($seccionTexto, $termino)
+                        || str_contains($areasTexto, $termino);
+                })->values();
+            }
         }
 
         // Paginar los resultados

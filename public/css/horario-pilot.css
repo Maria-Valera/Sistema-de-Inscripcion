@@ -48,6 +48,7 @@
     background: #4A6FC1 !important;
     background-color: #4A6FC1 !important;
     border-color: #4A6FC1 !important;
+    border-radius: 10px !important;
     color: #ffffff !important;
 }
 
@@ -112,17 +113,93 @@
 }
 
 /* =========================================================
-   2. ICONOS DE CABECERA Y ACENTOS PRIMARIOS
+   2. ICONOS DE CABECERA, CONTENEDOR Y ACENTOS PRIMARIOS
    ========================================================= */
-.icon-wrapper,
-.header-icon:not([style*="background"]) {
-    background: #4A6FC1 !important;
+.content-header-modern {
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    border-radius: 16px !important;
+    margin-bottom: 1.25rem !important;
+}
+
+/* Variante Hero Header para Gestión de Horarios */
+.content-header-modern.hero-header-horario {
+    background: linear-gradient(135deg, #4A6FC1 0%, #3b5998 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 10px 25px -8px rgba(59, 89, 152, 0.38) !important;
+    border-radius: 16px !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.hero-header-horario .title-main {
     color: #ffffff !important;
 }
 
-.icon-wrapper i,
-.header-icon i {
+.hero-header-horario .title-subtitle {
+    color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.hero-header-horario .icon-wrapper {
+    background: rgba(255, 255, 255, 0.2) !important;
     color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.hero-header-horario .icon-wrapper i {
+    color: #ffffff !important;
+}
+
+.btn-hero-white {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #ffffff !important;
+    color: #4A6FC1 !important;
+    border: 1px solid #ffffff !important;
+    border-radius: 10px;
+    padding: 0.65rem 1.2rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-decoration: none;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+}
+
+.btn-hero-white i {
+    color: #4A6FC1 !important;
+}
+
+.btn-hero-white:hover {
+    background-color: #F1F5F9 !important;
+    border-color: #F1F5F9 !important;
+    color: #3B5BA5 !important;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+}
+
+.btn-hero-white:hover i {
+    color: #3B5BA5 !important;
+}
+
+.icon-wrapper {
+    background: #EFF6FF !important;
+    color: #2563EB !important;
+    box-shadow: none !important;
+}
+
+.icon-wrapper i {
+    color: #2563EB !important;
+}
+
+.header-icon:not([style*="background"]) {
+    background: #EFF6FF !important;
+    color: #2563EB !important;
+}
+
+.header-icon i {
+    color: #2563EB !important;
 }
 
 .card-header-modern {
@@ -282,7 +359,7 @@
     border-radius: calc(var(--radius, 12px) - 1px) calc(var(--radius, 12px) - 1px) 0 0 !important;
 }
 
-#modalFiltros .modal-header + hr {
+#modalFiltros .modal-header+hr {
     display: none !important;
 }
 
@@ -293,10 +370,10 @@
 /* =========================================================
    5. BORDES DE INPUTS / SELECTS EN FOCO (:focus)
    ========================================================= */
-input:focus,
+input:not(.search-pill-input):focus,
 select:focus,
 textarea:focus,
-.form-control:focus,
+.form-control:not(.search-pill-input):focus,
 .form-select:focus,
 .form-control-modern:focus,
 .form-select-modern:focus,
@@ -325,7 +402,7 @@ textarea:focus,
 .nav-tabs .nav-link.active,
 .nav-tabs .nav-item.show .nav-link,
 .nav-pills .nav-link.active,
-.nav-pills .show > .nav-link {
+.nav-pills .show>.nav-link {
     background-color: #4A6FC1 !important;
     border-color: #4A6FC1 !important;
     color: #ffffff !important;
@@ -467,4 +544,49 @@ textarea:focus,
 .btn-lock-toggle.text-muted:hover,
 .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted:hover {
     color: #1E3A6D !important;
+}
+
+/* =========================================================
+   8. SIDEBAR ACTIVO EN AZUL INSTITUCIONAL (#4A6FC1)
+   ========================================================= */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(74, 111, 193, 0.35) !important;
+    border-left: 4px solid #7693D6 !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active:hover {
+    background-color: #3B5BA5 !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-link.active .nav-icon,
+.sidebar-dark-primary .nav-sidebar .nav-link.active .nav-icon {
+    color: #ffffff !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+    border-left: 3px solid #D6E2F9 !important;
+    box-shadow: 0 2px 6px rgba(74, 111, 193, 0.25) !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active:hover {
+    background-color: #3B5BA5 !important;
+    color: #ffffff !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background-color: rgba(74, 111, 193, 0.2) !important;
+    color: #ffffff !important;
+    border-left: 3px solid #4A6FC1 !important;
+}
+
+.nav-link.active::before {
+    background: #4A6FC1 !important;
+}
+
+.sidebar-dark-primary .nav-header {
+    color: #7693D6 !important;
 }
