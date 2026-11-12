@@ -29,8 +29,59 @@
         .materia-error-item:hover {
             background-color: #fff7ed !important;
         }
+
+        /* Hero Header Gestión de Horarios */
+        .content-header-modern.hero-header-horario {
+            background: linear-gradient(135deg, #4A6FC1 0%, #3b5998 100%) !important;
+            border: none !important;
+            border-radius: 14px !important;
+            box-shadow: 0 10px 25px -8px rgba(59, 89, 152, 0.38) !important;
+            margin-bottom: 1.5rem !important;
+        }
+        .content-header-modern.hero-header-horario .title-main {
+            color: #FFFFFF !important;
+        }
+        .content-header-modern.hero-header-horario .title-subtitle {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        .content-header-modern.hero-header-horario .icon-wrapper {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: #FFFFFF !important;
+            box-shadow: none !important;
+        }
+        .content-header-modern.hero-header-horario .icon-wrapper i {
+            color: #FFFFFF !important;
+        }
+        .content-header-modern.hero-header-horario .btn-hero-white {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #FFFFFF !important;
+            color: #4A6FC1 !important;
+            border: 1px solid #FFFFFF !important;
+            border-radius: 10px !important;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.92rem;
+            font-weight: 600;
+            line-height: 1.25;
+            text-decoration: none !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+            transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+        }
+        .content-header-modern.hero-header-horario .btn-hero-white i {
+            color: #4A6FC1 !important;
+        }
+        .content-header-modern.hero-header-horario .btn-hero-white:hover,
+        .content-header-modern.hero-header-horario .btn-hero-white:focus {
+            background-color: #F1F5F9 !important;
+            border-color: #F1F5F9 !important;
+            color: #3B5BA5 !important;
+            text-decoration: none !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+        }
     </style>
-    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}?v={{ @filemtime(public_path('css/horario-pilot.css')) }}">
 @stop
 
 @section('title', 'Gestión de Horarios')

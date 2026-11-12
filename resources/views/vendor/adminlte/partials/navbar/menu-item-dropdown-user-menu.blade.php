@@ -13,31 +13,14 @@
     @php( $logout_url = $logout_url ? url($logout_url) : '' )
 @endif
 
-@php
-    $userName = trim(Auth::user()->name ?? 'Usuario');
-    $nameParts = preg_split('/\s+/', $userName);
-    if (count($nameParts) >= 2) {
-        $userInitials = mb_strtoupper(mb_substr($nameParts[0], 0, 1) . mb_substr($nameParts[1], 0, 1));
-    } else {
-        $userInitials = mb_strtoupper(mb_substr($userName, 0, 2));
-    }
-@endphp
-
 <li class="nav-item dropdown user-menu">
 
     {{-- User menu toggler --}}
-    <a href="#" class="nav-link dropdown-toggle d-inline-flex align-items-center" data-toggle="dropdown" style="gap: 0.55rem;">
-        @if(config('adminlte.usermenu_image'))
-            <img src="{{ Auth::user()->adminlte_image() }}"
-                 class="user-image img-circle elevation-2"
-                 alt="{{ Auth::user()->name }}">
-        @else
-            <span class="d-inline-flex align-items-center justify-content-center"
-                  style="width: 32px; height: 32px; border-radius: 50%; background-color: #EFF6FF; color: #2563EB; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.02em; flex-shrink: 0;">
-                {{ $userInitials }}
-            </span>
-        @endif
-        <span @if(config('adminlte.usermenu_image')) class="d-none d-md-inline" @endif style="color: #0F172A; font-weight: 500; font-size: 0.9rem;">
+    <a href="#" class="nav-link dropdown-toggle d-inline-flex align-items-center px-2" data-toggle="dropdown" style="gap: 0.25rem; height: auto !important; padding-top: 4px !important; padding-bottom: 4px !important; text-decoration: none !important;">
+        <div style="width: 38px; height: 38px; border-radius: 50%; background-color: #F1F5F9; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; flex-shrink: 0;">
+            <i class="fas fa-user" style="color: #475569; font-size: 16px;"></i>
+        </div>
+        <span @if(config('adminlte.usermenu_image')) class="d-none d-md-inline" @endif style="color: #0F172A !important; font-weight: 500; font-size: 16px !important;">
             {{ Auth::user()->name }}
         </span>
     </a>

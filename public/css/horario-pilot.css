@@ -125,9 +125,9 @@
 /* Variante Hero Header para Gestión de Horarios */
 .content-header-modern.hero-header-horario {
     background: linear-gradient(135deg, #4A6FC1 0%, #3b5998 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border: none !important;
     box-shadow: 0 10px 25px -8px rgba(59, 89, 152, 0.38) !important;
-    border-radius: 16px !important;
+    border-radius: 14px !important;
     margin-bottom: 1.5rem !important;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .hero-header-horario .title-subtitle {
-    color: rgba(255, 255, 255, 0.82) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .hero-header-horario .icon-wrapper {
@@ -156,12 +156,12 @@
     background-color: #ffffff !important;
     color: #4A6FC1 !important;
     border: 1px solid #ffffff !important;
-    border-radius: 10px;
-    padding: 0.65rem 1.2rem;
+    border-radius: 10px !important;
+    padding: 0.625rem 1.25rem;
     font-size: 0.92rem;
     font-weight: 600;
     line-height: 1.25;
-    text-decoration: none;
+    text-decoration: none !important;
     box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
     transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
 }
@@ -170,16 +170,18 @@
     color: #4A6FC1 !important;
 }
 
-.btn-hero-white:hover {
+.btn-hero-white:hover,
+.btn-hero-white:focus {
     background-color: #F1F5F9 !important;
     border-color: #F1F5F9 !important;
     color: #3B5BA5 !important;
-    text-decoration: none;
+    text-decoration: none !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
 }
 
-.btn-hero-white:hover i {
+.btn-hero-white:hover i,
+.btn-hero-white:focus i {
     color: #3B5BA5 !important;
 }
 
