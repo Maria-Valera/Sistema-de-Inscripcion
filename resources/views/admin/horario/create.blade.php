@@ -337,58 +337,150 @@
 
         /* Estilos específicos adicionales para modo selección */
         .btn-modo-seleccion {
-            background: var(--horario-secondary);
-            color: white;
-            border: none;
-            padding: 0.625rem 1rem;
-            border-radius: 0.375rem;
+            background-color: #FFFFFF;
+            color: #1E293B;
+            border: 1px solid #D1D5DB;
+            padding: 6px 14px;
+            border-radius: 10px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
             transition: all 0.15s ease-in-out;
         }
 
         .btn-modo-seleccion.activo {
-            background: var(--horario-primary);
+            background-color: #EFF6FF;
+            color: #4A6FC1;
+            border-color: #4A6FC1;
+        }
+
+        /* =========================================================
+           Barra Flotante de Selección Múltiple (Píldora Light Mode)
+           ========================================================= */
+        @keyframes slideUpFloatingBar {
+            from {
+                transform: translate(-50%, 20px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
         }
 
         .barra-seleccion-flotante {
-            position: fixed;
-            bottom: 1.25rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            border-radius: 0.375rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            padding: 0.75rem 1.25rem;
-            display: none;
-            align-items: center;
-            gap: 0.9375rem;
-            z-index: 9995;
-            border: 1px solid var(--gray-200);
+            position: fixed !important;
+            bottom: 24px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: #FFFFFF !important;
+            color: #1E293B !important;
+            border-radius: 9999px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            border: 1px solid #E2E8F0 !important;
+            padding: 10px 22px !important;
+            display: none !important;
+            align-items: center !important;
+            gap: 16px !important;
+            z-index: 1080 !important;
+            white-space: nowrap !important;
         }
 
         .barra-seleccion-flotante.visible {
-            display: flex;
+            display: flex !important;
+            animation: slideUpFloatingBar 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
         }
 
-        .btn-eliminar-seleccionados {
-            background: var(--horario-danger);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
+        .barra-seleccion-flotante .barra-seleccion-info {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            font-size: 0.9rem !important;
+            color: #1E293B !important;
         }
 
-        .btn-cancelar-seleccion {
-            background: var(--gray-200);
-            color: var(--gray-700);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
+        .barra-seleccion-flotante .barra-seleccion-info i {
+            color: #1E293B !important;
+            font-size: 0.95rem !important;
+        }
+
+        .barra-seleccion-flotante #contadorSeleccionados {
+            color: #1E293B !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+        }
+
+        .barra-seleccion-flotante #contadorSeleccionados strong {
+            font-weight: 700 !important;
+            color: #1E293B !important;
+        }
+
+        .barra-seleccion-flotante .barra-seleccion-divider {
+            width: 1px !important;
+            height: 22px !important;
+            background: #CBD5E1 !important;
+        }
+
+        .barra-seleccion-flotante .barra-seleccion-acciones {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+
+        .barra-seleccion-flotante .btn-eliminar-seleccionados {
+            background: transparent !important;
+            color: #EF4444 !important;
+            border: 1px solid #FCA5A5 !important;
+            padding: 6px 14px !important;
+            border-radius: 9999px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            font-size: 0.86rem !important;
+            font-weight: 600 !important;
+            line-height: 1.25 !important;
+            transition: all 0.18s ease-in-out !important;
+        }
+
+        .barra-seleccion-flotante .btn-eliminar-seleccionados:hover {
+            background: #FEF2F2 !important;
+            border-color: #F87171 !important;
+            color: #DC2626 !important;
+        }
+
+        .barra-seleccion-flotante .btn-eliminar-seleccionados i {
+            font-size: 0.85rem !important;
+            color: inherit !important;
+        }
+
+        .barra-seleccion-flotante .btn-cancelar-seleccion {
+            background: transparent !important;
+            color: #64748B !important;
+            border: none !important;
+            padding: 6px 12px !important;
+            border-radius: 9999px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            font-size: 0.86rem !important;
+            font-weight: 500 !important;
+            line-height: 1.25 !important;
+            transition: all 0.18s ease-in-out !important;
+        }
+
+        .barra-seleccion-flotante .btn-cancelar-seleccion:hover {
+            color: #334155 !important;
+            background: #F1F5F9 !important;
+        }
+
+        .barra-seleccion-flotante .btn-cancelar-seleccion i {
+            font-size: 0.8rem !important;
+            color: inherit !important;
         }
 
         /* Modal de detalles de conflicto */
@@ -716,12 +808,707 @@
 
     </style>
     <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
+    <style>
+        /* =========================================================
+           Rediseño Moderno Estilo Calendario SaaS (Notion / TASK.IS)
+           ========================================================= */
+
+        /* Toolbar Unificada (Pastillas de Contexto + Botones de Acción) */
+        #contextHeader.context-header {
+            background: #FFFFFF !important;
+            color: #1E293B !important;
+            border: 1px solid #E2E8F0 !important;
+            border-left: 4px solid #4A6FC1 !important;
+            border-radius: 10px !important;
+            padding: 12px 16px !important;
+            margin-bottom: 1rem !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+        }
+        #contextHeader.context-header .context-info {
+            flex: 0 1 auto !important;
+            gap: 0.65rem !important;
+        }
+        #contextHeader.context-header .context-item {
+            background-color: #EFF6FF !important;
+            color: #1E3A8A !important;
+            border-radius: 50px !important;
+            padding: 0.35rem 0.9rem !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.45rem !important;
+            white-space: nowrap !important;
+        }
+        #contextHeader.context-header .context-item span,
+        #contextHeader.context-header #contextNivel,
+        #contextHeader.context-header #contextArea {
+            color: #1E3A8A !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            white-space: nowrap !important;
+        }
+        #contextHeader.context-header .context-item i {
+            color: #4A6FC1 !important;
+            font-size: 13px !important;
+        }
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            height: 38px !important;
+            padding: 6px 14px !important;
+            background: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
+            border: 1px solid #D1D5DB !important;
+            border-radius: 10px !important;
+            font-size: 0.88rem !important;
+            font-weight: 600 !important;
+            line-height: 1.25 !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+            white-space: nowrap !important;
+        }
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion span {
+            display: inline-block !important;
+            color: #1E293B !important;
+            font-size: 0.88rem !important;
+            font-weight: 600 !important;
+            line-height: 1.25 !important;
+            white-space: nowrap !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion i {
+            color: #475569 !important;
+            font-size: 0.9rem !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+            line-height: 1 !important;
+        }
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion:hover {
+            background-color: #F8FAFC !important;
+            border-color: #94A3B8 !important;
+            color: #0F172A !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+        }
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion:hover span,
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion:hover i {
+            color: #0F172A !important;
+        }
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion.activo {
+            background-color: #EFF6FF !important;
+            color: #4A6FC1 !important;
+            border-color: #4A6FC1 !important;
+            box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+        }
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion.activo span,
+        #contextHeader #btnModoSeleccion.btn-modo-seleccion.activo i {
+            color: #4A6FC1 !important;
+        }
+        #contextHeader .btn-filter-saas {
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
+            border: 1px solid #D1D5DB !important;
+            border-radius: 10px !important;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+            height: 38px !important;
+            padding: 6px 14px !important;
+            font-size: 0.88rem !important;
+        }
+        #contextHeader .btn-filter-saas span,
+        #contextHeader .btn-filter-saas svg {
+            color: #1E293B !important;
+            stroke: #475569 !important;
+        }
+        #contextHeader .btn-filter-saas:hover {
+            background-color: #F8FAFC !important;
+            border-color: #94A3B8 !important;
+            color: #0F172A !important;
+        }
+        #contextHeader .btn-filter-saas .filter-bar-badge {
+            background-color: #4A6FC1 !important;
+            color: #FFFFFF !important;
+        }
+        #contextHeader .toolbar-filters {
+            display: flex !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+            gap: 12px !important;
+        }
+        /* Opción B: Select nativo estilizado con chevron personalizado y opciones limpias */
+        #contextHeader .toolbar-select,
+        #contextHeader select.form-select,
+        select.form-select,
+        select.form-control {
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 0.75rem center !important;
+            background-size: 0.95em !important;
+            padding-right: 2.25rem !important;
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
+            -webkit-text-fill-color: #1E293B !important;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 8px !important;
+            color-scheme: light !important;
+            font-weight: 500 !important;
+            line-height: 1.35 !important;
+        }
+        #contextHeader .toolbar-select {
+            width: auto !important;
+            min-width: 165px !important;
+            max-width: 220px !important;
+            height: 36px !important;
+            padding: 4px 2.25rem 4px 10px !important;
+            font-size: 0.84rem !important;
+            box-shadow: none !important;
+        }
+        select option {
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
+            -webkit-text-fill-color: #1E293B !important;
+            padding: 8px 10px !important;
+            line-height: 1.4 !important;
+        }
+        select option:checked {
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+            background-color: #4A6FC1 !important;
+        }
+        #contextHeader .toolbar-select:focus {
+            background-color: #FFFFFF !important;
+            border-color: #4A6FC1 !important;
+            box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.14) !important;
+        }
+        .hero-header-horario #btnVolverPaso1 {
+            border-radius: 10px !important;
+            padding: 0.58rem 1.05rem !important;
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            border: 1px solid rgba(255, 255, 255, 0.45) !important;
+            color: #FFFFFF !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+            transition: background-color 0.18s ease, border-color 0.18s ease !important;
+        }
+        .hero-header-horario #btnVolverPaso1:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-color: #FFFFFF !important;
+            color: #FFFFFF !important;
+        }
+
+        /* TAREA 1: La Cuadrícula (Tabla Aireada) */
+        .horario-matrix-wrapper {
+            background: #FFFFFF !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.05) !important;
+            overflow-x: auto !important;
+        }
+        .horario-matrix,
+        .horario-matrix.table-bordered {
+            background: #FFFFFF !important;
+            border: none !important;
+        }
+        .horario-matrix thead th {
+            background: #F8FAFC !important;
+            background-color: #F8FAFC !important;
+            color: #475569 !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+            text-align: center !important;
+            text-transform: capitalize !important;
+            letter-spacing: normal !important;
+            padding: 0.85rem 0.5rem !important;
+            border: none !important;
+            border-bottom: 1px solid #E2E8F0 !important;
+        }
+        .horario-matrix thead th:first-child,
+        .horario-matrix thead th.time-header {
+            background: #F8FAFC !important;
+            background-color: #F8FAFC !important;
+            color: #475569 !important;
+            border-right: 1px solid #E2E8F0 !important;
+            border-bottom: 1px solid #E2E8F0 !important;
+            text-align: right !important;
+            padding: 0.85rem 0.85rem 0.85rem 0.25rem !important;
+        }
+        .horario-matrix tbody td {
+            background: #FFFFFF !important;
+            border: none !important;
+            border-bottom: 1px solid #F1F5F9 !important;
+        }
+        .horario-matrix tbody td:first-child,
+        .horario-matrix tbody td.time-cell {
+            background: #F8FAFC !important;
+            background-color: #F8FAFC !important;
+            color: #475569 !important;
+            font-size: 0.72rem !important;
+            text-align: right !important;
+            vertical-align: top !important;
+            padding: 0.65rem 0.85rem 0.65rem 0.25rem !important;
+            border: none !important;
+            border-right: 1px solid #E2E8F0 !important;
+            border-bottom: 1px solid #F1F5F9 !important;
+        }
+        .horario-matrix tbody td.time-cell strong {
+            color: #475569 !important;
+            font-weight: 600 !important;
+            font-size: 0.76rem !important;
+        }
+        .horario-matrix tbody td.time-cell small {
+            color: #64748B !important;
+            font-size: 0.7rem !important;
+        }
+        .horario-matrix tbody td.drop-zone {
+            background: #FFFFFF !important;
+            border: none !important;
+            border-bottom: 1px solid #F1F5F9 !important;
+            padding: 0.45rem !important;
+            height: auto !important;
+            min-height: 95px !important;
+            transition: background-color 0.15s ease !important;
+        }
+        .horario-matrix tbody tr:last-child td {
+            border-bottom: none !important;
+        }
+        .horario-matrix tbody td.drop-zone:hover {
+            background: #F8FAFC !important;
+        }
+        .drop-zone .drop-zone-inner {
+            flex-direction: column !important;
+            flex-wrap: nowrap !important;
+            gap: 0.25rem !important;
+            align-items: stretch !important;
+            max-height: none !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        /* TAREA 2: Tarjetas de Clase Estilo calendar.me */
+        .drop-zone .assigned-docente {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            border: none !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+            color: #3730A3 !important;
+            cursor: pointer !important;
+        }
+        .drop-zone .assigned-docente.popup-activo .adm-mini {
+            visibility: visible !important;
+        }
+        .drop-zone .assigned-docente:hover {
+            background: transparent !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card {
+            display: block !important;
+            width: 100% !important;
+            background-color: #E0E7FF !important;
+            padding: 8px 10px !important;
+            border-radius: 8px !important;
+            border: none !important;
+            margin-bottom: 4px !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            white-space: normal !important;
+            overflow: visible !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card:hover {
+            filter: brightness(0.96);
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.14) !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card.card-pastel-blue {
+            background-color: #E0E7FF !important;
+            color: #3730A3 !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card.card-pastel-purple {
+            background-color: #F3E8FF !important;
+            color: #6B21A8 !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card.card-pastel-green {
+            background-color: #D1FAE5 !important;
+            color: #065F46 !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card.card-pastel-orange {
+            background-color: #FEF3C7 !important;
+            color: #92400E !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card.card-pastel-pink {
+            background-color: #FCE7F3 !important;
+            color: #9D174D !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card.card-pastel-teal {
+            background-color: #CCFBF1 !important;
+            color: #115E59 !important;
+        }
+        .drop-zone .assigned-docente .adm-mini.event-card .btn-lock-toggle {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            color: inherit !important;
+            line-height: 1 !important;
+            font-size: 11px !important;
+        }
+
+        /* Popover Flotante (.adm-full): Fondo Blanco Sólido + Borde Superior de Acento */
+        .drop-zone .assigned-docente .adm-full {
+            background: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            color: #0F172A !important;
+            border: 1px solid #E2E8F0 !important;
+            border-top: 4px solid #4A6FC1 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.24), 0 8px 16px -6px rgba(15, 23, 42, 0.12) !important;
+            z-index: 1060 !important;
+        }
+        .drop-zone .assigned-docente .adm-full.card-pastel-blue { border-top-color: #4F46E5 !important; }
+        .drop-zone .assigned-docente .adm-full.card-pastel-purple { border-top-color: #9333EA !important; }
+        .drop-zone .assigned-docente .adm-full.card-pastel-green { border-top-color: #10B981 !important; }
+        .drop-zone .assigned-docente .adm-full.card-pastel-orange { border-top-color: #F59E0B !important; }
+        .drop-zone .assigned-docente .adm-full.card-pastel-pink { border-top-color: #EC4899 !important; }
+        .drop-zone .assigned-docente .adm-full.card-pastel-teal { border-top-color: #14B8A6 !important; }
+        .drop-zone .assigned-docente .adm-full .docente-nombre {
+            color: #0F172A !important;
+            font-weight: 700 !important;
+        }
+        .drop-zone .assigned-docente .adm-full .docente-cedula {
+            color: #64748B !important;
+            font-weight: 500 !important;
+        }
+        .drop-zone .assigned-docente .adm-full .docente-materia {
+            color: #334155 !important;
+            font-weight: 600 !important;
+        }
+        .drop-zone .assigned-docente .adm-full .pildora-selector {
+            background: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
+            border: 1px solid #CBD5E1 !important;
+        }
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted {
+            color: #475569 !important;
+        }
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-warning {
+            color: #D97706 !important;
+        }
+
+        /* Panel Lateral de Docentes Disponibles (Tarjetas Blancas Independientes) */
+        .sidebar-docentes {
+            background: #F8FAFC !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.06) !important;
+            max-height: calc(100vh - 170px) !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .sidebar-docentes .card-header {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            border-bottom: 1px solid #E2E8F0 !important;
+            padding: 0.95rem 1.15rem !important;
+            gap: 0.5rem !important;
+            flex-shrink: 0 !important;
+        }
+        .sidebar-docentes .card-header i {
+            color: #4A6FC1 !important;
+        }
+        .sidebar-docentes .card-header .card-title {
+            color: #0F172A !important;
+            font-weight: 700 !important;
+        }
+        .sidebar-docentes .docentes-list {
+            padding: 12px !important;
+            background-color: #F8FAFC !important;
+            max-height: calc(100vh - 230px) !important;
+            overflow-y: auto !important;
+            scrollbar-width: thin;
+        }
+        .sidebar-docentes .docentes-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar-docentes .docentes-list::-webkit-scrollbar-thumb {
+            background-color: #CBD5E1;
+            border-radius: 999px;
+        }
+        .sidebar-docentes .docente-card {
+            background: #FFFFFF !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 14px 16px !important;
+            margin-bottom: 12px !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+            cursor: grab !important;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease !important;
+        }
+        .sidebar-docentes .docente-card.card-pastel-blue {
+            background-color: #E0E7FF !important;
+            color: #3730A3 !important;
+        }
+        .sidebar-docentes .docente-card.card-pastel-purple {
+            background-color: #F3E8FF !important;
+            color: #6B21A8 !important;
+        }
+        .sidebar-docentes .docente-card.card-pastel-green {
+            background-color: #D1FAE5 !important;
+            color: #065F46 !important;
+        }
+        .sidebar-docentes .docente-card.card-pastel-orange {
+            background-color: #FEF3C7 !important;
+            color: #92400E !important;
+        }
+        .sidebar-docentes .docente-card.card-pastel-pink {
+            background-color: #FCE7F3 !important;
+            color: #9D174D !important;
+        }
+        .sidebar-docentes .docente-card.card-pastel-teal {
+            background-color: #CCFBF1 !important;
+            color: #115E59 !important;
+        }
+        .sidebar-docentes .docente-card:active {
+            cursor: grabbing !important;
+        }
+        .sidebar-docentes .docente-card:last-child {
+            margin-bottom: 0 !important;
+        }
+        .sidebar-docentes .docente-card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.12) !important;
+            filter: brightness(0.97) !important;
+        }
+        .sidebar-docentes .docente-card .docente-header-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+            margin-bottom: 6px !important;
+        }
+        .sidebar-docentes .docente-card .docente-name {
+            font-weight: 600 !important;
+            color: #1E293B !important;
+            font-size: 0.95rem !important;
+            line-height: 1.25 !important;
+            margin: 0 !important;
+        }
+        .sidebar-docentes .docente-card .docente-grip-icon {
+            color: rgba(30, 41, 59, 0.45) !important;
+            font-size: 0.85rem !important;
+            flex-shrink: 0 !important;
+        }
+        .sidebar-docentes .docente-card .docente-area-row {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            color: #334155 !important;
+            font-size: 0.82rem !important;
+            margin-bottom: 10px !important;
+        }
+        .sidebar-docentes .docente-card .docente-area-row i {
+            color: inherit !important;
+            opacity: 0.8 !important;
+            font-size: 0.82rem !important;
+        }
+        .sidebar-docentes .docente-card .docente-pills-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            margin-bottom: 0 !important;
+        }
+        .sidebar-docentes .docente-card .docente-secciones-group {
+            display: inline-flex !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+            gap: 4px !important;
+        }
+        .sidebar-docentes .docente-card .docente-seccion-pill {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255, 255, 255, 0.78) !important;
+            color: #1E293B !important;
+            font-weight: 700 !important;
+            font-size: 0.74rem !important;
+            padding: 2px 8px !important;
+            border-radius: 999px !important;
+            line-height: 1.3 !important;
+        }
+        .sidebar-docentes .docente-card .docente-horas-pill {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            color: #334155 !important;
+            font-size: 0.78rem !important;
+            font-weight: 600 !important;
+            margin-left: auto !important;
+        }
+        .sidebar-docentes .docente-card .docente-horas-pill i {
+            color: #D97706 !important;
+        }
+
+        /* Botones de Acción del Pie */
+        .footer-actions-container {
+            margin-top: 24px !important;
+            padding-top: 8px !important;
+        }
+        .footer-actions-container .btn-footer-secondary,
+        .footer-actions-container .btn-back {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            height: 40px !important;
+            padding: 8px 18px !important;
+            background: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            color: #475569 !important;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 10px !important;
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            line-height: 1 !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+            transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
+        }
+        .footer-actions-container .btn-footer-secondary:hover,
+        .footer-actions-container .btn-back:hover {
+            background: #F8FAFC !important;
+            background-color: #F8FAFC !important;
+            color: #0F172A !important;
+            border-color: #94A3B8 !important;
+            text-decoration: none !important;
+        }
+        .footer-actions-container .btn-back i {
+            color: #64748B !important;
+            font-size: 0.88rem !important;
+        }
+        .footer-actions-container .btn-footer-primary,
+        .footer-actions-container #btnGuardarHorario.btn-save {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            height: 40px !important;
+            padding: 8px 18px !important;
+            background: #4A6FC1 !important;
+            background-color: #4A6FC1 !important;
+            border: 1px solid #4A6FC1 !important;
+            color: #FFFFFF !important;
+            border-radius: 10px !important;
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            line-height: 1 !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 4px rgba(74, 111, 193, 0.2) !important;
+            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+        }
+            color: #FFFFFF !important;
+            border-radius: 10px !important;
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            line-height: 1 !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 4px rgba(74, 111, 193, 0.2) !important;
+            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+        }
+        .footer-actions-container .btn-footer-primary:hover,
+        .footer-actions-container #btnGuardarHorario.btn-save:hover {
+            background: #3B5BA5 !important;
+            background-color: #3B5BA5 !important;
+            border-color: #3B5BA5 !important;
+            box-shadow: 0 4px 8px rgba(59, 91, 165, 0.28) !important;
+        }
+        .footer-actions-container #btnGuardarHorario.btn-save i {
+            color: #FFFFFF !important;
+        }
+        /* TAREA 1 (Listado): Hero Header Azul Institucional */
+        .content-header-modern.hero-header-horario {
+            background: linear-gradient(135deg, #4A6FC1 0%, #3b5998 100%) !important;
+            border: none !important;
+            border-radius: 14px !important;
+            box-shadow: 0 10px 25px -8px rgba(59, 89, 152, 0.38) !important;
+            margin-bottom: 1.5rem !important;
+        }
+        .content-header-modern.hero-header-horario .title-main {
+            color: #FFFFFF !important;
+        }
+        .content-header-modern.hero-header-horario .title-subtitle {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+        .content-header-modern.hero-header-horario .icon-wrapper {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: #FFFFFF !important;
+            box-shadow: none !important;
+        }
+        .content-header-modern.hero-header-horario .icon-wrapper i {
+            color: #FFFFFF !important;
+        }
+        .content-header-modern.hero-header-horario .btn-hero-white {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            color: #4A6FC1 !important;
+            border: 1px solid #FFFFFF !important;
+            border-radius: 10px !important;
+            padding: 0.625rem 1.25rem !important;
+            font-size: 0.92rem !important;
+            font-weight: 600 !important;
+            line-height: 1.25 !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12) !important;
+            transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease !important;
+        }
+        .content-header-modern.hero-header-horario .btn-hero-white i,
+        .content-header-modern.hero-header-horario .btn-hero-white .btn-text {
+            color: #4A6FC1 !important;
+        }
+        .content-header-modern.hero-header-horario .btn-hero-white:hover,
+        .content-header-modern.hero-header-horario .btn-hero-white:focus {
+            background: #F1F5F9 !important;
+            background-color: #F1F5F9 !important;
+            border-color: #F1F5F9 !important;
+            color: #3B5BA5 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18) !important;
+        }
+
+        .header-actions #btnModoSeleccion.btn-modo-seleccion.activo {
+            background: #EFF6FF !important;
+            color: #4A6FC1 !important;
+            border-color: #4A6FC1 !important;
+        }
+    </style>
 @stop
 
 @section('title', $modoEdicion ? 'Editar Horario' : 'Crear Horario')
 
 @section('content_header')
-    <div class="content-header-modern">
+    <div class="content-header-modern hero-header-horario">
         <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
@@ -732,8 +1519,12 @@
                     <p class="title-subtitle">{{ $modoEdicion ? 'Modificación de horarios académicos' : 'Asignación de horarios académicos' }}</p>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <button class="btn-generar-horario" id="btnGenerarHorario">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <a href="{{ route('admin.horario.index') }}" class="btn btn-outline-light d-inline-flex align-items-center gap-2" id="btnVolverPaso1">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Volver al listado</span>
+                </a>
+                <button class="btn-generar-horario btn-hero-white" id="btnGenerarHorario">
                     <span class="spinner"></span>
                     <span class="btn-text">
                         <i class="fas fa-magic"></i>
@@ -750,14 +1541,6 @@
     <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
 
     <div class="main-container">
-        <!-- Banner informativo de validación de entrada exitosa -->
-        <div class="alert alert-success d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm border-0" style="background-color: #ecfdf5; border-left: 5px solid #10b981 !important;">
-            <i class="fas fa-check-circle fs-4 text-success"></i>
-            <div>
-                <strong class="d-block text-success" style="font-size: 0.95rem;">Configuración validada correctamente. Puedes proceder a generar el horario.</strong>
-                <span class="text-muted small">El marco horario y la carga académica cumplen con los requisitos mínimos de viabilidad.</span>
-            </div>
-        </div>
 
         <!-- Parámetros de edición (ocultos) -->
         <input type="hidden" id="editGradoId" value="{{ $editGradoId ?? '' }}">
@@ -781,69 +1564,91 @@
             @endif
         </select>
 
+        <!-- Selectores ocultos para compatibilidad interna de la cuadrícula JS -->
+        <select class="d-none" id="seccion" aria-hidden="true">
+            <option value="">Todas las secciones</option>
+            @foreach($secciones as $seccion)
+                <option value="{{ $seccion->id }}">
+                    {{ $seccion->nombre }}
+                </option>
+            @endforeach
+        </select>
+        <select class="d-none" id="aula" aria-hidden="true">
+            <option value="">Todas las aulas</option>
+            @foreach($aulas as $aula)
+                <option value="{{ is_array($aula) ? $aula['id_aula'] : $aula->id_aula }}"
+                        data-seccion="{{ is_array($aula) ? $aula['seccion_id'] : null }}"
+                        data-tipo="{{ is_array($aula) ? $aula['tipo_aula'] : $aula->tipo_aula }}">
+                    {{ is_array($aula) ? $aula['nombre_aula'] : $aula->nombre_aula }}
+                </option>
+            @endforeach
+        </select>
+
         <!-- Vista del calendario (visible directamente) -->
         <div class="row" id="vistaCalendario">
             <!-- Cuadrícula -->
             <div class="col-12 col-lg-8 col-xl-9 mb-4">
                 <div class="main-content">
-                    <!-- Header de contexto -->
-                    <div class="context-header" id="contextHeader">
-                        <div class="context-info">
-                            <span class="context-item">
+                    <!-- Toolbar Unificada: Pastillas a la Izquierda + Botones a la Derecha -->
+                    <div class="context-header d-flex justify-content-between align-items-center flex-wrap gap-3" id="contextHeader">
+                        <div class="context-info d-flex align-items-center flex-wrap">
+                            <span class="context-item px-3 py-1">
                                 <i class="fas fa-graduation-cap"></i>
                                 <span id="contextNivel">
-                                    Nivel Académico: {{ !empty($nivelSeleccionado) ? $nivelSeleccionado->numero_grado . '° Grado' : 'No seleccionado' }}
+                                    {{ !empty($nivelSeleccionado) ? $nivelSeleccionado->numero_grado . '° Grado' : 'No seleccionado' }}
                                 </span>
                             </span>
-                            <span class="context-separator">|</span>
-                            <span class="context-item">
+                            <span class="context-item px-3 py-1">
                                 <i class="fas fa-book"></i>
                                 <span id="contextArea">
-                                    Área de Formación: {{ !empty($areaSeleccionada) ? $areaSeleccionada->nombre_area_formacion : 'No seleccionada' }}
+                                    {{ !empty($areaSeleccionada) ? $areaSeleccionada->nombre_area_formacion : 'No seleccionada' }}
                                 </span>
                             </span>
                         </div>
-                        <a href="{{ route('admin.horario.index') }}" class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-2" id="btnVolverPaso1">
-                            <i class="fas fa-arrow-left"></i>
-                            Volver al listado
-                        </a>
-                    </div>
 
-                    <!-- Filtros de refinamiento -->
-                    <div class="selection-section">
-                        <div class="selection-row">
-                            <div class="form-group-modern">
-                                <label class="form-label-modern">
-                                    <i class="fas fa-users" style="color: var(--primary);"></i>
-                                    Sección
-                                </label>
-                                <select class="form-select form-control-modern" id="seccion">
-                                    <option value="">Todas las secciones</option>
-                                    @foreach($secciones as $seccion)
-                                        <option value="{{ $seccion->id }}">
-                                            {{ $seccion->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group-modern">
-                                <label class="form-label-modern">
-                                    <i class="fas fa-door-open" style="color: var(--primary);"></i>
-                                    Aula
-                                </label>
-                                <select class="form-select form-control-modern" id="aula">
-                                    <option value="">Todas las aulas</option>
-                                    @foreach($aulas as $aula)
-                                        <option value="{{ is_array($aula) ? $aula['id_aula'] : $aula->id_aula }}"
-                                                data-seccion="{{ is_array($aula) ? $aula['seccion_id'] : null }}"
-                                                data-tipo="{{ is_array($aula) ? $aula['tipo_aula'] : $aula->tipo_aula }}">
-                                            {{ is_array($aula) ? $aula['nombre_aula'] : $aula->nombre_aula }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <div class="d-flex align-items-center flex-wrap gap-2 ms-auto">
+                            <button type="button" class="btn-filter-saas btn-modo-seleccion" id="btnModoSeleccion">
+                                <i class="fas fa-check-square"></i>
+                                <span>Seleccionar múltiples</span>
+                            </button>
+                            <x-ui.filter-bar target="createHorarioFilterPanel" label="Filtrar" :active-count="0" />
                         </div>
                     </div>
+
+                    @php
+                        $seccionFilterOptions = collect($secciones)->map(fn ($s) => [
+                            'value' => (string) $s->id,
+                            'label' => $s->nombre,
+                        ])->values()->all();
+
+                        $aulaFilterOptions = collect($aulas)->map(fn ($a) => [
+                            'value' => (string) (is_array($a) ? $a['id_aula'] : $a->id_aula),
+                            'label' => is_array($a) ? $a['nombre_aula'] : $a->nombre_aula,
+                        ])->values()->all();
+                    @endphp
+                    <x-ui.filter-panel
+                        id="createHorarioFilterPanel"
+                        title="Filtros de Horario"
+                        :action="url()->current()"
+                        :filters="[
+                            [
+                                'name' => 'seccion_id',
+                                'label' => 'Sección',
+                                'icon' => 'fas fa-users',
+                                'placeholder' => 'Todas las secciones',
+                                'value' => '',
+                                'options' => $seccionFilterOptions,
+                            ],
+                            [
+                                'name' => 'aula_id',
+                                'label' => 'Aula',
+                                'icon' => 'fas fa-door-open',
+                                'placeholder' => 'Todas las aulas',
+                                'value' => '',
+                                'options' => $aulaFilterOptions,
+                            ],
+                        ]"
+                    />
 
                     <!-- Matriz de Horarios -->
                     <div class="horario-matrix-wrapper">
@@ -863,7 +1668,7 @@
             <!-- Panel lateral -->
             <div class="col-12 col-lg-4 col-xl-3">
                 <div class="card shadow-sm border-0 sidebar-docentes">
-                    <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <div class="card-header bg-white border-bottom d-flex align-items-center">
                         <i class="fas fa-chalkboard-teacher mr-2"></i>
                         <h5 class="card-title mb-0 font-weight-bold" style="font-size: 0.95rem;">Docentes Disponibles</h5>
                     </div>
@@ -908,18 +1713,14 @@
                 </div>
             </div>
         </div>
-        <div class="header-actions">
+        <div class="footer-actions-container d-flex justify-content-end align-items-center flex-wrap gap-3">
             <a href="{{ route('admin.horario.index') }}" class="btn-back">
                 <i class="fas fa-arrow-left"></i>
-                Volver
+                <span>Volver</span>
             </a>
-            <button class="btn-save" id="btnGuardarHorario">
+            <button type="button" class="btn-save" id="btnGuardarHorario">
                 <i class="fas fa-save"></i>
-                Guardar Horario
-            </button>
-            <button class="btn-modo-seleccion" id="btnModoSeleccion">
-                <i class="fas fa-check-square"></i>
-                Seleccionar múltiples
+                <span>Guardar Horario</span>
             </button>
         </div>
     </div>
@@ -930,13 +1731,23 @@
         <p id="overlay-carga-mensaje">Cargando...</p>
     </div>
 
-    <!-- Barra de selección flotante -->
-    <div class="barra-seleccion-flotante" id="barraSeleccionFlotante">
-        <span id="contadorSeleccionados">0 seleccionados</span>
-        <button class="btn-eliminar-seleccionados" id="btnEliminarSeleccionados">
-            <i class="fas fa-trash"></i> Eliminar seleccionados
-        </button>
-        <button class="btn-cancelar-seleccion" id="btnCancelarSeleccion">Cancelar</button>
+    <!-- Barra de selección flotante estilo Píldora Light Mode -->
+    <div class="barra-seleccion-flotante" id="barraSeleccionFlotante" role="toolbar" aria-label="Acciones de selección múltiple">
+        <div class="barra-seleccion-info">
+            <i class="fas fa-check-circle"></i>
+            <span id="contadorSeleccionados"><strong>0</strong> seleccionados</span>
+        </div>
+        <div class="barra-seleccion-divider"></div>
+        <div class="barra-seleccion-acciones">
+            <button type="button" class="btn-eliminar-seleccionados" id="btnEliminarSeleccionados" title="Eliminar asignaciones seleccionadas">
+                <i class="fas fa-trash-alt"></i>
+                <span>Eliminar seleccionados</span>
+            </button>
+            <button type="button" class="btn-cancelar-seleccion" id="btnCancelarSeleccion" title="Cancelar selección">
+                <i class="fas fa-times"></i>
+                <span>Cancelar</span>
+            </button>
+        </div>
     </div>
 
     <!-- Modal de Validación Previa (M4) -->
@@ -1526,10 +2337,9 @@
             inicializarDragAndDrop();
             
             // ============================================================
-            // Popup flotante para tarjetas de docente (hover)
+            // Popup flotante para tarjetas de docente (solo por clic)
             // ============================================================
             let tarjetaConPopup = null;
-            let timeoutCerrarPopup = null;
 
             function posicionarPopup(tarjeta) {
                 const popup = tarjeta.querySelector('.adm-full');
@@ -1559,15 +2369,17 @@
                 popup.style.top = top + 'px';
             }
 
+            function cerrarPopup() {
+                if (tarjetaConPopup) {
+                    tarjetaConPopup.classList.remove('popup-activo');
+                    tarjetaConPopup = null;
+                }
+            }
+
             function abrirPopup(tarjeta) {
                 if (tarjetaConPopup === tarjeta) return;
 
-                // Cerrar el anterior
-                if (tarjetaConPopup) {
-                    tarjetaConPopup.classList.remove('popup-activo');
-                }
-
-                clearTimeout(timeoutCerrarPopup);
+                cerrarPopup();
                 tarjetaConPopup = tarjeta;
                 tarjeta.classList.add('popup-activo');
 
@@ -1576,64 +2388,53 @@
                 posicionarPopup(tarjeta);
             }
 
-            function cerrarPopup() {
-                clearTimeout(timeoutCerrarPopup);
-                timeoutCerrarPopup = setTimeout(() => {
-                    if (tarjetaConPopup) {
-                        tarjetaConPopup.classList.remove('popup-activo');
-                        tarjetaConPopup = null;
-                    }
-                }, 180); // margen para que el mouse pueda llegar al popup
-            }
-
-            // Mostrar al entrar a la tarjeta
-            document.addEventListener('mouseover', function(e) {
-                const tarjeta = e.target.closest('.assigned-docente');
-                if (!tarjeta) return;
-
-                // Si entramos a un hijo del popup, no reabrir
-                if (e.target.closest('.adm-full')) {
-                    clearTimeout(timeoutCerrarPopup);
-                    return;
-                }
-
-                abrirPopup(tarjeta);
-            });
-
-            // Cerrar al salir (con retardo, para permitir moverse al popup)
-            document.addEventListener('mouseout', function(e) {
-                const tarjeta = e.target.closest('.assigned-docente');
-                if (!tarjeta || tarjeta !== tarjetaConPopup) return;
-
-                // Si el mouse se va al popup mismo, no cerrar
-                const related = e.relatedTarget;
-                if (related && related.closest('.adm-full')) return;
-
-                // Si todavía está dentro de la tarjeta, no cerrar
-                if (related && tarjeta.contains(related)) return;
-
-                cerrarPopup();
-            });
-
             // Reposicionar si el usuario hace scroll con el popup abierto
             window.addEventListener('scroll', () => {
                 if (tarjetaConPopup) posicionarPopup(tarjetaConPopup);
             }, true);
 
-            // Abrir y mantener abierto también al hacer clic en la tarjeta del docente asignado
+            // Abrir al hacer clic en la tarjeta; mantener abierto al interactuar dentro del popover
             document.addEventListener('click', function(e) {
                 if (typeof modoSeleccionActivo !== 'undefined' && modoSeleccionActivo) return;
-                
+
+                // No cerrar ni interferir cuando se hace clic dentro del popover (excepto botón eliminar)
+                if (e.target.closest('.adm-full')) {
+                    if (e.target.closest('.btn-eliminar-docente')) {
+                        cerrarPopup();
+                    } else {
+                        e.stopPropagation();
+                    }
+                    return;
+                }
+
+                // No abrir popover si se hace clic en el botón de candado de la tarjeta mini
+                if (e.target.closest('.btn-lock-toggle')) {
+                    return;
+                }
+
                 const tarjeta = e.target.closest('.assigned-docente');
                 if (tarjeta) {
-                    if (!e.target.closest('.adm-full')) {
+                    if (tarjetaConPopup === tarjeta) {
+                        cerrarPopup();
+                    } else {
                         abrirPopup(tarjeta);
                     }
-                } else if (!e.target.closest('.adm-full')) {
-                    if (tarjetaConPopup) {
-                        tarjetaConPopup.classList.remove('popup-activo');
-                        tarjetaConPopup = null;
-                    }
+                } else {
+                    cerrarPopup();
+                }
+            });
+
+            // Cerrar el popover al cambiar sección o aula dentro del mismo
+            document.addEventListener('change', function(e) {
+                if (e.target.closest('.adm-full .pildora-selector')) {
+                    setTimeout(cerrarPopup, 120);
+                }
+            });
+
+            // Cerrar con tecla Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    cerrarPopup();
                 }
             });
             // Función para validar ambos campos (compatibilidad interna)
@@ -1688,8 +2489,8 @@
                 const nivelTexto = nivelSelect.options[nivelSelect.selectedIndex]?.text || 'No seleccionado';
                 const areaTexto = areaFormacionSelect.options[areaFormacionSelect.selectedIndex]?.text || 'No seleccionada';
                 
-                contextNivel.textContent = `Nivel Académico: ${nivelTexto}`;
-                contextArea.textContent = `Área de Formación: ${areaTexto}`;
+                contextNivel.textContent = nivelTexto;
+                contextArea.textContent = areaTexto;
             }
 
             // Almacenar información de contexto para las asignaciones
@@ -1874,26 +2675,42 @@
                         }
                     }
 
+                    const seccionesPillsHtml = seccionesAMostrar.length > 0
+                        ? seccionesAMostrar.map(s => `<span class="docente-seccion-pill">${s.nombre}</span>`).join('')
+                        : (docente.secciones && docente.secciones.length > 0
+                            ? docente.secciones.map(s => `<span class="docente-seccion-pill">${s.nombre}</span>`).join('')
+                            : '<span class="text-muted" style="font-size: 0.74rem;">Sin sección</span>');
+
                     const seccionTexto = seccionesAMostrar.length > 0 
                         ? seccionesAMostrar.map(s => s.nombre).join(', ') 
                         : (docente.secciones && docente.secciones.length > 0 
                             ? docente.secciones.map(s => s.nombre).join(', ') 
                             : 'Sin sección asignada');
 
+                    const clasePastelDocente = obtenerClasePastel(docente.id, nombre);
+
                     return `
-                        <div class="docente-card" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${areaTexto}" data-cedula="${docente.cedula || 'N/A'}" data-horas="${horasAcademicas}">
-                            <div class="docente-name">${nombre}</div>
-                            <div class="docente-area">
+                        <div class="docente-card ${clasePastelDocente}" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${areaTexto}" data-cedula="${docente.cedula || 'N/A'}" data-horas="${horasAcademicas}">
+                            <div class="docente-header-row">
+                                <div class="docente-name">${nombre}</div>
+                                <span class="docente-grip-icon" title="Arrastrar al horario">
+                                    <i class="fas fa-grip-vertical"></i>
+                                </span>
+                            </div>
+
+                            <div class="docente-area-row">
                                 <i class="fas fa-book"></i>
-                                ${areaTexto}
+                                <span>${areaTexto}</span>
                             </div>
-                            <div class="docente-area">
-                                <i class="fas fa-users"></i>
-                                ${seccionTexto}
-                            </div>
-                            <div class="docente-horas">
-                                <i class="fas fa-clock"></i>
-                                ${horasAcademicas} horas académicas
+
+                            <div class="docente-pills-row">
+                                <div class="docente-secciones-group">
+                                    ${seccionesPillsHtml}
+                                </div>
+                                <div class="docente-horas-pill">
+                                    <i class="fas fa-clock"></i>
+                                    <span>${horasAcademicas}h</span>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1913,17 +2730,25 @@
 
                 // Obtener filtros seleccionados
                 const seccionId = document.getElementById('seccion')?.value || '';
+                const aulaId = document.getElementById('aula')?.value || '';
                 const areaFormacionId = areaFormacionSelect?.value || '';
 
-                console.log('Renderizando calendario con filtros:', { seccionId, areaFormacionId });
+                console.log('Renderizando calendario con filtros:', { seccionId, aulaId, areaFormacionId });
 
-                // Filtrar horarioData por sección y área de formación
+                // Filtrar horarioData por sección, aula y área de formación
                 let horarioFiltrado = horarioData;
 
                 if (seccionId) {
                     horarioFiltrado = horarioFiltrado.filter(h => {
                         const secId = h.seccion_id || h.cargaAcademica?.seccion?.id;
                         return secId == seccionId;
+                    });
+                }
+
+                if (aulaId) {
+                    horarioFiltrado = horarioFiltrado.filter(h => {
+                        const aId = h.aula_id || h.aula?.id_aula || h.aula?.id;
+                        return aId == aulaId;
                     });
                 }
 
@@ -2087,11 +2912,33 @@
             }
 
             // Función helper para formatear la sección en la píldora compacta (ej. "(A)", "(B)", etc.)
+            const PALETA_PASTEL_TARJETAS = [
+                'card-pastel-blue',
+                'card-pastel-purple',
+                'card-pastel-green',
+                'card-pastel-orange',
+                'card-pastel-pink',
+                'card-pastel-teal',
+            ];
+
+            function obtenerClasePastel(docenteId, docenteNombre) {
+                const clave = String(docenteId || docenteNombre || '0');
+                if (/^\d+$/.test(clave)) {
+                    return PALETA_PASTEL_TARJETAS[Number(clave) % PALETA_PASTEL_TARJETAS.length];
+                }
+                let hash = 0;
+                for (let i = 0; i < clave.length; i++) {
+                    hash = ((hash << 5) - hash) + clave.charCodeAt(i);
+                    hash |= 0;
+                }
+                return PALETA_PASTEL_TARJETAS[Math.abs(hash) % PALETA_PASTEL_TARJETAS.length];
+            }
+
             function formatearPildoraSeccion(asignacion) {
                 const letra = obtenerLetraSeccion(asignacion);
-                if (letra === 'Sin Sección') return 'Sin Sección';
-                if (letra.startsWith('(') && letra.endsWith(')')) return letra;
-                return `(${letra})`;
+                if (letra === 'Sin Sección') return '<span class="adm-mini-badge">-</span>';
+                const limpia = letra.replace(/[()]/g, '').trim();
+                return `<span class="adm-mini-badge">${limpia}</span>`;
             }
 
             function renderizarAsignacionLocalHTML(key, asignacion, index) {
@@ -2166,13 +3013,22 @@
                 const draggableAttrLocal = esFijadaLocal ? 'draggable="false"' : 'draggable="true"';
                 const fijadaClsLocal = esFijadaLocal ? ' clase-fijada' : '';
 
+                const seccionLetraLocal = obtenerLetraSeccion(asignacion);
+                const seccionEtiquetaLocal = seccionLetraLocal === 'Sin Sección' ? 'Sin Sección' : `Sección ${seccionLetraLocal}`;
+                const clasePastelLocal = obtenerClasePastel(asignacion.docenteId || asignacion.id, asignacion.nombre);
+
                 return `
                     <div class="assigned-docente${fijadaClsLocal}" ${draggableAttrLocal} data-fijada="${esFijadaLocal}">
-                        <div class="adm-mini">
-                            <span class="adm-mini-nombre">${asignacion.nombre}</span>
-                            <span class="adm-mini-seccion">${formatearPildoraSeccion(asignacion)} ${lockIconLocalHtml}</span>
+                        <div class="adm-mini event-card ${clasePastelLocal}" style="padding: 8px 10px; border-radius: 8px; border: none; margin-bottom: 4px; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: inherit; font-size: 13px; margin-bottom: 2px; line-height: 1.25;">
+                                ${asignacion.nombre}
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: inherit; opacity: 0.85;">
+                                <span>${seccionEtiquetaLocal}</span>
+                                <span style="opacity: 0.75;">${lockIconLocalHtml}</span>
+                            </div>
                         </div>
-                        <div class="adm-full">
+                        <div class="adm-full ${clasePastelLocal}">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="docente-nombre">${asignacion.nombre}</span>
                                 ${lockIconLocalHtml}
@@ -2238,13 +3094,22 @@
                 const draggableAttr = esFijada ? 'draggable="false"' : 'draggable="true"';
                 const fijadaCls = esFijada ? ' clase-fijada' : '';
 
+                const seccionEtiqueta = seccionLetra === 'Sin Sección' ? 'Sin Sección' : `Sección ${seccionLetra}`;
+                const docenteIdRef = horarioAsignado.cargaAcademica?.docente?.id || horarioAsignado.docente_id;
+                const clasePastel = obtenerClasePastel(docenteIdRef, docenteNombre);
+
                 return `
                     <div class="assigned-docente${fijadaCls}" ${draggableAttr} data-asignacion-id="${asignacionId}" data-fijada="${esFijada}">
-                        <div class="adm-mini">
-                            <span class="adm-mini-nombre">${docenteNombre}</span>
-                            <span class="adm-mini-seccion">${seccionPildora} ${lockIconHtml}</span>
+                        <div class="adm-mini event-card ${clasePastel}" style="padding: 8px 10px; border-radius: 8px; border: none; margin-bottom: 4px; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: inherit; font-size: 13px; margin-bottom: 2px; line-height: 1.25;">
+                                ${docenteNombre}
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: inherit; opacity: 0.85;">
+                                <span>${seccionEtiqueta}</span>
+                                <span style="opacity: 0.75;">${lockIconHtml}</span>
+                            </div>
                         </div>
-                        <div class="adm-full">
+                        <div class="adm-full ${clasePastel}">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="docente-nombre">${docenteNombre}</span>
                                 ${lockIconHtml}
@@ -2645,6 +3510,60 @@
                     }
                 }
             }
+
+            // Vincular panel lateral de filtros (Offcanvas) con #seccion y #aula sin recargar la página
+            (function vincularPanelFiltrosCreate() {
+                const panelEl = document.getElementById('createHorarioFilterPanel');
+                const formEl = document.getElementById('createHorarioFilterPanelForm');
+                const limpiarBtn = document.getElementById('createHorarioFilterPanelLimpiarBtn');
+                const panelSeccion = document.getElementById('createHorarioFilterPanel_seccion_id');
+                const panelAula = document.getElementById('createHorarioFilterPanel_aula_id');
+                const hiddenAula = document.getElementById('aula');
+                const badgeEl = document.querySelector('[data-filter-count-for="createHorarioFilterPanel"]');
+
+                if (!panelEl || !formEl || !panelSeccion || !panelAula || !hiddenAula) return;
+
+                function actualizarBadgeFiltrosCreate() {
+                    const activos = (seccionSelect.value ? 1 : 0) + (hiddenAula.value ? 1 : 0);
+                    if (badgeEl) {
+                        badgeEl.textContent = activos;
+                        badgeEl.classList.toggle('d-none', activos === 0);
+                    }
+                }
+
+                function aplicarFiltrosDesdePanel() {
+                    const seccionAnterior = seccionSelect.value;
+                    seccionSelect.value = panelSeccion.value || '';
+                    hiddenAula.value = panelAula.value || '';
+
+                    if (seccionAnterior !== seccionSelect.value) {
+                        seccionSelect.dispatchEvent(new Event('change'));
+                    } else {
+                        renderizarCalendario();
+                    }
+                    actualizarBadgeFiltrosCreate();
+
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+                        bootstrap.Offcanvas.getOrCreateInstance(panelEl).hide();
+                    }
+                }
+
+                formEl.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    aplicarFiltrosDesdePanel();
+                }, true);
+
+                if (limpiarBtn) {
+                    limpiarBtn.addEventListener('click', function () {
+                        setTimeout(() => {
+                            panelSeccion.value = '';
+                            panelAula.value = '';
+                            aplicarFiltrosDesdePanel();
+                        }, 10);
+                    });
+                }
+            })();
 
             // Inicializar Drag and Drop
             function inicializarDragAndDrop() {
@@ -3544,7 +4463,7 @@
 
             function actualizarBarraFlotante() {
                 const cantidad = asignacionesSeleccionadas.size;
-                contadorSeleccionados.textContent = `${cantidad} seleccionado${cantidad !== 1 ? 's' : ''}`;
+                contadorSeleccionados.innerHTML = `<strong>${cantidad}</strong> seleccionado${cantidad !== 1 ? 's' : ''}`;
                 barraSeleccionFlotante.classList.toggle('visible', modoSeleccionActivo && cantidad > 0);
             }
 
