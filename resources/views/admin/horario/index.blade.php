@@ -527,8 +527,8 @@
                                     <label for="area_id" class="form-label fw-bold text-dark mb-2" style="font-size: 0.88rem;">
                                         <i class="fas fa-book me-2" style="color: #4A6FC1;"></i>Área de Formación
                                     </label>
-                                    <select name="area_id" id="area_id" class="form-select w-100" disabled required>
-                                        <option value="">Elija área...</option>
+                                    <select name="area_id" id="area_id" class="form-select w-100" disabled>
+                                        <option value="">Todas las áreas (Horario completo)</option>
                                     </select>
                                 </div>
                             </div>
@@ -708,7 +708,7 @@
                         try {
                             const response = await fetch(`/api/areas-formacion/grado?grado_id=${nivelId}`);
                             const areas = await response.json();
-                            modalAreaSelect.innerHTML = '<option value="">Elija área...</option>';
+                            modalAreaSelect.innerHTML = '<option value="">Todas las áreas (Horario completo)</option>';
                             areas.forEach(area => {
                                 const option = document.createElement('option');
                                 option.value = area.id;
@@ -721,7 +721,7 @@
                         }
                     } else {
                         modalAreaSelect.disabled = true;
-                        modalAreaSelect.innerHTML = '<option value="">Elija área...</option>';
+                        modalAreaSelect.innerHTML = '<option value="">Todas las áreas (Horario completo)</option>';
                     }
                 });
             }
@@ -731,7 +731,7 @@
                     if (modalNivelSelect) modalNivelSelect.value = '';
                     if (modalAreaSelect) {
                         modalAreaSelect.disabled = true;
-                        modalAreaSelect.innerHTML = '<option value="">Elija área...</option>';
+                        modalAreaSelect.innerHTML = '<option value="">Todas las áreas (Horario completo)</option>';
                     }
                 });
 
@@ -760,6 +760,17 @@
                         row.dataset.grado,
                         row.dataset.seccion
                     );
+                }
+            });
+
+            // Feedback visual en el botón al confirmar eliminación de horario
+            document.addEventListener('submit', function (e) {
+                const form = e.target.closest('.form-eliminar-horario');
+                if (!form) return;
+                const btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i><span>Eliminando...</span>';
                 }
             });
         });

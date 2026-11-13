@@ -121,17 +121,21 @@ class HorarioController extends Controller
         }
 
         $config = $this->configuracionHorarioService->actual();
-        $numeroBloques = (int) $config->numero_bloques;
-        $bloquesCalculados = $this->configuracionHorarioService->bloques($config);
 
-        $asignaciones = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
+        $asignacionesRaw = HorarioAsignacion::where('anio_escolar_id', $anioEscolarActivo->id)
             ->whereHas('cargaAcademica', function ($q) use ($seccion, $grado_id) {
                 $q->where('seccion_id', $seccion->id);
             })
             ->with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'aula'])
             ->orderBy('dia')
             ->orderBy('bloque')
-            ->get()
+            ->get();
+
+        $maxBloqueAsignado = (int) ($asignacionesRaw->max('bloque') ?? 0);
+        $numeroBloques = max((int) $config->numero_bloques, $maxBloqueAsignado, 8);
+        $bloquesCalculados = $this->configuracionHorarioService->bloques($config, $numeroBloques);
+
+        $asignaciones = $asignacionesRaw
             ->map(function ($a) use ($seccion) {
                 $carga = $a->cargaAcademica;
                 $docente = $carga?->docente;
@@ -260,6 +264,15 @@ class HorarioController extends Controller
             'reservados' => $reservados,
             'docentes' => $docentes,
             'asignaciones' => $asignaciones,
+            'configuracion' => [
+                'hora_inicio' => is_string($config->hora_inicio) ? $config->hora_inicio : (is_object($config->hora_inicio) ? $config->hora_inicio->format('H:i:s') : '07:00:00'),
+                'duracion_bloque_min' => (int) $config->duracion_bloque_min,
+                'minutos_entre_bloques' => (int) $config->minutos_entre_bloques,
+                'numero_bloques' => $numeroBloques,
+                'recesos' => $config->relationLoaded('recesos')
+                    ? $config->recesos->pluck('duracion_min', 'despues_de_bloque')->all()
+                    : $config->recesos()->pluck('duracion_min', 'despues_de_bloque')->all(),
+            ],
         ]);
     }
 
@@ -444,18 +457,21 @@ class HorarioController extends Controller
         $editSeccionId = $request->input('seccion_id');
         $nivelId = $request->input('nivel_id', $request->input('grado_id'));
         $areaId = $request->input('area_id', $request->input('area_formacion_id'));
+        if ($areaId === 'todas' || $areaId === '') {
+            $areaId = null;
+        }
 
-        if (!$modoEdicion && (empty($nivelId) || empty($areaId))) {
+        if (!$modoEdicion && empty($nivelId)) {
             return redirect()->route('admin.horario.index')
-                ->with('warning', 'Selecciona el Nivel Académico y el Área de Formación antes de crear un horario.');
+                ->with('warning', 'Selecciona el Nivel Académico antes de crear un horario.');
         }
 
         $nivelSeleccionado = $nivelId ? Grado::where('status', true)->find($nivelId) : null;
         $areaSeleccionada = $areaId ? AreaFormacion::where('status', true)->find($areaId) : null;
 
-        if (!$modoEdicion && (!$nivelSeleccionado || !$areaSeleccionada)) {
+        if (!$modoEdicion && !$nivelSeleccionado) {
             return redirect()->route('admin.horario.index')
-                ->with('warning', 'El Nivel Académico o Área de Formación seleccionado no es válido.');
+                ->with('warning', 'El Nivel Académico seleccionado no es válido.');
         }
 
         // 1. Verificar si existe configuración de horario institucional
@@ -641,6 +657,9 @@ class HorarioController extends Controller
             $anioEscolarActivo = AnioEscolarSeleccionado::modelo();
 
             if (!$anioEscolarActivo) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'No hay año escolar activo. No se puede eliminar el horario.'], 400);
+                }
                 return redirect()->back()->with('error', 'No hay año escolar activo. No se puede eliminar el horario.');
             }
 
@@ -652,6 +671,19 @@ class HorarioController extends Controller
                 })
                 ->delete();
 
+            if ($request->ajax() || $request->wantsJson()) {
+                if ($asignacionesEliminadas > 0) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => "Horario eliminado exitosamente. Se eliminaron {$asignacionesEliminadas} asignaciones."
+                    ]);
+                }
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron asignaciones de horario para eliminar.'
+                ], 404);
+            }
+
             if ($asignacionesEliminadas > 0) {
                 return redirect()->route('admin.horario.index')
                     ->with('success', "Horario eliminado exitosamente. Se eliminaron {$asignacionesEliminadas} asignaciones.");
@@ -661,6 +693,9 @@ class HorarioController extends Controller
             }
 
         } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error al eliminar el horario: ' . $e->getMessage()], 500);
+            }
             return redirect()->back()
                 ->with('error', 'Error al eliminar el horario: ' . $e->getMessage());
         }

@@ -68,12 +68,12 @@ class CargaAcademicaSeeder extends Seeder
             return;
         }
 
-        // 2. Garantizar la Configuración Global de Horario (07:00 AM, 4 bloques de 90 min)
+        // 2. Garantizar la Configuración Global de Horario (07:00 AM, 8 bloques de 90 min)
         ConfiguracionHorario::firstOrCreate(
             [],
             [
                 'hora_inicio' => '07:00:00',
-                'numero_bloques' => 4,
+                'numero_bloques' => 8,
                 'duracion_bloque_min' => 90,
                 'minutos_entre_bloques' => 0,
             ]

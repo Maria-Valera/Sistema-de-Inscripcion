@@ -746,8 +746,25 @@ class GeneradorHorarioController extends Controller
         }
 
         return \DB::transaction(function() use ($validado, $anioEscolarId) {
-            // Limpiar asignaciones anteriores del mismo año escolar
-            HorarioAsignacion::where('anio_escolar_id', $anioEscolarId)->delete();
+            $asignacionesEntrantes = collect($validado['asignaciones']);
+            $seccionIds = $asignacionesEntrantes->pluck('seccion_id')->filter()->unique();
+            $materiaIds = $asignacionesEntrantes->pluck('materia_id')->filter()->unique();
+
+            // Limpiar únicamente las asignaciones anteriores del ámbito que se está guardando
+            $queryBorrar = HorarioAsignacion::where('anio_escolar_id', $anioEscolarId)
+                ->where('fijada', false);
+
+            if ($seccionIds->isNotEmpty()) {
+                $queryBorrar->whereHas('cargaAcademica', function ($q) use ($seccionIds, $materiaIds) {
+                    $q->whereIn('seccion_id', $seccionIds);
+                    if ($materiaIds->isNotEmpty()) {
+                        $q->whereIn('area_formacion_id', $materiaIds);
+                    }
+                });
+                $queryBorrar->delete();
+            } else {
+                $queryBorrar->delete();
+            }
 
             $asignacionesGuardadas = 0;
             $errores = [];

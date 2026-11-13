@@ -26,7 +26,7 @@ class ConfiguracionHorarioService
         if (!$config) {
             $config = ConfiguracionHorario::create([
                 'hora_inicio' => '07:00:00',
-                'numero_bloques' => 4,
+                'numero_bloques' => 8,
                 'duracion_bloque_min' => 90,
                 'minutos_entre_bloques' => 0,
             ]);
@@ -39,8 +39,9 @@ class ConfiguracionHorarioService
     /**
      * Calcula y retorna un mapa de bloques horarios para la configuración dada.
      * Retorna una colección con formato: [n => ['inicio' => 'H:i', 'fin' => 'H:i']].
+     * Permite especificar $hastaBloque para calcular dinámicamente más allá del número base.
      */
-    public function bloques(ConfiguracionHorario $config): Collection
+    public function bloques(ConfiguracionHorario $config, ?int $hastaBloque = null): Collection
     {
         $recesosMap = $config->relationLoaded('recesos')
             ? $config->recesos->pluck('duracion_min', 'despues_de_bloque')->all()
@@ -57,7 +58,9 @@ class ConfiguracionHorarioService
         $horaActual = Carbon::createFromFormat('H:i:s', $horaInicioStr);
         $resultado = collect();
 
-        for ($n = 1; $n <= $config->numero_bloques; $n++) {
+        $limiteBloques = max((int) $config->numero_bloques, (int) ($hastaBloque ?? 0));
+
+        for ($n = 1; $n <= $limiteBloques; $n++) {
             $inicio = $horaActual->copy();
             $fin = $inicio->copy()->addMinutes($config->duracion_bloque_min);
 

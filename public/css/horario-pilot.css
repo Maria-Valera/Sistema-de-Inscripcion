@@ -279,10 +279,7 @@
 }
 
 /* Encabezados de contexto y paneles laterales de la cuadrícula */
-.context-header,
-.modal-context-header,
 .sidebar-header,
-.modal-sidebar-header,
 .sidebar-docentes .card-header.bg-primary {
     background: #4A6FC1 !important;
     background-color: #4A6FC1 !important;
@@ -290,10 +287,7 @@
     border-color: #3B5BA5 !important;
 }
 
-.context-header *,
-.modal-context-header *,
 .sidebar-header *,
-.modal-sidebar-header *,
 .sidebar-docentes .card-header.bg-primary * {
     color: #ffffff !important;
 }
@@ -317,8 +311,6 @@
    4. CABECERAS (HEADER) DE MODALES
    ========================================================= */
 .modal-header-create,
-.modal-header-view,
-.modal-ver-horario-header,
 #modalValidacionHorario .modal-header,
 #modalFiltros .modal-header,
 .card-header.bg-purple,
@@ -332,8 +324,6 @@
 }
 
 .modal-header-create *,
-.modal-header-view *,
-.modal-ver-horario-header *,
 #modalValidacionHorario .modal-header .modal-title,
 #modalValidacionHorario .modal-header i,
 #modalFiltros .modal-header .modal-title,
