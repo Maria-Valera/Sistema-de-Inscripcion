@@ -880,6 +880,38 @@
 /* ============================================================================
    7. FORMULARIOS, SELECTS Y FILTROS (.select-modern, select.form-select)
    ============================================================================ */
+input.form-control,
+input.form-control-modern,
+textarea.form-control {
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    -webkit-text-fill-color: var(--text-dark) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.62rem 0.95rem !important;
+    font-size: 0.92rem !important;
+    line-height: 1.45 !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+input.form-control:focus,
+input.form-control-modern:focus,
+textarea.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+    outline: none !important;
+}
+
+/* Buscador Moderno */
+.search-wrapper {
+    position: relative;
+}
+
+.search-input-modern {
+    padding-left: 40px !important;
+    border-radius: 10px !important;
+}
+
 .select-modern,
 select.form-select,
 select.form-control,
@@ -1301,4 +1333,216 @@ select option:checked {
 .materia-error-item:hover {
     background-color: #FFF7ED !important;
 }
+
+/* ============================================================================
+   12. BOTONES DE ACCIÓN (TRES PUNTOS) Y MENÚS DESPLEGABLES (DROPDOWNS)
+   ============================================================================ */
+/* Tarea 1: Botón de los Tres Puntos (Trigger) */
+.action-btn,
+.action-btn-dots,
+.action-btn-saas,
+.btn-action-dots {
+    width: 32px !important;
+    height: 32px !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #475569 !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+    padding: 0 !important;
+}
+
+.action-btn:hover,
+.action-btn:focus,
+.action-btn[aria-expanded="true"],
+.action-btn-dots:hover,
+.action-btn-dots:focus,
+.action-btn-dots[aria-expanded="true"],
+.action-btn-saas:hover,
+.action-btn-saas:focus,
+.action-btn-saas[aria-expanded="true"],
+.btn-action-dots:hover,
+.btn-action-dots:focus,
+.btn-action-dots[aria-expanded="true"] {
+    background-color: #F1F5F9 !important;
+    color: #1E293B !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.action-btn i,
+.action-btn-dots i,
+.action-btn-saas i,
+.btn-action-dots i {
+    font-size: 0.95rem !important;
+    color: #475569 !important;
+    transition: color 0.15s ease !important;
+}
+
+.action-btn:hover i,
+.action-btn[aria-expanded="true"] i,
+.action-btn-dots:hover i,
+.action-btn-dots[aria-expanded="true"] i,
+.action-btn-saas:hover i,
+.action-btn-saas[aria-expanded="true"] i,
+.btn-action-dots:hover i,
+.btn-action-dots[aria-expanded="true"] i {
+    color: #1E293B !important;
+}
+
+/* Tarea 2: Contenedor del Menú Desplegable (Dropdown Menu) */
+.dropdown-menu-modern,
+.dropdown-menu-saas,
+.table-modern .dropdown-menu,
+.card-modern .dropdown-menu {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    padding: 8px !important;
+    min-width: 160px !important;
+    z-index: 1050 !important;
+}
+
+/* Tarea 3: Ítems del Menú Desplegable (General) */
+.dropdown-menu-modern .dropdown-item,
+.dropdown-menu-saas .dropdown-item,
+.dropdown-item-modern,
+.table-modern .dropdown-menu .dropdown-item,
+.card-modern .dropdown-menu .dropdown-item {
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+    border: none !important;
+    background: transparent !important;
+    width: 100% !important;
+    text-align: left !important;
+}
+
+.dropdown-menu-modern .dropdown-item:hover,
+.dropdown-menu-saas .dropdown-item:hover,
+.dropdown-item-modern:hover,
+.table-modern .dropdown-menu .dropdown-item:hover,
+.card-modern .dropdown-menu .dropdown-item:hover {
+    background-color: #F1F5F9 !important;
+    color: #1E293B !important;
+}
+
+.dropdown-menu-modern .dropdown-item i,
+.dropdown-menu-saas .dropdown-item i,
+.dropdown-item-modern i,
+.table-modern .dropdown-menu .dropdown-item i,
+.card-modern .dropdown-menu .dropdown-item i {
+    width: 16px !important;
+    font-size: 0.88rem !important;
+    text-align: center !important;
+    color: #475569 !important;
+    transition: color 0.15s ease !important;
+}
+
+/* Ítem Editar (Azul Institucional / Gris Oscuro) */
+.dropdown-item-edit,
+.dropdown-item.item-edit,
+.dropdown-item-modern.item-edit,
+.dropdown-menu-modern .dropdown-item.item-edit,
+.dropdown-menu-modern .dropdown-item.text-warning,
+.table-modern .dropdown-menu .dropdown-item.item-edit,
+.table-modern .dropdown-menu .dropdown-item.text-warning {
+    color: #1E293B !important;
+}
+
+.dropdown-item-edit i,
+.dropdown-item.item-edit i,
+.dropdown-item-modern.item-edit i,
+.dropdown-menu-modern .dropdown-item.item-edit i,
+.dropdown-menu-modern .dropdown-item.text-warning i,
+.table-modern .dropdown-menu .dropdown-item.item-edit i,
+.table-modern .dropdown-menu .dropdown-item.text-warning i {
+    color: var(--primary-color, #4A6FC1) !important;
+}
+
+.dropdown-item-edit:hover,
+.dropdown-item.item-edit:hover,
+.dropdown-item-modern.item-edit:hover,
+.dropdown-menu-modern .dropdown-item.item-edit:hover,
+.dropdown-menu-modern .dropdown-item.text-warning:hover,
+.table-modern .dropdown-menu .dropdown-item.item-edit:hover,
+.table-modern .dropdown-menu .dropdown-item.text-warning:hover {
+    background-color: #EFF6FF !important;
+    color: var(--primary-color, #4A6FC1) !important;
+}
+
+.dropdown-item-edit:hover i,
+.dropdown-item.item-edit:hover i,
+.dropdown-item-modern.item-edit:hover i,
+.dropdown-menu-modern .dropdown-item.item-edit:hover i,
+.dropdown-menu-modern .dropdown-item.text-warning:hover i,
+.table-modern .dropdown-menu .dropdown-item.item-edit:hover i,
+.table-modern .dropdown-menu .dropdown-item.text-warning:hover i {
+    color: var(--primary-color, #4A6FC1) !important;
+}
+
+/* Ítem Eliminar (Rojo Suave / Elegante) */
+.dropdown-item-danger,
+.dropdown-item-delete,
+.dropdown-item.item-delete,
+.dropdown-item-modern.item-delete,
+.dropdown-menu-modern .dropdown-item.item-delete,
+.dropdown-menu-modern .dropdown-item.text-danger,
+.dropdown-menu-saas .dropdown-item.text-danger,
+.table-modern .dropdown-menu .dropdown-item.item-delete,
+.table-modern .dropdown-menu .dropdown-item.text-danger {
+    color: #EF4444 !important;
+}
+
+.dropdown-item-danger i,
+.dropdown-item-delete i,
+.dropdown-item.item-delete i,
+.dropdown-item-modern.item-delete i,
+.dropdown-menu-modern .dropdown-item.item-delete i,
+.dropdown-menu-modern .dropdown-item.text-danger i,
+.dropdown-menu-saas .dropdown-item.text-danger i,
+.table-modern .dropdown-menu .dropdown-item.item-delete i,
+.table-modern .dropdown-menu .dropdown-item.text-danger i {
+    color: #EF4444 !important;
+}
+
+.dropdown-item-danger:hover,
+.dropdown-item-delete:hover,
+.dropdown-item.item-delete:hover,
+.dropdown-item-modern.item-delete:hover,
+.dropdown-menu-modern .dropdown-item.item-delete:hover,
+.dropdown-menu-modern .dropdown-item.text-danger:hover,
+.dropdown-menu-saas .dropdown-item.text-danger:hover,
+.table-modern .dropdown-menu .dropdown-item.item-delete:hover,
+.table-modern .dropdown-menu .dropdown-item.text-danger:hover {
+    background-color: #FEF2F2 !important;
+    color: #DC2626 !important;
+}
+
+.dropdown-item-danger:hover i,
+.dropdown-item-delete:hover i,
+.dropdown-item.item-delete:hover i,
+.dropdown-item-modern.item-delete:hover i,
+.dropdown-menu-modern .dropdown-item.item-delete:hover i,
+.dropdown-menu-modern .dropdown-item.text-danger:hover i,
+.dropdown-menu-saas .dropdown-item.text-danger:hover i,
+.table-modern .dropdown-menu .dropdown-item.item-delete:hover i,
+.table-modern .dropdown-menu .dropdown-item.text-danger:hover i {
+    color: #DC2626 !important;
+}
+
 

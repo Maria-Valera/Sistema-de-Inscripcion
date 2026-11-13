@@ -4,12 +4,19 @@
 
 @section('title', 'Escala Literal')
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
+@stop
+
 @section('content_header')
-    <div class="content-header-modern">
+    <div class="content-header-modern hero-header-horario">
         <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
-                    <i class="fas fa-sort-alpha-down"></i>
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
                 <div>
                     <h1 class="title-main">Escala Literal</h1>
@@ -19,7 +26,7 @@
 
             @can('escala_literal.gestionar')
                 @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                    <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearEscala">
+                    <button type="button" class="btn-hero-white" data-bs-toggle="modal" data-bs-target="#modalCrearEscala">
                         <i class="fas fa-plus"></i>
                         <span>Nueva Escala</span>
                     </button>
@@ -27,39 +34,6 @@
             @endcan
         </div>
     </div>
-@stop
-
-@section('css')
-    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
-    <style>
-        .badge-letra {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--purple, #5b6ee1), var(--purple-dark, #4a5ad4));
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 1.1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(91, 110, 225, 0.25);
-        }
-        .badge-rango {
-            background-color: #f1f5f9;
-            color: #334155;
-            font-weight: 600;
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            border: 1px solid #e2e8f0;
-        }
-    </style>
 @stop
 
 @section('content')
@@ -105,90 +79,105 @@
             </div>
         @endif
 
-        <div class="card-modern">
-            <div class="card-header-modern">
-                <div class="header-left">
-                    <div class="header-icon">
+        <div class="card-modern shadow-sm">
+            <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="header-left d-flex align-items-center gap-3">
+                    <div class="header-icon d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1;">
                         <i class="fas fa-list-ol"></i>
                     </div>
                     <div>
-                        <h3>Escalas Configuradas</h3>
-                        <p>
+                        <h3 class="fw-bold mb-0" style="font-size: 1.05rem; color: #1E293B;">Escalas Configuradas</h3>
+                        <p class="text-muted mb-0" style="font-size: 0.82rem;">
                             {{ $escalas->total() }} escalas para el periodo 
                             <strong class="text-primary">{{ $anioModelo?->nombre_completo ?? 'Activo' }}</strong>
                         </p>
                     </div>
                 </div>
+
+                {{-- Buscador Redondeado (Design System) --}}
+                <div class="header-right">
+                    <div class="search-wrapper position-relative" style="width: 260px;">
+                        <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 50%; transform: translateY(-50%); z-index: 10; font-size: 0.85rem;"></i>
+                        <input type="text"
+                               id="buscarEscala"
+                               class="form-control search-input-modern pl-5"
+                               placeholder="Buscar escala..."
+                               style="padding-left: 40px !important; border-radius: 10px; height: 38px; font-size: 0.85rem;">
+                    </div>
+                </div>
             </div>
 
-            <div class="card-body-modern">
+            <div class="card-body-modern p-0">
                 <div class="table-wrapper">
-                    <table class="table-modern">
+                    <table class="table-modern" id="tablaEscalas">
                         <thead>
-                            <tr style="text-align: center">
+                            <tr class="text-center">
                                 <th style="width: 60px;">#</th>
                                 <th style="width: 100px;">Letra</th>
-                                <th style="text-align: left;">Descripción Cualitativa</th>
+                                <th class="text-start">Descripción Cualitativa</th>
                                 <th>Rango Numérico (Puntos)</th>
                                 <th style="width: 100px;">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody style="text-align: center">
+                        <tbody class="text-center">
                             @forelse ($escalas as $index => $esc)
                                 <tr>
-                                    <td>{{ $escalas->firstItem() + $index }}</td>
+                                    <td class="text-muted" style="font-size: 0.85rem;">{{ $escalas->firstItem() + $index }}</td>
                                     <td>
-                                        <span class="badge-letra">{{ $esc->letra }}</span>
+                                        <span class="badge badge-primary px-3 py-2 fw-bold" style="font-size: 0.95rem; min-width: 36px;">
+                                            {{ $esc->letra }}
+                                        </span>
                                     </td>
-                                    <td style="text-align: left;">
-                                        <div class="font-weight-bold fw-bold text-dark" style="font-size: 0.95rem;">
+                                    <td class="text-start">
+                                        <div class="fw-bold text-dark" style="font-size: 0.92rem;">
                                             {{ $esc->descripcion ?: 'Sin descripción' }}
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge-rango">
-                                            <i class="fas fa-arrows-alt-h text-primary"></i>
+                                        <span class="badge" style="background-color: #F8FAFC; color: #334155; font-weight: 600; padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.85rem; border: 1px solid #E2E8F0;">
+                                            <i class="fas fa-arrows-alt-h text-primary me-1"></i>
                                             <strong>{{ $esc->nota_desde }}</strong> a <strong>{{ $esc->nota_hasta }}</strong> pts
                                         </span>
                                     </td>
                                     <td>
                                         <div class="action-buttons justify-content-center">
-                                            <div class="dropdown dropstart text-center">
-                                                <button class="btn btn-light btn-sm rounded-circle shadow-sm action-btn"
+                                            <div class="dropdown text-center">
+                                                <button class="action-btn"
                                                         type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
                                                     <i class="fas fa-ellipsis-v"></i>
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
                                                     @can('escala_literal.gestionar')
                                                         @if (\App\Support\AnioEscolarSeleccionado::esActual())
                                                             <li>
-                                                                <button class="dropdown-item d-flex align-items-center text-warning"
+                                                                <button class="dropdown-item dropdown-item-modern item-edit"
                                                                         type="button"
                                                                         data-bs-toggle="modal"
                                                                         data-bs-target="#modalEditarEscala{{ $esc->id }}"
                                                                         title="Editar">
-                                                                    <i class="fas fa-edit me-2 mr-2"></i>
-                                                                    Editar
+                                                                    <i class="fas fa-edit me-2"></i>
+                                                                    <span>Editar</span>
                                                                 </button>
                                                             </li>
                                                             <li>
-                                                                <button class="dropdown-item d-flex align-items-center text-danger"
+                                                                <button class="dropdown-item dropdown-item-modern item-delete"
                                                                         type="button"
                                                                         data-bs-toggle="modal"
                                                                         data-bs-target="#confirmarEliminar{{ $esc->id }}"
                                                                         title="Eliminar">
-                                                                    <i class="fas fa-trash me-2 mr-2"></i>
-                                                                    Eliminar
+                                                                    <i class="fas fa-trash-alt me-2"></i>
+                                                                    <span>Eliminar</span>
                                                                 </button>
                                                             </li>
                                                         @else
                                                             <li>
-                                                                <span class="dropdown-item text-muted disabled">Solo consulta</span>
+                                                                <span class="dropdown-item dropdown-item-modern text-muted disabled">Solo consulta</span>
                                                             </li>
                                                         @endif
                                                     @else
                                                         <li>
-                                                            <span class="dropdown-item text-muted disabled">Sin permisos</span>
+                                                            <span class="dropdown-item dropdown-item-modern text-muted disabled">Sin permisos</span>
                                                         </li>
                                                     @endcan
                                                 </ul>
@@ -199,12 +188,12 @@
                             @empty
                                 <tr>
                                     <td colspan="5">
-                                        <div class="empty-state">
-                                            <div class="empty-icon">
-                                                <i class="fas fa-sort-alpha-down"></i>
+                                        <div class="empty-state text-center py-5">
+                                            <div class="empty-icon text-muted mb-2 opacity-50">
+                                                <i class="fas fa-sort-alpha-down fa-3x"></i>
                                             </div>
-                                            <h4>No hay escalas literales configuradas</h4>
-                                            <p>Agrega los rangos alfabéticos (ej. A, B, C, D) para el año escolar actual.</p>
+                                            <h4 class="fw-bold" style="color: #1E293B; font-size: 1.1rem;">No hay escalas literales configuradas</h4>
+                                            <p class="text-muted" style="font-size: 0.88rem;">Agrega los rangos alfabéticos (ej. A, B, C, D) para el año escolar actual.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -221,34 +210,77 @@
         @foreach ($escalas as $esc)
             @include('admin.maestros.stephania.escala_literal.modales.editModal', ['escala' => $esc])
 
-            {{-- Modal Confirmar Eliminación --}}
-            <div class="modal fade" id="confirmarEliminar{{ $esc->id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content modal-modern shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
-                        <div class="modal-header-delete py-3 px-4 d-flex align-items-center">
-                            <div class="modal-icon-delete" style="width: 40px; height: 40px; min-width: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0;">
-                                <i class="fas fa-trash-alt"></i>
+            {{-- Modal Confirmar Eliminación con Design System (Acento Rojo de Advertencia) --}}
+            <div class="modal fade modal-danger-delete" id="confirmarEliminar{{ $esc->id }}" tabindex="-1" aria-labelledby="confirmarEliminarLabel{{ $esc->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+                    <div class="modal-content modal-modern shadow-lg" style="border: 1px solid #E2E8F0; border-radius: 16px; overflow: hidden; background: #FFFFFF;">
+                        <!-- Modal Header Limpio -->
+                        <div class="modal-header d-flex align-items-center justify-content-between px-4 py-3 bg-white border-bottom" style="border-bottom-color: #F1F5F9 !important;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width: 44px; height: 44px; border-radius: 12px; background-color: #FEE2E2; color: #EF4444;">
+                                    <i class="fas fa-trash-alt" style="font-size: 1.15rem;"></i>
+                                </div>
+                                <div>
+                                    <h5 class="modal-title m-0 fw-bold" id="confirmarEliminarLabel{{ $esc->id }}" style="color: #1E293B; font-size: 1.1rem;">
+                                        Eliminar Escala Literal
+                                    </h5>
+                                    <p class="text-muted m-0" style="font-size: 0.82rem;">Confirmación de acción destructiva</p>
+                                </div>
                             </div>
-                            <div class="ml-3 me-auto">
-                                <h5 class="modal-title-delete mb-0" style="font-size: 1.15rem; font-weight: 700;">Confirmar Eliminación</h5>
-                                <small class="text-muted" style="font-size: 0.8rem;">Esta acción no se puede deshacer</small>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <!-- Formulario y Body de Advertencia -->
+                        <form action="{{ route('admin.escala-literal.destroy', $esc) }}" method="POST" class="form-eliminar-escala m-0">
+                            @csrf
+                            @method('DELETE')
+
+                            <div class="modal-body px-4 py-3" style="background-color: #FFFFFF;">
+                                <p class="fw-semibold mb-3" style="color: #1E293B; font-size: 0.95rem;">
+                                    ¿Estás seguro de que deseas eliminar esta escala literal?
+                                </p>
+
+                                <!-- Recuadro Gris de Resumen -->
+                                <div class="p-3 mb-3 d-flex align-items-center gap-3"
+                                     style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;">
+                                    <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                                         style="width: 40px; height: 40px; background-color: #EFF6FF; color: #4A6FC1; font-weight: 700; font-size: 1.1rem;">
+                                        {{ $esc->letra }}
+                                    </div>
+                                    <div class="min-w-0 flex-grow-1">
+                                        <div class="fw-bold text-dark text-truncate" style="font-size: 0.92rem;">
+                                            {{ $esc->descripcion ?: 'Sin descripción' }}
+                                        </div>
+                                        <div class="text-muted d-flex align-items-center gap-1" style="font-size: 0.8rem;">
+                                            <i class="fas fa-arrows-alt-h text-secondary"></i>
+                                            <span>Rango: {{ $esc->nota_desde }} a {{ $esc->nota_hasta }} puntos</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Advertencia en texto rojo suave -->
+                                <div class="d-flex align-items-start gap-2 p-3 rounded-3"
+                                     style="background-color: #FEF2F2; border: 1px solid #FEE2E2; border-left: 4px solid #EF4444;">
+                                    <i class="fas fa-exclamation-triangle flex-shrink-0 mt-1" style="color: #DC2626; font-size: 0.85rem;"></i>
+                                    <p class="m-0" style="color: #DC2626; font-size: 13px; line-height: 1.45; font-weight: 500;">
+                                        Esta acción no se puede deshacer. La escala será removida de la configuración del año escolar actual.
+                                    </p>
+                                </div>
                             </div>
-                            <button type="button" class="btn-close-modal ml-auto" data-bs-dismiss="modal" aria-label="Cerrar" style="background: transparent; border: none; font-size: 1.1rem;">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="modal-body-delete p-4">
-                            <p>¿Deseas eliminar la escala literal <strong>[{{ $esc->letra }}]</strong> ({{ $esc->nota_desde }} - {{ $esc->nota_hasta }} pts)?</p>
-                            <p class="delete-warning mb-0">La escala será removida de la configuración del año escolar actual.</p>
-                        </div>
-                        <div class="modal-footer-delete py-3 px-4 d-flex justify-content-end align-items-center border-top" style="background: #f9fafb; gap: 0.75rem;">
-                            <form action="{{ route('admin.escala-literal.destroy', $esc) }}" method="POST" class="w-100 d-flex justify-content-end gap-2">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" class="btn btn-light btn-modal-cancel border px-4 py-2" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">Cancelar</button>
-                                <button type="submit" class="btn btn-danger btn-modal-delete px-4 py-2" style="border-radius: 8px; font-weight: 600;">Eliminar</button>
-                            </form>
-                        </div>
+
+                            <!-- Modal Footer Alineado a la Derecha -->
+                            <div class="modal-footer d-flex justify-content-end align-items-center gap-2 px-4 py-3 bg-white border-top" style="border-top-color: #F1F5F9 !important;">
+                                <button type="button" class="btn-secondary-modern" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>
+                                    <span>Cancelar</span>
+                                </button>
+                                <button type="submit" class="btn-danger-modern d-inline-flex align-items-center gap-2">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span>Sí, eliminar escala</span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -263,6 +295,30 @@
 @section('js')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Filtrado en tiempo real desde el input de búsqueda
+        const inputBuscar = document.getElementById('buscarEscala');
+        if (inputBuscar) {
+            inputBuscar.addEventListener('input', function () {
+                const query = this.value.toLowerCase().trim();
+                document.querySelectorAll('#tablaEscalas tbody tr').forEach(row => {
+                    if (row.cells.length === 1) return; // Fila de estado vacío
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        }
+
+        // Feedback visual al confirmar eliminación
+        document.querySelectorAll('.form-eliminar-escala').forEach(form => {
+            form.addEventListener('submit', function () {
+                const btn = this.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i><span>Eliminando...</span>';
+                }
+            });
+        });
+
         // Soporte para mensaje flash de éxito tras reload de formulario AJAX
         const flashMsg = sessionStorage.getItem('flash_success');
         if (flashMsg) {
@@ -310,10 +366,10 @@
                 alertBox.className = 'alert alert-danger modal-error-banner alert-dismissible fade show mb-3';
                 alertBox.style.borderRadius = '10px';
                 alertBox.style.fontSize = '0.9rem';
-                const body = form.querySelector('.modal-body-create') || form;
+                const body = form.querySelector('.modal-body') || form;
                 body.insertBefore(alertBox, body.firstChild);
             }
-            alertBox.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 me-2"></i> ${mensajeHtml}`;
+            alertBox.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> ${mensajeHtml}`;
             alertBox.style.display = 'block';
         }
 
@@ -560,7 +616,7 @@
                 const btnOriginalHtml = btnSubmit ? btnSubmit.innerHTML : '';
                 if (btnSubmit) {
                     btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1 me-1"></i> Guardando...';
+                    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Guardando...';
                 }
 
                 try {
@@ -649,4 +705,3 @@
     });
 </script>
 @stop
-
