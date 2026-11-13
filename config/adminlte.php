@@ -225,6 +225,7 @@ return [
 
     'custom_css' => [
         'css/admin-custom.css',
+        'css/design-system.css',
     ],
 
     /*

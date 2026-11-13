@@ -1,0 +1,1286 @@
+/**
+ * ============================================================================
+ * SISTEMA DE DISEÑO GLOBAL (DESIGN SYSTEM)
+ * E.B.N.B. Stephania / Antigravity UI Architecture
+ * ============================================================================
+ * Centraliza variables de color, tipografía, componentes visuales,
+ * botones, badges, tablas, modales, sidebar y barra superior para todo el sistema.
+ */
+
+/* ============================================================================
+   1. VARIABLES CSS GLOBALES (:root)
+   ============================================================================ */
+:root {
+    /* Colores Principales */
+    --primary-color: #4A6FC1;
+    --primary-hover: #3b5998;
+    --primary-dark: #3B5BA5;
+    --primary-light: #EDF2FC;
+    --primary-lighter: #D6E2F9;
+    --navy-dark: #1E3A8A;
+    --sidebar-bg: #0F172A;
+    --sidebar-surface: #1E293B;
+
+    /* Grises y Superficies */
+    --bg-light: #F8FAFC;
+    --bg-page: #F4F6F9;
+    --border-color: #E2E8F0;
+    --border-subtle: #CBD5E1;
+    --border-strong: #94A3B8;
+    --text-dark: #1E293B;
+    --text-body: #334155;
+    --text-muted: #64748B;
+    --text-light: #94A3B8;
+
+    /* Estados Semánticos */
+    --success: #16A34A;
+    --success-bg: #DCFCE7;
+    --success-text: #166534;
+
+    --danger: #EF4444;
+    --danger-bg: #FEE2E2;
+    --danger-text: #991B1B;
+
+    --warning: #F59E0B;
+    --warning-bg: #FEF3C7;
+    --warning-text: #92400E;
+
+    --info: #0284C7;
+    --info-bg: #E0F2FE;
+    --info-text: #0369A1;
+
+    /* Colores Pastel (Tarjetas de Clases, Docentes y Eventos) */
+    --pastel-blue-bg: #E0E7FF;
+    --pastel-blue-text: #3730A3;
+    --pastel-blue-border: #4F46E5;
+
+    --pastel-green-bg: #D1FAE5;
+    --pastel-green-text: #065F46;
+    --pastel-green-border: #10B981;
+
+    --pastel-pink-bg: #FCE7F3;
+    --pastel-pink-text: #9D174D;
+    --pastel-pink-border: #EC4899;
+
+    --pastel-purple-bg: #F3E8FF;
+    --pastel-purple-text: #6B21A8;
+    --pastel-purple-border: #9333EA;
+
+    --pastel-yellow-bg: #FEF3C7;
+    --pastel-yellow-text: #92400E;
+    --pastel-yellow-border: #F59E0B;
+
+    --pastel-orange-bg: #FFEDD5;
+    --pastel-orange-text: #9A3412;
+    --pastel-orange-border: #EA580C;
+
+    --pastel-teal-bg: #CCFBF1;
+    --pastel-teal-text: #115E59;
+    --pastel-teal-border: #14B8A6;
+
+    /* Dimensiones Estructurales */
+    --sidebar-width: 280px;
+    --sidebar-mini-width: 70px;
+    --topbar-height: 66px;
+
+    /* Sombras */
+    --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.12);
+    --shadow-hero: 0 10px 25px -8px rgba(59, 89, 152, 0.38);
+    --shadow-floating: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Radios */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 16px;
+    --radius-pill: 9999px;
+}
+
+/* ============================================================================
+   2. HERO HEADER (BARRA SUPERIOR DE MÓDULO)
+   ============================================================================ */
+.hero-header,
+.content-header-modern.hero-header-horario,
+.content-header-modern.hero-header-modern {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-hero) !important;
+    margin-bottom: 1.5rem !important;
+    padding: 1.25rem 1.5rem !important;
+    color: #FFFFFF !important;
+}
+
+.hero-header .header-content,
+.hero-header-horario .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.hero-header .header-title,
+.hero-header-horario .header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.hero-header .title-main,
+.hero-header-horario .title-main {
+    color: #FFFFFF !important;
+    font-size: 1.45rem !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    line-height: 1.25 !important;
+}
+
+.hero-header .title-subtitle,
+.hero-header-horario .title-subtitle {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-size: 0.88rem !important;
+    margin: 0.25rem 0 0 0 !important;
+    line-height: 1.35 !important;
+}
+
+.hero-header .icon-wrapper,
+.hero-header-horario .icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    box-shadow: none !important;
+}
+
+.hero-header .icon-wrapper i,
+.hero-header-horario .icon-wrapper i {
+    color: #FFFFFF !important;
+}
+
+/* Botón Blanco para Hero Header */
+.btn-hero-white {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    background-color: #FFFFFF !important;
+    color: var(--primary-color) !important;
+    border: 1px solid #FFFFFF !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.625rem 1.25rem !important;
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12) !important;
+    cursor: pointer !important;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease !important;
+}
+
+.btn-hero-white i,
+.btn-hero-white .btn-text {
+    color: var(--primary-color) !important;
+}
+
+.btn-hero-white:hover,
+.btn-hero-white:focus {
+    background-color: #F1F5F9 !important;
+    border-color: #F1F5F9 !important;
+    color: var(--primary-dark) !important;
+    text-decoration: none !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18) !important;
+}
+
+.btn-hero-white:hover i,
+.btn-hero-white:focus i {
+    color: var(--primary-dark) !important;
+}
+
+/* ============================================================================
+   3. BOTONES MODERNOS (.btn-*)
+   ============================================================================ */
+/* Botón Primario Moderno */
+.btn-primary-modern,
+.btn-save,
+.btn-modal-create,
+.btn-primary:not(.btn-hero-white):not(.btn-outline-primary) {
+    background: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+    border: 1px solid var(--primary-color) !important;
+    color: #FFFFFF !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.6rem 1.25rem !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(74, 111, 193, 0.25) !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+.btn-primary-modern:hover:not(:disabled),
+.btn-save:hover:not(:disabled),
+.btn-modal-create:hover:not(:disabled),
+.btn-primary:not(.btn-hero-white):not(.btn-outline-primary):hover:not(:disabled) {
+    background: var(--primary-dark) !important;
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(59, 91, 165, 0.3) !important;
+}
+
+.btn-primary-modern i,
+.btn-save i,
+.btn-modal-create i,
+.btn-primary i {
+    color: #FFFFFF !important;
+}
+
+/* Botón Secundario Moderno (Blanco con Borde Gris) */
+.btn-secondary-modern,
+.btn-filter-saas,
+.btn-saas-secondary,
+.btn-back,
+.btn-footer-secondary {
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.6rem 1.15rem !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    box-shadow: var(--shadow-xs) !important;
+    transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease !important;
+}
+
+.btn-secondary-modern:hover,
+.btn-filter-saas:hover,
+.btn-saas-secondary:hover,
+.btn-back:hover,
+.btn-footer-secondary:hover {
+    background-color: var(--bg-light) !important;
+    border-color: var(--border-strong) !important;
+    color: #0F172A !important;
+    text-decoration: none !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.btn-secondary-modern i,
+.btn-filter-saas i,
+.btn-back i {
+    color: var(--text-muted) !important;
+}
+
+/* Botón Peligro / Eliminar */
+.btn-danger-modern {
+    background-color: var(--danger) !important;
+    color: #FFFFFF !important;
+    border: 1px solid var(--danger) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.6rem 1.25rem !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25) !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.btn-danger-modern:hover:not(:disabled) {
+    background-color: #DC2626 !important;
+    border-color: #DC2626 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3) !important;
+}
+
+/* Botón Ghost de Peligro */
+.btn-danger-ghost {
+    background: transparent !important;
+    color: var(--danger) !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 6px 14px !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.btn-danger-ghost:hover {
+    background: #FEF2F2 !important;
+    border-color: #F87171 !important;
+    color: #DC2626 !important;
+}
+
+/* Botón de Modo Selección (Toolbar) */
+.btn-modo-seleccion {
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    height: 38px !important;
+    padding: 6px 14px !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    box-shadow: var(--shadow-xs) !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+    white-space: nowrap !important;
+}
+
+.btn-modo-seleccion span {
+    display: inline-block !important;
+    color: var(--text-dark) !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+}
+
+.btn-modo-seleccion i {
+    color: var(--text-muted) !important;
+    font-size: 0.9rem !important;
+}
+
+.btn-modo-seleccion:hover {
+    background-color: var(--bg-light) !important;
+    border-color: var(--border-strong) !important;
+    color: #0F172A !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.btn-modo-seleccion.activo {
+    background-color: #EFF6FF !important;
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+}
+
+.btn-modo-seleccion.activo span,
+.btn-modo-seleccion.activo i {
+    color: var(--primary-color) !important;
+}
+
+/* ============================================================================
+   4. PÍLDORAS Y BADGES (.badge-*)
+   ============================================================================ */
+.badge-primary,
+.badge.bg-primary {
+    background-color: #EFF6FF !important;
+    color: var(--navy-dark) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+}
+
+.badge-success,
+.badge.bg-success {
+    background-color: var(--success-bg) !important;
+    color: var(--success-text) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+}
+
+.badge-danger,
+.badge.bg-danger {
+    background-color: var(--danger-bg) !important;
+    color: var(--danger-text) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+}
+
+.badge-warning,
+.badge.bg-warning {
+    background-color: var(--warning-bg) !important;
+    color: var(--warning-text) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+}
+
+.badge-kpi {
+    background-color: var(--primary-light) !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid rgba(74, 111, 193, 0.25) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+}
+
+/* Pastillas de Contexto (Toolbar de Módulos) */
+.context-item {
+    background-color: #EFF6FF !important;
+    color: var(--navy-dark) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.9rem !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    white-space: nowrap !important;
+}
+
+.context-item span {
+    color: var(--navy-dark) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+.context-item i {
+    color: var(--primary-color) !important;
+    font-size: 13px !important;
+}
+
+/* ============================================================================
+   5. TABLAS MODERNAS (.table-modern) Y CUADRÍCULA DE HORARIO
+   ============================================================================ */
+.table-modern {
+    width: 100% !important;
+    background-color: #FFFFFF !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+}
+
+.table-modern thead th {
+    background-color: var(--bg-light) !important;
+    color: var(--text-dark) !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 0.85rem 1rem !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    text-transform: capitalize !important;
+}
+
+.table-modern tbody tr {
+    transition: background-color 0.15s ease !important;
+}
+
+.table-modern tbody tr:hover {
+    background-color: var(--bg-light) !important;
+}
+
+.table-modern tbody td {
+    padding: 0.85rem 1rem !important;
+    color: var(--text-body) !important;
+    border: none !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    font-size: 0.9rem !important;
+}
+
+.table-modern tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Cuadrícula de Horarios (Aireada) */
+.horario-matrix-wrapper {
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.05) !important;
+    overflow-x: auto !important;
+    width: 100% !important;
+}
+
+.horario-matrix {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    background: #FFFFFF !important;
+    border: none !important;
+    margin-bottom: 0 !important;
+}
+
+.horario-matrix thead th {
+    background: var(--bg-light) !important;
+    background-color: var(--bg-light) !important;
+    color: var(--text-dark) !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    text-align: center !important;
+    text-transform: capitalize !important;
+    padding: 0.85rem 0.5rem !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.horario-matrix thead th.time-header,
+.horario-matrix thead th:first-child {
+    background: var(--bg-light) !important;
+    color: var(--text-dark) !important;
+    border-right: 1px solid var(--border-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    text-align: right !important;
+    padding: 0.85rem 0.85rem 0.85rem 0.25rem !important;
+}
+
+.horario-matrix tbody td.time-cell,
+.horario-matrix tbody td:first-child {
+    background: var(--bg-light) !important;
+    color: var(--text-dark) !important;
+    font-size: 0.74rem !important;
+    text-align: right !important;
+    vertical-align: top !important;
+    padding: 0.65rem 0.85rem 0.65rem 0.25rem !important;
+    border: none !important;
+    border-right: 1px solid var(--border-color) !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+}
+
+.horario-matrix tbody td.drop-zone {
+    background: #FFFFFF !important;
+    border: none !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    padding: 0.45rem !important;
+    min-height: 95px !important;
+    transition: background-color 0.15s ease !important;
+}
+
+.horario-matrix tbody td.drop-zone:hover {
+    background: var(--bg-light) !important;
+}
+
+.drop-zone .drop-zone-inner {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: 0.25rem !important;
+    align-items: stretch !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Tarjetas de Asignación en Cuadrícula (calendar.me SaaS) */
+.drop-zone .assigned-docente {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    border: none !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    color: #3730A3 !important;
+    cursor: pointer !important;
+}
+
+.drop-zone .assigned-docente.popup-activo .adm-mini {
+    visibility: visible !important;
+}
+
+.drop-zone .assigned-docente:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.drop-zone .assigned-docente .adm-mini.event-card {
+    display: block !important;
+    width: 100% !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    margin-bottom: 4px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    white-space: normal !important;
+    overflow: visible !important;
+}
+
+.drop-zone .assigned-docente .adm-mini.event-card:hover {
+    filter: brightness(0.96);
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.14) !important;
+}
+
+.drop-zone .assigned-docente .adm-mini.event-card .btn-lock-toggle {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: inherit !important;
+    line-height: 1 !important;
+    font-size: 11px !important;
+}
+
+/* ============================================================================
+   6. TARJETAS PASTEL (.card-pastel-*)
+   ============================================================================ */
+.card-pastel-blue {
+    background-color: var(--pastel-blue-bg) !important;
+    color: var(--pastel-blue-text) !important;
+}
+
+.card-pastel-purple {
+    background-color: var(--pastel-purple-bg) !important;
+    color: var(--pastel-purple-text) !important;
+}
+
+.card-pastel-green {
+    background-color: var(--pastel-green-bg) !important;
+    color: var(--pastel-green-text) !important;
+}
+
+.card-pastel-yellow,
+.card-pastel-orange {
+    background-color: var(--pastel-yellow-bg) !important;
+    color: var(--pastel-yellow-text) !important;
+}
+
+.card-pastel-pink {
+    background-color: var(--pastel-pink-bg) !important;
+    color: var(--pastel-pink-text) !important;
+}
+
+.card-pastel-teal {
+    background-color: var(--pastel-teal-bg) !important;
+    color: var(--pastel-teal-text) !important;
+}
+
+/* Borde superior de acento para popovers / modales informativos */
+.adm-full.card-pastel-blue, .card-pastel-blue.adm-full { border-top: 4px solid var(--pastel-blue-border) !important; }
+.adm-full.card-pastel-purple, .card-pastel-purple.adm-full { border-top: 4px solid var(--pastel-purple-border) !important; }
+.adm-full.card-pastel-green, .card-pastel-green.adm-full { border-top: 4px solid var(--pastel-green-border) !important; }
+.adm-full.card-pastel-orange, .card-pastel-orange.adm-full { border-top: 4px solid var(--pastel-yellow-border) !important; }
+.adm-full.card-pastel-pink, .card-pastel-pink.adm-full { border-top: 4px solid var(--pastel-pink-border) !important; }
+.adm-full.card-pastel-teal, .card-pastel-teal.adm-full { border-top: 4px solid var(--pastel-teal-border) !important; }
+
+/* Tarjetas de Docentes en Sidebar */
+.sidebar-docentes .docente-card {
+    background: #FFFFFF !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 14px 16px !important;
+    margin-bottom: 12px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+    cursor: grab !important;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease !important;
+}
+
+.sidebar-docentes .docente-card:active {
+    cursor: grabbing !important;
+}
+
+.sidebar-docentes .docente-card:last-child {
+    margin-bottom: 0 !important;
+}
+
+.sidebar-docentes .docente-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-md) !important;
+    filter: brightness(0.97) !important;
+}
+
+.sidebar-docentes .docente-card .docente-header-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-bottom: 6px !important;
+}
+
+.sidebar-docentes .docente-card .docente-name {
+    font-weight: 600 !important;
+    color: var(--text-dark) !important;
+    font-size: 0.95rem !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+}
+
+.sidebar-docentes .docente-card .docente-grip-icon {
+    color: rgba(30, 41, 59, 0.45) !important;
+    font-size: 0.85rem !important;
+    flex-shrink: 0 !important;
+}
+
+.sidebar-docentes .docente-card .docente-area-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: var(--text-body) !important;
+    font-size: 0.82rem !important;
+    margin-bottom: 10px !important;
+}
+
+.sidebar-docentes .docente-card .docente-area-row i {
+    color: inherit !important;
+    opacity: 0.8 !important;
+    font-size: 0.82rem !important;
+}
+
+.sidebar-docentes .docente-card .docente-pills-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 0 !important;
+}
+
+.sidebar-docentes .docente-card .docente-secciones-group {
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+}
+
+.sidebar-docentes .docente-card .docente-seccion-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.78) !important;
+    color: var(--text-dark) !important;
+    font-weight: 700 !important;
+    font-size: 0.74rem !important;
+    padding: 2px 8px !important;
+    border-radius: var(--radius-pill) !important;
+    line-height: 1.3 !important;
+}
+
+.sidebar-docentes .docente-card .docente-horas-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    color: var(--text-body) !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    margin-left: auto !important;
+}
+
+.sidebar-docentes .docente-card .docente-horas-pill i {
+    color: #D97706 !important;
+}
+
+/* Popover Flotante de Asignación (.adm-full) */
+.drop-zone .assigned-docente .adm-full {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: #0F172A !important;
+    border: 1px solid var(--border-color) !important;
+    border-top: 4px solid var(--primary-color) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.24), 0 8px 16px -6px rgba(15, 23, 42, 0.12) !important;
+    z-index: 1060 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-nombre {
+    color: #0F172A !important;
+    font-weight: 700 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-cedula {
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-materia {
+    color: var(--text-body) !important;
+    font-weight: 600 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .pildora-selector {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-subtle) !important;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted {
+    color: #475569 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-warning {
+    color: #D97706 !important;
+}
+
+/* Acciones del Pie de Página (Footer Actions) */
+.footer-actions-container {
+    margin-top: 24px !important;
+    padding-top: 8px !important;
+}
+
+.hero-header-horario #btnVolverPaso1 {
+    border-radius: var(--radius-md) !important;
+    padding: 0.58rem 1.05rem !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    transition: background-color 0.18s ease, border-color 0.18s ease !important;
+}
+
+.hero-header-horario #btnVolverPaso1:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* ============================================================================
+   7. FORMULARIOS, SELECTS Y FILTROS (.select-modern, select.form-select)
+   ============================================================================ */
+.select-modern,
+select.form-select,
+select.form-control,
+.toolbar-select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.75rem center !important;
+    background-size: 0.95em !important;
+    padding-right: 2.25rem !important;
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    -webkit-text-fill-color: var(--text-dark) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    color-scheme: light !important;
+    font-weight: 500 !important;
+    line-height: 1.35 !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.select-modern:focus,
+select.form-select:focus,
+select.form-control:focus,
+.toolbar-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+    outline: none !important;
+}
+
+select option {
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    -webkit-text-fill-color: var(--text-dark) !important;
+    padding: 8px 10px !important;
+}
+
+select option:checked {
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    background-color: var(--primary-color) !important;
+}
+
+/* Toolbar de Filtros */
+#contextHeader.context-header,
+.filter-toolbar {
+    background: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-color) !important;
+    border-left: 4px solid var(--primary-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 12px 16px !important;
+    margin-bottom: 1rem !important;
+    box-shadow: var(--shadow-xs) !important;
+}
+
+/* ============================================================================
+   8. BARRA FLOTANTE DE ACCIONES (.barra-seleccion-flotante)
+   ============================================================================ */
+@keyframes slideUpFloatingBar {
+    from {
+        transform: translate(-50%, 20px);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+.barra-seleccion-flotante {
+    position: fixed !important;
+    bottom: 24px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border-radius: var(--radius-pill) !important;
+    box-shadow: var(--shadow-floating) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 10px 22px !important;
+    display: none !important;
+    align-items: center !important;
+    gap: 16px !important;
+    z-index: 1080 !important;
+    white-space: nowrap !important;
+}
+
+.barra-seleccion-flotante.visible {
+    display: flex !important;
+    animation: slideUpFloatingBar 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.barra-seleccion-flotante .barra-seleccion-info {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 0.9rem !important;
+    color: var(--text-dark) !important;
+}
+
+.barra-seleccion-flotante .barra-seleccion-info i {
+    color: var(--text-dark) !important;
+    font-size: 0.95rem !important;
+}
+
+.barra-seleccion-flotante #contadorSeleccionados {
+    color: var(--text-dark) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+.barra-seleccion-flotante #contadorSeleccionados strong {
+    font-weight: 700 !important;
+    color: var(--text-dark) !important;
+}
+
+.barra-seleccion-flotante .barra-seleccion-divider {
+    width: 1px !important;
+    height: 22px !important;
+    background: var(--border-subtle) !important;
+}
+
+.barra-seleccion-flotante .barra-seleccion-acciones {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.barra-seleccion-flotante .btn-eliminar-seleccionados {
+    background: transparent !important;
+    color: var(--danger) !important;
+    border: 1px solid #FCA5A5 !important;
+    padding: 6px 14px !important;
+    border-radius: var(--radius-pill) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.barra-seleccion-flotante .btn-eliminar-seleccionados:hover {
+    background: #FEF2F2 !important;
+    border-color: #F87171 !important;
+    color: #DC2626 !important;
+}
+
+.barra-seleccion-flotante .btn-eliminar-seleccionados i {
+    font-size: 0.85rem !important;
+    color: inherit !important;
+}
+
+.barra-seleccion-flotante .btn-cancelar-seleccion {
+    background: transparent !important;
+    color: var(--text-muted) !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: var(--radius-pill) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.barra-seleccion-flotante .btn-cancelar-seleccion:hover {
+    color: var(--text-body) !important;
+    background: #F1F5F9 !important;
+}
+
+.barra-seleccion-flotante .btn-cancelar-seleccion i {
+    font-size: 0.8rem !important;
+    color: inherit !important;
+}
+
+/* ============================================================================
+   9. SIDEBAR OSCURO (#0F172A) Y TOPBAR BLANCA (#FFFFFF)
+   ============================================================================ */
+/* Estructura del Sidebar */
+.main-sidebar,
+.main-sidebar.sidebar-dark-primary,
+.main-sidebar .sidebar {
+    background-color: var(--sidebar-bg) !important;
+}
+
+.main-sidebar .brand-link {
+    background-color: var(--sidebar-bg) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    height: var(--topbar-height) !important;
+    min-height: var(--topbar-height) !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 1.25rem !important;
+}
+
+.main-sidebar .brand-link .brand-text {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+}
+
+/* Navegación del Sidebar */
+.main-sidebar .nav-sidebar > .nav-item > .nav-link,
+.main-sidebar .nav-treeview > .nav-item > .nav-link {
+    color: #CBD5E1 !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    transition: background-color 0.16s ease, color 0.16s ease !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link:hover:not(.active) {
+    background-color: var(--sidebar-surface) !important;
+    color: #F8FAFC !important;
+}
+
+.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+.main-sidebar.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
+    background-color: rgba(74, 111, 193, 0.15) !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    border-left: 3px solid #60A5FA !important;
+}
+
+.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active .nav-icon {
+    color: #93C5FD !important;
+}
+
+/* Topbar Blanca Fija */
+.main-header,
+.main-header.navbar {
+    background-color: #FFFFFF !important;
+    min-height: var(--topbar-height) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Indicador de Año Escolar en la Barra Superior */
+.anio-escolar-pill {
+    background-color: var(--navy-dark) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 10px 18px !important;
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+    color: #FFFFFF !important;
+    gap: 0.65rem !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.16) !important;
+}
+
+.anio-escolar-pill .anio-icon {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 16px !important;
+}
+
+.anio-escolar-pill .anio-label {
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-weight: 500 !important;
+    font-size: 16px !important;
+}
+
+.anio-escolar-pill .anio-years {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+.badge-status-activo {
+    background-color: #DCFCE7 !important;
+    color: #166534 !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 3px 10px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    gap: 0.4rem !important;
+}
+
+.badge-status-consultar {
+    background-color: #FEE2E2 !important;
+    color: #991B1B !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 3px 10px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    gap: 0.4rem !important;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.dot-success { background-color: var(--success); }
+.status-dot.dot-danger { background-color: var(--danger); }
+
+.anio-divider {
+    width: 1px;
+    height: 16px;
+    background-color: rgba(255, 255, 255, 0.25);
+    display: inline-block;
+}
+
+.btn-cambiar-anio {
+    color: #DBEAFE !important;
+    background: transparent !important;
+    border: none !important;
+    text-decoration: none !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    gap: 0.4rem !important;
+    padding: 0 !important;
+}
+
+.btn-cambiar-anio:hover {
+    color: #FFFFFF !important;
+    text-decoration: none !important;
+}
+
+.btn-cambiar-anio i {
+    font-size: 14px !important;
+    color: #DBEAFE !important;
+}
+
+/* ============================================================================
+   10. MODALES MODERNOS (.modal-modern)
+   ============================================================================ */
+.modal-modern .modal-content,
+#modalNuevoHorario .modal-content {
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+    overflow: hidden !important;
+}
+
+.modal-modern .modal-header,
+#modalNuevoHorario .modal-header {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    padding: 1.15rem 1.35rem !important;
+}
+
+.modal-modern .modal-header .modal-title,
+#modalNuevoHorario .modal-header .modal-title {
+    color: var(--text-dark) !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+}
+
+.modal-modern .modal-body,
+#modalNuevoHorario .modal-body {
+    padding: 1.25rem 1.35rem !important;
+}
+
+.modal-modern .modal-footer,
+#modalNuevoHorario .modal-footer {
+    background: #FFFFFF !important;
+    border-top: none !important;
+    padding: 0 1.35rem 1.35rem !important;
+    gap: 0.75rem !important;
+}
+
+/* ============================================================================
+   11. ACCORDIONS Y DIAGNÓSTICOS DE CONFLICTOS / ERRORES
+   ============================================================================ */
+.accordion-seccion-error .accordion-button:not(.collapsed) {
+    background-color: #FEF3C7 !important;
+    color: #92400E !important;
+    box-shadow: none !important;
+}
+
+.accordion-seccion-error .accordion-button {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+.accordion-seccion-error .accordion-item {
+    border: 1px solid #FED7AA !important;
+    border-radius: var(--radius-sm) !important;
+    margin-bottom: 0.5rem !important;
+    overflow: hidden !important;
+    background: #FFFFFF !important;
+}
+
+.materia-error-item {
+    transition: background-color 0.15s ease !important;
+}
+
+.materia-error-item:hover {
+    background-color: #FFF7ED !important;
+}
+

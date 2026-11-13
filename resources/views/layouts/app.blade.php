@@ -21,6 +21,9 @@
     <!-- Tailwind CSS -->
     @vite(['resources/css/app.css'])
 
+    <!-- Design System Global -->
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}">
+
     
     
 </head>
