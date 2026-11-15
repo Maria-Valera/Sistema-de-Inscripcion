@@ -104,8 +104,8 @@
                                 <th style="text-align: center">Escala</th>
                                 <th style="text-align: center">Aprueba con</th>
                                 <th style="text-align: center">Redondeo</th>
-                                <th style="text-align: center">Lapsos</th>
-                                <th style="text-align: center">Cortes por lapso</th>
+                                <th style="text-align: center">Máx. lapsos</th>
+
                                 <th style="text-align: center">Máx. pendientes</th>
                                 @can('configuracion_evaluacion.gestionar')
                                     <th style="text-align: center; width: 120px">Acciones</th>
@@ -121,8 +121,7 @@
                                     <td style="text-align: center">{{ $config->nota_minima }} a {{ $config->nota_maxima }}</td>
                                     <td style="text-align: center">{{ $config->nota_aprobatoria }}</td>
                                     <td style="text-align: center">{{ $config->regla_redondeo->label() }}</td>
-                                    <td style="text-align: center">{{ $config->num_lapsos }}</td>
-                                    <td style="text-align: center">{{ $config->num_cortes }} de {{ $config->puntos_corte }} puntos</td>
+                                    <td style="text-align: center">{{ $config->max_lapsos }}</td>
                                     <td style="text-align: center">{{ $config->max_areas_pendientes }}</td>
                                     @can('configuracion_evaluacion.gestionar')
                                         <td style="text-align: center">
@@ -141,7 +140,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8">
+                                    <td colspan="7">
                                         <div class="empty-state">
                                             <div class="empty-icon"><i class="fas fa-sliders-h"></i></div>
                                             <h4>No hay configuraciones registradas</h4>
@@ -179,9 +178,7 @@
                 nota_minima:          { min: 0, max: 99,  nombre: 'La nota mínima' },
                 nota_maxima:          { min: 1, max: 100, nombre: 'La nota máxima' },
                 nota_aprobatoria:     { min: 1, max: 99,  nombre: 'La nota aprobatoria' },
-                num_lapsos:           { min: 2, max: 4,   nombre: 'El número de lapsos' },
-                num_cortes:           { min: 1, max: 10,  nombre: 'El número de cortes' },
-                puntos_corte:         { min: 1, max: 100, nombre: 'Los puntos por corte' },
+                max_lapsos:           { min: 1, max: 6,   nombre: 'El máximo de lapsos' },
                 momentos_quedada:     { min: 1, max: 6,   nombre: 'Los momentos para áreas quedadas' },
                 max_areas_pendientes: { min: 0, max: 5,   nombre: 'El máximo de áreas pendientes' },
             };
@@ -231,7 +228,7 @@
             }
 
             document.querySelectorAll('form').forEach((form) => {
-                if (!form.querySelector('[name="num_lapsos"]')) return; // solo los formularios de M3
+                if (!form.querySelector('[name="max_lapsos"]')) return; // solo los formularios de M3
                 form.setAttribute('novalidate', 'novalidate'); // sin los avisos del navegador (salen en su idioma)
 
                 form.querySelectorAll('input[type="number"]').forEach((campo) => {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Corte;
 use App\Enums\EstadoCalendario;
 use App\Enums\EstadoLapso;
 use App\Http\Requests\AsistenteLapsosRequest;
@@ -29,7 +30,7 @@ class AsistenteAnioEscolarController extends Controller
 
         $config = AsistenteAnioEscolar::asegurarConfiguracion($anio);
         $origen = AsistenteAnioEscolar::anioDeOrigen($anio);
-        $propuesta = AsistenteAnioEscolar::propuestaLapsos($anio, $config->num_lapsos);
+                $propuesta = AsistenteAnioEscolar::propuestaLapsos($anio, AsistenteAnioEscolar::LAPSOS_POR_DEFECTO);
 
         return view('asistente_anio.lapsos', compact('anio', 'config', 'origen', 'propuesta'));
     }
@@ -43,7 +44,7 @@ class AsistenteAnioEscolarController extends Controller
 
         $config = AsistenteAnioEscolar::asegurarConfiguracion($anio);
 
-        DB::transaction(function () use ($request, $anio, $config) {
+        DB::transaction(function () use ($request, $anio) {
             foreach (array_values($request->validated('lapsos')) as $i => $datos) {
                 $lapso = Lapso::create([
                     'anio_escolar_id' => $anio->id,
@@ -56,13 +57,13 @@ class AsistenteAnioEscolarController extends Controller
                     'estado' => EstadoLapso::Planificado,
                 ]);
 
-                AsistenteAnioEscolar::crearCortes($lapso, $config);
+                AsistenteAnioEscolar::crearCortes($lapso);
             }
         });
 
         return redirect()
             ->route('admin.asistente.calendario')
-            ->with('success', "Se crearon {$config->num_lapsos} lapsos con {$config->num_cortes} cortes cada uno.");
+            ->with('success', 'Se crearon ' . AsistenteAnioEscolar::LAPSOS_POR_DEFECTO . ' lapsos con ' . Corte::CANTIDAD_POR_DEFECTO . ' cortes cada uno.');
     }
 
     public function calendario(): View|RedirectResponse

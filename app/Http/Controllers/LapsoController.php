@@ -30,12 +30,12 @@ class LapsoController extends Controller
                 ->get()
             : collect();
 
-        // Se puede crear otro lapso si hay configuración y todavía no se llegó a num_lapsos.
-        $puedeCrear = $config && $lapsos->count() < $config->num_lapsos;
+        // Se puede crear otro lapso si hay configuración y todavía no se llegó al máximo de lapsos (3).
+        $puedeCrear = $config && $lapsos->count() < $config->max_lapsos;
 
         // El primer número libre, para proponerlo en el modal de crear.
         $siguienteNumero = $config
-            ? collect(range(1, $config->num_lapsos))->diff($lapsos->pluck('numero'))->first()
+            ? collect(range(1, $config->max_lapsos))->diff($lapsos->pluck('numero'))->first()
             : null;
 
         return view('admin.lapsos.index', compact('anio', 'config', 'lapsos', 'puedeCrear', 'siguienteNumero'));

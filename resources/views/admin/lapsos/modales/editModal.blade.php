@@ -14,7 +14,7 @@
             <div class="modal-body-edit" style="overflow-y: auto;">
                     <form action="{{ route('admin.lapsos.update', $lapso) }}" method="POST" class="form-lapso"
                     data-lapso-id="{{ $lapso->id }}"
-                    data-suma="{{ (float) ($lapso->cortes_sum_peso_lapso ?? 0) }}"
+                    data-cortes="{{ $lapso->cortes_count }}"
                     data-cortes-inicio="{{ $lapso->cortes_min_fecha_inicio ? substr($lapso->cortes_min_fecha_inicio, 0, 10) : '' }}"
                     data-cortes-fin="{{ $lapso->cortes_max_fecha_fin ? substr($lapso->cortes_max_fecha_fin, 0, 10) : '' }}">
                     @csrf

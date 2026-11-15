@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Support;
-
+use App\Models\Corte;
 use App\Enums\EstadoCorte;
 use App\Enums\ReglaRedondeo;
 use App\Models\AnioEscolar;
@@ -16,6 +16,10 @@ use Carbon\Carbon;
  */
 class AsistenteAnioEscolar
 {
+
+    /** Lapsos que propone el asistente (después se pueden agregar más en el CRUD de lapsos, hasta el máximo de la configuración). */
+    public const LAPSOS_POR_DEFECTO = 3;
+
     /** Año que el asistente prepara: el año activo. */
     public static function anioActivo(): ?AnioEscolar
     {
@@ -69,11 +73,11 @@ class AsistenteAnioEscolar
         $anterior = self::configuracionAnterior($anio);
 
         $valores = $anterior
-            ? $anterior->only(['nota_minima', 'nota_maxima', 'nota_aprobatoria', 'regla_redondeo', 'num_lapsos', 'num_cortes', 'puntos_corte', 'momentos_quedada', 'max_areas_pendientes'])
+            ? $anterior->only(['nota_minima', 'nota_maxima', 'nota_aprobatoria', 'regla_redondeo', 'max_lapsos', 'momentos_quedada', 'max_areas_pendientes'])
             : [
                 'nota_minima' => 1, 'nota_maxima' => 20, 'nota_aprobatoria' => 10,
                 'regla_redondeo' => ReglaRedondeo::from('half_up'),
-                'num_lapsos' => 3, 'num_cortes' => 4, 'puntos_corte' => 20,
+                'max_lapsos' => 3,
                 'momentos_quedada' => 4, 'max_areas_pendientes' => 2,
             ];
 
@@ -111,9 +115,9 @@ class AsistenteAnioEscolar
     }
 
     /** Crea los cortes de un lapso: fechas en partes iguales y cada corte con los puntos por corte de la configuración (20). */
-    public static function crearCortes(Lapso $lapso, ConfiguracionEvaluacion $config): void
+    public static function crearCortes(Lapso $lapso): void
     {
-        $cantidad = $config->num_cortes;
+        $cantidad = Corte::CANTIDAD_POR_DEFECTO;
         $partes = self::dividir($lapso->fecha_inicio, $lapso->fecha_fin, $cantidad);
 
 
@@ -122,7 +126,7 @@ class AsistenteAnioEscolar
             $lapso->cortes()->create([
                 'numero' => $i + 1,
                 'nombre' => 'Corte ' . ($i + 1),
-                'peso_lapso' => $config->puntos_corte,
+                'peso_lapso' => Corte::PUNTOS_POR_DEFECTO,
                 'fecha_inicio' => $inicio->toDateString(),
                 'fecha_fin' => $fin->toDateString(),
                 'fecha_limite_carga' => $fin->copy()->endOfDay(),

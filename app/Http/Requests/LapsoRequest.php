@@ -33,7 +33,7 @@ class LapsoRequest extends FormRequest
         $lapso = $this->route('lapso');
         $anio = $this->anioEscolar();
         $config = ConfiguracionEvaluacion::where('anio_escolar_id', $anio?->id)->first();
-        $maxLapsos = $config?->num_lapsos ?? 0;
+        $maxLapsos = $config?->max_lapsos ?? 0;
 
         // Sin año o sin configuración (M3) no hay contra qué validar: se avisa y no se guarda.
         if (! $anio || ! $config) {
@@ -97,14 +97,12 @@ class LapsoRequest extends FormRequest
                 }
             }
 
-                        // Un lapso solo se abre si sus cortes ya suman el total del lapso (4 cortes de 20 = 80).
+                        // Un lapso solo se abre si ya tiene sus cortes: con el lapso abierto ya no se agregan ni se borran.
             if ($this->input('estado') === EstadoLapso::Abierto->value) {
-                $totalLapso = ConfiguracionEvaluacion::where('anio_escolar_id', $anio->id)->first()->puntosPorLapso();
-                $suma = $lapso ? (float) $lapso->cortes()->sum('peso_lapso') : 0;
-                $texto = fn ($n) => rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.');
+                $cortes = $lapso ? $lapso->cortes()->count() : 0;
 
-                if (abs($suma - $totalLapso) > 0.001) {
-                    $validator->errors()->add('estado', "Para abrir el lapso, sus cortes deben sumar {$texto($totalLapso)} puntos (ahora suman {$texto($suma)}).");
+                if ($cortes === 0) {
+                    $validator->errors()->add('estado', 'Para abrir el lapso, primero crea sus cortes: una vez abierto ya no se pueden agregar ni borrar.');
                 }
             }
         });
@@ -116,7 +114,7 @@ class LapsoRequest extends FormRequest
             'configuracion.required' => 'El año escolar no tiene configuración de evaluación: créala primero en Configuración de Evaluación.',
             'numero.required' => 'Debes indicar el número del lapso.',
             'numero.min' => 'El número del lapso debe ser como mínimo 1.',
-            'numero.max' => 'El número del lapso no puede pasar del número de lapsos configurado (:max).',
+            'numero.max' => 'Este año escolar permite como máximo :max lapsos (se cambia en Configuración de Evaluación).',
             'numero.unique' => 'Ya existe un lapso con ese número en este año escolar.',
             'nombre.required' => 'Debes indicar el nombre del lapso.',
             'nombre.max' => 'El nombre no puede pasar de 50 caracteres.',

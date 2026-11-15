@@ -50,30 +50,30 @@ class MariaMaestrosSeeder extends Seeder
         }
 
                 // M3. Configuracion de evaluacion del año
-        $config = ConfiguracionEvaluacion::updateOrCreate(
+            ConfiguracionEvaluacion::updateOrCreate(
             ['anio_escolar_id' => $anio->id],
             [
                 'nota_minima' => 1,
                 'nota_maxima' => 20,
                 'nota_aprobatoria' => 10,
                 'regla_redondeo' => ReglaRedondeo::HalfUp,
-                'num_cortes' => 4,
-                'puntos_corte' => 20,
-                'num_lapsos' => 3,
+                'max_lapsos' => 3,
                 'momentos_quedada' => 4,
                 'max_areas_pendientes' => 2,
             ]
         );
 
                 // M4. Lapsos: el año se divide en partes iguales segun num_lapsos
+                        $numLapsos = 3;
+        $numCortes = Corte::CANTIDAD_POR_DEFECTO;
         $inicio = $anio->inicio_anio_escolar->copy();
         $fin = $anio->cierre_anio_escolar->copy();
-        $diasPorLapso = intdiv($inicio->diffInDays($fin) + 1, $config->num_lapsos);
+        $diasPorLapso = intdiv($inicio->diffInDays($fin) + 1, $numLapsos);
         $calendarioId = $calendario->id;
 
-        for ($n = 1; $n <= $config->num_lapsos; $n++) {
+        for ($n = 1; $n <= $numLapsos; $n++) {
             $inicioLapso = $inicio->copy()->addDays(($n - 1) * $diasPorLapso);
-            $finLapso = $n === $config->num_lapsos ? $fin->copy() : $inicioLapso->copy()->addDays($diasPorLapso - 1);
+            $finLapso = $n === $numLapsos ? $fin->copy() : $inicioLapso->copy()->addDays($diasPorLapso - 1);
 
             $lapso = Lapso::updateOrCreate(
                 ['anio_escolar_id' => $anio->id, 'numero' => $n],
@@ -87,14 +87,15 @@ class MariaMaestrosSeeder extends Seeder
                 ]
             );
 
+
             // M5. Cortes: el lapso se divide en partes iguales; cada corte vale los puntos por corte (20), en total 4 × 20 = 80
             $diasLapso = $lapso->fecha_inicio->diffInDays($lapso->fecha_fin) + 1;
-            $diasPorCorte = intdiv($diasLapso, $config->num_cortes);
-            $peso = $config->puntos_corte;
+            $diasPorCorte = intdiv($diasLapso, $numCortes);
+            $peso = Corte::PUNTOS_POR_DEFECTO;
 
-            for ($c = 1; $c <= $config->num_cortes; $c++) {
+            for ($c = 1; $c <= $numCortes; $c++) {
                 $inicioCorte = $lapso->fecha_inicio->copy()->addDays(($c - 1) * $diasPorCorte);
-                $finCorte = $c === $config->num_cortes ? $lapso->fecha_fin->copy() : $inicioCorte->copy()->addDays($diasPorCorte - 1);
+                $finCorte = $c === $numCortes ? $lapso->fecha_fin->copy() : $inicioCorte->copy()->addDays($diasPorCorte - 1);
 
                 Corte::updateOrCreate(
                     ['lapso_id' => $lapso->id, 'numero' => $c],
@@ -110,7 +111,7 @@ class MariaMaestrosSeeder extends Seeder
             }
         }
 
-                $this->command?->info("[MariaMaestrosSeeder] Año {$anio->id}: calendario con {$feriados} feriados, configuracion, {$config->num_lapsos} lapsos y {$config->num_cortes} cortes por lapso.");
+                $this->command?->info("[MariaMaestrosSeeder] Año {$anio->id}: calendario con {$feriados} feriados, configuracion, {$numLapsos} lapsos y {$numCortes} cortes por lapso.");
     }
 
 

@@ -16,9 +16,9 @@ class ConfiguracionEvaluacion extends Model
         'nota_maxima',
         'nota_aprobatoria',
         'regla_redondeo',
-        'num_cortes',
         'puntos_corte',
-        'num_lapsos',
+        'puntos_corte',
+        'max_lapsos',
         'momentos_quedada',
         'max_areas_pendientes',
     ];
@@ -33,12 +33,5 @@ class ConfiguracionEvaluacion extends Model
     }
 
 
-    /**
-     * Total de puntos de un lapso: cortes × puntos por corte (4 × 20 = 80).
-     * La nota del lapso es esa suma entre la cantidad de cortes (80 / 4 = 20).
-     */
-    public function puntosPorLapso(): float
-    {
-        return (float) $this->num_cortes * (float) $this->puntos_corte;
-    }
+
 }
