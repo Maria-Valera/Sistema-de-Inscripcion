@@ -907,7 +907,7 @@
                             <span class="context-item px-3 py-1">
                                 <i class="fas fa-book"></i>
                                 <span id="contextArea">
-                                    {{ !empty($areaSeleccionada) ? $areaSeleccionada->nombre_area_formacion : 'Todas las áreas' }}
+                                    {{ !empty($areaSeleccionada) ? $areaSeleccionada->nombre_area_formacion : 'No seleccionada' }}
                                 </span>
                             </span>
                         </div>
@@ -1856,7 +1856,7 @@
                     if (nivelSeleccionado) {
                         params.append('grado_id', nivelSeleccionado);
                     }
-                    if (areaFormacionSeleccionado && areaFormacionSeleccionado !== 'todas') {
+                    if (areaFormacionSeleccionado) {
                         params.append('area_formacion_id', areaFormacionSeleccionado);
                     }
 
@@ -1909,7 +1909,7 @@
 
                     const params = new URLSearchParams();
                     if (nivel) params.append('grado_id', nivel);
-                    if (areaFormacionId && areaFormacionId !== 'todas') params.append('area_formacion_id', areaFormacionId);
+                    if (areaFormacionId) params.append('area_formacion_id', areaFormacionId);
                     if (seccionId) params.append('seccion_id', seccionId);
 
                     const url = `/api/docente?${params.toString()}`;
@@ -2695,7 +2695,7 @@
 
                 const nivel = nivelSelect?.value;
                 const area = areaFormacionSelect?.value;
-                if (!nivel) return;
+                if (!nivel || !area) return;
 
                 actualizarContexto();
                 vistaCalendario.style.display = 'flex';
@@ -3622,7 +3622,7 @@
                             total_dias: 5,
                             total_bloques: 8,
                             grado_id: gradoId,
-                            area_formacion_id: (areaFormacionId && areaFormacionId !== 'todas') ? areaFormacionId : null
+                            area_formacion_id: areaFormacionId
                         })
                     });
 

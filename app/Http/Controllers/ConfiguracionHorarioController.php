@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Dia;
+use App\Http\Requests\ConfiguracionHorarioRequest;
 use App\Models\AreaFormacion;
 use App\Models\AreaFormacionPosicion;
 use App\Models\BloqueReservado;
@@ -129,29 +130,8 @@ class ConfiguracionHorarioController extends Controller
     /**
      * Guarda y actualiza la configuración global de horario, recesos y bloques reservados.
      */
-    public function update(Request $request): RedirectResponse
+    public function update(ConfiguracionHorarioRequest $request): RedirectResponse
     {
-        $request->validate([
-            'hora_inicio' => ['required', 'regex:/^\d{1,2}:\d{2}(:\d{2})?$/'],
-            'numero_bloques' => ['required', 'integer', 'min:1', 'max:12'],
-            'duracion_bloque_min' => ['required', 'integer', 'min:1', 'max:300'],
-            'minutos_entre_bloques' => ['nullable', 'integer', 'min:0', 'max:120'],
-            'recesos' => ['nullable', 'array'],
-            'recesos.*.despues_de_bloque' => ['nullable', 'integer', 'min:1'],
-            'recesos.*.duracion_min' => ['nullable', 'integer', 'min:1', 'max:120'],
-            'reservados' => ['nullable', 'array'],
-            'reservados.*.dia' => ['nullable', 'integer', 'min:1', 'max:5'],
-            'reservados.*.desde' => ['nullable', 'integer', 'min:1'],
-            'reservados.*.hasta' => ['nullable', 'integer', 'min:1'],
-            'reservados.*.bloque' => ['nullable', 'integer', 'min:1'],
-        ], [
-            'hora_inicio.required' => 'La hora de inicio es obligatoria.',
-            'numero_bloques.required' => 'El número de bloques por día es obligatorio.',
-            'numero_bloques.min' => 'Debe haber al menos 1 bloque por día.',
-            'duracion_bloque_min.required' => 'La duración del bloque es obligatoria.',
-            'duracion_bloque_min.min' => 'La duración debe ser de al menos 1 minuto.',
-        ]);
-
         try {
             $anioActivo = AnioEscolarSeleccionado::modelo();
             $this->configuracionService->guardar($request->all(), $anioActivo?->id);

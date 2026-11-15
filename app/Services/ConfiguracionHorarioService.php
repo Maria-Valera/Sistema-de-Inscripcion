@@ -215,6 +215,9 @@ class ConfiguracionHorarioService
             }
 
             for ($b = $desde; $b <= $hasta; $b++) {
+                if (isset($paresReservados["{$dia}_{$b}"])) {
+                    throw new \InvalidArgumentException('El bloque reservado se cruza con uno existente.');
+                }
                 $paresReservados["{$dia}_{$b}"] = ['dia' => $dia, 'bloque' => $b];
             }
         }

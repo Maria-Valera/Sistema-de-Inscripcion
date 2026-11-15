@@ -6,137 +6,191 @@
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/horario-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}?v={{ @filemtime(public_path('css/horario-pilot.css')) }}">
     <style>
+        body, .content-wrapper, .wrapper {
+            background-color: #F9FAFB !important;
+        }
+        .content-header {
+            background: transparent !important;
+        }
         .config-card {
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: #FFFFFF !important;
+            border-radius: 12px !important;
+            border: 1px solid #E5E7EB !important;
+            box-shadow: none !important;
             transition: all 0.2s ease;
+            min-width: 0;
         }
         .config-card-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid #edf2f7;
+            padding: 18px 24px !important;
+            border-bottom: 1px solid #F3F4F6 !important;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            background: #FFFFFF !important;
+            border-top-left-radius: 12px !important;
+            border-top-right-radius: 12px !important;
+            min-height: 58px;
         }
         .config-card-body {
-            padding: 1.5rem;
+            padding: 24px !important;
+            min-width: 0;
+            overflow-x: hidden;
         }
         .section-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: #1e293b;
+            font-size: 1.05rem !important;
+            font-weight: 600 !important;
+            color: #111827 !important;
             margin-bottom: 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         .form-label-modern {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 0.35rem;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            color: #374151 !important;
+            margin-bottom: 6px !important;
             display: flex;
             align-items: center;
             gap: 0.4rem;
         }
         .form-control-modern {
-            border-radius: 8px;
-            border: 1.5px solid #cbd5e1;
-            padding: 0.6rem 0.85rem;
-            font-size: 0.95rem;
-            transition: all 0.15s ease-in-out;
+            border-radius: 8px !important;
+            border: 1px solid #E5E7EB !important;
+            padding: 0.55rem 0.85rem !important;
+            font-size: 0.92rem !important;
+            height: 42px !important;
+            background-color: #FFFFFF !important;
+            color: #111827 !important;
+            box-shadow: none !important;
+            transition: border-color 0.15s ease-in-out;
         }
         .form-control-modern:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            border-color: #4A6FC1 !important;
+            box-shadow: none !important;
+            outline: none !important;
         }
         .timeline-block-item {
-            background: #f8fafc;
-            border-left: 4px solid #3b82f6;
-            border-radius: 8px;
-            padding: 0.85rem 1.15rem;
-            margin-bottom: 0.65rem;
+            background: #FFFFFF !important;
+            border: 1px solid #E5E7EB !important;
+            border-left: 4px solid #4A6FC1 !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            margin-bottom: 8px !important;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: transform 0.15s ease;
+            transition: all 0.15s ease;
         }
         .timeline-block-item:hover {
-            transform: translateX(4px);
-            background: #f1f5f9;
+            background: #FFFFFF !important;
+            border-color: #D1D5DB !important;
+            border-left-color: #3B5BA5 !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+            transform: translateX(2px);
         }
         .timeline-receso-item {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            border-radius: 8px;
-            padding: 0.6rem 1rem;
-            margin-bottom: 0.65rem;
-            color: #92400e;
-            font-size: 0.88rem;
-            font-weight: 600;
+            background: #F9FAFB !important;
+            border: 1px dashed #E5E7EB !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            margin-bottom: 8px !important;
+            color: #4B5563 !important;
+            font-size: 0.82rem !important;
+            font-weight: 500 !important;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        .receso-row {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
+        .timeline-receso-item i {
+            color: #6B7280 !important;
         }
+        .receso-row,
         .reservado-row {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
+            background: #F9FAFB !important;
+            border: 1px solid #E5E7EB !important;
+            border-radius: 8px !important;
+            padding: 10px 12px !important;
+            box-shadow: none !important;
+        }
+        #btnAgregarPrimerReceso:hover {
+            background-color: #FFF7ED !important;
+            border-color: #FDBA74 !important;
+            color: #C2410C !important;
+        }
+        #btnAgregarPrimerReservado:hover {
+            background-color: #F5F3FF !important;
+            border-color: #C4B5FD !important;
+            color: #4F46E5 !important;
+        }
+        .btn-eliminar-receso:hover,
+        .btn-eliminar-reservado:hover {
+            background-color: #FEF2F2 !important;
+            border-color: #F87171 !important;
+            color: #DC2626 !important;
+        }
+        select.form-select option {
+            background-color: #FFFFFF !important;
+            color: #1E293B !important;
+            font-size: 14px;
+            padding: 8px;
+        }
+        select.form-select.text-center {
+            text-align: center;
+            text-align-last: center;
         }
         .badge-kpi {
-            background: #eff6ff;
-            color: #1d4ed8;
-            font-weight: 600;
-            padding: 0.35rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            background: #F3F4F6 !important;
+            color: #374151 !important;
+            font-weight: 500 !important;
+            padding: 6px 10px !important;
+            border-radius: 8px !important;
+            font-size: 0.78rem !important;
+            border: 1px solid #E5E7EB !important;
         }
 
-        /* Pestañas SaaS unificadas */
+        /* Pestañas SaaS Estilo Segmented Control */
         .config-tabs-wrapper {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 0.4rem;
-            display: inline-flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            background: #F3F4F6 !important;
+            border: 1px solid #E5E7EB !important;
+            border-radius: 12px !important;
+            padding: 4px !important;
+            display: inline-flex !important;
+            flex-wrap: wrap !important;
+            gap: 4px !important;
         }
         .config-tabs-wrapper .nav-link {
-            border: none;
-            border-radius: 10px;
-            padding: 0.625rem 1.2rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #475569;
-            background: transparent;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.18s ease;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 0.55rem 1.15rem !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            color: #6B7280 !important;
+            background: transparent !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            transition: all 0.18s ease !important;
         }
         .config-tabs-wrapper .nav-link:hover:not(.active) {
-            background: #f8fafc;
-            color: #4A6FC1;
+            background: rgba(255, 255, 255, 0.7) !important;
+            color: #111827 !important;
         }
         .config-tabs-wrapper .nav-link.active {
-            background-color: #4A6FC1 !important;
-            color: #ffffff !important;
-            box-shadow: 0 2px 6px rgba(74, 111, 193, 0.25);
+            background-color: #FFFFFF !important;
+            color: #111827 !important;
+            font-weight: 600 !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+            border: 1px solid #E5E7EB !important;
         }
         .config-tabs-wrapper .nav-link.active i {
-            color: #ffffff !important;
+            color: #4A6FC1 !important;
         }
 
         /* Estilos de Posiciones por Materia */
@@ -273,11 +327,10 @@
             font-size: 0.7rem;
         }
     </style>
-    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 @stop
 
 @section('content_header')
-    <div class="content-header-modern">
+    <div class="content-header-modern hero-header-horario">
         <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
@@ -292,7 +345,7 @@
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('admin.horario.index') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 py-2" style="border-radius: 10px; background: #ffffff; border-color: #d1d5db; color: #1e293b; font-weight: 600;">
+                <a href="{{ route('admin.horario.index') }}" class="btn-hero-white">
                     <i class="fas fa-arrow-left"></i>
                     <span>Volver al Horario</span>
                 </a>
@@ -306,7 +359,7 @@
         $tabActual = $activeTab ?? request('tab', 'bloques');
     @endphp
     <div class="container-fluid px-0">
-        {{-- Navegación por Pestañas (Tabs) --}}
+        {{-- Navegación por Pestañas (Tabs) Estilo Segmented Control --}}
         <div class="mb-4">
             <ul class="nav nav-pills config-tabs-wrapper" id="configHorarioTabs" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -382,197 +435,275 @@
             @method('PUT')
 
             <div class="row g-4">
-                {{-- Columna Izquierda: Parámetros, Recesos y Bloques Reservados --}}
-                <div class="col-lg-6 col-xl-5">
-                    {{-- 1. Parámetros de la Jornada --}}
-                    <div class="config-card mb-4">
-                        <div class="config-card-header">
-                            <h2 class="section-title">
-                                <i class="fas fa-clock text-primary"></i> Parámetros de la Jornada
-                            </h2>
-                            <span class="badge badge-kpi">
-                                <i class="fas fa-globe me-1"></i> Configuración Global
+                {{-- Columna Izquierda (Configuración): col-md-7 col-lg-8 --}}
+                <div class="col-md-7 col-lg-8">
+                    {{-- Fila 1: Parámetros de la Jornada (Horizontal, col-md-12) --}}
+                    <div class="card config-card mb-4">
+                        <div class="card-header config-card-header d-flex justify-content-between align-items-center flex-nowrap">
+                            <div>
+                                <h2 class="section-title">
+                                    <i class="fas fa-clock" style="color: #4A6FC1;"></i>
+                                    <span>Parámetros de la Jornada</span>
+                                </h2>
+                                <small class="text-muted" style="font-size: 0.8rem;">Define el inicio y cantidad de bloques diarios</small>
+                            </div>
+                            <span class="badge rounded-pill ms-auto" style="background: #F3F4F6; color: #6B7280; border: none; font-weight: 500; font-size: 0.75rem; padding: 5px 12px; display: inline-flex; align-items: center; letter-spacing: 0.2px;">
+                                <i class="fas fa-globe me-1" style="font-size: 0.7rem; color: #6B7280;"></i> Global
                             </span>
                         </div>
-                        <div class="config-card-body">
-                            {{-- Hora de inicio --}}
-                            <div class="mb-3">
-                                <label for="hora_inicio" class="form-label-modern">
-                                    <i class="fas fa-play text-muted"></i> Hora de Inicio de Jornada
-                                </label>
-                                <input type="time" 
-                                       class="form-control form-control-modern @error('hora_inicio') is-invalid @enderror" 
-                                       id="hora_inicio" 
-                                       name="hora_inicio" 
-                                       value="{{ old('hora_inicio', substr($configuracion->hora_inicio ?? '07:00:00', 0, 5)) }}" 
-                                       required>
-                                <small class="text-muted">Hora en que inicia el primer bloque lectivo.</small>
-                            </div>
-
-                            {{-- Número de bloques por día --}}
-                            <div class="mb-3">
-                                <label for="numero_bloques" class="form-label-modern">
-                                    <i class="fas fa-th text-muted"></i> Número de Bloques por Día
-                                </label>
-                                <input type="number" 
-                                       class="form-control form-control-modern @error('numero_bloques') is-invalid @enderror" 
-                                       id="numero_bloques" 
-                                       name="numero_bloques" 
-                                       min="{{ max(1, $maxBloqueOcupado) }}" 
-                                       max="12" 
-                                       value="{{ old('numero_bloques', $configuracion->numero_bloques ?? 4) }}" 
-                                       required>
-                                @if ($maxBloqueOcupado > 0)
-                                    <small class="text-warning d-block mt-1">
-                                        <i class="fas fa-info-circle"></i> Bloque mínimo permitido: <strong>{{ $maxBloqueOcupado }}</strong> (hay registros existentes).
-                                    </small>
-                                @else
-                                    <small class="text-muted">Cantidad de períodos/bloques de clase diarios (ej. 4 bloques).</small>
-                                @endif
-                            </div>
-
-                            {{-- Duración del bloque --}}
-                            <div class="mb-3">
-                                <label for="duracion_bloque_min" class="form-label-modern">
-                                    <i class="fas fa-hourglass-half text-muted"></i> Duración de cada Bloque (minutos)
-                                </label>
-                                <div class="input-group">
-                                    <input type="number" 
-                                           class="form-control form-control-modern @error('duracion_bloque_min') is-invalid @enderror" 
-                                           id="duracion_bloque_min" 
-                                           name="duracion_bloque_min" 
-                                           min="15" 
-                                           max="240" 
-                                           step="5"
-                                           value="{{ old('duracion_bloque_min', $configuracion->duracion_bloque_min ?? 90) }}" 
+                        <div class="card-body config-card-body">
+                            <div class="row mb-4">
+                                <!-- 1. Hora de Inicio -->
+                                <div class="col-lg-3 col-md-6 mb-3 mb-lg-0" style="min-width: 0;">
+                                    <label for="hora_inicio" class="form-label text-muted fw-bold d-flex align-items-center gap-1">
+                                        <i class="far fa-clock" style="color: #4A6FC1; font-size: 0.82rem;"></i>
+                                        <span>Hora de Inicio</span>
+                                    </label>
+                                    <input type="time" 
+                                           class="form-control form-control-modern @error('hora_inicio') is-invalid @enderror" 
+                                           id="hora_inicio" 
+                                           name="hora_inicio" 
+                                           value="{{ old('hora_inicio', substr($configuracion->hora_inicio ?? '07:00:00', 0, 5)) }}" 
                                            required>
-                                    <span class="input-group-text bg-light text-muted">min</span>
+                                    <small class="d-block mt-1" style="color: #9CA3AF !important; font-size: 12px;">Inicio 1er bloque.</small>
                                 </div>
-                                <small class="text-muted">Unidad estándar: 90 min (equivalente a 2 horas académicas de 45 min).</small>
-                            </div>
 
-                            {{-- Minutos entre bloques --}}
-                            <div class="mb-3">
-                                <label for="minutos_entre_bloques" class="form-label-modern">
-                                    <i class="fas fa-exchange-alt text-muted"></i> Minutos entre Bloques (Pausa estándar)
-                                </label>
-                                <div class="input-group">
+                                <!-- 2. Número de Bloques -->
+                                <div class="col-lg-3 col-md-6 mb-3 mb-lg-0" style="min-width: 0;">
+                                    <label for="numero_bloques" class="form-label text-muted fw-bold d-flex align-items-center gap-1">
+                                        <i class="fas fa-th" style="color: #4A6FC1; font-size: 0.78rem;"></i>
+                                        <span>Número Bloques</span>
+                                    </label>
                                     <input type="number" 
-                                           class="form-control form-control-modern @error('minutos_entre_bloques') is-invalid @enderror" 
-                                           id="minutos_entre_bloques" 
-                                           name="minutos_entre_bloques" 
-                                           min="0" 
-                                           max="60" 
-                                           value="{{ old('minutos_entre_bloques', $configuracion->minutos_entre_bloques ?? 0) }}" 
+                                           class="form-control form-control-modern @error('numero_bloques') is-invalid @enderror" 
+                                           id="numero_bloques" 
+                                           name="numero_bloques" 
+                                           min="{{ max(1, $maxBloqueOcupado) }}" 
+                                           max="12" 
+                                           value="{{ old('numero_bloques', $configuracion->numero_bloques ?? 4) }}" 
                                            required>
-                                    <span class="input-group-text bg-light text-muted">min</span>
+                                    @if ($maxBloqueOcupado > 0)
+                                        <small class="d-inline-flex align-items-center gap-1 mt-1 px-2 py-0.5 rounded" style="background-color: #EFF6FF; color: #1E3A8A; font-size: 11.5px; font-weight: 600; border: 1px solid #DBEAFE;">
+                                            <i class="fas fa-info-circle" style="color: #4A6FC1;"></i> Mínimo: <strong>{{ $maxBloqueOcupado }}</strong> (con datos)
+                                        </small>
+                                    @else
+                                        <small class="d-block mt-1" style="color: #9CA3AF !important; font-size: 12px;">Cantidad diaria.</small>
+                                    @endif
                                 </div>
-                                <small class="text-muted">Separación automática entre un bloque y el siguiente (habitualmente 0).</small>
+
+                                <!-- 3. Duración Bloque -->
+                                <div class="col-lg-3 col-md-6 mb-3 mb-lg-0" style="min-width: 0;">
+                                    <label for="duracion_bloque_min" class="form-label text-muted fw-bold d-flex align-items-center gap-1">
+                                        <i class="fas fa-hourglass-half" style="color: #4A6FC1; font-size: 0.76rem;"></i>
+                                        <span>Duración Bloque</span>
+                                    </label>
+                                    <div class="input-group flex-nowrap" style="min-width: 0;">
+                                        <input type="number" 
+                                               class="form-control form-control-modern @error('duracion_bloque_min') is-invalid @enderror" 
+                                               id="duracion_bloque_min" 
+                                               name="duracion_bloque_min" 
+                                               min="15" 
+                                               max="240" 
+                                               step="5"
+                                               value="{{ old('duracion_bloque_min', $configuracion->duracion_bloque_min ?? 90) }}" 
+                                               style="border-radius: 8px 0 0 8px !important; min-width: 0;"
+                                               required>
+                                        <span class="input-group-text bg-white text-muted border-start-0" style="border: 1px solid #E5E7EB; border-left: none; border-radius: 0 8px 8px 0; font-size: 0.82rem;">min</span>
+                                    </div>
+                                    <small class="d-block mt-1" style="color: #9CA3AF !important; font-size: 12px;">Estándar: 90 min.</small>
+                                </div>
+
+                                <!-- 4. Pausa Bloques -->
+                                <div class="col-lg-3 col-md-6 mb-3 mb-lg-0" style="min-width: 0;">
+                                    <label for="minutos_entre_bloques" class="form-label text-muted fw-bold d-flex align-items-center gap-1">
+                                        <i class="fas fa-pause" style="color: #4A6FC1; font-size: 0.72rem;"></i>
+                                        <span>Pausa Bloques</span>
+                                    </label>
+                                    <div class="input-group flex-nowrap" style="min-width: 0;">
+                                        <input type="number" 
+                                               class="form-control form-control-modern @error('minutos_entre_bloques') is-invalid @enderror" 
+                                               id="minutos_entre_bloques" 
+                                               name="minutos_entre_bloques" 
+                                               min="0" 
+                                               max="60" 
+                                               value="{{ old('minutos_entre_bloques', $configuracion->minutos_entre_bloques ?? 0) }}" 
+                                               style="border-radius: 8px 0 0 8px !important; min-width: 0;"
+                                               required>
+                                        <span class="input-group-text bg-white text-muted border-start-0" style="border: 1px solid #E5E7EB; border-left: none; border-radius: 0 8px 8px 0; font-size: 0.82rem;">min</span>
+                                    </div>
+                                    <small class="d-block mt-1" style="color: #9CA3AF !important; font-size: 12px;">Pausa estándar (ej. 0).</small>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- 2. Descansos y Recesos --}}
-                    <div class="config-card mb-4">
-                        <div class="config-card-header">
-                            <h2 class="section-title">
-                                <i class="fas fa-coffee text-warning"></i> Descansos y Recesos
-                            </h2>
-                            <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" id="btnAgregarReceso" style="border-radius: 6px;">
-                                <i class="fas fa-plus"></i>
-                                <span>Agregar Receso</span>
-                            </button>
-                        </div>
-                        <div class="config-card-body">
-                            <p class="text-muted small mb-3">
-                                Configura pausas especiales dentro de la jornada (ej. recreo institucional). Desplazan las horas de los bloques siguientes.
-                            </p>
+                    {{-- Fila 2: Recesos y Bloqueos (Lado a Lado Simétricos) --}}
+                    <div class="row mb-4">
+                        <!-- Tarjeta 1: Recesos -->
+                        <div class="col-md-6" style="min-width: 0;">
+                            <div class="card config-card h-100">
+                                <div class="card-header config-card-header d-flex align-items-center justify-content-between">
+                                    <h2 class="section-title">
+                                        <i class="fas fa-coffee" style="color: #EA580C;"></i>
+                                        <span>Descansos y Recesos</span>
+                                    </h2>
+                                    <button type="button" class="btn-secondary-modern btn-sm d-inline-flex align-items-center gap-1" id="btnAgregarReceso">
+                                        <i class="fas fa-plus"></i>
+                                        <span>+ Receso</span>
+                                    </button>
+                                </div>
+                                <div class="card-body config-card-body d-flex flex-column flex-grow-1">
+                                    <p class="text-muted small mb-3" style="font-size: 0.82rem; min-height: 2.4rem;">
+                                        Pausas dentro de la jornada (ej. recreo institucional). Desplazan las horas de los bloques siguientes.
+                                    </p>
 
-                            <div id="recesosContainer">
-                                {{-- Filas dinámicas generadas con JS --}}
+                                    <div id="recesosContainer">
+                                        {{-- Filas dinámicas generadas con JS --}}
+                                    </div>
+
+                                    {{-- Feedback visual de errores en Recesos --}}
+                                    <div id="errorRecesosFeedback" class="alert alert-danger py-2 px-3 small mt-2 d-none" style="border-radius: 8px; font-size: 0.82rem;">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        <span class="error-text"></span>
+                                    </div>
+                                    @if ($errors->has('recesos*') || $errors->has('recesos'))
+                                        <div class="alert alert-danger py-2 px-3 small mt-2" style="border-radius: 8px; font-size: 0.82rem;">
+                                            <i class="fas fa-exclamation-circle me-1"></i>
+                                            <span>{{ $errors->first('recesos.*.despues_de_bloque') ?: ($errors->first('recesos.*') ?: $errors->first('recesos')) }}</span>
+                                        </div>
+                                    @endif
+
+                                    @php
+                                        $recesosInit = old('recesos', $recesosArray ?? []);
+                                        $tieneRecesos = is_array($recesosInit) && count($recesosInit) > 0;
+                                    @endphp
+                                    <div id="sinRecesosAlert" class="text-center py-3 px-2 mt-auto {{ $tieneRecesos ? 'd-none' : 'd-flex' }} flex-column align-items-center justify-content-center">
+                                        <div class="d-inline-flex align-items-center justify-content-center mb-2"
+                                             style="width: 44px; height: 44px; border-radius: 10px; background-color: #FFF7ED; color: #EA580C; border: 1px solid #FFEDD5;">
+                                            <i class="fas fa-coffee" style="font-size: 18px; color: #EA580C;"></i>
+                                        </div>
+                                        <p class="small mb-2" style="font-size: 0.82rem; color: #6B7280 !important; font-weight: 400;">No hay recesos configurados.</p>
+                                        <div class="mt-auto">
+                                            <button type="button" class="btn-sm d-inline-flex align-items-center gap-1" id="btnAgregarPrimerReceso"
+                                                    style="background-color: #FFFFFF; border: 1px solid #FED7AA; color: #EA580C; border-radius: 8px; font-weight: 500; font-size: 0.85rem; padding: 6px 14px; transition: all 0.15s ease;">
+                                                <i class="fas fa-plus" style="color: #EA580C;"></i>
+                                                <span>+ Agregar primer receso</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
 
-                            <div id="sinRecesosAlert" class="text-center py-3 text-muted" style="display: none;">
-                                <i class="fas fa-mug-hot fa-2x mb-2 text-black-50"></i>
-                                <p class="mb-0 small">No hay recesos configurados. Los bloques serán continuos.</p>
+                        <!-- Tarjeta 2: Bloqueos -->
+                        <div class="col-md-6" style="min-width: 0;">
+                            <div class="card config-card h-100">
+                                <div class="card-header config-card-header d-flex align-items-center justify-content-between">
+                                    <h2 class="section-title">
+                                        <i class="fas fa-lock" style="color: #6366F1;"></i>
+                                        <span>Bloques Reservados</span>
+                                    </h2>
+                                    <button type="button" class="btn-secondary-modern btn-sm d-inline-flex align-items-center gap-1" id="btnAgregarReservado">
+                                        <i class="fas fa-plus"></i>
+                                        <span>+ Bloque</span>
+                                    </button>
+                                </div>
+                                <div class="card-body config-card-body d-flex flex-column flex-grow-1">
+                                    <p class="text-muted small mb-3" style="font-size: 0.82rem; min-height: 2.4rem;">
+                                        Franjas bloqueadas institucionalmente (ej. Grupos Estables o actos cívicos).
+                                    </p>
+
+                                    <div id="reservadosContainer">
+                                        {{-- Filas dinámicas generadas con JS --}}
+                                    </div>
+
+                                    {{-- Feedback visual de errores en Bloques Reservados --}}
+                                    <div id="errorReservadosFeedback" class="alert alert-danger py-2 px-3 small mt-2 d-none" style="border-radius: 8px; font-size: 0.82rem;">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        <span class="error-text"></span>
+                                    </div>
+                                    @if ($errors->has('reservados*') || $errors->has('reservados'))
+                                        <div class="alert alert-danger py-2 px-3 small mt-2" style="border-radius: 8px; font-size: 0.82rem;">
+                                            <i class="fas fa-exclamation-circle me-1"></i>
+                                            <span>{{ $errors->first('reservados') ?: ($errors->first('reservados.*.desde') ?: $errors->first('reservados.*')) }}</span>
+                                        </div>
+                                    @endif
+
+                                    @php
+                                        $reservadosInit = old('reservados', $reservadosArray ?? []);
+                                        $tieneReservados = is_array($reservadosInit) && count($reservadosInit) > 0;
+                                    @endphp
+                                    <div id="sinReservadosAlert" class="text-center py-3 px-2 mt-auto {{ $tieneReservados ? 'd-none' : 'd-flex' }} flex-column align-items-center justify-content-center">
+                                        <div class="d-inline-flex align-items-center justify-content-center mb-2"
+                                             style="width: 44px; height: 44px; border-radius: 10px; background-color: #F5F3FF; color: #6366F1; border: 1px solid #EDE9FE;">
+                                            <i class="fas fa-lock" style="font-size: 18px; color: #6366F1;"></i>
+                                        </div>
+                                        <p class="small mb-2" style="font-size: 0.82rem; color: #6B7280 !important; font-weight: 400;">No hay bloques reservados.</p>
+                                        <div class="mt-auto">
+                                            <button type="button" class="btn-sm d-inline-flex align-items-center gap-1" id="btnAgregarPrimerReservado"
+                                                    style="background-color: #FFFFFF; border: 1px solid #DDD6FE; color: #6366F1; border-radius: 8px; font-weight: 500; font-size: 0.85rem; padding: 6px 14px; transition: all 0.15s ease;">
+                                                <i class="fas fa-plus" style="color: #6366F1;"></i>
+                                                <span>+ Agregar primer bloque reservado</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- 3. Bloques Reservados (Grupos Estables) --}}
-                    <div class="config-card mb-4">
-                        <div class="config-card-header">
-                            <h2 class="section-title">
-                                <i class="fas fa-lock text-warning"></i> Bloques Reservados (Grupos Estables)
-                            </h2>
-                            <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold d-inline-flex align-items-center gap-1" id="btnAgregarReservado" style="border-radius: 6px;">
-                                <i class="fas fa-plus"></i>
-                                <span>+ Agregar Bloque Reservado</span>
-                            </button>
-                        </div>
-                        <div class="config-card-body">
-                            <p class="text-muted small mb-3">
-                                Franjas horarias bloqueadas para todas las secciones, como actos o reuniones (ej. Grupos Estables). Ninguna materia regular podrá asignarse en estos espacios.
-                            </p>
-
-                            <div id="reservadosContainer">
-                                {{-- Filas dinámicas generadas con JS --}}
-                            </div>
-
-                            <div id="sinReservadosAlert" class="text-center py-3 text-muted" style="display: none;">
-                                <i class="fas fa-unlock-alt fa-2x mb-2 text-black-50"></i>
-                                <p class="mb-0 small">No hay bloques reservados. Todos los bloques están disponibles para clases regulares.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Botón Guardar Todo --}}
-                    <div class="d-grid mb-4">
-                        <button type="submit" class="btn btn-primary btn-lg shadow-sm d-flex align-items-center justify-content-center gap-2" style="border-radius: 8px;">
+                    {{-- Botón Guardar Alineado a la Derecha --}}
+                    <div class="d-flex justify-content-end mb-4">
+                        <button type="submit" class="btn-primary-modern d-inline-flex align-items-center gap-2" style="padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 0.92rem;">
                             <i class="fas fa-save"></i>
                             <span>Guardar Configuración de Horario</span>
                         </button>
                     </div>
                 </div>
 
-                {{-- Columna Derecha: Vista Previa en Vivo (Estilo GHC) --}}
-                <div class="col-lg-6 col-xl-7">
-                    <div class="config-card" style="position: sticky; top: 1.5rem;">
-                        <div class="config-card-header bg-white">
+                {{-- Columna Derecha: Vista Previa en Vivo (Sticky) --}}
+                <div class="col-md-5 col-lg-4">
+                    <div class="card config-card preview-card" style="position: sticky; top: 20px;">
+                        <div class="card-header config-card-header d-flex align-items-center justify-content-between">
                             <div>
                                 <h2 class="section-title">
-                                    <i class="fas fa-eye text-info"></i> Vista Previa en Vivo (Marco Horario)
+                                    <i class="fas fa-eye text-primary"></i>
+                                    <span>Vista Previa en Vivo</span>
                                 </h2>
-                                <small class="text-muted">Cálculo dinámico en tiempo real de la distribución horaria diaria</small>
+                                <small class="text-muted" style="font-size: 0.78rem;">Marco horario calculado</small>
                             </div>
-                            <span class="badge bg-primary px-3 py-2" id="kpiTotalHoras" style="border-radius: 20px; font-size: 0.85rem;">
+                            <span class="badge" id="kpiTotalHoras"
+                                  style="border-radius: 8px; font-size: 0.82rem; font-weight: 600; background-color: #F3F4F6; color: #1F2937; border: 1px solid #E5E7EB; padding: 6px 12px;">
                                 07:00 - 13:20
                             </span>
                         </div>
-                        <div class="config-card-body">
-                            {{-- Resumen Estadístico Horizontal y Minimalista --}}
-                            <div class="d-flex align-items-center gap-3 p-2 px-3 mb-3 border rounded bg-white shadow-sm flex-wrap" style="font-size: 0.9rem;">
-                                <div class="d-flex align-items-center gap-1 text-dark fw-bold">
-                                    <i class="fas fa-th text-primary"></i> 
-                                    <span id="resumen-bloques">{{ $numeroBloques }}</span> Bloques
+                        <div class="card-body config-card-body">
+                            {{-- Resumen Estadístico con Acentos Pastel SaaS --}}
+                            <div class="d-flex align-items-center gap-2 p-2 mb-3 flex-wrap" style="background-color: #F9FAFB; border: 1px solid #F3F4F6; border-radius: 10px;">
+                                <div class="d-inline-flex align-items-center gap-1 px-2 py-1"
+                                     style="background-color: #EFF6FF; color: #1E3A8A; font-weight: 600; font-size: 0.78rem; border-radius: 8px; border: none; padding: 5px 10px;">
+                                    <i class="fas fa-th" style="color: #1E3A8A;"></i> 
+                                    <span><span id="resumen-bloques">{{ $numeroBloques }}</span> Bloques</span>
                                 </div>
-                                <div class="vr text-muted d-none d-sm-block"></div>
-                                <div class="d-flex align-items-center gap-1 text-info fw-bold">
-                                    <i class="fas fa-clock"></i> 
-                                    <span id="resumen-minutos">{{ $minutosLectivos }}</span>m
+                                <div class="d-inline-flex align-items-center gap-1 px-2 py-1"
+                                     style="background-color: #F0FDF4; color: #166534; font-weight: 600; font-size: 0.78rem; border-radius: 8px; border: none; padding: 5px 10px;">
+                                    <i class="far fa-clock" style="color: #166534;"></i> 
+                                    <span><span id="resumen-minutos">{{ $minutosLectivos }}</span>m</span>
                                 </div>
-                                <div class="vr text-muted d-none d-sm-block"></div>
-                                <div class="d-flex align-items-center gap-1 text-warning fw-bold">
-                                    <i class="fas fa-coffee"></i> 
-                                    <span id="resumen-receso">{{ $minutosReceso }}</span>m receso
+                                <div class="d-inline-flex align-items-center gap-1 px-2 py-1"
+                                     style="background-color: #FFF7ED; color: #9A3412; font-weight: 600; font-size: 0.78rem; border-radius: 8px; border: none; padding: 5px 10px;">
+                                    <i class="fas fa-coffee" style="color: #9A3412;"></i> 
+                                    <span><span id="resumen-receso">{{ $minutosReceso }}</span>m</span>
                                 </div>
                             </div>
 
                             {{-- Timeline de bloques --}}
-                            <h3 class="h6 fw-bold text-secondary text-uppercase mb-3" style="letter-spacing: 0.5px;">
-                                Distribución de la Jornada Diaria:
-                            </h3>
-                            <div id="previewTimeline" class="pe-1" style="max-height: 540px; overflow-y: auto;">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-uppercase fw-semibold" style="font-size: 0.74rem; color: #6B7280; letter-spacing: 0.5px;">
+                                    <i class="fas fa-stream me-1" style="color: #4A6FC1;"></i> Distribución de la Jornada
+                                </span>
+                            </div>
+                            <div id="previewTimeline" class="pe-1" style="max-height: 520px; overflow-y: auto;">
                                 {{-- Renderizado reactivo en JS --}}
                             </div>
                         </div>
@@ -637,26 +768,27 @@
                 let opcionesSelect = '';
                 for (let b = 1; b < numBloques; b++) {
                     const selected = (b === parseInt(despuesDe, 10)) ? 'selected' : '';
-                    opcionesSelect += `<option value="${b}" ${selected}>Bloque ${b}</option>`;
+                    opcionesSelect += `<option value="${b}" ${selected}>${b}</option>`;
                 }
 
                 const fila = document.createElement('div');
-                fila.className = 'd-flex flex-row align-items-end gap-2 mb-2 receso-row';
+                fila.className = 'receso-row p-3 mb-3 d-flex align-items-end gap-3 flex-nowrap';
                 fila.id = `receso_row_${index}`;
+                fila.style.cssText = 'background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 8px; width: 100%; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);';
                 fila.innerHTML = `
                     <div class="flex-grow-1" style="min-width: 0;">
-                        <label class="form-label small text-muted mb-1">Después del Bloque:</label>
-                        <select name="recesos[${index}][despues_de_bloque]" class="form-select form-select-sm select-despues-de">
+                        <label class="text-muted fw-bold" style="font-size: 13px; margin-bottom: 4px; display: block; white-space: nowrap;">Después del bloque</label>
+                        <select name="recesos[${index}][despues_de_bloque]" class="form-select form-select-sm text-center select-despues-de" style="height: 38px; border-radius: 8px; border: 1px solid #E5E7EB; background-color: #FFFFFF; font-size: 0.85rem;">
                             ${opcionesSelect}
                         </select>
                     </div>
                     <div class="flex-grow-1" style="min-width: 0;">
-                        <label class="form-label small text-muted mb-1">Duración (min):</label>
-                        <input type="number" name="recesos[${index}][duracion_min]" min="5" max="120" step="5" value="${duracion}" class="form-control form-control-sm input-duracion-receso">
+                        <label class="text-muted fw-bold" style="font-size: 13px; margin-bottom: 4px; display: block; white-space: nowrap;">Duración (min)</label>
+                        <input type="number" name="recesos[${index}][duracion_min]" min="5" max="120" step="5" value="${duracion}" class="form-control form-control-sm input-duracion-receso" style="height: 38px; border-radius: 8px; border: 1px solid #E5E7EB; background-color: #FFFFFF; font-size: 0.85rem;" placeholder="Minutos">
                     </div>
                     <div class="flex-shrink-0">
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-receso" title="Eliminar receso" style="height: 31px; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-trash"></i>
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-receso" title="Eliminar receso" style="height: 38px; width: 38px; border-radius: 8px; border: 1px solid #FECACA; background-color: #FFFFFF; color: #EF4444; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease;">
+                            <i class="fas fa-trash-alt" style="font-size: 0.85rem;"></i>
                         </button>
                     </div>
                 `;
@@ -666,36 +798,95 @@
                 fila.querySelector('.btn-eliminar-receso').addEventListener('click', function () {
                     fila.remove();
                     actualizarEstadoRecesos();
+                    actualizarOpcionesDespuesDe();
                     recalcularVistaPrevia();
                 });
 
-                fila.querySelector('.select-despues-de').addEventListener('change', recalcularVistaPrevia);
+                fila.querySelector('.select-despues-de').addEventListener('change', function () {
+                    actualizarOpcionesDespuesDe();
+                    recalcularVistaPrevia();
+                });
                 fila.querySelector('.input-duracion-receso').addEventListener('input', recalcularVistaPrevia);
 
                 actualizarEstadoRecesos();
+                actualizarOpcionesDespuesDe();
                 recalcularVistaPrevia();
             }
 
             function actualizarEstadoRecesos() {
                 if (!recesosContainer || !sinRecesosAlert) return;
                 const filas = recesosContainer.querySelectorAll('.receso-row');
-                sinRecesosAlert.style.display = filas.length === 0 ? 'block' : 'none';
+                if (filas.length === 0) {
+                    sinRecesosAlert.classList.remove('d-none');
+                    sinRecesosAlert.classList.add('d-flex');
+                } else {
+                    sinRecesosAlert.classList.add('d-none');
+                    sinRecesosAlert.classList.remove('d-flex');
+                }
             }
 
             function actualizarOpcionesDespuesDe() {
                 if (!recesosContainer) return;
                 const numBloques = parseInt(inputNumeroBloques.value, 10) || 4;
-                const selects = recesosContainer.querySelectorAll('.select-despues-de');
+                const selects = Array.from(recesosContainer.querySelectorAll('.select-despues-de'));
+                const valoresSeleccionados = selects.map(s => parseInt(s.value, 10)).filter(v => !isNaN(v) && v > 0);
 
                 selects.forEach(sel => {
                     const valorActual = parseInt(sel.value, 10);
                     let opciones = '';
                     for (let b = 1; b < numBloques; b++) {
-                        const selected = (b === valorActual) ? 'selected' : '';
-                        opciones += `<option value="${b}" ${selected}>Bloque ${b}</option>`;
+                        const isCurrent = (b === valorActual);
+                        const isAlreadyUsed = valoresSeleccionados.includes(b) && !isCurrent;
+                        const selectedAttr = isCurrent ? 'selected' : '';
+                        const disabledAttr = isAlreadyUsed ? 'disabled' : '';
+                        opciones += `<option value="${b}" ${selectedAttr} ${disabledAttr}>${b}${isAlreadyUsed ? ' (en uso)' : ''}</option>`;
                     }
                     sel.innerHTML = opciones;
                 });
+
+                validarDuplicadosRecesos();
+            }
+
+            function buscarSiguienteBloqueRecesoDisponible() {
+                const numBloques = parseInt(inputNumeroBloques.value, 10) || 4;
+                const selects = Array.from(recesosContainer.querySelectorAll('.select-despues-de'));
+                const usados = selects.map(s => parseInt(s.value, 10));
+                for (let b = 1; b < numBloques; b++) {
+                    if (!usados.includes(b)) {
+                        return b;
+                    }
+                }
+                return null;
+            }
+
+            function validarDuplicadosRecesos() {
+                const errorFeedback = document.getElementById('errorRecesosFeedback');
+                if (!recesosContainer) return true;
+                const selects = Array.from(recesosContainer.querySelectorAll('.select-despues-de'));
+                const valores = selects.map(s => parseInt(s.value, 10)).filter(v => !isNaN(v) && v > 0);
+                const tieneDuplicados = new Set(valores).size !== valores.length;
+
+                if (tieneDuplicados) {
+                    mostrarErrorReceso('Ya existe un receso asignado a este bloque.');
+                    return false;
+                } else {
+                    ocultarErrorReceso();
+                    return true;
+                }
+            }
+
+            function mostrarErrorReceso(mensaje) {
+                const errorFeedback = document.getElementById('errorRecesosFeedback');
+                if (!errorFeedback) return;
+                const span = errorFeedback.querySelector('.error-text');
+                if (span) span.textContent = mensaje;
+                errorFeedback.classList.remove('d-none');
+            }
+
+            function ocultarErrorReceso() {
+                const errorFeedback = document.getElementById('errorRecesosFeedback');
+                if (!errorFeedback) return;
+                errorFeedback.classList.add('d-none');
             }
 
             // ==========================================================
@@ -731,44 +922,53 @@
                 let opcionesHasta = '';
                 for (let b = 1; b <= numBloques; b++) {
                     const selDesde = (b === vDesde) ? 'selected' : '';
-                    opcionesDesde += `<option value="${b}" ${selDesde}>Bloque ${b}</option>`;
+                    opcionesDesde += `<option value="${b}" ${selDesde}>${b}</option>`;
 
                     const selHasta = (b === vHasta) ? 'selected' : '';
                     const disHasta = (b < vDesde) ? 'disabled' : '';
-                    opcionesHasta += `<option value="${b}" ${selHasta} ${disHasta}>Bloque ${b}</option>`;
+                    opcionesHasta += `<option value="${b}" ${selHasta} ${disHasta}>${b}</option>`;
                 }
 
                 const fila = document.createElement('div');
-                fila.className = 'd-flex flex-row align-items-end gap-2 mb-2 reservado-row';
+                fila.className = 'd-flex align-items-end gap-3 mb-3 flex-nowrap reservado-row p-3';
                 fila.id = `reservado_row_${index}`;
+                fila.style.cssText = 'background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 8px; width: 100%; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);';
                 fila.innerHTML = `
-                    <div class="flex-grow-1" style="min-width: 0; flex-basis: 38%;">
-                        <label class="form-label small text-muted mb-1">Día de la Semana:</label>
-                        <select name="reservados[${index}][dia]" class="form-select form-select-sm select-reservado-dia">
+                    <!-- Día (Más angosto) -->
+                    <div style="width: 110px; flex-shrink: 0;">
+                        <label class="text-muted fw-bold" style="font-size: 13px; margin-bottom: 4px; display: block; white-space: nowrap;">Día</label>
+                        <select name="reservados[${index}][dia]" class="form-select form-select-sm select-reservado-dia" style="height: 38px; border-radius: 8px; border: 1px solid #E5E7EB; background-color: #FFFFFF; font-size: 0.85rem;">
                             ${opcionesDias}
                         </select>
                     </div>
-                    <div class="flex-grow-1" style="min-width: 0; flex-basis: 27%;">
-                        <label class="form-label small text-muted mb-1">Desde Bloque:</label>
-                        <select name="reservados[${index}][desde]" class="form-select form-select-sm select-reservado-desde">
+
+                    <!-- Desde -->
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <label class="text-muted fw-bold" style="font-size: 13px; margin-bottom: 4px; display: block; white-space: nowrap;" title="Desde Bloque">Desde</label>
+                        <select name="reservados[${index}][desde]" class="form-select form-select-sm text-center select-reservado-desde" style="height: 38px; border-radius: 8px; border: 1px solid #E5E7EB; background-color: #FFFFFF; font-size: 0.85rem;">
                             ${opcionesDesde}
                         </select>
                     </div>
-                    <div class="flex-grow-1" style="min-width: 0; flex-basis: 27%;">
-                        <label class="form-label small text-muted mb-1">Hasta Bloque:</label>
-                        <select name="reservados[${index}][hasta]" class="form-select form-select-sm select-reservado-hasta">
+
+                    <!-- Hasta -->
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <label class="text-muted fw-bold" style="font-size: 13px; margin-bottom: 4px; display: block; white-space: nowrap;" title="Hasta Bloque">Hasta</label>
+                        <select name="reservados[${index}][hasta]" class="form-select form-select-sm text-center select-reservado-hasta" style="height: 38px; border-radius: 8px; border: 1px solid #E5E7EB; background-color: #FFFFFF; font-size: 0.85rem;">
                             ${opcionesHasta}
                         </select>
                     </div>
-                    <div class="flex-shrink-0">
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-reservado" title="Eliminar bloque reservado" style="height: 31px; display: inline-flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-trash"></i>
+
+                    <!-- Botón Eliminar (Ancho fijo) -->
+                    <div style="flex-shrink: 0;">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-reservado" title="Eliminar bloque reservado" style="height: 38px; width: 38px; border-radius: 8px; border: 1px solid #FECACA; background-color: #FFFFFF; color: #EF4444; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease;">
+                            <i class="fas fa-trash-alt" style="font-size: 0.85rem;"></i>
                         </button>
                     </div>
                 `;
 
                 reservadosContainer.appendChild(fila);
 
+                const selectDia = fila.querySelector('.select-reservado-dia');
                 const selectDesde = fila.querySelector('.select-reservado-desde');
                 const selectHasta = fila.querySelector('.select-reservado-hasta');
 
@@ -786,20 +986,127 @@
                     });
                 }
 
-                selectDesde.addEventListener('change', sincronizarHasta);
+                selectDesde.addEventListener('change', function () {
+                    sincronizarHasta();
+                    validarSolapamientoReservados();
+                });
+                selectHasta.addEventListener('change', function () {
+                    validarSolapamientoReservados();
+                });
+                selectDia.addEventListener('change', function () {
+                    validarSolapamientoReservados();
+                });
 
                 fila.querySelector('.btn-eliminar-reservado').addEventListener('click', function () {
                     fila.remove();
                     actualizarEstadoReservados();
+                    validarSolapamientoReservados();
                 });
 
                 actualizarEstadoReservados();
+                validarSolapamientoReservados();
             }
 
             function actualizarEstadoReservados() {
                 if (!reservadosContainer || !sinReservadosAlert) return;
                 const filas = reservadosContainer.querySelectorAll('.reservado-row');
-                sinReservadosAlert.style.display = filas.length === 0 ? 'block' : 'none';
+                if (filas.length === 0) {
+                    sinReservadosAlert.classList.remove('d-none');
+                    sinReservadosAlert.classList.add('d-flex');
+                } else {
+                    sinReservadosAlert.classList.add('d-none');
+                    sinReservadosAlert.classList.remove('d-flex');
+                }
+            }
+
+            function validarSolapamientoReservados() {
+                const errorFeedback = document.getElementById('errorReservadosFeedback');
+                if (!reservadosContainer) return true;
+                const filas = Array.from(reservadosContainer.querySelectorAll('.reservado-row'));
+
+                filas.forEach(f => {
+                    f.style.borderColor = '#E5E7EB';
+                });
+
+                const rangos = [];
+                let mensajeError = null;
+
+                for (let i = 0; i < filas.length; i++) {
+                    const fila = filas[i];
+                    const dia = parseInt(fila.querySelector('.select-reservado-dia')?.value, 10);
+                    const desde = parseInt(fila.querySelector('.select-reservado-desde')?.value, 10);
+                    const hasta = parseInt(fila.querySelector('.select-reservado-hasta')?.value, 10);
+
+                    if (isNaN(dia) || isNaN(desde) || isNaN(hasta)) continue;
+
+                    if (desde > hasta) {
+                        fila.style.borderColor = '#EF4444';
+                        mensajeError = 'El bloque inicial no puede ser mayor al bloque final.';
+                        break;
+                    }
+
+                    for (const r of rangos) {
+                        if (r.dia === dia) {
+                            if (Math.max(desde, r.desde) <= Math.min(hasta, r.hasta)) {
+                                fila.style.borderColor = '#EF4444';
+                                r.fila.style.borderColor = '#EF4444';
+                                mensajeError = 'El bloque reservado se cruza con uno existente.';
+                                break;
+                            }
+                        }
+                    }
+
+                    if (mensajeError) break;
+
+                    rangos.push({ dia, desde, hasta, fila });
+                }
+
+                if (mensajeError) {
+                    mostrarErrorReservados(mensajeError);
+                    return false;
+                } else {
+                    ocultarErrorReservados();
+                    return true;
+                }
+            }
+
+            function buscarSiguienteReservadoDisponible() {
+                const numBloques = parseInt(inputNumeroBloques.value, 10) || 4;
+                const filas = Array.from(reservadosContainer.querySelectorAll('.reservado-row'));
+                const ocupados = {};
+                filas.forEach(f => {
+                    const dia = parseInt(f.querySelector('.select-reservado-dia')?.value, 10);
+                    const desde = parseInt(f.querySelector('.select-reservado-desde')?.value, 10);
+                    const hasta = parseInt(f.querySelector('.select-reservado-hasta')?.value, 10);
+                    if (!isNaN(dia) && !isNaN(desde) && !isNaN(hasta)) {
+                        for (let b = desde; b <= hasta; b++) {
+                            ocupados[`${dia}_${b}`] = true;
+                        }
+                    }
+                });
+
+                for (let d = 1; d <= 5; d++) {
+                    for (let b = 1; b <= numBloques; b++) {
+                        if (!ocupados[`${d}_${b}`]) {
+                            return { dia: d, desde: b, hasta: b };
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function mostrarErrorReservados(mensaje) {
+                const errorFeedback = document.getElementById('errorReservadosFeedback');
+                if (!errorFeedback) return;
+                const span = errorFeedback.querySelector('.error-text');
+                if (span) span.textContent = mensaje;
+                errorFeedback.classList.remove('d-none');
+            }
+
+            function ocultarErrorReservados() {
+                const errorFeedback = document.getElementById('errorReservadosFeedback');
+                if (!errorFeedback) return;
+                errorFeedback.classList.add('d-none');
             }
 
             function actualizarOpcionesBloquesReservados() {
@@ -818,9 +1125,9 @@
                     let optDesde = '';
                     let optHasta = '';
                     for (let b = 1; b <= numBloques; b++) {
-                        optDesde += `<option value="${b}" ${b === curDesde ? 'selected' : ''}>Bloque ${b}</option>`;
+                        optDesde += `<option value="${b}" ${b === curDesde ? 'selected' : ''}>${b}</option>`;
                         const dis = (b < curDesde) ? 'disabled' : '';
-                        optHasta += `<option value="${b}" ${b === curHasta ? 'selected' : ''} ${dis}>Bloque ${b}</option>`;
+                        optHasta += `<option value="${b}" ${b === curHasta ? 'selected' : ''} ${dis}>${b}</option>`;
                     }
 
                     selDesde.innerHTML = optDesde;
@@ -875,12 +1182,12 @@
 
                     htmlTimeline += `
                         <div class="timeline-block-item">
-                            <div>
-                                <span class="badge bg-primary me-2">Bloque ${b}</span>
-                                <strong class="fs-6 text-dark">${formatTime(startMin)} - ${formatTime(endMin)}</strong>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge" style="background-color: #F8FAFC; color: #334155; border-radius: 6px; font-size: 0.78rem; border: 1px solid #E2E8F0; font-weight: 600; padding: 4px 8px;">Bloque ${b}</span>
+                                <strong style="color: #111827; font-size: 0.9rem; font-weight: 600;">${formatTime(startMin)} - ${formatTime(endMin)}</strong>
                             </div>
-                            <div class="text-muted small">
-                                <i class="fas fa-hourglass-start me-1"></i> ${duracionBloque} min
+                            <div class="d-flex align-items-center gap-1" style="color: #6B7280; font-size: 0.8rem;">
+                                <i class="far fa-clock" style="color: #60A5FA;"></i> ${duracionBloque} min
                             </div>
                         </div>
                     `;
@@ -889,8 +1196,8 @@
                     if (receso > 0) {
                         htmlTimeline += `
                             <div class="timeline-receso-item">
-                                <i class="fas fa-coffee"></i>
-                                <span>Receso Institucional (${receso} min): ${formatTime(endMin)} - ${formatTime(endMin + receso)}</span>
+                                <i class="fas fa-coffee" style="color: #6B7280;"></i>
+                                <span>Receso (${receso} min): <strong>${formatTime(endMin)} - ${formatTime(endMin + receso)}</strong></span>
                             </div>
                         `;
                     }
@@ -933,13 +1240,68 @@
 
             if (btnAgregarReceso) {
                 btnAgregarReceso.addEventListener('click', function () {
-                    agregarFilaReceso(2, 20);
+                    const siguiente = buscarSiguienteBloqueRecesoDisponible();
+                    if (siguiente === null) {
+                        mostrarErrorReceso('Ya existe un receso asignado a cada uno de los bloques disponibles.');
+                        return;
+                    }
+                    ocultarErrorReceso();
+                    agregarFilaReceso(siguiente, 20);
+                    actualizarOpcionesDespuesDe();
+                });
+            }
+
+            const btnAgregarPrimerReceso = document.getElementById('btnAgregarPrimerReceso');
+            if (btnAgregarPrimerReceso && btnAgregarReceso) {
+                btnAgregarPrimerReceso.addEventListener('click', function () {
+                    btnAgregarReceso.click();
                 });
             }
 
             if (btnAgregarReservado) {
                 btnAgregarReservado.addEventListener('click', function () {
-                    agregarFilaReservado(1, 1, 1);
+                    const siguiente = buscarSiguienteReservadoDisponible();
+                    if (siguiente === null) {
+                        mostrarErrorReservados('Todos los bloques de la semana ya se encuentran reservados.');
+                        return;
+                    }
+                    ocultarErrorReservados();
+                    agregarFilaReservado(siguiente.dia, siguiente.desde, siguiente.hasta);
+                    validarSolapamientoReservados();
+                });
+            }
+
+            const btnAgregarPrimerReservado = document.getElementById('btnAgregarPrimerReservado');
+            if (btnAgregarPrimerReservado && btnAgregarReservado) {
+                btnAgregarPrimerReservado.addEventListener('click', function () {
+                    btnAgregarReservado.click();
+                });
+            }
+
+            const configHorarioForm = document.getElementById('configHorarioForm');
+            if (configHorarioForm) {
+                configHorarioForm.addEventListener('submit', function (e) {
+                    const recesosValidos = validarDuplicadosRecesos();
+                    const reservadosValidos = validarSolapamientoReservados();
+
+                    if (!recesosValidos || !reservadosValidos) {
+                        e.preventDefault();
+                        const mensaje = !recesosValidos 
+                            ? 'Ya existe un receso asignado a este bloque. Por favor revisa la configuración de recesos.'
+                            : 'El bloque reservado se cruza con uno existente. Por favor revisa la configuración de bloques reservados.';
+
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Conflicto detectado',
+                                text: mensaje,
+                                confirmButtonColor: '#4A6FC1',
+                                confirmButtonText: 'Entendido'
+                            });
+                        } else {
+                            alert(mensaje);
+                        }
+                    }
                 });
             }
 

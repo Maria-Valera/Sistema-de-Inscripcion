@@ -7,6 +7,7 @@ use App\Models\Municipio;
 use App\Models\Localidad;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use App\Models\AnioEscolar;
 
 class LocalidadIndex extends Component
@@ -101,8 +102,18 @@ class LocalidadIndex extends Component
         $this->estado_id = null;
         $this->municipio_id = null;
         $this->localidad_id = null;
+        $this->pais_id = null;
+        $this->estados = [];
         $this->municipios = [];
         $this->updateMode = false;
+        $this->resetValidation();
+    }
+
+    #[On('abrirModalCrear')]
+    public function create()
+    {
+        $this->resetInputFields();
+        $this->resetValidation();
     }
 
     public function store()
@@ -124,6 +135,7 @@ class LocalidadIndex extends Component
 
     public function edit($id)
     {
+        $this->resetValidation();
         $localidad = Localidad::with('municipio.estado.pais')->findOrFail($id);
         $this->localidad_id = $localidad->id;
         $this->nombre_localidad = $localidad->nombre_localidad;

@@ -1,27 +1,28 @@
 @extends('adminlte::page')
 
-@section('title', 'Gestión de Áreas de Formación')
+@section('title', 'Asignación de Áreas de Formación a Títulos')
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
 @stop
 
 @section('content_header')
-    <div class="content-header-modern">
+    <div class="content-header-modern hero-header-horario">
         <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
                     <i class="fas fa-university"></i>
                 </div>
                 <div>
-                    <h1 class="title-main">Áreas de Formación</h1>
-                    <p class="title-subtitle">Gestión de asignaciones y títulos universitarios</p>
+                    <h1 class="title-main">Áreas de Formación a Títulos</h1>
+                    <p class="title-subtitle">Gestión de asignaciones entre materias y títulos universitarios de docentes</p>
                 </div>
             </div>
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearAsignacion"
+                <button type="button" class="btn-hero-white" data-bs-toggle="modal" data-bs-target="#modalCrearAsignacion"
                     title="Nueva Asignación">
                     <i class="fas fa-plus"></i>
                     <span>Nueva Asignación</span>
@@ -67,136 +68,102 @@
         @endif
 
         {{-- Contenedor de la tabla --}}
-        <div class="card-modern">
-            <div class="card-header-modern">
-                <div class="header-left">
-                    <div class="header-icon"><i class="fas fa-list-ul"></i></div>
+        <div class="card-modern shadow-sm">
+            <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="header-left d-flex align-items-center gap-3">
+                    <div class="header-icon d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1;">
+                        <i class="fas fa-list-ul"></i>
+                    </div>
                     <div>
-                        <h3>Listado de Asignaciones</h3>
-                        <p>{{ $areaEstudioRealizado->total() }} registros encontrados</p>
+                        <h3 class="fw-bold mb-0" style="font-size: 1.05rem; color: #1E293B;">Listado de Asignaciones</h3>
+                        <p class="text-muted mb-0" style="font-size: 0.82rem;">{{ $areaEstudioRealizado->total() }} registros encontrados</p>
                     </div>
                 </div>
-                {{-- Buscador --}}
-                <form action="{{ route('admin.transacciones.area_estudio_realizado.index') }}">
-                    <div class="form-group-modern mb-2">
-                        <div class="search-modern">
-                            <i class="fas fa-search"></i>
-                            <input type="text" name="buscar" id="buscar" class="form-control-modern"
-                                placeholder="Buscar..." value="{{ request('buscar') }}">
-                        </div>
-                        <small class="form-text-modern" style="margin-top: 0.5rem; color: var(--gray-500);  ">
-                            <i class="fas fa-info-circle"></i>
-                            Buscar por nombre de área de formación
-                        </small>
-                    </div>
-                </form>
 
+                {{-- Buscador Redondeado (Design System) --}}
                 <div class="header-right">
-                    @php
-                        $anioActivo = \App\Models\AnioEscolar::activos()->first();
-                        $anioExtendido = \App\Models\AnioEscolar::where('status', 'Extendido')->first();
-                        $mostrarAnio = $anioActivo ?? $anioExtendido;
-                    @endphp
-
-                    @if ($mostrarAnio)
-                        <div
-                            class="d-flex align-items-center justify-content-between bg-light rounded px-2 py-1 mb-2 border">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-primary rounded me-2 py-1 px-2" style="font-size: 0.7rem;">
-                                    <i class="fas fa-calendar-check me-1"></i>
-
-                                    Calendario Escolar
-                                </span>
-
-                                <div class="d-flex align-items-center" style="font-size: 0.8rem;">
-                                    <span class="text-muted me-2">
-                                        <i class="fas fa-play-circle text-primary me-1"></i>
-                                        {{ \Carbon\Carbon::parse($mostrarAnio->inicio_anio_escolar)->format('d/m/Y') }}
-                                    </span>
-
-                                    <span class="text-muted me-2">
-                                        <i class="fas fa-flag-checkered text-danger me-1"></i>
-                                        {{ \Carbon\Carbon::parse($mostrarAnio->cierre_anio_escolar)->format('d/m/Y') }}
-                                    </span>
-
-
-                                </div>
-                            </div>
+                    <form action="{{ route('admin.transacciones.area_estudio_realizado.index') }}" method="GET" class="m-0">
+                        <div class="search-wrapper position-relative" style="width: 260px;">
+                            <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 50%; transform: translateY(-50%); z-index: 10; font-size: 0.85rem;"></i>
+                            <input type="text"
+                                   name="buscar"
+                                   id="buscarAreaEstudio"
+                                   class="form-control search-input-modern pl-5"
+                                   placeholder="Buscar materia o título..."
+                                   value="{{ request('buscar') }}"
+                                   style="padding-left: 40px !important; border-radius: 10px; height: 38px; font-size: 0.85rem;">
                         </div>
-                    @else
-                        <div
-                            class="d-flex align-items-center justify-content-between bg-warning bg-opacity-10 rounded px-2 py-1 mb-2 border border-warning">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-exclamation-triangle text-warning me-1" style="font-size: 0.8rem;"></i>
-                                <span class="fw-semibold" style="font-size: 0.8rem;">Sin año activo</span>
-                            </div>
-
-                        </div>
-                    @endif
-                    <!-- --------------------------- -->
-
+                    </form>
                 </div>
-
             </div>
 
-            <div class="card-body-modern">
+            <div class="card-body-modern p-0">
                 <div class="table-wrapper">
-                    <table class="table-modern overflow-hidden" style="text-align: center">
+                    <table class="table-modern" id="tablaAreaEstudio">
                         <thead>
-                            <tr>
-                                <th style="text-align: center; font-weight: bold">Área de Formación</th>
-                                <th style="text-align: center; font-weight: bold">Título Universitario</th>
-                                <th style="text-align: center; ">Estado</th>
-                                <th style="text-align: center; ">Acciones</th>
+                            <tr class="text-center">
+                                <th class="text-start">Área de Formación</th>
+                                <th class="text-start">Título Universitario</th>
+                                <th style="width: 140px;">Estado</th>
+                                <th style="width: 100px;">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="text-center">
                             @forelse ($areaEstudioRealizado as $index => $datos)
-                                <tr class=" ">
-                                    <td style="font-weight: bold">
-                                        {{ $datos->areaFormacion->nombre_area_formacion ?? '—' }}
+                                <tr>
+                                    <td class="text-start">
+                                        <span class="fw-bold text-dark" style="font-size: 0.93rem;">
+                                            <i class="fas fa-bookmark text-primary me-2"></i>
+                                            {{ $datos->areaFormacion->nombre_area_formacion ?? '—' }}
+                                        </span>
                                     </td>
-
-                                    <td>
-                                        {{ $datos->estudiosRealizado->estudios ?? '—' }}
+                                    <td class="text-start">
+                                        <span class="text-muted" style="font-size: 0.9rem;">
+                                            <i class="fas fa-graduation-cap me-2 text-secondary"></i>
+                                            {{ $datos->estudiosRealizado->estudios ?? '—' }}
+                                        </span>
                                     </td>
                                     <td>
                                         @if ($datos->status)
-                                            <span class="status-badge status-active">Activo</span>
+                                            <span class="badge badge-success px-3 py-1">
+                                                <i class="fas fa-check-circle me-1" style="font-size: 0.75rem;"></i> Activo
+                                            </span>
                                         @else
-                                            <span class="status-badge status-inactive">Inactivo</span>
+                                            <span class="badge badge-danger px-3 py-1">
+                                                <i class="fas fa-times-circle me-1" style="font-size: 0.75rem;"></i> Inactivo
+                                            </span>
                                         @endif
                                     </td>
                                     <td>
                                         {{-- BOTONES DE ACCIONES --}}
-                                        <div class="action-buttons">
-                                            <div class="dropdown dropstart text-center">
-                                                <button class="btn btn-light btn-sm rounded-circle shadow-sm action-btn"
-                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <div class="action-buttons justify-content-center">
+                                            <div class="dropdown text-center">
+                                                <button class="action-btn"
+                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
                                                     <i class="fas fa-ellipsis-v"></i>
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                    {{-- Editar --}}
+                                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
                                                     @if (\App\Support\AnioEscolarSeleccionado::esActual())
                                                         <li>
                                                             <button
-                                                                class="dropdown-item d-flex align-items-center text-warning"
+                                                                class="dropdown-item dropdown-item-modern item-edit"
+                                                                type="button"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#viewModalEditar{{ $datos->id }}"
                                                                 title="Editar">
                                                                 <i class="fas fa-pen me-2"></i>
-                                                                Editar
+                                                                <span>Editar</span>
                                                             </button>
                                                         </li>
-
-                                                        {{-- Inactivar --}}
                                                         <li>
-                                                            <button class="dropdown-item d-flex align-items-center text-danger"
+                                                            <button class="dropdown-item dropdown-item-modern item-delete"
+                                                                type="button"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#confirmarEliminar{{ $datos->id }}"
                                                                 title="Inactivar">
                                                                 <i class="fas fa-ban me-2"></i>
-                                                                Inactivar
+                                                                <span>Inactivar</span>
                                                             </button>
                                                         </li>
                                                     @endif
@@ -213,66 +180,103 @@
                                     'estudios' => $estudios,
                                 ])
 
-                                {{-- Modal Eliminar --}}
-                                <div class="modal fade" id="confirmarEliminar{{ $datos->id }}" tabindex="-1"
+                                {{-- Modal Confirmar Inactivación (Design System) --}}
+                                <div class="modal fade modal-danger-delete" id="confirmarEliminar{{ $datos->id }}" tabindex="-1"
                                     aria-labelledby="confirmarEliminarLabel{{ $datos->id }}" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content modal-modern">
-                                            <div class="modal-header-delete">
-                                                <div class="modal-icon-delete">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </div>
-                                                <h5 class="modal-title-delete"
-                                                    id="confirmarEliminarLabel{{ $datos->id }}">Confirmar Inactivacion
-                                                </h5>
-                                                <button type="button" class="btn-close-modal" data-bs-dismiss="modal"
-                                                    aria-label="Close">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body-delete">
-                                                <p class="delete-message">¿Estás seguro de que deseas inactivar esta
-                                                    asignación?</p>
-                                                <p class="delete-warning">
-
-                                                </p>
-                                            </div>
-                                            <div class="modal-footer-delete">
-                                                <form
-                                                    action="{{ url('admin/transacciones/area_estudio_realizado/' . $datos->id) }}"
-                                                    method="POST" class="w-100">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <div class="footer-buttons">
-                                                        <button type="button" class="btn-modal-cancel"
-                                                            data-bs-dismiss="modal">
-                                                            Cancelar
-                                                        </button>
-                                                        <button type="submit" class="btn-modal-delete">
-                                                            <i class="fas fa-trash me-1"></i>
-                                                            Inactivar
-                                                        </button>
+                                    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+                                        <div class="modal-content modal-modern shadow-lg" style="border: 1px solid #E2E8F0; border-radius: 16px; overflow: hidden; background: #FFFFFF;">
+                                            <div class="modal-header d-flex align-items-center justify-content-between px-4 py-3 bg-white border-bottom" style="border-bottom-color: #F1F5F9 !important;">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                                                         style="width: 44px; height: 44px; border-radius: 12px; background-color: #FEE2E2; color: #EF4444;">
+                                                        <i class="fas fa-ban" style="font-size: 1.15rem;"></i>
                                                     </div>
-                                                </form>
+                                                    <div>
+                                                        <h5 class="modal-title m-0 fw-bold" id="confirmarEliminarLabel{{ $datos->id }}" style="color: #1E293B; font-size: 1.1rem;">
+                                                            Confirmar Inactivación
+                                                        </h5>
+                                                        <p class="text-muted m-0" style="font-size: 0.82rem;">Acción sobre asignación de materia a título</p>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                             </div>
+
+                                            <form action="{{ url('admin/transacciones/area_estudio_realizado/' . $datos->id) }}" method="POST" class="w-100 m-0">
+                                                @csrf
+                                                @method('DELETE')
+                                                <div class="modal-body px-4 py-3" style="background-color: #FFFFFF;">
+                                                    <p class="fw-semibold mb-2" style="color: #1E293B; font-size: 0.95rem;">
+                                                        ¿Deseas inactivar esta asignación?
+                                                    </p>
+                                                    <div class="p-3 d-flex align-items-center gap-3"
+                                                         style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;">
+                                                        <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                                                             style="width: 40px; height: 40px; background-color: #EFF6FF; color: #4A6FC1; font-size: 1.1rem;">
+                                                            <i class="fas fa-university"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold text-dark" style="font-size: 0.9rem;">
+                                                                {{ $datos->areaFormacion->nombre_area_formacion ?? '—' }}
+                                                            </div>
+                                                            <div class="text-muted" style="font-size: 0.8rem;">
+                                                                {{ $datos->estudiosRealizado->estudios ?? '—' }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="modal-footer d-flex justify-content-end align-items-center gap-2 px-4 py-3 bg-white border-top" style="border-top-color: #F1F5F9 !important;">
+                                                    <button type="button" class="btn-secondary-modern" data-bs-dismiss="modal">
+                                                        <i class="fas fa-times me-1"></i> Cancelar
+                                                    </button>
+                                                    <button type="submit" class="btn" style="background-color: #EF4444; color: #FFF; border-radius: 8px; font-weight: 600; padding: 9px 18px; border: none;">
+                                                        <i class="fas fa-ban me-1"></i> Inactivar
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">No hay asignaciones registradas</td>
+                                    <td colspan="4">
+                                        <div class="empty-state text-center py-5">
+                                            <div class="empty-icon text-muted mb-2 opacity-50">
+                                                <i class="fas fa-university fa-3x"></i>
+                                            </div>
+                                            <h4 class="fw-bold" style="color: #1E293B; font-size: 1.1rem;">No hay asignaciones registradas</h4>
+                                            <p class="text-muted" style="font-size: 0.88rem;">Comienza creando una nueva asignación usando el botón superior.</p>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-
-                {{-- Paginación --}}
-
             </div>
         </div>
 
-
+        <div class="mt-3">
+            <x-pagination :paginator="$areaEstudioRealizado" />
+        </div>
     </div>
-    <x-pagination :paginator="$areaEstudioRealizado" />
 @endsection
+
+@push('js')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Buscador en tiempo real local sobre las filas cargadas
+            const inputBuscar = document.getElementById('buscarAreaEstudio');
+            if (inputBuscar) {
+                inputBuscar.addEventListener('input', function () {
+                    const query = this.value.toLowerCase().trim();
+                    document.querySelectorAll('#tablaAreaEstudio tbody tr').forEach(row => {
+                        if (row.cells.length === 1) return;
+                        const text = row.innerText.toLowerCase();
+                        row.style.display = text.includes(query) ? '' : 'none';
+                    });
+                });
+            }
+        });
+    </script>
+@endpush

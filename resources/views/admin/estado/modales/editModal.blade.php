@@ -1,57 +1,96 @@
 <div wire:ignore.self class="modal fade" id="modalEditar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="modalEditarLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-modern">
-            <div class="modal-header-edit">
-                <div class="modal-icon-edit">
-                    <i class="fas fa-pen"></i>
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
+        <div class="modal-content modal-modern shadow-lg" style="border: 1px solid #E2E8F0; border-radius: 16px; overflow: hidden; background: #FFFFFF;">
+            
+            <!-- Header Limpio (Fondo Blanco) -->
+            <div class="modal-header d-flex align-items-center justify-content-between px-4 py-3 bg-white border-bottom" style="border-bottom-color: #F1F5F9 !important;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 42px; height: 42px; border-radius: 12px; background-color: #FEF3C7; color: #D97706;">
+                        <i class="fas fa-pen" style="font-size: 1.15rem;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title m-0 fw-bold" id="modalEditarLabel" style="color: #1E293B; font-size: 1.1rem;">
+                            Editar Estado
+                        </h5>
+                        <p class="text-muted m-0" style="font-size: 0.82rem;">Actualización de nombre y país asignado</p>
+                    </div>
                 </div>
-                <h5 class="modal-title-edit" id="modalEditarLabel">Editar Estado</h5>
-                <button type="button" class="btn-close-modal" data-bs-dismiss="modal" aria-label="Cerrar">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body-edit">
-                <form wire:submit.prevent="update" id="formEditarEstado">
+
+            <form wire:submit.prevent="update" id="formEditarEstado" class="m-0">
+                <div class="modal-body px-4 py-3" style="background-color: #FFFFFF;">
                     <div id="contenedorAlertaEditar"></div>
-                    <div class="form-group-modern">
-                        <label for="pais_id" class="form-label-modern">
-                            <i class="fas fa-tags"></i>
-                            Pais
-                        </label>
-                        <select name="pais_id" wire:model.defer="pais_id" id="pais_id" class="form-control-modern "
-                            data-live-search="true" title="Seleccione un pais" required>
-                            <option value="">Seleccione un pais</option>
-                            @foreach ($paises as $pais)
-                                <option value="{{ $pais->id }}">{{ $pais->nameES }}</option>
-                            @endforeach
-                        </select>
+
+                    {{-- Indicador de carga mientras Livewire procesa edit() --}}
+                    <div wire:loading wire:target="edit" class="py-4 text-center">
+                        <div class="spinner-border text-primary mb-2" role="status" style="width: 2.2rem; height: 2.2rem;">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="text-muted fw-semibold mb-0" style="font-size: 0.88rem;">Cargando datos del estado...</p>
                     </div>
-                    <div class="form-group-modern">
-                        <label for="nombre_estado_editar" class="form-label-modern">
-                            <i class="fas fa-hashtag me-2"></i> Nombre del Estado
-                        </label>
-                        <input type="text" class="form-control-modern" id="nombre_estado_editar"
-                            wire:model.defer="nombre_estado" inputmode="text" maxlength="100"
-                            placeholder="Edite el nombre del estado" required>
-                        @error('nombre_estado')
-                            <div class="error-message">
-                                {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-                    <div class="modal-footer-edit">
-                        <div class="footer-buttons">
-                            <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn-modal-edit">
-                                Guardar Cambios
-                            </button>
+
+                    {{-- Campos del Formulario (se muestran una vez cargados los datos) --}}
+                    <div wire:loading.remove wire:target="edit">
+                        <div class="mb-3">
+                            <label for="pais_id_editar" class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                <i class="fas fa-globe-americas text-primary me-1"></i>
+                                <span>País</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="pais_id" wire:model="pais_id" id="pais_id_editar" class="form-select"
+                                    style="height: 42px; border-radius: 10px; font-size: 0.95rem;" required>
+                                <option value="">Seleccione un país</option>
+                                @foreach ($paises as $pais)
+                                    <option value="{{ $pais->id }}">{{ $pais->nameES }}</option>
+                                @endforeach
+                            </select>
+                            @error('pais_id')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombre_estado_editar" class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                <i class="fas fa-map-marker-alt text-primary me-1"></i>
+                                <span>Nombre del Estado</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control @error('nombre_estado') is-invalid @enderror"
+                                   style="height: 42px; border-radius: 10px; font-size: 0.95rem;"
+                                   id="nombre_estado_editar"
+                                   wire:model="nombre_estado"
+                                   inputmode="text"
+                                   maxlength="100"
+                                   placeholder="Edite el nombre del estado"
+                                   required>
+                            @error('nombre_estado')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <!-- Footer Alineado a la Derecha -->
+                <div class="modal-footer d-flex justify-content-end align-items-center gap-2 px-4 py-3 bg-white border-top" style="border-top-color: #F1F5F9 !important;">
+                    <button type="button" class="btn-secondary-modern" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>
+                        <span>Cancelar</span>
+                    </button>
+                    <button type="submit" class="btn-primary-modern" wire:loading.attr="disabled" wire:target="edit,update">
+                        <span wire:loading.remove wire:target="update">
+                            <i class="fas fa-save me-1"></i>
+                            <span>Guardar Cambios</span>
+                        </span>
+                        <span wire:loading wire:target="update">
+                            <i class="fas fa-spinner fa-spin me-1"></i>
+                            <span>Guardando...</span>
+                        </span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

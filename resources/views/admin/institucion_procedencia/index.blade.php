@@ -2,41 +2,40 @@
 
 @section('title', 'Gestión de Instituciones de Procedencia')
 
-@section('content_header')
-    <div class="content-header-modern">
-        <div class="header-content">
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
+@stop
 
+@section('content_header')
+    <div class="content-header-modern hero-header-horario">
+        <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
                     <i class="fas fa-school"></i>
                 </div>
                 <div>
                     <h1 class="title-main">Gestión de Instituciones de Procedencia</h1>
-                    <p class="title-subtitle">Administración de las instituciones registradas en el sistema</p>
+                    <p class="title-subtitle">Administración de las instituciones educativas registradas en el sistema</p>
                 </div>
             </div>
 
             {{-- Botón crear --}}
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
                 <button type="button"
-                    class="btn-create"
+                    class="btn-hero-white"
                     data-bs-toggle="modal"
                     data-bs-target="#modalCrear"
+                    onclick="if (typeof Livewire !== 'undefined') { Livewire.dispatch('abrirModalCrear'); }"
                     title="Crear Institución">
                     <i class="fas fa-plus"></i>
                     <span>Nueva Institución</span>
                 </button>
             @endif
-
         </div>
     </div>
-@stop
-
-{{-- Estilos --}}
-@section('css')
-    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 @stop
 
 @section('content')
@@ -48,6 +47,31 @@
 <script src="{{ asset('js/validations/institucionProcedencia.js') }}"></script>
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalCrear = document.getElementById('modalCrear');
+        if (modalCrear) {
+            modalCrear.addEventListener('show.bs.modal', () => {
+                if (typeof Livewire !== 'undefined') {
+                    Livewire.dispatch('abrirModalCrear');
+                }
+                modalCrear.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            });
+            modalCrear.addEventListener('hidden.bs.modal', () => {
+                if (typeof Livewire !== 'undefined') {
+                    Livewire.dispatch('abrirModalCrear');
+                }
+                modalCrear.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            });
+        }
+
+        const modalEditar = document.getElementById('modalEditar');
+        if (modalEditar) {
+            modalEditar.addEventListener('hidden.bs.modal', () => {
+                modalEditar.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            });
+        }
+    });
+
     document.addEventListener('livewire:initialized', () => {
         Livewire.on('cerrarModal', () => {
             const modales = document.querySelectorAll('.modal.show');

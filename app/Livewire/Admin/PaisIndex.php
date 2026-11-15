@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use App\Models\AnioEscolar;
 use App\Models\Pais;
 
@@ -70,6 +71,14 @@ class PaisIndex extends Component
         $this->iso2 = '';
         $this->pais_id = null;
         $this->updateMode = false;
+        $this->resetValidation();
+    }
+
+    #[On('abrirModalCrear')]
+    public function create()
+    {
+        $this->resetInputFields();
+        $this->resetValidation();
     }
 
     public function store()
@@ -94,6 +103,7 @@ class PaisIndex extends Component
 
     public function edit($id)
     {
+        $this->resetValidation();
         if (!$this->verificarAccion()) {
             return;
         }

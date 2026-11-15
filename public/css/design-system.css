@@ -210,18 +210,18 @@
 /* ============================================================================
    3. BOTONES MODERNOS (.btn-*)
    ============================================================================ */
-/* Botón Primario Moderno */
+/* Botón Primario Moderno (Stripe / Moneyfy Style) */
 .btn-primary-modern,
 .btn-save,
 .btn-modal-create,
 .btn-primary:not(.btn-hero-white):not(.btn-outline-primary) {
     background: var(--primary-color) !important;
     background-color: var(--primary-color) !important;
-    border: 1px solid var(--primary-color) !important;
+    border: none !important;
     color: #FFFFFF !important;
-    border-radius: var(--radius-md) !important;
-    padding: 0.6rem 1.25rem !important;
-    font-size: 0.9rem !important;
+    border-radius: 8px !important;
+    padding: 10px 22px !important;
+    font-size: 0.92rem !important;
     font-weight: 600 !important;
     line-height: 1.25 !important;
     display: inline-flex !important;
@@ -230,20 +230,20 @@
     gap: 0.5rem !important;
     cursor: pointer !important;
     text-decoration: none !important;
-    box-shadow: 0 2px 4px rgba(74, 111, 193, 0.25) !important;
-    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+    box-shadow: none !important;
+    transition: background-color 0.15s ease !important;
 }
 
 .btn-primary-modern:hover:not(:disabled),
 .btn-save:hover:not(:disabled),
 .btn-modal-create:hover:not(:disabled),
 .btn-primary:not(.btn-hero-white):not(.btn-outline-primary):hover:not(:disabled) {
-    background: var(--primary-dark) !important;
-    background-color: var(--primary-dark) !important;
-    border-color: var(--primary-dark) !important;
+    background: var(--primary-hover) !important;
+    background-color: var(--primary-hover) !important;
+    border: none !important;
     color: #FFFFFF !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 10px rgba(59, 91, 165, 0.3) !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .btn-primary-modern i,
@@ -253,19 +253,19 @@
     color: #FFFFFF !important;
 }
 
-/* Botón Secundario Moderno (Blanco con Borde Gris) */
+/* Botón Secundario Moderno / Outline (Stripe / Moneyfy Style) */
 .btn-secondary-modern,
 .btn-filter-saas,
 .btn-saas-secondary,
 .btn-back,
 .btn-footer-secondary {
     background-color: #FFFFFF !important;
-    color: var(--text-dark) !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: var(--radius-md) !important;
-    padding: 0.6rem 1.15rem !important;
-    font-size: 0.88rem !important;
-    font-weight: 600 !important;
+    color: #374151 !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    padding: 7px 14px !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
     line-height: 1.25 !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -273,8 +273,8 @@
     gap: 0.5rem !important;
     cursor: pointer !important;
     text-decoration: none !important;
-    box-shadow: var(--shadow-xs) !important;
-    transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease !important;
+    box-shadow: none !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
 }
 
 .btn-secondary-modern:hover,
@@ -282,17 +282,17 @@
 .btn-saas-secondary:hover,
 .btn-back:hover,
 .btn-footer-secondary:hover {
-    background-color: var(--bg-light) !important;
-    border-color: var(--border-strong) !important;
-    color: #0F172A !important;
+    background-color: #F9FAFB !important;
+    border-color: #D1D5DB !important;
+    color: #111827 !important;
     text-decoration: none !important;
-    box-shadow: var(--shadow-sm) !important;
+    box-shadow: none !important;
 }
 
 .btn-secondary-modern i,
 .btn-filter-saas i,
 .btn-back i {
-    color: var(--text-muted) !important;
+    color: #6B7280 !important;
 }
 
 /* Botón Peligro / Eliminar */
@@ -663,6 +663,36 @@
 }
 
 /* ============================================================================
+   5. TARJETAS SAAS MODERNAS (.card, .card-modern, .config-card)
+   Inspiradas en Stripe / Moneyfy UI: fondo blanco, bordes 12px, borde 1px solid #E5E7EB, sin sombras pesadas
+   ============================================================================ */
+.card,
+.card-modern,
+.config-card {
+    background-color: #FFFFFF !important;
+    border-radius: 12px !important;
+    border: 1px solid #E5E7EB !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.card .card-body,
+.card-modern .card-body,
+.config-card .config-card-body {
+    padding: 24px !important;
+}
+
+.card .card-header,
+.card-modern .card-header,
+.config-card .config-card-header {
+    background-color: #FFFFFF !important;
+    border-bottom: 1px solid #F3F4F6 !important;
+    padding: 18px 24px !important;
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+}
+
+/* ============================================================================
    6. TARJETAS PASTEL (.card-pastel-*)
    ============================================================================ */
 .card-pastel-blue {
@@ -697,12 +727,35 @@
 }
 
 /* Borde superior de acento para popovers / modales informativos */
-.adm-full.card-pastel-blue, .card-pastel-blue.adm-full { border-top: 4px solid var(--pastel-blue-border) !important; }
-.adm-full.card-pastel-purple, .card-pastel-purple.adm-full { border-top: 4px solid var(--pastel-purple-border) !important; }
-.adm-full.card-pastel-green, .card-pastel-green.adm-full { border-top: 4px solid var(--pastel-green-border) !important; }
-.adm-full.card-pastel-orange, .card-pastel-orange.adm-full { border-top: 4px solid var(--pastel-yellow-border) !important; }
-.adm-full.card-pastel-pink, .card-pastel-pink.adm-full { border-top: 4px solid var(--pastel-pink-border) !important; }
-.adm-full.card-pastel-teal, .card-pastel-teal.adm-full { border-top: 4px solid var(--pastel-teal-border) !important; }
+.adm-full.card-pastel-blue,
+.card-pastel-blue.adm-full {
+    border-top: 4px solid var(--pastel-blue-border) !important;
+}
+
+.adm-full.card-pastel-purple,
+.card-pastel-purple.adm-full {
+    border-top: 4px solid var(--pastel-purple-border) !important;
+}
+
+.adm-full.card-pastel-green,
+.card-pastel-green.adm-full {
+    border-top: 4px solid var(--pastel-green-border) !important;
+}
+
+.adm-full.card-pastel-orange,
+.card-pastel-orange.adm-full {
+    border-top: 4px solid var(--pastel-yellow-border) !important;
+}
+
+.adm-full.card-pastel-pink,
+.card-pastel-pink.adm-full {
+    border-top: 4px solid var(--pastel-pink-border) !important;
+}
+
+.adm-full.card-pastel-teal,
+.card-pastel-teal.adm-full {
+    border-top: 4px solid var(--pastel-teal-border) !important;
+}
 
 /* Tarjetas de Docentes en Sidebar */
 .sidebar-docentes .docente-card {
@@ -880,25 +933,44 @@
 /* ============================================================================
    7. FORMULARIOS, SELECTS Y FILTROS (.select-modern, select.form-select)
    ============================================================================ */
+label.form-label,
+.form-label-modern {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    margin-bottom: 6px !important;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
 input.form-control,
 input.form-control-modern,
-textarea.form-control {
+textarea.form-control,
+.form-control {
     background-color: #FFFFFF !important;
-    color: var(--text-dark) !important;
-    -webkit-text-fill-color: var(--text-dark) !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: var(--radius-md) !important;
-    padding: 0.62rem 0.95rem !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    padding: 0.55rem 0.85rem !important;
     font-size: 0.92rem !important;
     line-height: 1.45 !important;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+    height: 42px;
+    box-shadow: none !important;
+    transition: border-color 0.15s ease !important;
+}
+
+textarea.form-control {
+    height: auto !important;
 }
 
 input.form-control:focus,
 input.form-control-modern:focus,
-textarea.form-control:focus {
+textarea.form-control:focus,
+.form-control:focus {
     border-color: var(--primary-color) !important;
-    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+    box-shadow: none !important;
     outline: none !important;
 }
 
@@ -909,7 +981,7 @@ textarea.form-control:focus {
 
 .search-input-modern {
     padding-left: 40px !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
 }
 
 .select-modern,
@@ -925,14 +997,16 @@ select.form-control,
     background-size: 0.95em !important;
     padding-right: 2.25rem !important;
     background-color: #FFFFFF !important;
-    color: var(--text-dark) !important;
-    -webkit-text-fill-color: var(--text-dark) !important;
-    border: 1px solid var(--border-subtle) !important;
-    border-radius: var(--radius-md) !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
     color-scheme: light !important;
     font-weight: 500 !important;
     line-height: 1.35 !important;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+    height: 42px !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s ease !important;
 }
 
 .select-modern:focus,
@@ -940,7 +1014,7 @@ select.form-select:focus,
 select.form-control:focus,
 .toolbar-select:focus {
     border-color: var(--primary-color) !important;
-    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+    box-shadow: none !important;
     outline: none !important;
 }
 
@@ -978,6 +1052,7 @@ select option:checked {
         transform: translate(-50%, 20px);
         opacity: 0;
     }
+
     to {
         transform: translate(-50%, 0);
         opacity: 1;
@@ -1122,8 +1197,8 @@ select option:checked {
 }
 
 /* Navegación del Sidebar */
-.main-sidebar .nav-sidebar > .nav-item > .nav-link,
-.main-sidebar .nav-treeview > .nav-item > .nav-link {
+.main-sidebar .nav-sidebar>.nav-item>.nav-link,
+.main-sidebar .nav-treeview>.nav-item>.nav-link {
     color: #CBD5E1 !important;
     border-radius: 8px !important;
     font-size: 0.9rem !important;
@@ -1136,15 +1211,15 @@ select option:checked {
     color: #F8FAFC !important;
 }
 
-.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
-.main-sidebar.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
+.main-sidebar.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active,
+.main-sidebar.sidebar-dark-primary .nav-treeview>.nav-item>.nav-link.active {
     background-color: rgba(74, 111, 193, 0.15) !important;
     color: #FFFFFF !important;
     font-weight: 600 !important;
     border-left: 3px solid #60A5FA !important;
 }
 
-.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active .nav-icon {
+.main-sidebar.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active .nav-icon {
     color: #93C5FD !important;
 }
 
@@ -1215,8 +1290,13 @@ select option:checked {
     display: inline-block;
 }
 
-.status-dot.dot-success { background-color: var(--success); }
-.status-dot.dot-danger { background-color: var(--danger); }
+.status-dot.dot-success {
+    background-color: var(--success);
+}
+
+.status-dot.dot-danger {
+    background-color: var(--danger);
+}
 
 .anio-divider {
     width: 1px;
@@ -1545,4 +1625,292 @@ select option:checked {
     color: #DC2626 !important;
 }
 
+/* ============================================================================
+   ESTILOS DE SELECTS NATIVOS (.form-select)
+   ============================================================================ */
+select.form-select {
+    height: 42px !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    padding: 8px 36px 8px 14px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    background-color: #FFFFFF !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease-in-out !important;
+}
 
+select.form-select:hover {
+    border-color: #CBD5E1 !important;
+}
+
+select.form-select:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+    outline: none !important;
+}
+
+select.form-select:disabled {
+    background-color: #F8FAFC !important;
+    color: #94A3B8 !important;
+    border-color: #E2E8F0 !important;
+    cursor: not-allowed !important;
+}
+
+select.form-select option {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    font-size: 14px !important;
+    padding: 8px !important;
+}
+
+select.form-select.text-center {
+    text-align: center;
+    text-align-last: center;
+}
+
+/* ============================================================================
+   ESTILOS MODERNOS PARA BOOTSTRAP-SELECT (SELECTPICKER)
+   ============================================================================ */
+
+/* 1. Contenedor del Selectpicker */
+.bootstrap-select {
+    width: 100% !important;
+}
+
+.bootstrap-select.form-control {
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    height: auto !important;
+}
+
+/* 2. Botón Toggle del Selectpicker */
+.bootstrap-select > .dropdown-toggle,
+.bootstrap-select > button.btn.dropdown-toggle,
+.bootstrap-select .btn.dropdown-toggle.btn-light,
+.bootstrap-select .btn.dropdown-toggle.btn-default {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    color: #1E293B !important;
+    height: 42px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transition: all 0.2s ease-in-out !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+}
+
+/* Estados Hover, Focus y Open del Botón */
+.bootstrap-select > .dropdown-toggle:hover,
+.bootstrap-select > .dropdown-toggle:focus,
+.bootstrap-select.show > .dropdown-toggle,
+.bootstrap-select.open > .dropdown-toggle,
+.bootstrap-select .btn.dropdown-toggle:hover,
+.bootstrap-select .btn.dropdown-toggle:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+    background-color: #FFFFFF !important;
+    outline: none !important;
+}
+
+/* Texto Seleccionado y Placeholder */
+.bootstrap-select > .dropdown-toggle .filter-option {
+    display: flex !important;
+    align-items: center !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+}
+
+.bootstrap-select > .dropdown-toggle .filter-option-inner-inner {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.bootstrap-select > .dropdown-toggle .filter-option-placeholder {
+    color: #94A3B8 !important;
+    font-weight: 400 !important;
+}
+
+/* Flecha / Caret Personalizado */
+.bootstrap-select > .dropdown-toggle::after {
+    border-top: 5px solid #64748B !important;
+    border-right: 4px solid transparent !important;
+    border-left: 4px solid transparent !important;
+    border-bottom: 0 !important;
+    margin-left: auto !important;
+    transition: transform 0.2s ease-in-out !important;
+    vertical-align: middle !important;
+}
+
+.bootstrap-select.show > .dropdown-toggle::after,
+.bootstrap-select.open > .dropdown-toggle::after {
+    transform: rotate(180deg) !important;
+}
+
+/* Estado Deshabilitado */
+.bootstrap-select.disabled > .dropdown-toggle,
+.bootstrap-select > .dropdown-toggle.disabled,
+.bootstrap-select .btn.dropdown-toggle:disabled {
+    background-color: #F8FAFC !important;
+    color: #94A3B8 !important;
+    border-color: #E2E8F0 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+/* 3. Menú Desplegable */
+.bootstrap-select .dropdown-menu {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 8px !important;
+    background-color: #FFFFFF !important;
+    z-index: 9999 !important;
+    font-size: 14px !important;
+    min-width: 100% !important;
+}
+
+/* Lista interna */
+.bootstrap-select .dropdown-menu .inner {
+    padding: 0 !important;
+    max-height: 260px !important;
+}
+
+.bootstrap-select .dropdown-menu ul {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.bootstrap-select .dropdown-menu li {
+    margin-bottom: 2px !important;
+}
+
+.bootstrap-select .dropdown-menu li:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Elementos / Opciones de la lista */
+.bootstrap-select .dropdown-menu .dropdown-item,
+.bootstrap-select .dropdown-menu li a {
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    color: #1E293B !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: all 0.15s ease !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+}
+
+/* Hover y Focus de Opciones */
+.bootstrap-select .dropdown-menu .dropdown-item:hover,
+.bootstrap-select .dropdown-menu .dropdown-item:focus,
+.bootstrap-select .dropdown-menu li a:hover,
+.bootstrap-select .dropdown-menu li a:focus,
+.bootstrap-select .dropdown-menu li.active:not(.selected) a {
+    background-color: #EFF6FF !important;
+    color: #1E3A8A !important;
+}
+
+/* Opción Seleccionada */
+.bootstrap-select .dropdown-menu .dropdown-item.selected,
+.bootstrap-select .dropdown-menu .dropdown-item.active,
+.bootstrap-select .dropdown-menu li.selected a,
+.bootstrap-select .dropdown-menu li.selected.active a {
+    background-color: #EFF6FF !important;
+    color: #1E3A8A !important;
+    font-weight: 600 !important;
+}
+
+/* Icono de Check en Opción Seleccionada */
+.bootstrap-select .dropdown-menu .dropdown-item .check-mark,
+.bootstrap-select .dropdown-menu li a .check-mark {
+    color: #4A6FC1 !important;
+    margin-left: auto !important;
+    font-size: 13px !important;
+}
+
+/* Deshabilitados en Lista */
+.bootstrap-select .dropdown-menu li.disabled a {
+    color: #94A3B8 !important;
+    cursor: not-allowed !important;
+    background-color: transparent !important;
+}
+
+/* 4. Buscador interno del Selectpicker (data-live-search="true") */
+.bootstrap-select .bs-searchbox {
+    padding: 4px 6px 8px 6px !important;
+}
+
+.bootstrap-select .bs-searchbox input.form-control {
+    border-radius: 8px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    background-color: #F8FAFC !important;
+    color: #1E293B !important;
+    height: 38px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.bootstrap-select .bs-searchbox input.form-control:focus {
+    border-color: #4A6FC1 !important;
+    background-color: #FFFFFF !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+}
+
+/* Sin resultados */
+.bootstrap-select .dropdown-menu .no-results {
+    padding: 10px 12px !important;
+    color: #64748B !important;
+    font-size: 13px !important;
+    background-color: transparent !important;
+}
+
+/* 5. Correcciones de Z-Index y Desbordamiento (Overflow) */
+.bootstrap-select .dropdown-menu {
+    z-index: 9999 !important;
+}
+
+.modal-modern,
+.modal-content.modal-modern {
+    overflow: visible !important;
+}
+
+.modal-modern .modal-body,
+.modal-body:has(.bootstrap-select) {
+    overflow: visible !important;
+}
+
+.modal-modern .modal-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+}
+
+.modal-modern .modal-footer {
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+}
+
+/* Prevención de recorte en tablas responsivas */
+.table-responsive:has(.bootstrap-select.show),
+.table-responsive:has(.dropdown.show) {
+    overflow: visible !important;
+}
