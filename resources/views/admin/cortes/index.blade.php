@@ -202,7 +202,7 @@
                 const lapso = { inicio: @json($lapso->fecha_inicio->toDateString()), fin: @json($lapso->fecha_fin->toDateString()) };
                 const maxCortes = {{ \App\Models\Corte::MAXIMO_POR_LAPSO }};
                 const maxPuntos = {{ (float) $config->nota_maxima }};
-                const totalLapso = {{ (float) $totalLapso }};
+
                 const cortes = @json($datosCortes);
 
                 document.querySelectorAll('form.form-corte').forEach((form) => {
@@ -226,7 +226,7 @@
                         if (peso === '') e.peso_lapso = 'Debes indicar cuántos puntos vale el corte.';
                         else if (isNaN(peso)) e.peso_lapso = 'Los puntos deben ser un número.';
                         else if (+peso <= 0) e.peso_lapso = 'El corte debe valer más de 0 puntos.';
-                        else if (+peso - disponible > 0.001) e.peso_lapso = `Los cortes de este lapso no pueden sumar más de ${numeroLegible(totalLapso)} puntos: a este corte le quedan como máximo ${numeroLegible(disponible)}.`;
+
                         else if (+peso - maxPuntos > 0.001) e.peso_lapso = `Un corte no puede valer más de ${numeroLegible(maxPuntos)} puntos.`;
 
                         // Fechas (opcionales) dentro del lapso

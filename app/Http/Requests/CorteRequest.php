@@ -43,7 +43,7 @@ class CorteRequest extends FormRequest
         ];
     }
 
-    /** Reglas que miran otros registros: lapso cerrado, orden de fechas y suma de pesos. */
+    /** “Reglas que miran otros registros: lapso abierto o cerrado y orden de fechas.”*/
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {

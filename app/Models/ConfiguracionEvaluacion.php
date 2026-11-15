@@ -16,8 +16,6 @@ class ConfiguracionEvaluacion extends Model
         'nota_maxima',
         'nota_aprobatoria',
         'regla_redondeo',
-        'puntos_corte',
-        'puntos_corte',
         'max_lapsos',
         'momentos_quedada',
         'max_areas_pendientes',

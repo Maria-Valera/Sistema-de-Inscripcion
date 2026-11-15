@@ -114,7 +114,7 @@ class AsistenteAnioEscolar
         ])->all();
     }
 
-    /** Crea los cortes de un lapso: fechas en partes iguales y cada corte con los puntos por corte de la configuración (20). */
+    /** “Crea los cortes de un lapso: 4 cortes con fechas en partes iguales, de 20 puntos cada uno.” */
     public static function crearCortes(Lapso $lapso): void
     {
         $cantidad = Corte::CANTIDAD_POR_DEFECTO;

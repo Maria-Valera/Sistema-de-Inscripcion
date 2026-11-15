@@ -42,7 +42,7 @@ class AsistenteAnioEscolarController extends Controller
             return $this->siguiente();
         }
 
-        $config = AsistenteAnioEscolar::asegurarConfiguracion($anio);
+        AsistenteAnioEscolar::asegurarConfiguracion($anio);
 
         DB::transaction(function () use ($request, $anio) {
             foreach (array_values($request->validated('lapsos')) as $i => $datos) {

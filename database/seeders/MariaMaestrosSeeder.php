@@ -63,7 +63,7 @@ class MariaMaestrosSeeder extends Seeder
             ]
         );
 
-                // M4. Lapsos: el año se divide en partes iguales segun num_lapsos
+                // M4. “el año se divide en 3 partes iguales”
                         $numLapsos = 3;
         $numCortes = Corte::CANTIDAD_POR_DEFECTO;
         $inicio = $anio->inicio_anio_escolar->copy();
@@ -88,7 +88,7 @@ class MariaMaestrosSeeder extends Seeder
             );
 
 
-            // M5. Cortes: el lapso se divide en partes iguales; cada corte vale los puntos por corte (20), en total 4 × 20 = 80
+            // M5. “el lapso se divide en 4 partes iguales; cada corte vale 20 puntos, en total 4 × 20 = 80”
             $diasLapso = $lapso->fecha_inicio->diffInDays($lapso->fecha_fin) + 1;
             $diasPorCorte = intdiv($diasLapso, $numCortes);
             $peso = Corte::PUNTOS_POR_DEFECTO;
