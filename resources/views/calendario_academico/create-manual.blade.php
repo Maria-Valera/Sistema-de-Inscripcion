@@ -70,7 +70,7 @@
             @endif
 
             <p class="form-intro">
-                Se creará un calendario vacío para el año escolar que elijas. Después podrás
+                Se creará un calendario vacío para el año escolar que activo. Después podrás
                 registrar cada evento directamente sobre el calendario visual.
             </p>
 

@@ -184,7 +184,16 @@
                                 <span>Crear Nuevo Año Escolar</span>
                             </a>
                         @else
-                            {{-- aquí va el <button ...> de siempre, SIN cambios (abre el modal) --}}
+                                                        <button type="button"
+                                    class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm"
+                                    style="font-size: 1rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalCrearAnioEscolar"
+                                    data-toggle="modal"
+                                    data-target="#modalCrearAnioEscolar">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Crear Nuevo Año Escolar</span>
+                            </button>
                         @endif
                     @endcan
                 @endif
