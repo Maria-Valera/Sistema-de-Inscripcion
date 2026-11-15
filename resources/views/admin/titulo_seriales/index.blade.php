@@ -187,39 +187,106 @@
             const hoy = @json(now()->toDateString());
             const registrados = new Set(@json($registrados));
 
-            // ----- Registrar: la lista pegada, línea por línea -----
+            // ----- Registrar: primero se elige el modo (manual o por rango); las dos listas se revisan igual -----
             document.querySelectorAll('form.form-serial-crear').forEach((form) => {
                 const contador = form.querySelector('#crear_seriales_contador');
-                const leerLista = () => form.querySelector('[name="seriales"]').value
-                    .split(/\r\n|\r|\n/).map((l) => l.trim().toUpperCase()).filter(Boolean);
+                const campoModo = form.querySelector('[name="modo"]');
+                const valor = (nombre) => form.querySelector(`[name="${nombre}"]`).value.trim();
+                const maximo = 500;
 
-                form.querySelector('[name="seriales"]').addEventListener('input', () => {
-                    const total = leerLista().length;
-                    contador.textContent = total === 0
-                        ? 'Se registrarán como disponibles en el año escolar seleccionado.'
-                        : `${total} ${total === 1 ? 'serial' : 'seriales'} para registrar como disponibles.`;
-                });
+                // Muestra la sección del modo elegido y oculta la otra.
+                const elegirModo = (modo) => {
+                    campoModo.value = modo;
+                    form.querySelectorAll('.opcion-modo').forEach((b) => b.classList.toggle('active', b.dataset.modo === modo));
+                    form.querySelectorAll('.seccion-modo').forEach((s) => s.style.display = s.dataset.seccion === modo ? '' : 'none');
+                    form.querySelector('.seccion-modo-comun').style.display = '';
+                    form.querySelector('.btn-modal-create').style.display = '';
+                    actualizarContador();
+                };
+                form.querySelectorAll('.opcion-modo').forEach((boton) => boton.addEventListener('click', () => elegirModo(boton.dataset.modo)));
 
-                ValidacionTiempoReal(form, (f) => {
-                    const e = {};
+                // El rango en números: { total, desde, hasta, ancho, prefijo } o null si desde/hasta no son números.
+                const leerRango = () => {
+                    const desde = valor('desde'), hasta = valor('hasta');
+                    if (!/^\d{1,15}$/.test(desde) || !/^\d{1,15}$/.test(hasta)) return null;
+                    const ini = parseInt(desde, 10), fin = parseInt(hasta, 10);
+                    return { ini, fin, total: fin - ini + 1, ancho: desde.length, prefijo: valor('prefijo').toUpperCase() };
+                };
+                const serialDe = (r, n) => r.prefijo + String(n).padStart(r.ancho, '0');
+
+                // La lista final, sea del texto pegado o del rango (solo si el rango es razonable).
+                const leerLista = () => {
+                    if (campoModo.value === 'rango') {
+                        const r = leerRango();
+                        if (!r || r.total < 1 || r.total > maximo) return [];
+                        return Array.from({ length: r.total }, (_, i) => serialDe(r, r.ini + i));
+                    }
+                    return valor('seriales').split(/\r\n|\r|\n/).map((l) => l.trim().toUpperCase()).filter(Boolean);
+                };
+
+                const actualizarContador = () => {
                     const lista = leerLista();
+                    const total = lista.length;
+                    if (total === 0) {
+                        contador.textContent = 'Se registrarán como disponibles en el año escolar seleccionado.';
+                    } else if (campoModo.value === 'rango') {
+                        contador.textContent = `Se registrarán ${total} ${total === 1 ? 'serial' : 'seriales'}: ${lista[0]}${total > 1 ? ' … ' + lista[total - 1] : ''}.`;
+                    } else {
+                        contador.textContent = `${total} ${total === 1 ? 'serial' : 'seriales'} para registrar como disponibles.`;
+                    }
+                };
+                ['seriales', 'prefijo', 'desde', 'hasta'].forEach((nombre) =>
+                    form.querySelector(`[name="${nombre}"]`).addEventListener('input', actualizarContador));
+                actualizarContador();
+
+                // Revisa la lista ya armada: formato, repetidos y ya registrados.
+                const problemasDe = (lista) => {
                     const vistos = new Set();
                     const problemas = [];
-
                     lista.forEach((s) => {
                         if (!formato.test(s)) problemas.push(`"${s}" no es válido (solo letras, números y guiones, de 3 a 30 caracteres)`);
                         else if (vistos.has(s)) problemas.push(`"${s}" está repetido en la lista`);
                         else if (registrados.has(s)) problemas.push(`"${s}" ya está registrado`);
                         vistos.add(s);
                     });
+                    return problemas.length
+                        ? 'Revisa: ' + problemas.slice(0, 5).join('; ') + (problemas.length > 5 ? ` y ${problemas.length - 5} más.` : '.')
+                        : '';
+                };
 
-                    if (lista.length === 0) e.seriales = 'Pega al menos un serial (uno por línea).';
-                    else if (lista.length > 500) e.seriales = 'No se pueden registrar más de 500 seriales de una vez.';
-                    else if (problemas.length) e.seriales = 'Revisa: ' + problemas.slice(0, 5).join('; ') + (problemas.length > 5 ? ` y ${problemas.length - 5} más.` : '.');
+                ValidacionTiempoReal(form, (f) => {
+                    const e = {};
+
+                    if (campoModo.value === 'manual') {
+                        const lista = leerLista();
+                        if (lista.length === 0) e.seriales = 'Pega al menos un serial (uno por línea).';
+                        else if (lista.length > maximo) e.seriales = 'No se pueden registrar más de 500 seriales de una vez.';
+                        else if (problemasDe(lista)) e.seriales = problemasDe(lista);
+                    }
+
+                    if (campoModo.value === 'rango') {
+                        if (!/^[A-Za-z0-9-]{0,20}$/.test(valor('prefijo'))) e.prefijo = 'El prefijo solo puede tener letras, números y guiones (hasta 20).';
+                        if (!valor('desde')) e.desde = 'Escribe el número inicial del rango.';
+                        else if (!/^\d{1,15}$/.test(valor('desde'))) e.desde = 'El número inicial debe tener solo dígitos (hasta 15).';
+                        if (!valor('hasta')) e.hasta = 'Escribe el número final del rango.';
+                        else if (!/^\d{1,15}$/.test(valor('hasta'))) e.hasta = 'El número final debe tener solo dígitos (hasta 15).';
+
+                        const r = leerRango();
+                        if (r && !e.prefijo) {
+                            if (r.total < 1) e.hasta = 'El número final no puede ser menor que el inicial.';
+                            else if (r.total > maximo) e.hasta = 'Un rango no puede tener más de 500 seriales.';
+                            else if (problemasDe(leerLista())) e.hasta = problemasDe(leerLista());
+                        }
+                    }
 
                     const fecha = f.querySelector('[name="fecha_recepcion"]').value;
                     if (fecha && fecha > hoy) e.fecha_recepcion = 'La fecha de recepción no puede ser futura.';
                     return e;
+                });
+
+                // Sin modo elegido no se envía (el botón Registrar está oculto hasta elegir).
+                form.addEventListener('submit', (evento) => {
+                    if (!campoModo.value) evento.preventDefault();
                 });
             });
 
