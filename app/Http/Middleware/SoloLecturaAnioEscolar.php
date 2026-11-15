@@ -25,7 +25,7 @@ class SoloLecturaAnioEscolar
         if (! AnioEscolarSeleccionado::esActual()) {
             // 1. Bloquear formularios directos de creación y edición (GET /create, GET /edit)
             if ($request->isMethod('GET') && (
-                $request->routeIs('*.create') || 
+                $request->routeIs('*.create') ||
                 str_ends_with($request->path(), '/create') ||
                 $request->routeIs('*.edit') ||
                 str_ends_with($request->path(), '/edit')
@@ -93,6 +93,8 @@ class SoloLecturaAnioEscolar
         $routeName = $request->route()?->getName();
 
         return $request->routeIs('admin.anio-escolar.*')
+            // Asistente de año nuevo (María): crea un año nuevo, aunque el seleccionado sea uno anterior
+            || $request->routeIs('admin.asistente.*')
             || $request->routeIs('logout')
             || $request->routeIs('password.change*')
             || $routeName === 'logout'

@@ -76,14 +76,14 @@ Route::middleware(['permission:titulo_seriales.gestionar'])->group(function () {
 });
 
 
-// ===== Asistente de año escolar nuevo: lapsos y calendario antes de entrar al sistema =====
-// (El paso 1, crear el año, es de Stephania. Ver AsistenteAnioEscolarPendiente.)
-Route::middleware(['permission:lapsos.gestionar'])->group(function () {
-    Route::get('asistente/lapsos', [AsistenteAnioEscolarController::class, 'lapsos'])->name('asistente.lapsos');
-    Route::post('asistente/lapsos', [AsistenteAnioEscolarController::class, 'guardarLapsos'])->name('asistente.lapsos.store');
+// ===== Asistente de año escolar nuevo: año escolar → lapso 1 → calendario académico =====
+// Los pasos 1 y 2 solo guardan un borrador en la sesión; todo se crea junto al guardar el paso 3.
+Route::middleware(['permission:anio_escolar.gestionar', 'permission:lapsos.gestionar', 'permission:calendario_academico.gestionar'])->group(function () {
+    Route::get('asistente/anio', [AsistenteAnioEscolarController::class, 'anio'])->name('asistente.anio');
+    Route::post('asistente/anio', [AsistenteAnioEscolarController::class, 'guardarAnio'])->name('asistente.anio.store');
+    Route::get('asistente/lapso', [AsistenteAnioEscolarController::class, 'lapso'])->name('asistente.lapso');
+    Route::post('asistente/lapso', [AsistenteAnioEscolarController::class, 'guardarLapso'])->name('asistente.lapso.store');
+    Route::get('asistente/calendario', [AsistenteAnioEscolarController::class, 'calendario'])->name('asistente.calendario');
+    Route::post('asistente/guardar', [AsistenteAnioEscolarController::class, 'guardar'])->name('asistente.guardar');
 });
 
-Route::middleware(['permission:calendario_academico.gestionar'])->group(function () {
-    Route::get('asistente/calendario', [AsistenteAnioEscolarController::class, 'calendario'])->name('asistente.calendario');
-    Route::post('asistente/calendario', [AsistenteAnioEscolarController::class, 'guardarCalendario'])->name('asistente.calendario.store');
-});

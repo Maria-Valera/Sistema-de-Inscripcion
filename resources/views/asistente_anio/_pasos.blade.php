@@ -1,6 +1,6 @@
-{{-- Indicador de pasos del asistente. Recibe $pasoActual (2 = lapsos, 3 = calendario). --}}
+{{-- Indicador de pasos del asistente. Recibe $pasoActual (1 = año escolar, 2 = lapso 1, 3 = calendario). --}}
 @php
-    $pasos = [1 => 'Año escolar', 2 => 'Lapsos', 3 => 'Calendario académico'];
+        $pasos = [1 => 'Año escolar', 2 => 'Lapso 1', 3 => 'Calendario académico'];
 @endphp
 <div class="pasos">
     @foreach ($pasos as $numero => $texto)
