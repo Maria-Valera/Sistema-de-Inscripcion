@@ -21,24 +21,9 @@
 
                     <div class="form-group-modern">
                         <label for="anio_escolar_id_{{ $calendario->id }}" class="form-label-modern">Año escolar</label>
-                        @if ($calendario->dias_count > 0)
-                            {{-- Con eventos no se cambia el año: se manda el mismo --}}
-                            <input type="hidden" name="anio_escolar_id" value="{{ $calendario->anio_escolar_id }}">
-                            <input type="text" class="form-control-modern" disabled
-                                value="{{ $calendario->anioEscolar->inicio_anio_escolar->format('Y') }} - {{ $calendario->anioEscolar->cierre_anio_escolar->format('Y') }}">
-                            <small class="text-muted">No se puede cambiar porque ya tiene {{ $calendario->dias_count }} eventos.</small>
-                        @else
-                            <select class="form-control-modern" id="anio_escolar_id_{{ $calendario->id }}" name="anio_escolar_id" required>
-                                <option value="{{ $calendario->anio_escolar_id }}" selected>
-                                    {{ $calendario->anioEscolar->inicio_anio_escolar->format('Y') }} - {{ $calendario->anioEscolar->cierre_anio_escolar->format('Y') }} (actual)
-                                </option>
-                                @foreach ($aniosSinCalendario as $anio)
-                                    <option value="{{ $anio->id }}">
-                                        {{ $anio->inicio_anio_escolar->format('Y') }} - {{ $anio->cierre_anio_escolar->format('Y') }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        @endif
+                                                {{-- El año no se cambia: cada calendario es de su año escolar --}}
+                        <input type="text" class="form-control-modern" id="anio_escolar_id_{{ $calendario->id }}" disabled
+                            value="{{ $calendario->anioEscolar->inicio_anio_escolar->format('Y') }} - {{ $calendario->anioEscolar->cierre_anio_escolar->format('Y') }}">
                     </div>
 
                     <div class="form-group-modern">

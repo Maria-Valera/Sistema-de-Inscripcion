@@ -22,7 +22,8 @@
             </div>
 
             @can('calendario_academico.gestionar')
-                @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                {{-- Solo para el año activo, y solo si todavía no tiene calendario --}}
+                @if (\App\Support\AnioEscolarSeleccionado::esActual() && $puedeCrear)
                     <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create_manual') }}'">
                         <i class="fas fa-calendar-plus"></i> <span>Crear nuevo calendario</span>
                     </button>
