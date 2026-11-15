@@ -1,155 +1,174 @@
 <div class="modal fade" id="modalCrearAreaFormacion" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCrearAreaFormacionLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-modern">
-            <div class="modal-header-create">
-                <div class="modal-icon-create">
-                    <i class="fas fa-plus-circle"></i>
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
+        <div class="modal-content modal-modern shadow-lg" style="border: 1px solid #E2E8F0; border-radius: 16px; overflow: visible; background: #FFFFFF;">
+            
+            <!-- Header Limpio (Fondo Blanco) -->
+            <div class="modal-header d-flex align-items-center justify-content-between px-4 py-3 bg-white border-bottom" style="border-bottom-color: #F1F5F9 !important; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 42px; height: 42px; border-radius: 12px; background-color: #EFF6FF; color: #4A6FC1;">
+                        <i class="fas fa-book" style="font-size: 1.15rem;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title m-0 fw-bold" id="modalCrearAreaFormacionLabel" style="color: #1E293B; font-size: 1.1rem;">
+                            Nueva Área de Formación
+                        </h5>
+                        <p class="text-muted m-0" style="font-size: 0.82rem;">Definición de materia y parámetros</p>
+                    </div>
                 </div>
-                <h5 class="modal-title-create" id="modalCrearAreaFormacionLabel">Nueva Area de Formación</h5>
-                <button type="button" class="btn-close-modal" data-bs-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
-            <div class="modal-body-create">
-                <form id="formAreaFormacion" action="{{ route('admin.area_formacion.modales.store') }}" method="POST">
-                    @csrf
-                    <div class="form-group-modern">
-                        <label for="nombre_area_formacion" class="form-label-modern">
-                            <i class="fas fa-book"></i>
-                            Nombre del area de formación
-                        </label>
-                        <input type="text" 
-                            name="nombre_area_formacion" 
-                            id="nombre_area_formacion" 
-                            class="form-control-modern" 
-                            placeholder="Ingrese el nombre del area de formación"
-                            required>
-                        
-                        @error('nombre_area_formacion')
-                            <div class="error-message">
-                                Este campo es obligatorio.
-                            </div>
-                        @enderror
-                    </div> 
-                    
-                    <div class="form-group-modern">
-                        <label for="codigo_area" class="form-label-modern">
-                            <i class="fas fa-book"></i>
-                            Código del area de formación
-                        </label>
-                        <input type="text" 
-                            name="codigo_area" 
-                            id="codigo_area" 
-                            class="form-control-modern" 
-                            placeholder="Ingrese el código del area de formación"
-                            required
-                            inputmode="numeric"
-                            pattern="[0-9]*"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                        @error('codigo_area')
-                            <div class="error-message">
-                                Este campo es obligatorio.
-                            </div>
-                        @enderror
-                    </div>
-                    
-                    <div class="form-group-modern">
-                        <label for="siglas" class="form-label-modern">
-                            <i class="fas fa-book"></i>
-                            Siglas del area de formación
-                        </label>
-                        <input type="text" 
-                            name="siglas" 
-                            id="siglas" 
-                            class="form-control-modern" 
-                            placeholder="Ingrese las siglas del area de formación"
-                            required>
-                        
-                        @error('siglas')
-                            <div class="error-message">
-                                Este campo es obligatorio.
-                            </div>
-                        @enderror
-                    </div>
+            <form id="formAreaFormacion" action="{{ route('admin.area_formacion.modales.store') }}" method="POST" class="m-0">
+                @csrf
+                <div class="modal-body px-4 py-3" style="background-color: #FFFFFF;">
+                    <div class="row">
+                        <!-- Fila 1: Nombre (col-md-8) y Código (col-md-4) -->
+                        <div class="col-md-8 mb-3">
+                            <label for="nombre_area_formacion" class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                <i class="fas fa-book text-primary me-1"></i>
+                                <span>Nombre del Área de Formación</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                name="nombre_area_formacion" 
+                                id="nombre_area_formacion" 
+                                class="form-control" 
+                                placeholder="Ej: Matemáticas, Castellano"
+                                style="height: 42px; border-radius: 8px; font-size: 0.9rem;"
+                                required>
+                            @error('nombre_area_formacion')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Este campo es obligatorio.
+                                </div>
+                            @enderror
+                        </div>
 
-                    <div class="form-group-modern">
-                        <label for="bloques_semanales" class="form-label-modern">
-                            <i class="fas fa-clock"></i>
-                            Bloques Semanales
-                        </label>
-                        <input type="number" 
-                            name="bloques_semanales" 
-                            id="bloques_semanales" 
-                            class="form-control-modern" 
-                            placeholder="Ingrese los bloques semanales"
-                            required
-                            min="1"
-                            max="40">
-                        
-                        @error('bloques_semanales')
-                            <div class="error-message">
-                                Este campo es obligatorio.
-                            </div>
-                        @enderror
-                    </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="codigo_area" class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                <i class="fas fa-hashtag text-primary me-1"></i>
+                                <span>Código</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                name="codigo_area" 
+                                id="codigo_area" 
+                                class="form-control" 
+                                placeholder="Ej: 1, 102"
+                                style="height: 42px; border-radius: 8px; font-size: 0.9rem;"
+                                required
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            @error('codigo_area')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Este campo es obligatorio.
+                                </div>
+                            @enderror
+                        </div>
 
-                    <div class="form-group-modern">
-                        <label for="bloques_maximos_por_dia" class="form-label-modern">
-                            <i class="fas fa-calendar-day"></i>
-                            Bloques Máximos por Día
-                        </label>
-                        <input type="number" 
-                            name="bloques_maximos_por_dia" 
-                            id="bloques_maximos_por_dia" 
-                            class="form-control-modern" 
-                            placeholder="Máximo de bloques por día (1-8)"
-                            required
-                            min="1"
-                            max="8"
-                            value="2">
-                        <small class="text-muted">Cantidad máxima de bloques de esta materia que se pueden asignar en un mismo día.</small>
-                        
-                        @error('bloques_maximos_por_dia')
-                            <div class="error-message">
-                                Este campo es obligatorio (mínimo 1, máximo 8).
-                            </div>
-                        @enderror
-                    </div>
+                        <!-- Fila 2: Siglas (col-md-4) y Aula Asignada (col-md-8) -->
+                        <div class="col-md-4 mb-3">
+                            <label for="siglas" class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                <i class="fas fa-font text-primary me-1"></i>
+                                <span>Siglas</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                name="siglas" 
+                                id="siglas" 
+                                class="form-control" 
+                                placeholder="Ej: MAT, CAS"
+                                style="height: 42px; border-radius: 8px; font-size: 0.9rem;"
+                                required>
+                            @error('siglas')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Este campo es obligatorio.
+                                </div>
+                            @enderror
+                        </div>
 
-                    <div class="form-group-modern">
-                        <label for="aula_id" class="form-label-modern">
-                            <i class="fas fa-door-open"></i>
-                            Aula Asignada
-                        </label>
-                        <select name="aula_id" id="aula_id" class="form-control-modern" required>
-                            <option value="">Seleccione un aula</option>
-                            @foreach($aulas ?? [] as $aula)
-                                <option value="{{ $aula->id_aula }}">{{ $aula->nombre_aula }} - {{ $aula->tipo_aula }}</option>
-                            @endforeach
-                        </select>
-                        
-                        @error('aula_id')
-                            <div class="error-message">
-                                Este campo es obligatorio.
-                            </div>
-                        @enderror
-                    </div> 
+                        <div class="col-md-8 mb-3">
+                            <label for="aula_id" class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                <i class="fas fa-door-open text-primary me-1"></i>
+                                <span>Aula Asignada</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select name="aula_id" id="aula_id" class="form-select" style="height: 42px; border-radius: 8px; font-size: 0.9rem;" required>
+                                <option value="">Seleccione un aula</option>
+                                @foreach($aulas ?? [] as $aula)
+                                    <option value="{{ $aula->id_aula }}">{{ $aula->nombre_aula }} - {{ $aula->tipo_aula }}</option>
+                                @endforeach
+                            </select>
+                            @error('aula_id')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Este campo es obligatorio.
+                                </div>
+                            @enderror
+                        </div>
 
-                    <div class="modal-footer-create">
-                        <div class="footer-buttons">
-                            <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">
-                                <i class="fas fa-times me-1"></i>
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn-modal-create">
-                                <i class="fas fa-save me-1"></i>
-                                Guardar
-                            </button>
+                        <!-- Fila 3: Bloques Semanales (col-md-6) y Bloques Máximos por Día (col-md-6) -->
+                        <div class="col-md-6 mb-3">
+                            <label for="bloques_semanales" class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                <i class="fas fa-clock text-primary me-1"></i>
+                                <span>Bloques Semanales</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" 
+                                name="bloques_semanales" 
+                                id="bloques_semanales" 
+                                class="form-control" 
+                                placeholder="Ej: 4"
+                                style="height: 42px; border-radius: 8px; font-size: 0.9rem;"
+                                required
+                                min="1"
+                                max="40">
+                            <div class="form-text text-muted" style="font-size: 0.78rem;">Total semanal (1-40).</div>
+                            @error('bloques_semanales')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Este campo es obligatorio.
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="bloques_maximos_por_dia" class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                <i class="fas fa-calendar-day text-primary me-1"></i>
+                                <span>Bloques Máx. por Día</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" 
+                                name="bloques_maximos_por_dia" 
+                                id="bloques_maximos_por_dia" 
+                                class="form-control" 
+                                placeholder="Ej: 2"
+                                style="height: 42px; border-radius: 8px; font-size: 0.9rem;"
+                                required
+                                min="1"
+                                max="8"
+                                value="2">
+                            <div class="form-text text-muted" style="font-size: 0.78rem;">Máximo de bloques diarios (1-8).</div>
+                            @error('bloques_maximos_por_dia')
+                                <div class="text-danger small mt-1">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Este campo es obligatorio.
+                                </div>
+                            @enderror
                         </div>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <!-- Footer Alineado a la Derecha -->
+                <div class="modal-footer d-flex justify-content-end align-items-center gap-2 px-4 py-3 bg-white border-top" style="border-top-color: #F1F5F9 !important; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn-secondary-modern" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>
+                        <span>Cancelar</span>
+                    </button>
+                    <button type="submit" class="btn-primary-modern">
+                        <i class="fas fa-save me-1"></i>
+                        <span>Guardar</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

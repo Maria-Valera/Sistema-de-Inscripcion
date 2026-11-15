@@ -974,6 +974,51 @@ textarea.form-control:focus,
     outline: none !important;
 }
 
+/* ============================================================================
+   ESTILO GLOBAL PARA TEXTOS DE EJEMPLO (PLACEHOLDERS)
+   ============================================================================ */
+::placeholder {
+    color: #9CA3AF !important; /* Gris suave (Tailwind gray-400) */
+    -webkit-text-fill-color: #9CA3AF !important;
+    opacity: 1 !important; /* Firefox baja la opacidad por defecto, esto la fuerza a 1 */
+}
+
+::-webkit-input-placeholder {
+    color: #9CA3AF !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+::-moz-placeholder {
+    color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+:-ms-input-placeholder {
+    color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+/* Asegurar que se aplique a los inputs modernos de Bootstrap */
+.form-control::placeholder,
+.form-control-modern::placeholder,
+.form-select::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: #9CA3AF !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+.form-control::-webkit-input-placeholder,
+.form-control-modern::-webkit-input-placeholder,
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+    color: #9CA3AF !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
 /* Buscador Moderno */
 .search-wrapper {
     position: relative;
@@ -1688,8 +1733,8 @@ select.form-select.text-center {
 }
 
 /* 2. Botón Toggle del Selectpicker */
-.bootstrap-select > .dropdown-toggle,
-.bootstrap-select > button.btn.dropdown-toggle,
+.bootstrap-select>.dropdown-toggle,
+.bootstrap-select>button.btn.dropdown-toggle,
 .bootstrap-select .btn.dropdown-toggle.btn-light,
 .bootstrap-select .btn.dropdown-toggle.btn-default {
     background-color: #FFFFFF !important;
@@ -1710,10 +1755,10 @@ select.form-select.text-center {
 }
 
 /* Estados Hover, Focus y Open del Botón */
-.bootstrap-select > .dropdown-toggle:hover,
-.bootstrap-select > .dropdown-toggle:focus,
-.bootstrap-select.show > .dropdown-toggle,
-.bootstrap-select.open > .dropdown-toggle,
+.bootstrap-select>.dropdown-toggle:hover,
+.bootstrap-select>.dropdown-toggle:focus,
+.bootstrap-select.show>.dropdown-toggle,
+.bootstrap-select.open>.dropdown-toggle,
 .bootstrap-select .btn.dropdown-toggle:hover,
 .bootstrap-select .btn.dropdown-toggle:focus {
     border-color: #4A6FC1 !important;
@@ -1723,7 +1768,7 @@ select.form-select.text-center {
 }
 
 /* Texto Seleccionado y Placeholder */
-.bootstrap-select > .dropdown-toggle .filter-option {
+.bootstrap-select>.dropdown-toggle .filter-option {
     display: flex !important;
     align-items: center !important;
     font-size: 14px !important;
@@ -1731,19 +1776,19 @@ select.form-select.text-center {
     color: #1E293B !important;
 }
 
-.bootstrap-select > .dropdown-toggle .filter-option-inner-inner {
+.bootstrap-select>.dropdown-toggle .filter-option-inner-inner {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
 }
 
-.bootstrap-select > .dropdown-toggle .filter-option-placeholder {
+.bootstrap-select>.dropdown-toggle .filter-option-placeholder {
     color: #94A3B8 !important;
     font-weight: 400 !important;
 }
 
 /* Flecha / Caret Personalizado */
-.bootstrap-select > .dropdown-toggle::after {
+.bootstrap-select>.dropdown-toggle::after {
     border-top: 5px solid #64748B !important;
     border-right: 4px solid transparent !important;
     border-left: 4px solid transparent !important;
@@ -1753,14 +1798,14 @@ select.form-select.text-center {
     vertical-align: middle !important;
 }
 
-.bootstrap-select.show > .dropdown-toggle::after,
-.bootstrap-select.open > .dropdown-toggle::after {
+.bootstrap-select.show>.dropdown-toggle::after,
+.bootstrap-select.open>.dropdown-toggle::after {
     transform: rotate(180deg) !important;
 }
 
 /* Estado Deshabilitado */
-.bootstrap-select.disabled > .dropdown-toggle,
-.bootstrap-select > .dropdown-toggle.disabled,
+.bootstrap-select.disabled>.dropdown-toggle,
+.bootstrap-select>.dropdown-toggle.disabled,
 .bootstrap-select .btn.dropdown-toggle:disabled {
     background-color: #F8FAFC !important;
     color: #94A3B8 !important;
