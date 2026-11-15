@@ -36,22 +36,11 @@
     </select>
 </div>
 
-<div class="row">
-    <div class="col-md-4 form-group-modern">
-        <label for="{{ $prefijo }}_num_lapsos" class="form-label-modern">Lapsos del año</label>
-        <input type="number" class="form-control-modern" id="{{ $prefijo }}_num_lapsos" name="num_lapsos"
-            min="2" max="4" value="{{ $valor('num_lapsos', 3) }}" required>
-    </div>
-    <div class="col-md-4 form-group-modern">
-        <label for="{{ $prefijo }}_num_cortes" class="form-label-modern">Cortes por lapso</label>
-        <input type="number" class="form-control-modern" id="{{ $prefijo }}_num_cortes" name="num_cortes"
-            min="1" max="10" value="{{ $valor('num_cortes', 4) }}" required>
-    </div>
-    <div class="col-md-4 form-group-modern">
-        <label for="{{ $prefijo }}_puntos_corte" class="form-label-modern">Puntos por corte</label>
-        <input type="number" class="form-control-modern" id="{{ $prefijo }}_puntos_corte" name="puntos_corte"
-            min="1" max="100" value="{{ $valor('puntos_corte', 20) }}" required>
-    </div>
+<div class="form-group-modern">
+    <label for="{{ $prefijo }}_max_lapsos" class="form-label-modern">Máximo de lapsos del año</label>
+    <input type="number" class="form-control-modern" id="{{ $prefijo }}_max_lapsos" name="max_lapsos"
+        min="1" max="6" value="{{ $valor('max_lapsos', 3) }}" required>
+    <small class="text-muted">Es el límite: los lapsos y sus fechas se crean en el maestro de Lapsos.</small>
 </div>
 
 <div class="row">

@@ -8,6 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Corte extends Model
 {
+
+        /** Un lapso tiene como máximo 10 cortes. */
+    public const MAXIMO_POR_LAPSO = 10;
+
+    /** Lo que propone el sistema al crear los cortes de un lapso: 4 cortes de 20 puntos. */
+    public const CANTIDAD_POR_DEFECTO = 4;
+    public const PUNTOS_POR_DEFECTO = 20;
+
     protected $table = 'cortes';
 
     // Valor por defecto tambien en el modelo (asi un registro recien creado ya lo trae).

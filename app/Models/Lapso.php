@@ -53,6 +53,15 @@ class Lapso extends Model
         return $this->hasMany(Corte::class, 'lapso_id')->orderBy('numero');
     }
 
+        /**
+     * Total de puntos del lapso: la suma de los puntos de sus cortes (4 cortes de 20 = 80).
+     * La nota del lapso es esa suma entre la cantidad de cortes (80 / 4 = 20).
+     */
+    public function puntosTotales(): float
+    {
+        return (float) ($this->cortes_sum_peso_lapso ?? $this->cortes()->sum('peso_lapso'));
+    }
+
     public function cerradoPor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cerrado_por');

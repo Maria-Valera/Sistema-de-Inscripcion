@@ -25,13 +25,13 @@
             <div class="asistente-cuerpo">
                 <div class="nota-info">
                     <i class="fas fa-info-circle me-1"></i>
-                    @if ($origen)
-                        Se usa la misma configuración de evaluación del año {{ $origen->inicio_anio_escolar->format('Y') }} - {{ $origen->cierre_anio_escolar->format('Y') }}:
+                                        @if ($origen)
+                        Se copia la configuración de evaluación del año {{ $origen->inicio_anio_escolar->format('Y') }} - {{ $origen->cierre_anio_escolar->format('Y') }}.
                     @else
-                        Se usa la configuración de evaluación por defecto:
+                        Se usa la configuración de evaluación por defecto.
                     @endif
-                    <strong>{{ $config->num_lapsos }} lapsos</strong>, cada uno con
-                    <strong>{{ $config->num_cortes }} cortes de {{ $config->puntos_corte }} puntos</strong> ({{ $config->puntosPorLapso() }} en total).
+                    Se crean <strong>{{ \App\Support\AsistenteAnioEscolar::LAPSOS_POR_DEFECTO }} lapsos</strong>, cada uno con
+                    <strong>{{ \App\Models\Corte::CANTIDAD_POR_DEFECTO }} cortes de {{ \App\Models\Corte::PUNTOS_POR_DEFECTO }} puntos</strong>.
                     Los cortes se crean solos; podrás ajustarlos luego en <em>Lapsos y Cortes</em>.
                 </div>
 

@@ -42,12 +42,12 @@ class ConfiguracionEvaluacionController extends Controller
     {
         $datos = $request->validated();
 
-        // Si el año ya tiene lapsos, no se puede bajar num_lapsos por debajo de los que existen.
+                // El máximo no puede quedar por debajo de los lapsos que el año ya tiene.
         $lapsosCreados = Lapso::where('anio_escolar_id', $configuracionEvaluacion->anio_escolar_id)->count();
-        if ($datos['num_lapsos'] < $lapsosCreados) {
+        if ($datos['max_lapsos'] < $lapsosCreados) {
             return back()
                 ->withInput()
-                ->with('error', "Ese año ya tiene {$lapsosCreados} lapsos creados: el número de lapsos no puede ser menor.");
+                ->with('error', "Ese año ya tiene {$lapsosCreados} lapsos creados: el máximo de lapsos no puede ser menor.");
         }
 
         $configuracionEvaluacion->update($datos);

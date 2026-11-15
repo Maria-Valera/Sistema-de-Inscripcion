@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Enums\EstadoLapso;
 use App\Enums\EstadoCorte;
 use App\Http\Requests\CorteRequest;
 use App\Models\ConfiguracionEvaluacion;
@@ -20,20 +20,19 @@ class CorteController extends Controller
         $config = ConfiguracionEvaluacion::where('anio_escolar_id', $lapso->anio_escolar_id)->first();
         $cortes = $lapso->cortes()->get();
 
-        // Total del lapso: cortes × puntos por corte (4 × 20 = 80).
-        $totalLapso = $config?->puntosPorLapso() ?? 0;
-        $suma = (float) $cortes->sum('peso_lapso');
-        $faltan = round($totalLapso - $suma, 2);
+                // Total del lapso: la suma de los puntos de sus cortes (4 × 20 = 80).
+        $totalLapso = (float) $cortes->sum('peso_lapso');
 
-        $puedeCrear = $config && $cortes->count() < $config->num_cortes && $faltan > 0;
-        $siguienteNumero = $config
-            ? collect(range(1, $config->num_cortes))->diff($cortes->pluck('numero'))->first()
-            : null;
+        // Con el lapso abierto o cerrado ya no se agregan cortes: la nota del lapso se divide entre los que tiene.
+        $puedeCrear = $config
+            && $lapso->estado === EstadoLapso::Planificado
+            && $cortes->count() < Corte::MAXIMO_POR_LAPSO;
+        $siguienteNumero = collect(range(1, Corte::MAXIMO_POR_LAPSO))->diff($cortes->pluck('numero'))->first();
 
-        // Puntos que se proponen al crear: los puntos por corte de la configuración (20), sin pasar de lo que falta.
-        $pesoSugerido = $config ? min((float) $config->puntos_corte, $faltan) : null;
+        // Puntos que se proponen al crear: la nota máxima de la configuración (20).
+        $pesoSugerido = $config?->nota_maxima ?? Corte::PUNTOS_POR_DEFECTO;
 
-        return view('admin.cortes.index', compact('lapso', 'config', 'cortes', 'totalLapso', 'suma', 'faltan', 'puedeCrear', 'siguienteNumero', 'pesoSugerido'));
+        return view('admin.cortes.index', compact('lapso', 'config', 'cortes', 'totalLapso', 'puedeCrear', 'siguienteNumero', 'pesoSugerido'));
     }
 
     public function store(CorteRequest $request, Lapso $lapso): RedirectResponse
@@ -53,6 +52,12 @@ class CorteController extends Controller
 
     public function destroy(Lapso $lapso, Corte $corte): RedirectResponse
     {
+                if ($lapso->estado !== EstadoLapso::Planificado) {
+            return redirect()
+                ->route('admin.cortes.index', $lapso)
+                ->with('error', "No se puede eliminar {$corte->nombre}: el lapso ya está abierto y sus cortes no se pueden quitar.");
+        }
+
         if ($corte->estado !== EstadoCorte::Planificado) {
             return redirect()
                 ->route('admin.cortes.index', $lapso)

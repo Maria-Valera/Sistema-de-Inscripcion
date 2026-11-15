@@ -18,8 +18,7 @@ class AsistenteLapsosRequest extends FormRequest
     public function rules(): array
     {
         $anio = AsistenteAnioEscolar::anioActivo();
-        // Normalmente ya la creó la pantalla del paso; si no (por ejemplo, una pestaña vieja), se crea aquí.
-        $cantidad = $anio ? AsistenteAnioEscolar::asegurarConfiguracion($anio)->num_lapsos : 0;
+        $cantidad = AsistenteAnioEscolar::LAPSOS_POR_DEFECTO;
         $inicio = $anio?->inicio_anio_escolar?->toDateString();
         $cierre = $anio?->cierre_anio_escolar?->toDateString();
 
@@ -59,7 +58,7 @@ class AsistenteLapsosRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'lapsos.size' => 'Debes cargar exactamente :size lapsos, como dice la configuración de evaluación.',
+            'lapsos.size' => 'Debes cargar exactamente :size lapsos.',
             'lapsos.*.nombre.required' => 'Debes indicar el nombre del lapso.',
             'lapsos.*.nombre.max' => 'El nombre no puede pasar de 50 caracteres.',
             'lapsos.*.fecha_inicio.required' => 'Debes indicar la fecha de inicio.',
