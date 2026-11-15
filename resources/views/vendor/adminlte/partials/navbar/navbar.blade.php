@@ -3,10 +3,10 @@
 <nav class="main-header navbar
     {{ config('adminlte.classes_topnav_nav', 'navbar-expand') }}
     {{ config('adminlte.classes_topnav', 'navbar-white navbar-light') }}
-    d-flex justify-content-between align-items-center py-3">
+    d-flex justify-content-between align-items-center py-3 flex-nowrap">
 
     {{-- Grupo Izquierdo: Hamburguesa + Breadcrumb --}}
-    <div class="d-flex align-items-center" style="gap: 10px;">
+    <div class="d-flex align-items-center flex-shrink-1 overflow-hidden" style="gap: 10px;">
         {{-- Navbar left links --}}
         <ul class="navbar-nav">
             {{-- Left sidebar toggler link --}}
@@ -19,15 +19,17 @@
             @yield('content_top_nav_left')
         </ul>
 
-        <ul class="navbar-nav">
-            <li class="nav-item d-flex align-items-center">
-                <nav aria-label="breadcrumb" class="mb-0">
-                    @if (Breadcrumbs::exists())
-                        {!! Breadcrumbs::render() !!}
-                    @endif
-                </nav>
-            </li>
-        </ul>
+        <div class="d-none d-md-block">
+            <ul class="navbar-nav overflow-hidden">
+                <li class="nav-item d-flex align-items-center overflow-hidden">
+                    <nav aria-label="breadcrumb" class="mb-0 text-truncate">
+                        @if (Breadcrumbs::exists())
+                            {!! Breadcrumbs::render() !!}
+                        @endif
+                    </nav>
+                </li>
+            </ul>
+        </div>
     </div>
 
     <style>
@@ -77,10 +79,49 @@
             color: #CBD5E1 !important;
             padding: 0 8px !important;
         }
+
+        @media (max-width: 768px) {
+            .main-header.navbar {
+                padding: 0.5rem 0.75rem !important;
+                min-height: 56px;
+            }
+            .main-header.navbar .breadcrumb,
+            .navbar .breadcrumb {
+                font-size: 13px !important;
+            }
+            .main-header.navbar .breadcrumb .breadcrumb-item {
+                max-width: 130px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .navbar-nav.ms-auto,
+            .navbar-nav.ml-auto {
+                gap: 8px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-header.navbar {
+                padding: 0.4rem 0.5rem !important;
+            }
+            .main-header.navbar .breadcrumb .breadcrumb-item:not(.active) {
+                display: none !important;
+            }
+            .main-header.navbar .breadcrumb .breadcrumb-item.active::before {
+                display: none !important;
+            }
+            .main-header.navbar .breadcrumb .breadcrumb-item.active {
+                max-width: 100px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
     </style>
 
     {{-- Grupo Derecho: Selector de Año + Perfil de Usuario --}}
-    <ul class="navbar-nav ms-auto ml-auto d-flex align-items-center" style="gap: 16px;">
+    <ul class="navbar-nav ms-auto ml-auto d-flex align-items-center flex-shrink-0" style="gap: 16px;">
         {{-- Custom right links --}}
         @yield('content_top_nav_right')
 

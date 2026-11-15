@@ -509,6 +509,7 @@
     border: none !important;
     border-bottom: 1px solid var(--border-color) !important;
     text-transform: capitalize !important;
+    white-space: nowrap !important;
 }
 
 .table-modern tbody tr {
@@ -519,12 +520,27 @@
     background-color: var(--bg-light) !important;
 }
 
+/* Zebra Striping para Tablas Modernas */
+.table-modern.table-striped tbody tr:nth-of-type(even),
+.table-modern-striped tbody tr:nth-child(even) {
+    background-color: #F8FAFC !important;
+}
+
+.table-modern.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #FFFFFF !important;
+}
+
+.table-modern.table-striped tbody tr:hover {
+    background-color: #EFF6FF !important;
+}
+
 .table-modern tbody td {
     padding: 0.85rem 1rem !important;
     color: var(--text-body) !important;
     border: none !important;
     border-bottom: 1px solid #F1F5F9 !important;
     font-size: 0.9rem !important;
+    white-space: nowrap !important;
 }
 
 .table-modern tbody tr:last-child td {
@@ -978,9 +994,11 @@ textarea.form-control:focus,
    ESTILO GLOBAL PARA TEXTOS DE EJEMPLO (PLACEHOLDERS)
    ============================================================================ */
 ::placeholder {
-    color: #9CA3AF !important; /* Gris suave (Tailwind gray-400) */
+    color: #9CA3AF !important;
+    /* Gris suave (Tailwind gray-400) */
     -webkit-text-fill-color: #9CA3AF !important;
-    opacity: 1 !important; /* Firefox baja la opacidad por defecto, esto la fuerza a 1 */
+    opacity: 1 !important;
+    /* Firefox baja la opacidad por defecto, esto la fuerza a 1 */
 }
 
 ::-webkit-input-placeholder {
@@ -1574,57 +1592,101 @@ select option:checked {
     width: 16px !important;
     font-size: 0.88rem !important;
     text-align: center !important;
-    color: #475569 !important;
+    color: #64748B;
     transition: color 0.15s ease !important;
 }
 
-/* Ítem Editar (Azul Institucional / Gris Oscuro) */
+/* Ítems Semánticos del Dropdown (Colores Vivos y Sobrios) */
+/* 1. Ver Más / Azul Institucional */
+.dropdown-item-modern.text-primary,
+.dropdown-menu-modern .dropdown-item.text-primary,
+.table-modern .dropdown-menu .dropdown-item.text-primary {
+    color: #4A6FC1 !important;
+}
+
+.dropdown-item-modern.text-primary i,
+.dropdown-menu-modern .dropdown-item.text-primary i,
+.table-modern .dropdown-menu .dropdown-item.text-primary i {
+    color: #4A6FC1 !important;
+}
+
+.dropdown-item-modern.text-primary:hover,
+.dropdown-menu-modern .dropdown-item.text-primary:hover {
+    background-color: #EFF6FF !important;
+    color: #3B5998 !important;
+}
+
+/* 2. Editar / Ámbar Advertencia (#D97706) */
 .dropdown-item-edit,
 .dropdown-item.item-edit,
 .dropdown-item-modern.item-edit,
+.dropdown-item-modern.text-warning,
 .dropdown-menu-modern .dropdown-item.item-edit,
 .dropdown-menu-modern .dropdown-item.text-warning,
 .table-modern .dropdown-menu .dropdown-item.item-edit,
 .table-modern .dropdown-menu .dropdown-item.text-warning {
-    color: #1E293B !important;
+    color: #D97706 !important;
 }
 
 .dropdown-item-edit i,
 .dropdown-item.item-edit i,
 .dropdown-item-modern.item-edit i,
+.dropdown-item-modern.text-warning i,
 .dropdown-menu-modern .dropdown-item.item-edit i,
 .dropdown-menu-modern .dropdown-item.text-warning i,
 .table-modern .dropdown-menu .dropdown-item.item-edit i,
 .table-modern .dropdown-menu .dropdown-item.text-warning i {
-    color: var(--primary-color, #4A6FC1) !important;
+    color: #D97706 !important;
 }
 
 .dropdown-item-edit:hover,
 .dropdown-item.item-edit:hover,
 .dropdown-item-modern.item-edit:hover,
+.dropdown-item-modern.text-warning:hover,
 .dropdown-menu-modern .dropdown-item.item-edit:hover,
 .dropdown-menu-modern .dropdown-item.text-warning:hover,
 .table-modern .dropdown-menu .dropdown-item.item-edit:hover,
 .table-modern .dropdown-menu .dropdown-item.text-warning:hover {
-    background-color: #EFF6FF !important;
-    color: var(--primary-color, #4A6FC1) !important;
+    background-color: #FEF3C7 !important;
+    color: #B45309 !important;
 }
 
 .dropdown-item-edit:hover i,
 .dropdown-item.item-edit:hover i,
 .dropdown-item-modern.item-edit:hover i,
+.dropdown-item-modern.text-warning:hover i,
 .dropdown-menu-modern .dropdown-item.item-edit:hover i,
 .dropdown-menu-modern .dropdown-item.text-warning:hover i,
 .table-modern .dropdown-menu .dropdown-item.item-edit:hover i,
 .table-modern .dropdown-menu .dropdown-item.text-warning:hover i {
-    color: var(--primary-color, #4A6FC1) !important;
+    color: #B45309 !important;
 }
 
-/* Ítem Eliminar (Rojo Suave / Elegante) */
+/* 3. Disponibilidad / Azul Oscuro (#1E3A8A) */
+.dropdown-item-modern.text-navy,
+.dropdown-menu-modern .dropdown-item.text-navy,
+.table-modern .dropdown-menu .dropdown-item.text-navy {
+    color: #1E3A8A !important;
+}
+
+.dropdown-item-modern.text-navy i,
+.dropdown-menu-modern .dropdown-item.text-navy i,
+.table-modern .dropdown-menu .dropdown-item.text-navy i {
+    color: #1E3A8A !important;
+}
+
+.dropdown-item-modern.text-navy:hover,
+.dropdown-menu-modern .dropdown-item.text-navy:hover {
+    background-color: #EFF6FF !important;
+    color: #172554 !important;
+}
+
+/* 4. Ítem Eliminar / Inactivar (Rojo Suave / Elegante #EF4444) */
 .dropdown-item-danger,
 .dropdown-item-delete,
 .dropdown-item.item-delete,
 .dropdown-item-modern.item-delete,
+.dropdown-item-modern.text-danger,
 .dropdown-menu-modern .dropdown-item.item-delete,
 .dropdown-menu-modern .dropdown-item.text-danger,
 .dropdown-menu-saas .dropdown-item.text-danger,
@@ -1637,6 +1699,7 @@ select option:checked {
 .dropdown-item-delete i,
 .dropdown-item.item-delete i,
 .dropdown-item-modern.item-delete i,
+.dropdown-item-modern.text-danger i,
 .dropdown-menu-modern .dropdown-item.item-delete i,
 .dropdown-menu-modern .dropdown-item.text-danger i,
 .dropdown-menu-saas .dropdown-item.text-danger i,
@@ -1649,6 +1712,7 @@ select option:checked {
 .dropdown-item-delete:hover,
 .dropdown-item.item-delete:hover,
 .dropdown-item-modern.item-delete:hover,
+.dropdown-item-modern.text-danger:hover,
 .dropdown-menu-modern .dropdown-item.item-delete:hover,
 .dropdown-menu-modern .dropdown-item.text-danger:hover,
 .dropdown-menu-saas .dropdown-item.text-danger:hover,
@@ -1662,11 +1726,85 @@ select option:checked {
 .dropdown-item-delete:hover i,
 .dropdown-item.item-delete:hover i,
 .dropdown-item-modern.item-delete:hover i,
+.dropdown-item-modern.text-danger:hover i,
 .dropdown-menu-modern .dropdown-item.item-delete:hover i,
 .dropdown-menu-modern .dropdown-item.text-danger:hover i,
 .dropdown-menu-saas .dropdown-item.text-danger:hover i,
 .table-modern .dropdown-menu .dropdown-item.item-delete:hover i,
 .table-modern .dropdown-menu .dropdown-item.text-danger:hover i {
+    color: #DC2626 !important;
+}
+
+/* 5. Ítem Neutro / Acción Secundaria / Descarga PDF (#475569) */
+.dropdown-item-modern.text-secondary,
+.dropdown-menu-modern .dropdown-item.text-secondary,
+.dropdown-item-modern.item-pdf,
+.dropdown-menu-modern .dropdown-item.item-pdf {
+    color: #475569 !important;
+}
+
+.dropdown-item-modern.text-secondary i,
+.dropdown-menu-modern .dropdown-item.text-secondary i,
+.dropdown-item-modern.item-pdf i,
+.dropdown-menu-modern .dropdown-item.item-pdf i {
+    color: #475569 !important;
+}
+
+.dropdown-item-modern.text-secondary:hover,
+.dropdown-menu-modern .dropdown-item.text-secondary:hover,
+.dropdown-item-modern.item-pdf:hover,
+.dropdown-menu-modern .dropdown-item.item-pdf:hover {
+    background-color: #F1F5F9 !important;
+    color: #1E293B !important;
+}
+
+.dropdown-item-modern.text-secondary:hover i,
+.dropdown-menu-modern .dropdown-item.text-secondary:hover i,
+.dropdown-item-modern.item-pdf:hover i,
+.dropdown-menu-modern .dropdown-item.item-pdf:hover i {
+    color: #1E293B !important;
+}
+
+/* ============================================================================
+   BOTÓN PDF OUTLINE / SECUNDARIO DESTACADO (.btn-pdf-outline)
+   ============================================================================ */
+.btn-pdf-outline,
+.btn-outline-danger-modern {
+    background-color: #FFFFFF !important;
+    border: 1px solid #FCA5A5 !important;
+    color: #EF4444 !important;
+    border-radius: 10px !important;
+    height: 38px !important;
+    padding: 0 16px !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: none !important;
+}
+
+.btn-pdf-outline i,
+.btn-outline-danger-modern i {
+    color: #EF4444 !important;
+    font-size: 0.95rem !important;
+    transition: color 0.15s ease !important;
+}
+
+.btn-pdf-outline:hover,
+.btn-pdf-outline:focus,
+.btn-outline-danger-modern:hover,
+.btn-outline-danger-modern:focus {
+    background-color: #FEF2F2 !important;
+    border-color: #EF4444 !important;
+    color: #DC2626 !important;
+    box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.btn-pdf-outline:hover i,
+.btn-outline-danger-modern:hover i {
     color: #DC2626 !important;
 }
 
@@ -1694,6 +1832,19 @@ select.form-select:focus {
     border-color: #4A6FC1 !important;
     box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
     outline: none !important;
+}
+
+/* Inputs Deshabilitados */
+input:disabled,
+select:disabled,
+textarea:disabled,
+.form-control:disabled,
+.form-control-modern:disabled,
+.form-select:disabled {
+    background-color: #F1F5F9 !important;
+    cursor: not-allowed !important;
+    opacity: 0.8 !important;
+    border-color: #E2E8F0 !important;
 }
 
 select.form-select:disabled {
@@ -1958,4 +2109,70 @@ select.form-select.text-center {
 .table-responsive:has(.bootstrap-select.show),
 .table-responsive:has(.dropdown.show) {
     overflow: visible !important;
+}
+
+/* ==========================================================================
+   6. Utilidades Responsivas y Media Queries (Mobile & Desktop)
+   ========================================================================== */
+
+/* Soporte para clases responsivas Bootstrap 4/5 */
+@media (min-width: 768px) {
+    .w-md-auto {
+        width: auto !important;
+    }
+    .hero-header .btn-hero-white,
+    .hero-header-horario .btn-hero-white,
+    .btn-hero-white.w-md-auto,
+    .btn-hero-white {
+        width: auto !important;
+    }
+    .card-header-modern .search-wrapper {
+        width: 260px !important;
+    }
+}
+
+@media (min-width: 576px) {
+    .w-sm-auto {
+        width: auto !important;
+    }
+}
+
+/* Ajustes exclusivos para móvil y tablet pequeña (< 768px) */
+@media (max-width: 767.98px) {
+    .anio-escolar-pill {
+        padding: 6px 12px !important;
+        font-size: 13px !important;
+        gap: 0.4rem !important;
+        border-radius: var(--radius-sm) !important;
+    }
+
+    .anio-escolar-pill .anio-icon,
+    .anio-escolar-pill .anio-years,
+    .btn-cambiar-anio {
+        font-size: 13px !important;
+    }
+
+    /* Hero Header en móvil */
+    .hero-header,
+    .content-header-modern.hero-header-horario,
+    .content-header-modern.hero-header-modern {
+        padding: 1.25rem 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .btn-hero-white.w-100 {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .anio-escolar-pill {
+        padding: 5px 8px !important;
+        font-size: 12px !important;
+    }
+
+    .anio-escolar-pill .anio-years {
+        font-size: 12px !important;
+    }
 }
