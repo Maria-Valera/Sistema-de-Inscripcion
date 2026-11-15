@@ -27,6 +27,12 @@
     .acciones { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #e5e7eb; }
     .btn-asistente { background: #4f46e5; color: #fff; border: none; border-radius: 10px; padding: 0.75rem 1.5rem; font-weight: 700; }
     .btn-asistente:hover { background: #4338ca; color: #fff; }
+    .btn-atras { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 10px; padding: 0.75rem 1.5rem; font-weight: 700; text-decoration: none; margin-right: auto; }
+    .btn-atras:hover { background: #e5e7eb; color: #111827; text-decoration: none; }
+    .resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; margin-bottom: 1.25rem; }
+    .resumen-caja { border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.9rem 1.1rem; background: #fafafa; }
+    .resumen-caja h6 { font-weight: 800; color: #4f46e5; margin-bottom: 0.4rem; }
+    .resumen-caja p { margin: 0; color: #374151; font-size: 0.92rem; }
 
     @media (max-width: 768px) {
         .pasos { flex-direction: column; }

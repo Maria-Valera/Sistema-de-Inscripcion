@@ -70,7 +70,7 @@
             @endif
 
             <p class="form-intro">
-                Se creará un calendario vacío para el año escolar que elijas. Después podrás
+                Se creará un calendario vacío para el año escolar activo. Después podrás
                 registrar cada evento directamente sobre el calendario visual.
             </p>
 
@@ -81,19 +81,11 @@
                     <label for="anio_escolar_id" class="form-label-modern">
                         <i class="fas fa-calendar-alt"></i> Año escolar
                     </label>
-                    <select name="anio_escolar_id" id="anio_escolar_id" class="form-control-modern" required>
-                        <option value="">Selecciona un año escolar...</option>
-                        @foreach ($aniosEscolaresDisponibles as $anio)
-                            <option value="{{ $anio->id }}">
-                                {{ \Carbon\Carbon::parse($anio->inicio_anio_escolar)->format('d/m/Y') }}
-                                —
-                                {{ \Carbon\Carbon::parse($anio->cierre_anio_escolar)->format('d/m/Y') }}
-                            </option>
-                        @endforeach
-                    </select>
+                                        <input type="text" id="anio_escolar_id" class="form-control-modern" disabled
+                        value="{{ $anio->inicio_anio_escolar->format('d/m/Y') }} — {{ $anio->cierre_anio_escolar->format('d/m/Y') }}">
                     <small class="form-text-modern">
                         <i class="fas fa-info-circle"></i>
-                        Solo se muestran años escolares que todavía no tienen un calendario cargado.
+                        El calendario siempre es del año escolar activo, y cada año tiene uno solo.
                     </small>
                 </div>
 

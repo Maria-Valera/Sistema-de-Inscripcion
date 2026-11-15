@@ -24,12 +24,32 @@ class CalendarioAcademicoController extends Controller
             ->latest()
             ->paginate(15);
 
-                // Años que todavía no tienen calendario: los usa el modal de editar para cambiar de año.
-        $aniosSinCalendario = AnioEscolar::whereDoesntHave('calendarioAcademico')
-            ->orderByDesc('inicio_anio_escolar')
-            ->get();
+                // Solo se crea calendario para el año activo, y solo si todavía no tiene uno.
+        $anioActivo = $this->anioActivo();
+        $puedeCrear = $anioActivo && ! $anioActivo->calendarioAcademico()->exists();
 
-        return view('calendario_academico.index', compact('calendarios', 'aniosSinCalendario'));
+        return view('calendario_academico.index', compact('calendarios', 'anioActivo', 'puedeCrear'));
+    }
+
+    /** El año escolar activo (o extendido): el único para el que se crea calendario. */
+    private function anioActivo(): ?AnioEscolar
+    {
+        return AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+    }
+
+    /** Si no se puede crear calendario, devuelve el motivo; si se puede, null. */
+    private function motivoNoCrear(?AnioEscolar $anio): ?string
+    {
+        if (! $anio) {
+            return 'No hay un año escolar activo: el calendario solo se crea para el año activo.';
+        }
+
+        if ($anio->calendarioAcademico()->exists()) {
+            return 'El año escolar activo ya tiene su calendario académico: no se puede crear otro.';
+        }
+
+        return null;
+
     }
 
 
@@ -38,10 +58,15 @@ class CalendarioAcademicoController extends Controller
      * Muestra el formulario para empezar un calendario 100% manual
      * — solo pide el año escolar, el resto se construye evento por evento.
      */
-    public function createManual(): View{
-        $aniosEscolaresDisponibles = AnioEscolar::whereDoesntHave('calendarioAcademico')->get();
+        public function createManual(): View|RedirectResponse
+    {
+        $anio = $this->anioActivo();
 
-        return view('calendario_academico.create-manual',compact('aniosEscolaresDisponibles'));
+        if ($motivo = $this->motivoNoCrear($anio)) {
+            return redirect()->route('admin.calendario_academico.index')->with('error', $motivo);
+        }
+
+        return view('calendario_academico.create-manual', compact('anio'));
     }
 
     /**
@@ -103,13 +128,17 @@ class CalendarioAcademicoController extends Controller
      * calendario nace directamente confirmado: cada evento manual se
      * confirma por su cuenta en el momento en que se registra.
      */
-    public function storeManual(Request $request) : RedirectResponse {
-        $validado = $request->validate([
-            'anio_escolar_id' => ['required','exists:anio_escolars,id'],
-        ]);
+        public function storeManual(): RedirectResponse
+    {
+        // El año no lo elige el usuario: siempre es el activo.
+        $anio = $this->anioActivo();
+
+        if ($motivo = $this->motivoNoCrear($anio)) {
+            return redirect()->route('admin.calendario_academico.index')->with('error', $motivo);
+        }
 
         $calendario = CalendarioAcademico::create([
-            'anio_escolar_id' => $validado['anio_escolar_id'],
+            'anio_escolar_id' => $anio->id,
             'estado' => EstadoCalendario::Confirmado,
             'fecha_confirmacion' => now(),
         ]);
@@ -123,39 +152,19 @@ class CalendarioAcademicoController extends Controller
             ->with('exito','Calendario creado de manera manual. Ahora puedes agregar los días uno por uno.');
     }
 
-        /**
-     * Edita un calendario: su estado y, solo si todavía no tiene eventos, su año escolar
-     * (los eventos ya cargados tienen fechas del año original).
-     */
+    /** Edita el estado de un calendario. El año escolar no se cambia: cada calendario es de su año. */
     public function update(Request $request, CalendarioAcademico $calendarioAcademico): RedirectResponse
     {
-        $validado = $request->validate([
-            'anio_escolar_id' => [
-                'required',
-                'exists:anio_escolars,id',
-                \Illuminate\Validation\Rule::unique('calendario_academico', 'anio_escolar_id')->ignore($calendarioAcademico->id),
-            ],
+                $validado = $request->validate([
             'estado' => ['required', \Illuminate\Validation\Rule::enum(EstadoCalendario::class)],
         ], [
-            'anio_escolar_id.required' => 'Debes elegir el año escolar.',
-            'anio_escolar_id.exists' => 'El año escolar elegido no existe.',
-            'anio_escolar_id.unique' => 'Ese año escolar ya tiene un calendario.',
             'estado.required' => 'Debes elegir el estado.',
             'estado.enum' => 'El estado elegido no es válido.',
         ]);
 
-        $cambiaDeAnio = (int) $validado['anio_escolar_id'] !== $calendarioAcademico->anio_escolar_id;
-
-        if ($cambiaDeAnio && $calendarioAcademico->dias()->exists()) {
-            return redirect()
-                ->route('admin.calendario_academico.index')
-                ->with('error', 'No se puede cambiar el año escolar de un calendario que ya tiene eventos. Elimina sus eventos primero.');
-        }
-
         $estado = EstadoCalendario::from($validado['estado']);
 
         $calendarioAcademico->update([
-            'anio_escolar_id' => $validado['anio_escolar_id'],
             'estado' => $estado,
             // La fecha de confirmación se pone al confirmar y se borra si vuelve a pendiente.
             'fecha_confirmacion' => $estado === EstadoCalendario::Confirmado
