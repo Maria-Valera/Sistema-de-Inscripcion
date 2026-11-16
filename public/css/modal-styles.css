@@ -758,10 +758,10 @@ hr {
         padding: 0.85rem 1rem;
     }
 
-    /* Stack columns on mobile */
-    .col-md-6,
-    .col-md-4,
-    .col-md-3 {
+    /* Stack columns on mobile inside modals */
+    .modal .col-md-6,
+    .modal .col-md-4,
+    .modal .col-md-3 {
         flex: 0 0 100%;
         max-width: 100%;
     }

@@ -3,267 +3,33 @@
 @section('title', 'Gestión de Representantes')
 
 @section('css')
-    {{-- Estilos modernos reutilizados del sistema --}}
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
-    <style>
-        .badge {
-            font-weight: 500;
-            padding: 0.35em 0.65em;
-            font-size: 0.8em;
-        }
-
-        .action-buttons .dropdown-menu {
-            min-width: 10rem;
-        }
-
-        .table-modern {
-            width: 100%;
-            margin-bottom: 1rem;
-            color: #212529;
-            border-collapse: collapse;
-        }
-
-        .table-modern th,
-        .table-modern td {
-            padding: 0.75rem;
-            vertical-align: middle;
-            border-top: 1px solid #dee2e6;
-        }
-
-        .table-modern thead th {
-            vertical-align: bottom;
-            border-bottom: 2px solid #dee2e6;
-            background-color: #f8f9fa;
-        }
-
-        .table-modern tbody tr:hover {
-            background-color: rgba(0, 0, 0, 0.02);
-        }
-
-        /* Estilos personalizados para los badges de tipo de representante */
-        .status-legal {
-            background: rgba(79, 70, 229, 0.1);
-            color: #4f46e5;
-            border: 1px solid rgba(79, 70, 229, 0.2);
-        }
-
-        .status-progenitor {
-            background: rgba(59, 130, 246, 0.1);
-            color: #1d4ed8;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-        }
-
-        .status-legal .status-dot {
-            background: #4f46e5;
-        }
-
-        .status-progenitor .status-dot {
-            background: #1d4ed8;
-        }
-
-        /* Estilos mejorados para el modal - usando los mismos estilos que el sistema */
-        .details-card {
-            background: var(--gray-50);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 1.25rem;
-            border: 1px solid var(--gray-200);
-            border-radius: 10px;
-            background: white;
-            transition: all 0.2s ease;
-        }
-
-        .detail-item:hover {
-            transform: translateX(4px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--info);
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: var(--gray-700);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            min-width: 140px;
-        }
-
-        .detail-label i {
-            color: var(--info);
-            font-size: 1rem;
-        }
-
-        .detail-value {
-            font-weight: 500;
-            color: var(--gray-800);
-            text-align: right;
-            flex: 1;
-            margin-left: 1rem;
-        }
-
-        .detail-value.fw-bold {
-            color: var(--gray-800);
-            font-size: 0.95rem;
-        }
-
-        .section-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--info-dark);
-            margin-top: 1rem;
-            margin-bottom: 0.25rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .modal-xl {
-                max-width: 95%;
-                margin: 1rem;
-            }
-
-            .detail-item {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 1rem 0;
-            }
-
-            .detail-label {
-                min-width: auto;
-                margin-bottom: 0.5rem;
-                font-size: 0.9rem;
-            }
-
-            .detail-value {
-                text-align: left;
-                margin-left: 0;
-                font-size: 0.95rem;
-            }
-
-            .card-header-custom {
-                margin: -1.5rem -1.5rem 1rem -1.5rem;
-                padding: 1rem 1.5rem;
-            }
-
-            .details-card {
-                padding: 1.5rem;
-                margin-bottom: 1rem;
-            }
-
-            .modal-body-view {
-                padding: 1rem !important;
-            }
-
-            .row.g-4>div {
-                margin-bottom: 1rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .modal-dialog {
-                margin: 0.5rem;
-                max-width: calc(100% - 1rem);
-            }
-
-            .modal-header-view {
-                padding: 1rem;
-            }
-
-            .modal-title-view {
-                font-size: 1.1rem !important;
-            }
-
-            .detail-label i {
-                width: 18px;
-                font-size: 0.9rem;
-            }
-
-            .badge.fs-6 {
-                font-size: 0.7rem !important;
-            }
-        }
-
-        /* Animaciones y transiciones */
-        .modal-content {
-            animation: slideInUp 0.3s ease-out;
-        }
-
-        @keyframes slideInUp {
-            from {
-                transform: translateY(100px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        /* Mejoras para badges */
-        .badge {
-            font-weight: 500;
-            border-radius: 0.375rem;
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-            letter-spacing: 0.025em;
-        }
-
-        .badge.bg-success {
-            background-color: #10b981 !important;
-        }
-
-        .badge.bg-primary {
-            background-color: #3b82f6 !important;
-        }
-
-        .badge.bg-info {
-            background-color: #06b6d4 !important;
-        }
-
-        .badge.bg-secondary {
-            background-color: #6b7280 !important;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
 @stop
 
 @section('content_header')
-    {{-- Encabezado principal de la página --}}
-    <div class="content-header-modern">
-        <div class="header-content">
-            <div class="header-title">
+    <div class="content-header-modern hero-header-horario p-3 p-md-4">
+        <div class="header-content d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="header-title d-flex align-items-center gap-3">
                 <div class="icon-wrapper">
                     <i class="fas fa-user-friends"></i>
                 </div>
                 <div>
-                    <h1 class="title-main">Gestión de Representantes</h1>
-                    <p class="title-subtitle">Administración de los representantes del sistema</p>
+                    <h1 class="title-main mb-1">Gestión de Representantes</h1>
+                    <p class="title-subtitle mb-0">Administración de los representantes del sistema</p>
                 </div>
             </div>
 
-            {{-- Botón crear --}}
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <button type="button" class="btn-create"
-                    onclick="window.location.href='{{ route('representante.formulario') }}'"
-                    title="Registrar Representante">
+                <a class="btn-hero-white w-100 w-md-auto justify-content-center mt-3 mt-md-0"
+                    href="{{ route('representante.formulario') }}"
+                    title="Registrar nuevo representante">
                     <i class="fas fa-plus"></i>
                     <span>Registrar</span>
-                </button>
+                </a>
             @endif
-
         </div>
     </div>
 @stop
@@ -274,118 +40,136 @@
     <div class="main-container">
         @include('partials.alerta-modo-consulta')
 
-        <div class="card-modern">
-            <div class="card-header-modern d-flex align-items-center justify-content-between flex-wrap gap-3">
+        @php
+            $activeChips = [];
+            if (request()->filled('buscar')) {
+                $activeChips[] = ['name' => 'buscar', 'label' => 'Búsqueda: ' . request('buscar')];
+            }
+            if (request()->filled('es_legal')) {
+                $labelLegal = request('es_legal') === '1' ? 'Tipo: Representante Legal' : 'Tipo: Progenitor';
+                $activeChips[] = ['name' => 'es_legal', 'label' => $labelLegal];
+            }
+            if (request()->filled('grado_id')) {
+                $gradoSel = $grados->firstWhere('id', request('grado_id'));
+                if ($gradoSel) {
+                    $activeChips[] = ['name' => 'grado_id', 'label' => 'Nivel: ' . $gradoSel->numero_grado . '° Nivel'];
+                }
+            }
+            if (request()->filled('seccion_id')) {
+                $activeChips[] = ['name' => 'seccion_id', 'label' => 'Sección: ' . request('seccion_id')];
+            }
+        @endphp
+
+        @if (!empty($activeChips))
+            <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+                <span class="text-muted fw-semibold" style="font-size: 0.82rem;">Filtros activos:</span>
+                @foreach ($activeChips as $chip)
+                    <span class="filter-chip-saas">
+                        <span>{{ $chip['label'] }}</span>
+                        <a href="{{ route('representante.index', array_diff_key(request()->query(), [$chip['name'] => ''])) }}"
+                            class="filter-chip-remove text-decoration-none"
+                            aria-label="Quitar {{ $chip['label'] }}">
+                            &times;
+                        </a>
+                    </span>
+                @endforeach
+                <a href="{{ route('representante.index') }}" class="btn-clear-chips ms-1 text-decoration-none">
+                    Limpiar todo
+                </a>
+            </div>
+        @endif
+
+        <div class="card-modern shadow-sm">
+            <div class="card-header-modern d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
 
                 <div class="header-left d-flex align-items-center gap-3">
-                    <div class="header-icon">
+                    <div class="header-icon d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 40px; height: 40px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1;">
                         <i class="fas fa-list-ul"></i>
                     </div>
                     <div>
-                        <h3 class="mb-0">Listado de Representantes</h3>
-                        <p class="mb-0">{{ $representantes->total() }} registros encontrados</p>
+                        <h3 class="fw-bold mb-0" style="font-size: 1.05rem; color: #1E293B;">Listado de Representantes</h3>
+                        <p class="text-muted mb-0" style="font-size: 0.82rem;">{{ $representantes->total() }} registros encontrados</p>
                     </div>
                 </div>
 
-                <div class="header-right d-flex align-items-center gap-2 flex-wrap">
+                <div class="d-flex flex-column flex-sm-row align-items-center gap-2 w-100 w-md-auto">
 
-                    <form action="{{ route('representante.index') }}" method="GET" class="mb-0 search-sm">
-                        <div class="search-modern">
-                            <i class="fas fa-search"></i>
-                            <input type="text" title="Buscar por cedula, nombre o apellido" name="buscar" id="buscador" class="form-control-modern"
-                                placeholder="Buscar..." value="{{ request('buscar') }}" autocomplete="off">
+                    <form action="{{ route('representante.index') }}" method="GET" class="m-0 w-100 w-md-auto">
+                        <div class="search-wrapper position-relative w-100 w-md-auto">
+                            <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 50%; transform: translateY(-50%); z-index: 10; font-size: 0.85rem;"></i>
+                            <input type="text" title="Buscar por cédula, nombre o apellido" name="buscar" id="buscador" class="form-control search-input-modern pl-5 w-100 w-md-auto"
+                                placeholder="Buscar representante..." value="{{ request('buscar') }}" autocomplete="off"
+                                style="padding-left: 40px !important; border-radius: 10px; height: 38px; font-size: 0.85rem;">
                         </div>
                     </form>
 
-                    <button class="btn-modal-create" data-bs-toggle="modal" data-bs-target="#modalFiltros">
-                        <i class="fas fa-filter"></i>
-                    </button>
+                    <x-ui.filter-bar target="modalFiltros" label="Filtrar" :active-count="count($activeChips)"
+                        class="w-100 w-sm-auto text-nowrap" data-bs-toggle="offcanvas" data-bs-target="#modalFiltros" />
 
-                    <a href="{{ route('representante.reporte_pdf', request()->query()) }}" class="btn-pdf" target="_blank">
-                        <i class="fas fa-file-pdf me-1"></i> PDF General
+                    <a href="{{ route('representante.reporte_pdf', request()->query()) }}"
+                       class="btn btn-pdf-global w-100 w-sm-auto text-nowrap"
+                       target="_blank" title="Exportar reporte general en PDF">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF General</span>
                     </a>
-
-                    @php
-                        $anioActivo = \App\Models\AnioEscolar::activos()->first();
-                        $anioExtendido = \App\Models\AnioEscolar::where('status', 'Extendido')->first();
-                        $mostrarAnio = $anioActivo ?? $anioExtendido;
-                    @endphp
-
-                    @if ($mostrarAnio)
-                        <div class="d-flex align-items-center bg-light rounded px-2 py-1 border">
-                            <span class="badge bg-primary me-2" style="font-size: 0.7rem;">
-                                <i class="fas fa-calendar-check me-1"></i> Calendario Escolar
-                            </span>
-                            <span class="text-muted me-2" style="font-size: 0.8rem;">
-                                <i class="fas fa-play-circle text-primary me-1"></i>
-                                {{ \Carbon\Carbon::parse($mostrarAnio->inicio_anio_escolar)->format('d/m/Y') }}
-                            </span>
-                            <span class="text-muted" style="font-size: 0.8rem;">
-                                <i class="fas fa-flag-checkered text-danger me-1"></i>
-                                {{ \Carbon\Carbon::parse($mostrarAnio->cierre_anio_escolar)->format('d/m/Y') }}
-                            </span>
-                        </div>
-                    @else
-                        <div
-                            class="d-flex align-items-center bg-warning bg-opacity-10 rounded px-2 py-1 border border-warning">
-                            <i class="fas fa-exclamation-triangle text-warning me-1"></i>
-                            <span class="fw-semibold" style="font-size: 0.8rem;">Sin año activo</span>
-                        </div>
-                    @endif
 
                 </div>
             </div>
 
 
-            <div class="card-body-modern">
-                <div class="table-wrapper">
-                    <table class="table-modern overflow-hidden">
+            <div class="card-body-modern p-0">
+                <div class="table-responsive">
+                    <table class="table-modern table-striped text-nowrap w-100" id="tablaRepresentantes">
                         <thead>
                             <tr style="text-align: center">
-                                <th style="text-align: center">Cédula</th>
-                                <th style="text-align: center">Nombre</th>
-                                <th style="text-align: center">Apellido</th>
-                                <th style="text-align: center">Tipo</th>
-                                <th style="text-align: center">Acción</th>
+                                <th style="text-align: center; width: 140px;" class="text-nowrap">Cédula</th>
+                                <th style="text-align: left;" class="text-nowrap">Nombre</th>
+                                <th style="text-align: left;" class="text-nowrap">Apellido</th>
+                                <th style="text-align: center; width: 180px;" class="text-nowrap">Tipo</th>
+                                <th style="text-align: center; width: 100px;" class="text-nowrap">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-representantes" style="text-align: center">
                             @forelse($representantes as $rep)
-                                <tr>
-                                    <td><strong>{{ $rep->persona->numero_documento ?? 'N/A' }}</strong></td>
-                                    <td>{{ $rep->persona->primer_nombre ?? 'N/A' }}</td>
-                                    <td>{{ $rep->persona->primer_apellido ?? 'N/A' }}</td>
-                                    <td>
-                                        @php
-                                            $tipoRepresentante = $rep->legal ? 'Representante Legal' : 'Progenitor';
-                                        @endphp
-                                        <span
-                                            class="status-badge {{ $tipoRepresentante === 'Representante Legal' ? 'status-legal' : 'status-progenitor' }}">
-                                            <span class="status-dot"></span>
-                                            {{ $tipoRepresentante }}
-                                        </span>
+                                <tr style="text-align: center">
+                                    <td class="fw-bold text-dark text-nowrap" style="font-size: 0.92rem;">
+                                        {{ $rep->persona->tipoDocumento->nombre ?? 'V' }}-{{ $rep->persona->numero_documento ?? 'N/A' }}
                                     </td>
-                                    <td>
+                                    <td class="text-start fw-semibold text-dark text-nowrap">{{ $rep->persona->primer_nombre ?? 'N/A' }}</td>
+                                    <td class="text-start fw-semibold text-dark text-nowrap">{{ $rep->persona->primer_apellido ?? 'N/A' }}</td>
+                                    <td class="text-center text-nowrap">
+                                        @if ($rep->legal)
+                                            <span class="badge" style="background-color: #EFF6FF; color: #1E3A8A; font-weight: 600; padding: 0.35rem 0.65rem; border-radius: 6px; font-size: 0.82rem; border: 1px solid #DBEAFE;">
+                                                <i class="fas fa-user-shield me-1"></i> Representante Legal
+                                            </span>
+                                        @else
+                                            <span class="badge" style="background-color: #F1F5F9; color: #475569; font-weight: 600; padding: 0.35rem 0.65rem; border-radius: 6px; font-size: 0.82rem; border: 1px solid #E2E8F0;">
+                                                <i class="fas fa-user-friends me-1"></i> Progenitor
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="text-nowrap">
                                         <div class="action-buttons">
                                             <div class="dropdown dropstart text-center">
-                                                <button class="btn btn-light btn-sm rounded-circle shadow-sm action-btn"
+                                                <button class="btn btn-sm action-btn rounded-circle"
                                                     type="button" data-bs-toggle="dropdown" aria-expanded="false"
                                                     title="Acciones">
                                                     <i class="fas fa-ellipsis-v"></i>
                                                 </button>
 
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <ul class="dropdown-menu dropdown-menu-modern dropdown-menu-end shadow-sm">
                                                     {{-- Ver mas --}}
                                                     <li>
                                                         <button
-                                                            class="dropdown-item d-flex align-items-center text-primary view-details-btn"
+                                                            class="dropdown-item dropdown-item-modern text-primary d-flex align-items-center view-details-btn"
                                                             data-bs-toggle="modal" data-bs-target="#modalVerDetalleRegistro"
                                                             data-persona='@json($rep->persona)'
                                                             data-representante='@json($rep->toArray())'
                                                             data-legal='@json($rep->legal)'
                                                             data-banco='@json($rep->legal ? $rep->legal->banco : null)' title="Ver detalle">
-                                                            <i class="fas fa-eye me-2"></i>
-                                                            Ver
+                                                            <i class="fas fa-eye me-2 text-primary"></i>
+                                                            <span class="text-primary fw-medium">Ver detalles</span>
                                                         </button>
                                                     </li>
 
@@ -393,21 +177,21 @@
                                                         {{-- Editar --}}
                                                         <li>
                                                             <a href="{{ route('representante.editar', $rep->id) }}"
-                                                                class="dropdown-item d-flex align-items-center text-warning"
+                                                                class="dropdown-item dropdown-item-modern text-warning d-flex align-items-center"
                                                                 title="Editar">
-                                                                <i class="fas fa-pen me-2"></i>
-                                                                Editar
+                                                                <i class="fas fa-pen me-2 text-warning"></i>
+                                                                <span class="text-warning fw-medium">Editar</span>
                                                             </a>
                                                         </li>
 
-                                                        {{-- Inactivar --}}
+                                                        {{-- Inactivar / Eliminar --}}
                                                         <li>
-                                                            <button class="dropdown-item d-flex align-items-center text-danger"
+                                                            <button class="dropdown-item dropdown-item-modern item-delete text-danger d-flex align-items-center"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#confirmarEliminarRepresentante{{ $rep->id }}"
                                                                 title="Eliminar">
-                                                                <i class="fas fa-trash me-2"></i>
-                                                                Eliminar
+                                                                <i class="fas fa-trash me-2 text-danger"></i>
+                                                                <span class="text-danger fw-medium">Eliminar</span>
                                                             </button>
                                                         </li>
                                                     @endif
@@ -420,47 +204,75 @@
                                             tabindex="-1" aria-labelledby="modalLabelEliminarRep{{ $rep->id }}"
                                             aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content modal-modern">
-                                                    <div class="modal-header-delete">
-                                                        <div class="modal-icon-delete">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </div>
-                                                        <h5 class="modal-title-delete"
-                                                            id="modalLabelEliminarRep{{ $rep->id }}">Confirmar
-                                                            Eliminación</h5>
-                                                        <button type="button" class="btn-close-modal"
-                                                            data-bs-dismiss="modal" aria-label="Cerrar">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body-delete">
-                                                        <p>¿Deseas eliminar este representante?</p>
-                                                        <p class="delete-warning">
-                                                            Esta acción es un borrado suave: el registro no se eliminará
-                                                            físicamente,
-                                                            pero dejará de aparecer en los listados.
-                                                        </p>
-                                                    </div>
-                                                    <div class="modal-footer-delete">
-                                                        <form action="{{ route('representante.destroy', $rep->id) }}"
-                                                            method="POST" class="w-100">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="footer-buttons">
-                                                                <button type="button" class="btn-modal-cancel"
-                                                                    data-bs-dismiss="modal">Cancelar</button>
-                                                                <button type="submit"
-                                                                    class="btn-modal-delete">Eliminar</button>
+                                                <div class="modal-content modal-modern shadow-lg" style="border-radius: 16px; border: none; overflow: hidden;">
+                                                    <div class="modal-header px-4 py-3 border-bottom d-flex align-items-center justify-content-between" style="background-color: #FFFFFF;">
+                                                        <div class="d-flex align-items-center gap-3">
+                                                            <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                                                                 style="width: 44px; height: 44px; border-radius: 12px; background-color: #FEE2E2; color: #EF4444;">
+                                                                <i class="fas fa-trash-alt" style="font-size: 1.15rem;"></i>
                                                             </div>
-                                                        </form>
+                                                            <div>
+                                                                <h5 class="modal-title m-0 fw-bold" id="modalLabelEliminarRep{{ $rep->id }}" style="color: #1E293B; font-size: 1.1rem;">
+                                                                    Confirmar Eliminación
+                                                                </h5>
+                                                                <p class="text-muted m-0" style="font-size: 0.82rem;">Acción sobre registro de representante</p>
+                                                            </div>
+                                                        </div>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                                     </div>
+                                                    <form action="{{ route('representante.destroy', $rep->id) }}" method="POST" class="w-100 m-0">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <div class="modal-body px-4 py-3" style="background-color: #FFFFFF;">
+                                                            <p class="fw-semibold mb-2" style="color: #1E293B; font-size: 0.95rem;">
+                                                                ¿Deseas eliminar este representante?
+                                                            </p>
+                                                            <div class="p-3 d-flex align-items-center gap-3"
+                                                                 style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;">
+                                                                <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                                                                     style="width: 40px; height: 40px; background-color: #EFF6FF; color: #4A6FC1; font-weight: 700;">
+                                                                    <i class="fas fa-user-friends"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="fw-bold" style="color: #1E293B; font-size: 0.92rem;">
+                                                                        {{ $rep->persona->primer_nombre ?? '' }} {{ $rep->persona->primer_apellido ?? '' }}
+                                                                    </div>
+                                                                    <div class="text-muted" style="font-size: 0.82rem;">
+                                                                        Cédula: {{ $rep->persona->tipoDocumento->nombre ?? 'V' }}-{{ $rep->persona->numero_documento ?? 'N/A' }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mt-3 p-2 rounded-2 d-flex align-items-start gap-2" style="background-color: #FFFBEB; border: 1px solid #FEF3C7;">
+                                                                <i class="fas fa-info-circle text-warning mt-1" style="font-size: 0.85rem;"></i>
+                                                                <span class="text-muted" style="font-size: 0.82rem; line-height: 1.4;">
+                                                                    Esta acción es un borrado suave: el registro no se eliminará físicamente, pero dejará de aparecer en los listados activos.
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer px-4 py-3 border-top d-flex justify-content-end gap-2" style="background-color: #F8FAFC;">
+                                                            <button type="button" class="btn btn-secondary-modern" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600; padding: 8px 16px;">
+                                                                Cancelar
+                                                            </button>
+                                                            <button type="submit" class="btn" style="background-color: #EF4444; color: #FFF; border-radius: 8px; font-weight: 600; padding: 8px 16px; border: none;">
+                                                                <i class="fas fa-trash-alt me-1"></i> Eliminar
+                                                            </button>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
                                         </div>
-
-                                    @empty
+                                    </td>
+                                </tr>
+                            @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-3">No hay representantes registrados.
+                                    <td colspan="5">
+                                        <div class="empty-state text-center py-5">
+                                            <div class="empty-icon text-muted mb-2 opacity-50">
+                                                <i class="fas fa-user-friends fa-3x"></i>
+                                            </div>
+                                            <h4 class="fw-bold" style="color: #1E293B; font-size: 1.1rem;">No hay representantes registrados</h4>
+                                            <p class="text-muted" style="font-size: 0.88rem;">Agrega un nuevo representante con el botón superior.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse
@@ -469,9 +281,9 @@
                 </div>
             </div>
 
-            <div class="card-footer clearfix">
+            <div class="card-footer-modern bg-white px-4 py-3 border-top">
                 <div class="d-flex justify-content-end">
-                    {{ $representantes->links() }}
+                    <x-pagination :paginator="$representantes" />
                 </div>
             </div>
         </div>
@@ -479,8 +291,6 @@
         {{-- Modal de detalles del representante --}}
         @include('admin.representante.modales.showModal')
 
-    </div>
-    </div>
     </div>
 @endsection
 
@@ -670,11 +480,13 @@
                 if (isLegal) {
                     // Es representante legal
                     tipoBadge.textContent = 'Representante Legal';
-                    tipoBadge.className = 'badge bg-primary fs-6';
+                    tipoBadge.className = 'badge-pill-modern';
+                    tipoBadge.style = 'background-color: #EFF6FF; color: #1E3A8A; border: 1px solid #DBEAFE;';
                 } else {
                     // Es progenitor
                     tipoBadge.textContent = 'Progenitor';
-                    tipoBadge.className = 'badge bg-info fs-6';
+                    tipoBadge.className = 'badge-pill-modern';
+                    tipoBadge.style = 'background-color: #F1F5F9; color: #475569; border: 1px solid #E2E8F0;';
                 }
 
                 // === DATOS PERSONALES ===
@@ -762,16 +574,12 @@
                 }
                 document.getElementById('modal-telefono-dos').textContent = telefonoDosCompleto || 'No especificado';
 
-                // Correo electrónico (solo para representantes legales)
+                // Correo electrónico
                 if (document.getElementById('modal-correo')) {
                     const correoItem = document.getElementById('correo-detail-item');
-                    if (legal && legal.correo_representante) {
-                        document.getElementById('modal-correo').textContent = legal.correo_representante;
-                        if (correoItem) correoItem.style.display = '';
-                    } else {
-                        document.getElementById('modal-correo').textContent = '';
-                        if (correoItem) correoItem.style.display = 'none';
-                    }
+                    const correoVal = (legal && legal.correo_representante) ? legal.correo_representante : (persona.email || 'No registrado');
+                    document.getElementById('modal-correo').textContent = correoVal;
+                    if (correoItem) correoItem.style.display = '';
                 }
 
                 // Ubicación - País
@@ -861,10 +669,10 @@
                 if (typeof convive !== 'undefined' && convive !== null) {
                     const conviveValue = (convive === true || convive === 1 || convive === 'si' || convive === 'Sí');
                     conviveElement.textContent = conviveValue ? 'Sí' : 'No';
-                    conviveElement.className = conviveValue ? 'badge bg-success' : 'badge bg-secondary';
+                    conviveElement.className = 'badge-pill-modern ' + (conviveValue ? 'badge-pill-yes' : 'badge-pill-no');
                 } else {
                     conviveElement.textContent = 'No especificado';
-                    conviveElement.className = 'badge bg-secondary';
+                    conviveElement.className = 'badge-pill-modern badge-pill-no';
                 }
 
                 // === SECCIÓN DE REPRESENTANTE LEGAL ===
@@ -879,22 +687,23 @@
                     const carnetEl = document.getElementById('modal-carnet-afiliado');
                     if (carnetEl) {
                         const tieneCarnet = legal.carnet_patria_afiliado;
-                        let texto = 'No especificado';
-                        let badgeClass = 'badge bg-secondary';
+                        let texto = 'No afiliado';
+                        carnetEl.className = 'badge-pill-modern';
                         
                         if (tieneCarnet === 1) {
                             texto = 'Madre';
-                            badgeClass = 'badge bg-info';
+                            carnetEl.style = 'background-color: #EFF6FF; color: #1E3A8A; border: 1px solid #DBEAFE;';
                         } else if (tieneCarnet === 2) {
                             texto = 'Padre';
-                            badgeClass = 'badge bg-primary';
+                            carnetEl.style = 'background-color: #EFF6FF; color: #1E3A8A; border: 1px solid #DBEAFE;';
                         } else if (tieneCarnet === 3) {
                             texto = 'Otro';
-                            badgeClass = 'badge bg-warning';
+                            carnetEl.style = 'background-color: #FFFBEB; color: #D97706; border: 1px solid #FDE68A;';
+                        } else {
+                            carnetEl.style = 'background-color: #F1F5F9; color: #475569; border: 1px solid #E2E8F0;';
                         }
                         
                         carnetEl.textContent = texto;
-                        carnetEl.className = badgeClass;
                     }
 
                     // Código y serial de carnet
@@ -914,13 +723,13 @@
                         const pertenece = legal.pertenece_a_organizacion_representante;
                         if (pertenece === 1 || pertenece === true) {
                             perteneceOrgEl.textContent = 'Sí';
-                            perteneceOrgEl.className = 'badge bg-success';
+                            perteneceOrgEl.className = 'badge-pill-modern badge-pill-yes';
                             if (campoOrg) campoOrg.style.display = '';
                             document.getElementById('modal-org-pertenece').textContent = legal
                                 .cual_organizacion_representante || 'No especificada';
                         } else {
                             perteneceOrgEl.textContent = 'No';
-                            perteneceOrgEl.className = 'badge bg-secondary';
+                            perteneceOrgEl.className = 'badge-pill-modern badge-pill-no';
                             if (campoOrg) campoOrg.style.display = 'none';
                             document.getElementById('modal-org-pertenece').textContent = '';
                         }
@@ -948,9 +757,12 @@
                     // Si no es representante legal, ocultar sección
                     legalSection.style.display = 'none';
 
-                    // Y asegurarse de que el bloque de correo no se muestre para progenitor
+                    // Asegurar que el campo de correo muestre el correo de persona o 'No registrado'
                     const correoItem = document.getElementById('correo-detail-item');
-                    if (correoItem) correoItem.style.display = 'none';
+                    if (correoItem) {
+                        correoItem.style.display = '';
+                        document.getElementById('modal-correo').textContent = persona.email || 'No registrado';
+                    }
                 }
 
             } catch (e) {

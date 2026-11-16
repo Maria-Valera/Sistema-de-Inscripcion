@@ -965,9 +965,9 @@ input.form-control-modern,
 textarea.form-control,
 .form-control {
     background-color: #FFFFFF !important;
-    color: #111827 !important;
-    -webkit-text-fill-color: #111827 !important;
-    border: 1px solid #E5E7EB !important;
+    color: #1E293B !important;
+    -webkit-text-fill-color: #1E293B !important;
+    border: 1px solid #E2E8F0 !important;
     border-radius: 8px !important;
     padding: 0.55rem 0.85rem !important;
     font-size: 0.92rem !important;
@@ -1060,9 +1060,9 @@ select.form-control,
     background-size: 0.95em !important;
     padding-right: 2.25rem !important;
     background-color: #FFFFFF !important;
-    color: #111827 !important;
-    -webkit-text-fill-color: #111827 !important;
-    border: 1px solid #E5E7EB !important;
+    color: #1E293B !important;
+    -webkit-text-fill-color: #1E293B !important;
+    border: 1px solid #E2E8F0 !important;
     border-radius: 8px !important;
     color-scheme: light !important;
     font-weight: 500 !important;
@@ -1811,9 +1811,10 @@ select option:checked {
 /* ============================================================================
    ESTILOS DE SELECTS NATIVOS (.form-select)
    ============================================================================ */
-select.form-select {
+select.form-select,
+.select-modern {
     height: 42px !important;
-    border: 1px solid #E5E7EB !important;
+    border: 1px solid #E2E8F0 !important;
     border-radius: 8px !important;
     padding: 8px 36px 8px 14px !important;
     font-size: 14px !important;
@@ -1824,11 +1825,13 @@ select.form-select {
     transition: all 0.2s ease-in-out !important;
 }
 
-select.form-select:hover {
+select.form-select:hover,
+.select-modern:hover {
     border-color: #CBD5E1 !important;
 }
 
-select.form-select:focus {
+select.form-select:focus,
+.select-modern:focus {
     border-color: #4A6FC1 !important;
     box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
     outline: none !important;
@@ -1875,12 +1878,19 @@ select.form-select.text-center {
     width: 100% !important;
 }
 
-.bootstrap-select.form-control {
+.bootstrap-select.form-control,
+.bootstrap-select.form-control-modern,
+.bootstrap-select.select-modern {
     border: none !important;
     padding: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
     height: auto !important;
+}
+
+.bootstrap-select {
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* 2. Botón Toggle del Selectpicker */
@@ -2120,12 +2130,14 @@ select.form-select.text-center {
     .w-md-auto {
         width: auto !important;
     }
+
     .hero-header .btn-hero-white,
     .hero-header-horario .btn-hero-white,
     .btn-hero-white.w-md-auto,
     .btn-hero-white {
         width: auto !important;
     }
+
     .card-header-modern .search-wrapper {
         width: 260px !important;
     }
@@ -2175,4 +2187,698 @@ select.form-select.text-center {
     .anio-escolar-pill .anio-years {
         font-size: 12px !important;
     }
+}
+
+/* ============================================================================
+   BOTONES GLOBALES DE TOOLBAR (ESTANDARIZADOS)
+   ============================================================================ */
+
+/* Botón de Filtros Global */
+.btn-filter-global {
+    background-color: #FFFFFF !important;
+    border: 1px solid #d1d5db !important;
+    color: #1E293B !important;
+    font-weight: 600 !important;
+    padding: 0.625rem 1.05rem !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-filter-global:hover {
+    background-color: #F8FAFC !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Botón de PDF Global (Estilo Docentes) */
+.btn-pdf-global {
+    background-color: #FFFFFF !important;
+    border: 1px solid #FCA5A5 !important;
+    /* Rojo suave */
+    color: #EF4444 !important;
+    /* Texto rojo */
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-pdf-global:hover {
+    background-color: #FEF2F2 !important;
+    /* Fondo rojo muy claro */
+    border-color: #EF4444 !important;
+}
+
+/* ============================================================================
+   PANEL DE FILTROS / OFFCANVAS SAAS (ESTILO HORARIOS)
+   ============================================================================ */
+.filter-panel-saas {
+    width: 420px !important;
+    max-width: 92vw !important;
+    background-color: #ffffff !important;
+    border-left: none !important;
+    border-radius: 20px 0 0 20px !important;
+    box-shadow: -12px 0 36px rgba(15, 23, 42, 0.12) !important;
+    overflow: hidden !important;
+}
+
+.filter-panel-header {
+    padding: 1.35rem 1.5rem 1.1rem !important;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+
+.filter-panel-header .offcanvas-title {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.01em !important;
+}
+
+.filter-panel-title-icon {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    background-color: #EFF6FF !important;
+    color: #4A6FC1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+
+.filter-panel-body {
+    padding: 1.25rem 1.5rem !important;
+    overflow-y: auto !important;
+    background-color: #ffffff !important;
+}
+
+.filter-section-label {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #64748b !important;
+}
+
+.filter-chips-section {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 0.85rem 1rem !important;
+}
+
+.filter-chips-list {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+}
+
+.filter-chips-empty {
+    font-size: 0.82rem !important;
+    color: #94a3b8 !important;
+}
+
+.filter-chip-saas {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    background-color: #EFF6FF !important;
+    color: #1E3A8A !important;
+    border: 1px solid #DBEAFE !important;
+    border-radius: 9999px !important;
+    padding: 0.32rem 0.55rem 0.32rem 0.8rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+}
+
+.filter-chip-remove {
+    width: 18px !important;
+    height: 18px !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background-color: rgba(74, 111, 193, 0.14) !important;
+    color: #4A6FC1 !important;
+    font-size: 0.9rem !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.filter-chip-remove:hover {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.btn-clear-chips {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+}
+
+.btn-clear-chips:hover {
+    color: #0f172a !important;
+    text-decoration: underline !important;
+}
+
+.filter-field-group {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.filter-field-label {
+    display: block !important;
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    margin-bottom: 0.45rem !important;
+}
+
+.filter-field-label i {
+    color: #4A6FC1 !important;
+}
+
+.select-modern,
+.filter-select-saas {
+    border-radius: 10px !important;
+    border: 1.5px solid #E2E8F0 !important;
+    padding: 0.6rem 2.25rem 0.6rem 0.95rem !important;
+    font-size: 0.88rem !important;
+    color: #1E293B !important;
+    background-color: #ffffff !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.select-modern:focus,
+.filter-select-saas:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.18) !important;
+    outline: none !important;
+}
+
+.filter-panel-footer {
+    padding: 1.1rem 1.5rem !important;
+    background-color: #ffffff !important;
+    border-top: 1px solid #f1f5f9 !important;
+}
+
+/* ============================================================================
+   ESTILOS DE FORMULARIO MODERNO (REPRESENTANTE / PROGENITORES)
+   ============================================================================ */
+
+/* 1. Tarjetas con Patrón Clásico (Encabezado de Color Pastel + Cuerpo Blanco Puro) */
+.form-card-modern {
+    background-color: #FFFFFF !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+    transition: all 0.2s ease;
+}
+
+/* Madre: Borde rosa suave (#FBCFE8), Encabezado rosa claro (#FDF2F8), Cuerpo blanco (#FFFFFF) */
+#seccion-madre,
+.card-section-madre {
+    background-color: #FFFFFF !important;
+    border: 1px solid #FBCFE8 !important;
+    border-radius: 12px !important;
+}
+
+#seccion-madre .card-header-modern,
+.card-section-madre .card-header-modern,
+.card-header-madre {
+    background-color: #FDF2F8 !important;
+    border-bottom: 1px solid #FBCFE8 !important;
+    border-radius: 12px 12px 0 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#seccion-madre .card-body,
+.card-section-madre .card-body {
+    background-color: #FFFFFF !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* Padre: Borde azul suave (#BAE6FD), Encabezado azul claro (#F0F9FF), Cuerpo blanco (#FFFFFF) */
+#seccion-padre,
+.card-section-padre {
+    background-color: #FFFFFF !important;
+    border: 1px solid #BAE6FD !important;
+    border-radius: 12px !important;
+}
+
+#seccion-padre .card-header-modern,
+.card-section-padre .card-header-modern,
+.card-header-padre {
+    background-color: #F0F9FF !important;
+    border-bottom: 1px solid #BAE6FD !important;
+    border-radius: 12px 12px 0 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#seccion-padre .card-body,
+.card-section-padre .card-body {
+    background-color: #FFFFFF !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* Representante Legal: Borde verde suave (#BBF7D0), Encabezado verde claro (#F0FDF4), Cuerpo blanco (#FFFFFF) */
+#seccion-representante-legal,
+.card-section-representante {
+    background-color: #FFFFFF !important;
+    border: 1px solid #BBF7D0 !important;
+    border-radius: 12px !important;
+}
+
+#seccion-representante-legal .card-header-modern,
+.card-section-representante .card-header-modern,
+.card-header-legal {
+    background-color: #F0FDF4 !important;
+    border-bottom: 1px solid #BBF7D0 !important;
+    border-radius: 12px 12px 0 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#seccion-representante-legal .card-body,
+.card-section-representante .card-body {
+    background-color: #FFFFFF !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* 2. Estilo de los Inputs: Blanco Puro (#FFFFFF) con borde gris muy sutil (#E5E7EB) */
+.form-card-modern input.form-control,
+.form-card-modern select.form-select,
+.form-card-modern textarea.form-control,
+.form-card-modern .bootstrap-select>.btn.dropdown-toggle,
+.form-card-modern .bootstrap-select>button.btn.dropdown-toggle,
+.main-container input.form-control,
+.main-container select.form-select,
+.main-container textarea.form-control,
+.main-container .bootstrap-select>.btn.dropdown-toggle,
+input.form-control-saas,
+select.form-select-saas,
+.form-control-modern-white {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    color: #1E293B !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    padding: 0.55rem 0.85rem !important;
+    height: 42px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.form-card-modern textarea.form-control,
+.main-container textarea.form-control {
+    height: auto !important;
+}
+
+.form-card-modern input[type="date"],
+.main-container input[type="date"] {
+    color: #1E293B !important;
+}
+
+/* Evitar doble borde o sombras extrañas en selects y bootstrap-select */
+.form-card-modern .bootstrap-select,
+.main-container .bootstrap-select {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+.form-card-modern .bootstrap-select>.btn.dropdown-toggle,
+.main-container .bootstrap-select>.btn.dropdown-toggle {
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.form-card-modern .bootstrap-select .filter-option,
+.main-container .bootstrap-select .filter-option {
+    text-align: left !important;
+}
+
+.form-card-modern .form-group,
+.main-container .form-group {
+    width: 100% !important;
+}
+
+/* Focus por sección: borde del color de la sección + sombra suave */
+/* Focus en Madre (Rosa) */
+#seccion-madre input.form-control:focus,
+#seccion-madre select.form-select:focus,
+#seccion-madre textarea.form-control:focus,
+#seccion-madre .bootstrap-select>.btn.dropdown-toggle:focus,
+#seccion-madre .bootstrap-select.show>.btn.dropdown-toggle,
+.card-section-madre input.form-control:focus,
+.card-section-madre select.form-select:focus,
+.card-section-madre textarea.form-control:focus,
+.card-section-madre .bootstrap-select>.btn.dropdown-toggle:focus,
+.card-section-madre .bootstrap-select.show>.btn.dropdown-toggle {
+    background-color: #FFFFFF !important;
+    border-color: #EC4899 !important;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2) !important;
+    outline: none !important;
+}
+
+/* Focus en Padre (Azul) */
+#seccion-padre input.form-control:focus,
+#seccion-padre select.form-select:focus,
+#seccion-padre textarea.form-control:focus,
+#seccion-padre .bootstrap-select>.btn.dropdown-toggle:focus,
+#seccion-padre .bootstrap-select.show>.btn.dropdown-toggle,
+.card-section-padre input.form-control:focus,
+.card-section-padre select.form-select:focus,
+.card-section-padre textarea.form-control:focus,
+.card-section-padre .bootstrap-select>.btn.dropdown-toggle:focus,
+.card-section-padre .bootstrap-select.show>.btn.dropdown-toggle {
+    background-color: #FFFFFF !important;
+    border-color: #38BDF8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+    outline: none !important;
+}
+
+/* Focus en Representante Legal (Verde) */
+#seccion-representante-legal input.form-control:focus,
+#seccion-representante-legal select.form-select:focus,
+#seccion-representante-legal textarea.form-control:focus,
+#seccion-representante-legal .bootstrap-select>.btn.dropdown-toggle:focus,
+#seccion-representante-legal .bootstrap-select.show>.btn.dropdown-toggle,
+.card-section-representante input.form-control:focus,
+.card-section-representante select.form-select:focus,
+.card-section-representante textarea.form-control:focus,
+.card-section-representante .bootstrap-select>.btn.dropdown-toggle:focus,
+.card-section-representante .bootstrap-select.show>.btn.dropdown-toggle {
+    background-color: #FFFFFF !important;
+    border-color: #34D399 !important;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25) !important;
+    outline: none !important;
+}
+
+/* Placeholders limpios en gris claro, sin cursiva */
+.form-card-modern input::placeholder,
+.form-card-modern textarea::placeholder,
+.form-card-modern .bootstrap-select .filter-option-placeholder,
+.main-container input::placeholder,
+.main-container textarea::placeholder,
+.main-container .bootstrap-select .filter-option-placeholder {
+    color: #9CA3AF !important;
+    font-style: normal !important;
+    font-weight: 400 !important;
+    opacity: 1 !important;
+}
+
+/* 3. Títulos y Labels (Estilo SaaS Pixsellz) */
+.card-header-modern {
+    justify-content: flex-start !important;
+}
+
+.section-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Badges circulares por Sección sobre el encabezado pastel */
+.section-icon-badge.badge-madre {
+    background-color: #FFFFFF !important;
+    color: #9D174D !important;
+    box-shadow: 0 1px 3px rgba(157, 23, 77, 0.12) !important;
+}
+
+.section-icon-badge.badge-padre {
+    background-color: #FFFFFF !important;
+    color: #0369A1 !important;
+    box-shadow: 0 1px 3px rgba(3, 105, 161, 0.12) !important;
+}
+
+.section-icon-badge.badge-representante {
+    background-color: #FFFFFF !important;
+    color: #065F46 !important;
+    box-shadow: 0 1px 3px rgba(6, 95, 70, 0.12) !important;
+}
+
+/* Labels pequeños, oscuros (#374151), en negrita y sin cursiva */
+.form-card-modern label,
+.form-label-modern,
+.form-label-section-title {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    font-style: normal !important;
+    margin-bottom: 0.35rem !important;
+    display: inline-block;
+}
+
+.form-label-modern i {
+    color: #64748B;
+    font-size: 0.8rem;
+    margin-right: 3px;
+}
+
+.required-badge {
+    color: #EF4444 !important;
+    font-weight: 700 !important;
+    margin-left: 2px;
+}
+
+/* Sub-encabezados Limpios (SIN banner de fondo) */
+.form-section-header {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 0 !important;
+    padding: 0 0 6px 0 !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-section-header h5 {
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    margin-bottom: 0 !important;
+    letter-spacing: 0.2px;
+}
+
+.form-section-header i {
+    font-size: 1rem !important;
+}
+
+/* Colores de acento para ícono y texto del sub-encabezado */
+.form-section-header.header-madre i {
+    color: #DB2777 !important;
+}
+
+.form-section-header.header-madre h5 {
+    color: #9D174D !important;
+}
+
+.form-section-header.header-padre i {
+    color: #0284C7 !important;
+}
+
+.form-section-header.header-padre h5 {
+    color: #0369A1 !important;
+}
+
+.form-section-header.header-representante i {
+    color: #059669 !important;
+}
+
+.form-section-header.header-representante h5 {
+    color: #065F46 !important;
+}
+
+/* 4. Pills de Selección de Estado (Presente / Ausente) con color */
+.state-pill-item {
+    cursor: pointer;
+    margin-bottom: 0;
+    user-select: none;
+    position: relative;
+    display: inline-block;
+}
+
+.state-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid #D1D5DB;
+    background-color: #FFFFFF;
+    color: #475569;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+}
+
+.state-pill-btn:hover {
+    background-color: #F8FAFC;
+    border-color: #94A3B8;
+    color: #1E293B;
+}
+
+/* Presente (cuando está seleccionado): Fondo verde claro (#DCFCE7), texto verde oscuro (#166534), borde verde (#86EFAC) */
+.state-pill-item input[type="radio"]:checked+.state-pill-btn.pill-presente,
+.state-pill-item:has(input[type="radio"]:checked) .state-pill-btn.pill-presente,
+.state-pill-btn.pill-presente.active {
+    background-color: #DCFCE7 !important;
+    border-color: #86EFAC !important;
+    color: #166534 !important;
+    box-shadow: 0 1px 3px rgba(22, 101, 52, 0.15) !important;
+}
+
+.state-pill-item input[type="radio"]:checked+.state-pill-btn.pill-presente i,
+.state-pill-item:has(input[type="radio"]:checked) .state-pill-btn.pill-presente i,
+.state-pill-btn.pill-presente.active i {
+    color: #16A34A !important;
+}
+
+/* Ausente (cuando está seleccionado): Fondo rojo claro (#FEE2E2), texto rojo oscuro (#991B1B), borde rojo (#FCA5A5) */
+.state-pill-item input[type="radio"]:checked+.state-pill-btn.pill-ausente,
+.state-pill-item:has(input[type="radio"]:checked) .state-pill-btn.pill-ausente,
+.state-pill-btn.pill-ausente.active {
+    background-color: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
+    color: #991B1B !important;
+    box-shadow: 0 1px 3px rgba(153, 27, 27, 0.15) !important;
+}
+
+.state-pill-item input[type="radio"]:checked+.state-pill-btn.pill-ausente i,
+.state-pill-item:has(input[type="radio"]:checked) .state-pill-btn.pill-ausente i,
+.state-pill-btn.pill-ausente.active i {
+    color: #DC2626 !important;
+}
+
+/* 5. Selector de Tipo de Representante */
+.tipo-rep-alert {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 1.25rem 1.5rem !important;
+    box-shadow: none !important;
+}
+
+.tipo-rep-option {
+    background-color: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 0.75rem 1.15rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.tipo-rep-option:hover {
+    background-color: #F8FAFC;
+    border-color: #CBD5E1;
+}
+
+.tipo-rep-option:has(input[type="radio"]:checked) {
+    background-color: #EFF6FF !important;
+    border-color: #4A6FC1 !important;
+    color: #1E3A8A !important;
+    box-shadow: 0 2px 5px rgba(74, 111, 193, 0.15) !important;
+}
+
+.tipo-rep-option:has(input[type="radio"]:checked) label {
+    font-weight: 600 !important;
+    color: #1E3A8A !important;
+}
+
+/* 6. Ancho Completo del Formulario de Representantes y Grid de Filas */
+.main-container,
+#representante-form,
+.card-section-madre,
+.card-section-padre,
+.card-section-representante {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.card-section-madre .form-label,
+.card-section-padre .form-label,
+.card-section-representante .form-label {
+    white-space: nowrap !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin-bottom: 6px !important;
+}
+
+/* Forzar al Selectpicker a respetar el ancho de la columna */
+.bootstrap-select {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+}
+
+.bootstrap-select>.dropdown-toggle {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Evitar que el plugin calcule anchos en línea */
+.bootstrap-select .dropdown-menu {
+    width: 100% !important;
+}
+
+@media (max-width: 768px) {
+    div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Opciones de tipo de representante cuando están deshabilitadas */
+.tipo-rep-option:has(input:disabled) {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+.tipo-rep-option input:disabled+label {
+    cursor: not-allowed !important;
+    color: #94A3B8 !important;
 }
