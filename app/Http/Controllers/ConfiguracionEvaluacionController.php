@@ -20,13 +20,13 @@ class ConfiguracionEvaluacionController extends Controller
             ->select('configuracion_evaluacions.*')
             ->paginate(10);
 
-        // Años que todavía no tienen configuración: los usa el modal de crear.
-        // (Sin relación nueva en AnioEscolar.php, que es un modelo compartido.)
-        $aniosSinConfiguracion = AnioEscolar::whereNotIn('id', ConfiguracionEvaluacion::select('anio_escolar_id'))
-            ->orderByDesc('inicio_anio_escolar')
-            ->get();
+                // Solo se crea configuración para el año activo, y solo si todavía no tiene una
+        // (normalmente ya la creó el asistente de año nuevo).
+        $anioActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $puedeCrear = $anioActivo
+            && ! ConfiguracionEvaluacion::where('anio_escolar_id', $anioActivo->id)->exists();
 
-        return view('admin.configuracion_evaluacion.index', compact('configuraciones', 'aniosSinConfiguracion'));
+        return view('admin.configuracion_evaluacion.index', compact('configuraciones', 'anioActivo', 'puedeCrear'));
     }
 
     public function store(ConfiguracionEvaluacionRequest $request): RedirectResponse
