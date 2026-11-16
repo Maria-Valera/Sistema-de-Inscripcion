@@ -20,13 +20,13 @@ class ConfiguracionEvaluacionController extends Controller
             ->select('configuracion_evaluacions.*')
             ->paginate(10);
 
-        // Años que todavía no tienen configuración: los usa el modal de crear.
-        // (Sin relación nueva en AnioEscolar.php, que es un modelo compartido.)
-        $aniosSinConfiguracion = AnioEscolar::whereNotIn('id', ConfiguracionEvaluacion::select('anio_escolar_id'))
-            ->orderByDesc('inicio_anio_escolar')
-            ->get();
+                // Solo se crea configuración para el año activo, y solo si todavía no tiene una
+        // (normalmente ya la creó el asistente de año nuevo).
+        $anioActivo = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first();
+        $puedeCrear = $anioActivo
+            && ! ConfiguracionEvaluacion::where('anio_escolar_id', $anioActivo->id)->exists();
 
-        return view('admin.configuracion_evaluacion.index', compact('configuraciones', 'aniosSinConfiguracion'));
+        return view('admin.configuracion_evaluacion.index', compact('configuraciones', 'anioActivo', 'puedeCrear'));
     }
 
     public function store(ConfiguracionEvaluacionRequest $request): RedirectResponse
@@ -38,8 +38,29 @@ class ConfiguracionEvaluacionController extends Controller
             ->with('success', 'Configuración de evaluación creada correctamente.');
     }
 
+        /**
+     * Solo la configuración del año activo se edita o elimina. La de un año anterior queda como se usó:
+     * sus notas se calcularon con esas reglas. Devuelve el motivo si no se puede, o null si se puede.
+     */
+    private function motivoSoloConsulta(ConfiguracionEvaluacion $configuracion): ?string
+    {
+        $anio = $configuracion->anioEscolar;
+
+        if ($anio && in_array($anio->status, ['Activo', 'Extendido'], true)) {
+            return null;
+        }
+
+        $nombre = $anio ? $anio->inicio_anio_escolar->format('Y') . ' - ' . $anio->cierre_anio_escolar->format('Y') : '';
+
+        return "La configuración del año {$nombre} es de un año anterior: solo se puede consultar.";
+    }
+
     public function update(ConfiguracionEvaluacionRequest $request, ConfiguracionEvaluacion $configuracionEvaluacion): RedirectResponse
     {
+                if ($motivo = $this->motivoSoloConsulta($configuracionEvaluacion)) {
+            return redirect()->route('admin.configuracion_evaluacion.index')->with('error', $motivo);
+        }
+
         $datos = $request->validated();
 
                 // El máximo no puede quedar por debajo de los lapsos que el año ya tiene.
@@ -59,6 +80,10 @@ class ConfiguracionEvaluacionController extends Controller
 
     public function destroy(ConfiguracionEvaluacion $configuracionEvaluacion): RedirectResponse
     {
+
+            if ($motivo = $this->motivoSoloConsulta($configuracionEvaluacion)) {
+            return redirect()->route('admin.configuracion_evaluacion.index')->with('error', $motivo);
+        }
         // Sin configuración, los lapsos de ese año quedarían sin reglas: se impide borrarla.
         if (Lapso::where('anio_escolar_id', $configuracionEvaluacion->anio_escolar_id)->exists()) {
             return redirect()

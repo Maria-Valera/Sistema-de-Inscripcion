@@ -26,7 +26,8 @@
                 </div>
             </div>
             @can('configuracion_evaluacion.gestionar')
-                @if ($aniosSinConfiguracion->isNotEmpty())
+                {{-- Solo para el año activo, y solo si todavía no tiene configuración --}}
+                @if (\App\Support\AnioEscolarSeleccionado::esActual() && $puedeCrear)
                     <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear">
                         <i class="fas fa-plus"></i> <span>Nueva configuración</span>
                     </button>
@@ -40,10 +41,26 @@
     <div class="main-container">
 
         @can('configuracion_evaluacion.gestionar')
-            @if ($aniosSinConfiguracion->isNotEmpty())
+            @if ($puedeCrear)
                 @include('admin.configuracion_evaluacion.modales.createModal')
             @endif
         @endcan
+
+                {{-- Error del año escolar (no tiene campo en el formulario: el año siempre es el activo) --}}
+        @error('anio_escolar_id')
+            <div class="alerts-container">
+                <div class="alert-modern alert-danger alert alert-dismissible fade show" role="alert">
+                    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="alert-content">
+                        <h4>Error</h4>
+                        <p>{{ $message }}</p>
+                    </div>
+                    <button type="button" class="alert-close btn-close" data-bs-dismiss="alert" aria-label="Cerrar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        @enderror
 
         {{-- Mensajes --}}
         @foreach (['success' => ['alert-success', 'fa-check-circle', 'Éxito'], 'error' => ['alert-danger', 'fa-exclamation-circle', 'Error']] as $clave => [$clase, $icono, $titulo])
@@ -125,8 +142,10 @@
                                     <td style="text-align: center">{{ $config->max_areas_pendientes }}</td>
                                     @can('configuracion_evaluacion.gestionar')
                                         <td style="text-align: center">
-                                            <div class="action-buttons">
-                                                <button class="action-btn btn-edit" data-bs-toggle="modal"
+                                            {{-- Solo la del año activo se edita o elimina; las de años anteriores quedan como se usaron --}}
+                                            @if ($config->anio_escolar_id === $anioActivo?->id)
+                                                <div class="action-buttons">
+                                                    <button class="action-btn btn-edit" data-bs-toggle="modal"
                                                     data-bs-target="#editarConfiguracion{{ $config->id }}" title="Editar">
                                                     <i class="fas fa-pen"></i>
                                                 </button>
@@ -134,7 +153,12 @@
                                                     data-bs-target="#eliminarConfiguracion{{ $config->id }}" title="Eliminar">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
-                                            </div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted" title="Año anterior: solo consulta">
+                                                    <i class="fas fa-lock"></i> Solo consulta
+                                                </span>
+                                            @endif
                                         </td>
                                     @endcan
                                 </tr>
@@ -156,8 +180,10 @@
 
             @can('configuracion_evaluacion.gestionar')
                 @foreach ($configuraciones as $config)
-                    @include('admin.configuracion_evaluacion.modales.editModal')
-                    @include('admin.configuracion_evaluacion.modales.deleteModal')
+                    @if ($config->anio_escolar_id === $anioActivo?->id)
+                        @include('admin.configuracion_evaluacion.modales.editModal')
+                        @include('admin.configuracion_evaluacion.modales.deleteModal')
+                    @endif
                 @endforeach
             @endcan
 
