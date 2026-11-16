@@ -142,8 +142,10 @@
                                     <td style="text-align: center">{{ $config->max_areas_pendientes }}</td>
                                     @can('configuracion_evaluacion.gestionar')
                                         <td style="text-align: center">
-                                            <div class="action-buttons">
-                                                <button class="action-btn btn-edit" data-bs-toggle="modal"
+                                            {{-- Solo la del año activo se edita o elimina; las de años anteriores quedan como se usaron --}}
+                                            @if ($config->anio_escolar_id === $anioActivo?->id)
+                                                <div class="action-buttons">
+                                                    <button class="action-btn btn-edit" data-bs-toggle="modal"
                                                     data-bs-target="#editarConfiguracion{{ $config->id }}" title="Editar">
                                                     <i class="fas fa-pen"></i>
                                                 </button>
@@ -151,7 +153,12 @@
                                                     data-bs-target="#eliminarConfiguracion{{ $config->id }}" title="Eliminar">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
-                                            </div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted" title="Año anterior: solo consulta">
+                                                    <i class="fas fa-lock"></i> Solo consulta
+                                                </span>
+                                            @endif
                                         </td>
                                     @endcan
                                 </tr>
@@ -173,8 +180,10 @@
 
             @can('configuracion_evaluacion.gestionar')
                 @foreach ($configuraciones as $config)
-                    @include('admin.configuracion_evaluacion.modales.editModal')
-                    @include('admin.configuracion_evaluacion.modales.deleteModal')
+                    @if ($config->anio_escolar_id === $anioActivo?->id)
+                        @include('admin.configuracion_evaluacion.modales.editModal')
+                        @include('admin.configuracion_evaluacion.modales.deleteModal')
+                    @endif
                 @endforeach
             @endcan
 

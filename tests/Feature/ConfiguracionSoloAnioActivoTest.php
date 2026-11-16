@@ -112,6 +112,38 @@ class ConfiguracionSoloAnioActivoTest extends TestCase
         $this->assertSame(12, $config->nota_aprobatoria);
     }
 
+    public function test_la_de_un_anio_anterior_solo_se_consulta(): void
+    {
+        $viejo = $this->anio('2025-09-15', '2026-07-31', 'Inactivo');
+        $activo = $this->anio('2026-09-15', '2027-07-31', 'Activo');
+        $configVieja = ConfiguracionEvaluacion::create($this->reglas(['anio_escolar_id' => $viejo->id]));
+        $configActiva = ConfiguracionEvaluacion::create($this->reglas(['anio_escolar_id' => $activo->id]));
+
+        // En la tabla: la del año activo tiene botones; la del anterior dice "Solo consulta"
+        $this->actingAs($this->admin)->get(route('admin.configuracion_evaluacion.index'))
+            ->assertOk()
+            ->assertSee('#editarConfiguracion' . $configActiva->id, false)
+            ->assertDontSee('#editarConfiguracion' . $configVieja->id, false)
+            ->assertSee('Solo consulta');
+
+        // Y aunque alguien lo intente por fuera de la pantalla, no se edita ni se elimina
+        $this->actingAs($this->admin)
+            ->put(route('admin.configuracion_evaluacion.update', $configVieja), $this->reglas(['nota_aprobatoria' => 12]))
+            ->assertSessionHas('error');
+        $this->assertSame(10, $configVieja->fresh()->nota_aprobatoria);
+
+        $this->actingAs($this->admin)
+            ->delete(route('admin.configuracion_evaluacion.destroy', $configVieja))
+            ->assertSessionHas('error');
+        $this->assertNotNull($configVieja->fresh());
+
+        // La del año activo sí se edita
+        $this->actingAs($this->admin)
+            ->put(route('admin.configuracion_evaluacion.update', $configActiva), $this->reglas(['nota_aprobatoria' => 12]))
+            ->assertSessionHasNoErrors();
+        $this->assertSame(12, $configActiva->fresh()->nota_aprobatoria);
+    }
+
     public function test_el_asistente_de_anio_nuevo_sigue_creando_la_configuracion(): void
     {
         $this->actingAs($this->admin)->post(route('admin.asistente.anio.store'), [
