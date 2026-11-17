@@ -15,6 +15,7 @@ use App\Models\GrupoEstable;
 class DocenteAreaGrado extends Component
 {
     public $docenteId;
+    public $docente_id;
     public $docentes = [];
     public $docenteSeleccionado = null;
     public $materiaId;
@@ -56,6 +57,7 @@ class DocenteAreaGrado extends Component
         if ($docenteId) {
             $this->modoEditar = true;
             $this->docenteId = $docenteId;
+            $this->docente_id = $docenteId;
             $this->cargarDatosDocente();
             $this->cargarMateriasPorEstudios();
             $this->gradosArea = collect();
@@ -130,8 +132,15 @@ class DocenteAreaGrado extends Component
         return $this->grupoEstableId && $this->gradoGrupoId;
     }
 
+    public function updatedDocente_id($value)
+    {
+        $this->docenteId = $value;
+        $this->updatedDocenteId($value);
+    }
+
     public function updatedDocenteId($value)
     {
+        $this->docente_id = $value;
         if (!$value) {
             $this->reset([
                 'docenteSeleccionado',

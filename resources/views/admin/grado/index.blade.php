@@ -10,19 +10,19 @@
 @section('title', 'Gestión de Niveles Académicos')
 
 @section('content_header')
-    <div class="content-header-modern hero-header-horario">
-        <div class="header-content">
-            <div class="header-title">
+    <div class="content-header-modern hero-header-horario p-3 p-md-4">
+        <div class="header-content d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="header-title d-flex align-items-center gap-3">
                 <div class="icon-wrapper">
                     <i class="fas fa-layer-group"></i>
                 </div>
                 <div>
-                    <h1 class="title-main">Gestión de Niveles Académicos</h1>
-                    <p class="title-subtitle">Administración de los niveles y capacidades para el año escolar</p>
+                    <h1 class="title-main mb-1">Gestión de Niveles Académicos</h1>
+                    <p class="title-subtitle mb-0">Administración de los niveles y capacidades para el año escolar</p>
                 </div>
             </div>
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <button type="button" class="btn-hero-white" data-bs-toggle="modal" data-bs-target="#modalCrearGrado"
+                <button type="button" class="btn-hero-white w-100 w-md-auto justify-content-center mt-3 mt-md-0" data-bs-toggle="modal" data-bs-target="#modalCrearGrado"
                     title="Nuevo Nivel">
                     <i class="fas fa-plus"></i>
                     <span>Nuevo Nivel</span>
@@ -98,8 +98,8 @@
             </div>
 
             <div class="card-body-modern p-0">
-                <div class="table-wrapper">
-                    <table class="table-modern" id="tablaGrados">
+                <div class="table-responsive">
+                    <table class="table-modern table-striped text-nowrap" id="tablaGrados">
                         <thead>
                             <tr class="text-center">
                                 <th style="width: 80px;">#</th>
@@ -161,41 +161,41 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons justify-content-center">
-                                                <div class="dropdown text-center">
-                                                    <button class="action-btn"
+                                                <div class="dropdown dropstart text-center">
+                                                    <button class="btn btn-sm action-btn rounded-circle"
                                                             type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
                                                         <i class="fas fa-ellipsis-v"></i>
                                                     </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
+                                                    <ul class="dropdown-menu dropdown-menu-modern dropdown-menu-end shadow-sm">
                                                         <li>
-                                                            <button class="dropdown-item dropdown-item-modern item-view"
+                                                            <button class="dropdown-item dropdown-item-modern text-primary d-flex align-items-center"
                                                                 type="button"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#viewModal{{ $datos->id }}"
                                                                 title="Ver más">
-                                                                <i class="fas fa-eye me-2"></i>
-                                                                <span>Ver más</span>
+                                                                <i class="fas fa-eye me-2 text-primary"></i>
+                                                                <span class="text-primary fw-medium">Ver más</span>
                                                             </button>
                                                         </li>
                                                         @if (\App\Support\AnioEscolarSeleccionado::esActual())
                                                             <li>
-                                                                <button class="dropdown-item dropdown-item-modern item-edit"
+                                                                <button class="dropdown-item dropdown-item-modern text-warning d-flex align-items-center"
                                                                     type="button"
                                                                     data-bs-toggle="modal"
                                                                     data-bs-target="#viewModalEditar{{ $datos->id }}"
                                                                     title="Editar">
-                                                                    <i class="fas fa-pen me-2"></i>
-                                                                    <span>Editar</span>
+                                                                    <i class="fas fa-pen me-2 text-warning"></i>
+                                                                    <span class="text-warning fw-medium">Editar</span>
                                                                 </button>
                                                             </li>
                                                             <li>
                                                                 <button type="button"
-                                                                    class="dropdown-item dropdown-item-modern item-delete btn-inactivar-grado"
+                                                                    class="dropdown-item dropdown-item-modern text-danger d-flex align-items-center btn-inactivar-grado"
                                                                     data-tiene-estudiantes="{{ $datos->inscripciones_count > 0 ? '1' : '0' }}"
                                                                     data-modal-id="confirmarEliminar{{ $datos->id }}"
                                                                     title="Inactivar">
-                                                                    <i class="fas fa-ban me-2"></i>
-                                                                    <span>Inactivar</span>
+                                                                    <i class="fas fa-ban me-2 text-danger"></i>
+                                                                    <span class="text-danger fw-medium">Inactivar</span>
                                                                 </button>
                                                             </li>
                                                         @endif

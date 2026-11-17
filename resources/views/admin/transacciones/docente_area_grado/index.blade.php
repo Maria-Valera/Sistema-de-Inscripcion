@@ -4,32 +4,31 @@
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
 @stop
 
 @section('title', 'Gestión de Asignaciones')
 
 @section('content_header')
-    <div class="content-header-modern">
-        <div class="header-content">
-            <div class="header-title">
+    <div class="content-header-modern hero-header-horario p-3 p-md-4">
+        <div class="header-content d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="header-title d-flex align-items-center gap-3">
                 <div class="icon-wrapper">
                     <i class="fas fa-chalkboard-teacher"></i>
                 </div>
                 <div>
-                    <h1 class="title-main">Asignación de Docentes</h1>
-                    <p class="title-subtitle">Gestión de materias, niveles academicos y secciones</p>
+                    <h1 class="title-main mb-1">Asignación de Docentes</h1>
+                    <p class="title-subtitle mb-0">Gestión de materias, niveles académicos y secciones</p>
                 </div>
             </div>
 
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <a type="button" class="btn-create" href="{{ route('admin.transacciones.docente_area_grado.create') }}"
+                <a class="btn-hero-white w-100 w-md-auto justify-content-center mt-3 mt-md-0" href="{{ route('admin.transacciones.docente_area_grado.create') }}"
                     title="Nueva Asignación">
                     <i class="fas fa-plus"></i>
                     <span>Nueva Asignación</span>
                 </a>
             @endif
-
         </div>
     </div>
 @stop
@@ -74,319 +73,289 @@
         @endif
 
         {{-- Tabla de docentes --}}
-        <div class="card-modern">
-            <div class="card-header-modern d-flex align-items-center justify-content-between flex-wrap gap-3">
-
-                <!-- IZQUIERDA -->
+        <div class="card-modern shadow-sm">
+            <div class="card-header-modern d-flex justify-content-between align-items-center flex-column flex-md-row gap-3 w-100">
+                <!-- IZQUIERDA: Título y Subtítulo -->
                 <div class="header-left d-flex align-items-center gap-3">
-                    <div class="header-icon">
+                    <div class="header-icon d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 40px; height: 40px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1;">
                         <i class="fas fa-list-ul"></i>
                     </div>
                     <div>
-                        <h3 class="mb-0">Listado de Docentes</h3>
-                        <p class="mb-0">{{ $docentes->total() }} docentes registrados</p>
+                        <h3 class="fw-bold mb-0" style="font-size: 1.05rem; color: #1E293B;">Listado de Docentes</h3>
+                        <p class="text-muted mb-0" style="font-size: 0.82rem;">{{ $docentes->total() }} docentes registrados</p>
                     </div>
                 </div>
 
-                <!-- DERECHA -->
-                <div class="header-right d-flex align-items-center gap-2 flex-wrap">
-
+                <!-- DERECHA: Buscador y PDF -->
+                <div class="d-flex align-items-center gap-3 flex-column flex-sm-row w-100 w-md-auto">
                     <!-- BUSCADOR -->
-                    <form action="{{ route('admin.transacciones.docente_area_grado.index') }}" class="mb-0 search-sm">
-                        <div class="search-modern">
-                            <i class="fas fa-search"></i>
-                            <input type="text" name="buscar" id="buscar" class="form-control-modern"
-                                placeholder="Buscar..." value="{{ request('buscar') }}">
+                    <form action="{{ route('admin.transacciones.docente_area_grado.index') }}" method="GET" class="m-0 w-100 w-md-auto">
+                        <div class="search-wrapper position-relative" style="min-width: 250px;">
+                            <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 50%; transform: translateY(-50%); z-index: 10; font-size: 0.85rem;"></i>
+                            <input type="text" name="buscar" id="buscar" class="form-control search-input-modern pl-5 w-100"
+                                placeholder="Buscar docente..." value="{{ request('buscar') }}"
+                                style="padding-left: 40px !important; border-radius: 10px; height: 38px; font-size: 0.85rem;">
                         </div>
                     </form>
 
-                    <!-- PDF -->
+                    <!-- PDF GENERAL -->
                     <a href="{{ route('admin.transacciones.docente_area_grado.reportePDFGeneral', request()->query()) }}"
-                        class="btn-pdf" target="_blank">
-                        <i class="fas fa-file-pdf"></i> PDF General
+                        class="btn-pdf-global d-inline-flex align-items-center justify-content-center gap-2 text-nowrap"
+                        target="_blank" title="Exportar reporte general en PDF">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>PDF General</span>
                     </a>
-
-                    <!-- FILTRO -->
-                    <button class="btn-modal-create" data-bs-toggle="modal" data-bs-target="#modalFiltros">
-                        <i class="fas fa-filter"></i>
-                    </button>
-
-                    <!-- Calendario Escolar -->
-                    @if ($mostrarAnio)
-                        <div class="d-flex align-items-center bg-light rounded px-2 py-1 border">
-                            <span class="badge bg-primary me-2" style="font-size: 0.7rem;">
-                                <i class="fas fa-calendar-check me-1"></i> Calendario Escolar
-                            </span>
-                            <span class="text-muted me-2" style="font-size: 0.8rem;">
-                                <i class="fas fa-play-circle text-primary me-1"></i>
-                                {{ \Carbon\Carbon::parse($mostrarAnio->inicio_anio_escolar)->format('d/m/Y') }}
-                            </span>
-                            <span class="text-muted" style="font-size: 0.8rem;">
-                                <i class="fas fa-flag-checkered text-danger me-1"></i>
-                                {{ \Carbon\Carbon::parse($mostrarAnio->cierre_anio_escolar)->format('d/m/Y') }}
-                            </span>
-                        </div>
-                    @else
-                        <div
-                            class="d-flex align-items-center bg-warning bg-opacity-10 rounded px-2 py-1 border border-warning">
-                            <i class="fas fa-exclamation-triangle text-warning me-1"></i>
-                            <span class="fw-semibold" style="font-size: 0.8rem;">Sin año activo</span>
-                        </div>
-                    @endif
-
                 </div>
             </div>
 
-        </div>
+            <div class="card-body-modern p-0">
+                <div class="table-responsive">
+                    <table class="table-modern table-striped text-nowrap">
+                        <thead>
+                            <tr class="text-center">
+                                <th style="width: 130px; text-align: center;" class="text-nowrap">Cédula</th>
+                                <th style="text-align: left;" class="text-nowrap">Docente</th>
+                                <th style="text-align: center;">Áreas, Nivel Académico y Secciones</th>
+                                <th style="text-align: center;">Grupo Estable</th>
+                                <th style="width: 120px; text-align: center;" class="text-nowrap">Estado</th>
+                                <th style="width: 100px; text-align: center;" class="text-nowrap">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($docentes as $datos)
+                                <tr>
+                                    {{-- Cédula --}}
+                                    <td class="fw-bold text-dark text-nowrap" style="font-size: 0.92rem; text-align: center;">
+                                        {{ $datos->persona->tipoDocumento->nombre ?? 'V' }}-{{ $datos->persona->numero_documento }}
+                                    </td>
 
-        <div class="card-body-modern">
-            <div class="table-wrapper">
-                <table class="table-modern">
-                    <thead>
-                        <tr>
-                            <th>Cédula</th>
-                            <th>Docente</th>
-                            <th style="text-align: center;">Áreas, nivel academico y secciones</th>
-                            <th style="text-align: center;">Grupo Estable</th>
-                            <th style="text-align: center; width: 120px;">Estado</th>
-                            <th style="text-align: center; width: 150px;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($docentes as $datos)
-                            <tr>
-                                {{-- Datos del docente --}}
-                                <td
-                                    style="padding-left: 1rem; font-weight: 600; color: var(--gray-900); font-size: 0.95rem; text-align: center;">
-                                    <span>
-                                        {{ $datos->persona->tipoDocumento->nombre ?? ' ' }}-{{ $datos->persona->numero_documento }}
-                                    </span>
-                                </td>
+                                    {{-- Docente --}}
+                                    <td class="text-start fw-semibold text-dark text-nowrap">
+                                        {{ $datos->persona->primer_nombre }} {{ $datos->persona->primer_apellido }}
+                                    </td>
 
-                                <td>
-                                    <div class="cell-content" style="gap: 0.75rem;">
-                                        <div>
-                                            {{ $datos->persona->primer_nombre }}
-                                            {{ $datos->persona->primer_apellido }}
-                                        </div>
-                                    </div>
-                                </td>
-
-                                {{-- Áreas, Grados y Secciones en un solo TD --}}
-                                <td style="text-align: center;">
-                                    @php
-                                        // Filtrar solo asignaciones de tipo 'area' activas
-                                        $asigs = $datos->asignacionesAreas
-                                            ->where('status', true)
-                                            ->where('tipo_asignacion', 'area')
-                                            ->filter(
-                                                fn($a) => $a->areaEstudios !== null ||
-                                                    $a->grado !== null ||
-                                                    $a->seccion !== null,
-                                            );
-                                    @endphp
-
-                                    @forelse($asigs as $asign)
+                                    {{-- Áreas, Grados y Secciones --}}
+                                    <td class="text-center" style="white-space: normal; min-width: 280px;">
                                         @php
-                                            $areaFormacion = optional($asign->areaEstudios)->areaFormacion;
-                                            $grado = optional($asign->grado);
-                                            $seccion = optional($asign->seccion); 
+                                            // Filtrar solo asignaciones de tipo 'area' activas
+                                            $asigs = $datos->asignacionesAreas
+                                                ->where('status', true)
+                                                ->where('tipo_asignacion', 'area')
+                                                ->filter(
+                                                    fn($a) => $a->areaEstudios !== null ||
+                                                        $a->grado !== null ||
+                                                        $a->seccion !== null,
+                                                );
                                         @endphp
 
-                                        <div style="margin-bottom: 0.5rem;">
-                                            {{-- Área de formación --}}
-                                            <span title="{{ $areaFormacion->nombre_area_formacion ?? 'N/A' }}">
-                                                <i class="fas fa-graduation-cap"></i>
-                                                {{ Str::limit($areaFormacion->nombre_area_formacion ?? 'N/A', 20) }}
-                                            </span>
-
-                                            {{-- Grado --}}
-                                            <span title="Grado: {{ $grado->numero_grado ?? 'N/A' }}">
-                                            - {{ $grado->numero_grado .'° ' ?? 'N/A' }}
-                                            </span>
-
-                                            {{-- Sección --}}
-                                            <span title="Sección: {{ $seccion->nombre ?? 'N/A' }}">
-                                                - {{ $seccion->nombre ?? 'N/A' }}
-                                            </span>
+                                        <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                            @forelse($asigs as $asign)
+                                                @php
+                                                    $areaFormacion = optional($asign->areaEstudios)->areaFormacion;
+                                                    $grado = optional($asign->grado);
+                                                    $seccion = optional($asign->seccion); 
+                                                @endphp
+                                                <span class="badge d-inline-flex align-items-center gap-1"
+                                                      style="background-color: #F1F5F9; color: #334155; border: 1px solid #E2E8F0; font-weight: 500; font-size: 0.8rem; padding: 0.35rem 0.65rem; border-radius: 6px;"
+                                                      title="{{ $areaFormacion->nombre_area_formacion ?? 'N/A' }} - Nivel {{ $grado->numero_grado ?? 'N/A' }}° - Sec. {{ $seccion->nombre ?? 'N/A' }}">
+                                                    <i class="fas fa-book-open text-primary" style="font-size: 0.72rem;"></i>
+                                                    <span>{{ Str::limit($areaFormacion->nombre_area_formacion ?? 'N/A', 18) }}</span>
+                                                    <span class="text-muted fw-bold">·</span>
+                                                    <span class="fw-bold" style="color: #4A6FC1;">{{ $grado->numero_grado ? $grado->numero_grado . '°' : 'N/A' }}</span>
+                                                    <span class="badge bg-white text-dark border px-1" style="font-size: 0.72rem;">{{ $seccion->nombre ?? 'N/A' }}</span>
+                                                </span>
+                                            @empty
+                                                <span class="text-muted" style="font-size: 0.82rem;">
+                                                    <i class="fas fa-minus-circle me-1"></i> Sin áreas asignadas
+                                                </span>
+                                            @endforelse
                                         </div>
-                                    @empty
-                                        <span class="text-muted" style="font-size: 0.85rem;">
-                                            <i class="fas fa-minus-circle"></i> Sin areas asignadas
-                                        </span>
-                                    @endforelse
-                                </td>
+                                    </td>
 
-                                {{-- Grupos Estables --}}
-                                <td style="text-align: center;">
-                                    @php
-                                        // Filtrar solo asignaciones de tipo grupo_estable activas
-                                        $grupos = $datos->asignacionesAreas
-                                            ->where('status', true)
-                                            ->where('tipo_asignacion', 'grupo_estable');
-                                    @endphp
+                                    {{-- Grupos Estables --}}
+                                    <td class="text-center" style="white-space: normal; min-width: 180px;">
+                                        @php
+                                            // Filtrar solo asignaciones de tipo grupo_estable activas
+                                            $grupos = $datos->asignacionesAreas
+                                                ->where('status', true)
+                                                ->where('tipo_asignacion', 'grupo_estable');
+                                        @endphp
 
-                                    @forelse($grupos as $asign)
-                                        <span style="font-weight: bold; margin-bottom: 2rem;"
-                                            title="{{ optional($asign->grupoEstable)->nombre_grupo_estable ?? 'N/A' }} - Nivel: {{ optional($asign->gradoGrupoEstable)->numero_grado ?? 'N/A' }}">
-                                            <i class="fas fa-users"></i>
-                                            {{ optional($asign->grupoEstable)->nombre_grupo_estable ?? 'N/A' }}
-                                            -
-                                            {{ optional($asign->gradoGrupoEstable)->numero_grado ?? 'N/A' }}
-                                        </span>
-                                        @if (!$loop->last)
-                                            <br>
+                                        <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                            @forelse($grupos as $asign)
+                                                <span class="badge d-inline-flex align-items-center gap-1"
+                                                    style="background-color: #F1F5F9; color: #334155; border: 1px solid #E2E8F0; font-weight: 500; font-size: 0.8rem; padding: 0.35rem 0.65rem; border-radius: 6px;"
+                                                    title="{{ optional($asign->grupoEstable)->nombre_grupo_estable ?? 'N/A' }} - Nivel: {{ optional($asign->gradoGrupoEstable)->numero_grado ?? 'N/A' }}">
+                                                    <i class="fas fa-users text-info" style="font-size: 0.72rem;"></i>
+                                                    <span>{{ optional($asign->grupoEstable)->nombre_grupo_estable ?? 'N/A' }}</span>
+                                                    @if(optional($asign->gradoGrupoEstable)->numero_grado)
+                                                        <span class="text-muted fw-bold">·</span>
+                                                        <span class="fw-bold" style="color: #4A6FC1;">{{ optional($asign->gradoGrupoEstable)->numero_grado }}°</span>
+                                                    @endif
+                                                </span>
+                                            @empty
+                                                <span class="text-muted" style="font-size: 0.82rem;">
+                                                    <i class="fas fa-minus-circle me-1"></i> Sin grupos
+                                                </span>
+                                            @endforelse
+                                        </div>
+                                    </td>
+
+                                    {{-- Estado --}}
+                                    <td class="text-nowrap text-center">
+                                        @if ($datos->status)
+                                            <span class="badge badge-success px-3 py-1">
+                                                <i class="fas fa-check-circle me-1" style="font-size: 0.75rem;"></i> Activo
+                                            </span>
+                                        @else
+                                            <span class="badge badge-danger px-3 py-1">
+                                                <i class="fas fa-times-circle me-1" style="font-size: 0.75rem;"></i> Inactivo
+                                            </span>
                                         @endif
-                                    @empty
-                                        <span class="text-muted" style="font-size: 0.85rem;">
-                                            <i class="fas fa-minus-circle"></i> Sin grupos asignados
-                                        </span>
-                                    @endforelse
-                                </td>
+                                    </td>
 
+                                    {{-- Acciones --}}
+                                    <td class="text-nowrap text-center">
+                                        <div class="action-buttons justify-content-center">
+                                            <div class="dropdown dropstart text-center">
+                                                <button class="btn btn-sm action-btn rounded-circle"
+                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
 
-                                {{-- Status --}}
-                                <td style="text-align: center;">
-                                    @if ($datos->status)
-                                        <span class="status-badge status-active">
-                                            <span class="status-dot"></span>
-                                            Activo
-                                        </span>
-                                    @else
-                                        <span class="status-badge status-inactive">
-                                            <span class="status-dot"></span>
-                                            Inactivo
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <div class="dropdown dropstart text-center">
-                                            <button class="btn btn-light btn-sm rounded-circle shadow-sm action-btn"
-                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-
-                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                {{-- Ver mas --}}
-                                                <li>
-                                                    <button class="dropdown-item d-flex align-items-center text-primary"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#viewModal{{ $datos->id }}"
-                                                        title="Ver detalles">
-                                                        <i class="fas fa-eye me-2"></i>
-                                                        Ver más
-                                                    </button>
-                                                </li>
-
-                                                @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                                                    {{-- Editar --}}
+                                                <ul class="dropdown-menu dropdown-menu-modern dropdown-menu-end shadow-sm">
+                                                    {{-- Ver más --}}
                                                     <li>
-                                                        <a class="dropdown-item d-flex align-items-center text-warning"
-                                                            href="{{ route('admin.transacciones.docente_area_grado.edit', $datos->id) }}"
-                                                            title="Editar">
-                                                            <i class="fas fa-pen me-2"></i>
-                                                            Editar
-                                                        </a>
-                                                    </li>
-
-                                                    {{-- Inactivar --}}
-                                                    <li>
-                                                        <button class="dropdown-item d-flex align-items-center text-danger"
+                                                        <button class="dropdown-item dropdown-item-modern text-primary d-flex align-items-center"
                                                             data-bs-toggle="modal"
-                                                            data-bs-target="#confirmarEliminar{{ $datos->id }}"
-                                                            title="Inactivar">
-                                                            <i class="fas fa-ban me-2"></i>
-                                                            Inactivar
+                                                            data-bs-target="#viewModal{{ $datos->id }}"
+                                                            title="Ver detalles">
+                                                            <i class="fas fa-eye me-2 text-primary"></i>
+                                                            <span class="text-primary fw-medium">Ver más</span>
                                                         </button>
                                                     </li>
-                                                @endif
-                                                                                                    {{-- PDF Materias --}}
+
+                                                    @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                        {{-- Editar --}}
+                                                        <li>
+                                                            <a class="dropdown-item dropdown-item-modern text-warning d-flex align-items-center"
+                                                                href="{{ route('admin.transacciones.docente_area_grado.edit', $datos->id) }}"
+                                                                title="Editar">
+                                                                <i class="fas fa-pen me-2 text-warning"></i>
+                                                                <span class="text-warning fw-medium">Editar</span>
+                                                            </a>
+                                                        </li>
+
+                                                        {{-- Inactivar --}}
+                                                        <li>
+                                                            <button class="dropdown-item dropdown-item-modern text-danger d-flex align-items-center"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#confirmarEliminar{{ $datos->id }}"
+                                                                title="Inactivar">
+                                                                <i class="fas fa-ban me-2 text-danger"></i>
+                                                                <span class="text-danger fw-medium">Inactivar</span>
+                                                            </button>
+                                                        </li>
+                                                    @endif
+
+                                                    {{-- PDF Materias --}}
                                                     <li>
                                                         <a href="{{ route('admin.docente.DocenteMateriaIndividual', ['id' => $datos->id] + request()->query()) }}"
-                                                            class="dropdown-item d-flex align-items-center text-danger"
+                                                            class="dropdown-item dropdown-item-modern text-danger d-flex align-items-center"
                                                             target="_blank"
                                                             title="Generar PDF de materias">
-                                                            <i class="fas fa-file-pdf me-2"></i>
-                                                            Area de formacion PDF
+                                                            <i class="fas fa-file-pdf me-2 text-danger"></i>
+                                                            <span class="text-danger fw-medium">Área de formación PDF</span>
                                                         </a>
                                                     </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-
-
-
-                                </td>
-                            </tr>
-                            {{-- Ruta de ver detalle --}}
-                            @include('admin.transacciones.docente_area_grado.modales.showModal')
-
-                            {{-- Modal de confirmación para eliminar --}}
-                            <div class="modal fade" id="confirmarEliminar{{ $datos->id }}" tabindex="-1"
-                                aria-labelledby="modalLabel{{ $datos->id }}" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content modal-modern">
-                                        <div class="modal-header-delete">
-                                            <div class="modal-icon-delete">
-                                                <i class="fas fa-trash-alt"></i>
+                                                </ul>
                                             </div>
-                                            <h5 class="modal-title-delete">Confirmar Inactivación</h5>
-                                            <button type="button" class="btn-close-modal" data-bs-dismiss="modal"
-                                                aria-label="Cerrar">
-                                                <i class="fas fa-times"></i>
-                                            </button>
                                         </div>
-                                        <div class="modal-body-delete">
-                                            <p>¿Deseas inactivar esta asignación?</p>
-                                            <p class="delete-warning">
-                                                {{-- La asignación se marcará como inactiva pero los datos permanecerán en el
-                                                    sistema. --}}
-                                            </p>
-                                        </div>
-                                        <div class="modal-footer-delete">
-                                            <form
-                                                action="{{ route('admin.transacciones.docente_area_grado.destroyAsignacion', $datos->id) }}"
-                                                method="POST" class="w-100">
-                                                @csrf
-                                                @method('DELETE')
-                                                <div class="footer-buttons">
-                                                    <button type="button" class="btn-modal-cancel"
-                                                        data-bs-dismiss="modal">Cancelar</button>
-                                                    <button type="submit" class="btn-modal-delete">Inactivar</button>
+                                    </td>
+                                </tr>
+
+                                {{-- Ruta de ver detalle --}}
+                                @include('admin.transacciones.docente_area_grado.modales.showModal')
+
+                                {{-- Modal de confirmación para eliminar --}}
+                                <div class="modal fade modal-danger-delete" id="confirmarEliminar{{ $datos->id }}" tabindex="-1"
+                                    aria-labelledby="modalLabel{{ $datos->id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+                                        <div class="modal-content modal-modern shadow-lg" style="border: 1px solid #E2E8F0; border-radius: 16px; overflow: hidden; background: #FFFFFF;">
+                                            <div class="modal-header d-flex align-items-center justify-content-between px-4 py-3 bg-white border-bottom" style="border-bottom-color: #F1F5F9 !important;">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                                                         style="width: 44px; height: 44px; border-radius: 12px; background-color: #FEE2E2; color: #EF4444;">
+                                                        <i class="fas fa-ban" style="font-size: 1.15rem;"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="modal-title m-0 fw-bold" id="modalLabel{{ $datos->id }}" style="color: #1E293B; font-size: 1.1rem;">
+                                                            Confirmar Inactivación
+                                                        </h5>
+                                                        <p class="text-muted m-0" style="font-size: 0.82rem;">Acción sobre asignación de docente</p>
+                                                    </div>
                                                 </div>
-                                            </form>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            </div>
+                                            <div class="modal-body px-4 py-3" style="background-color: #FFFFFF;">
+                                                <p class="fw-semibold mb-2" style="color: #1E293B; font-size: 0.95rem;">
+                                                    ¿Deseas inactivar esta asignación?
+                                                </p>
+                                                <div class="p-3 d-flex align-items-center gap-3"
+                                                     style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;">
+                                                    <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                                                         style="width: 40px; height: 40px; background-color: #EFF6FF; color: #4A6FC1; font-weight: 700;">
+                                                        <i class="fas fa-chalkboard-teacher"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold text-dark" style="font-size: 0.9rem;">
+                                                            {{ $datos->persona->primer_nombre }} {{ $datos->persona->primer_apellido }}
+                                                        </div>
+                                                        <div class="text-muted" style="font-size: 0.8rem;">
+                                                            C.I: {{ $datos->persona->tipoDocumento->nombre ?? 'V' }}-{{ $datos->persona->numero_documento }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer d-flex justify-content-end align-items-center gap-2 px-4 py-3 bg-white border-top" style="border-top-color: #F1F5F9 !important;">
+                                                <button type="button" class="btn-secondary-modern" data-bs-dismiss="modal">
+                                                    <i class="fas fa-times me-1"></i> Cancelar
+                                                </button>
+                                                <form action="{{ route('admin.transacciones.docente_area_grado.destroyAsignacion', $datos->id) }}"
+                                                      method="POST" class="m-0">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn" style="background-color: #EF4444; color: #FFF; border-radius: 8px; font-weight: 600; padding: 9px 18px; border: none;">
+                                                        <i class="fas fa-ban me-1"></i> Inactivar
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            <tr>
-                                <td colspan="10">
-                                    <div class="empty-state">
-                                        <div class="empty-icon">
-                                            <i class="fas fa-user-slash"></i>
+                            @empty
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="empty-state text-center py-5">
+                                            <div class="empty-icon text-muted mb-2 opacity-50">
+                                                <i class="fas fa-user-slash fa-3x"></i>
+                                            </div>
+                                            <h4 class="fw-bold" style="color: #1E293B; font-size: 1.1rem;">No hay docentes con materias asignadas</h4>
+                                            <p class="text-muted" style="font-size: 0.88rem;">Debe registrar docentes primero y asignarles materias y secciones.</p>
                                         </div>
-                                        <h4>No hay docentes con materias y años asignados</h4>
-                                        <p>Debe registrar docentes primero en el módulo de Docentes y asignarles
-                                            materias y años</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-
-                    </tbody>
-                </table>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
+        @include('admin.transacciones.docente_area_grado.modales.filtroModal')
+
+        {{-- Paginación --}}
+        <x-pagination :paginator="$docentes" />
     </div>
-    </div>
-    @include('admin.transacciones.docente_area_grado.modales.filtroModal')
-
-    {{-- Paginación --}}
-    <x-pagination :paginator="$docentes" />
-
-
-
 @endsection

@@ -246,6 +246,37 @@
     box-shadow: none !important;
 }
 
+.btn-primary-modern:disabled,
+.btn-primary-modern[disabled],
+.btn-primary-modern.disabled,
+button.btn-primary-modern:disabled,
+button.btn-primary-modern[disabled],
+button.btn-primary-modern.disabled {
+    background-color: #94A3B8 !important;
+    background: #94A3B8 !important;
+    border-color: #94A3B8 !important;
+    color: #FFFFFF !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    opacity: 0.85 !important;
+}
+
+.btn-primary-modern:disabled i,
+.btn-primary-modern[disabled] i,
+.btn-primary-modern.disabled i {
+    color: #FFFFFF !important;
+}
+
+/* Livewire Loading States */
+[wire\:loading]:not([wire\:loading\.remove]) {
+    display: none;
+}
+
+[wire\:loading\.remove] {
+    display: inline-flex;
+}
+
 .btn-primary-modern i,
 .btn-save i,
 .btn-modal-create i,
@@ -1410,9 +1441,13 @@ select option:checked {
     opacity: 1 !important;
 }
 
+.modal-modern,
+.modal-content.modal-modern,
+.modal-modern.modal-content,
 .modal-modern .modal-content,
 #modalNuevoHorario .modal-content {
     background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
     border: 1px solid var(--border-color) !important;
     border-radius: var(--radius-xl) !important;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
@@ -1420,13 +1455,16 @@ select option:checked {
 }
 
 .modal-modern .modal-header,
+.modal-content.modal-modern .modal-header,
 #modalNuevoHorario .modal-header {
     background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
     border-bottom: 1px solid #F1F5F9 !important;
     padding: 1.15rem 1.35rem !important;
 }
 
 .modal-modern .modal-header .modal-title,
+.modal-content.modal-modern .modal-header .modal-title,
 #modalNuevoHorario .modal-header .modal-title {
     color: var(--text-dark) !important;
     font-weight: 700 !important;
@@ -1434,16 +1472,59 @@ select option:checked {
 }
 
 .modal-modern .modal-body,
+.modal-content.modal-modern .modal-body,
 #modalNuevoHorario .modal-body {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
     padding: 1.25rem 1.35rem !important;
 }
 
 .modal-modern .modal-footer,
+.modal-content.modal-modern .modal-footer,
 #modalNuevoHorario .modal-footer {
     background: #FFFFFF !important;
-    border-top: none !important;
-    padding: 0 1.35rem 1.35rem !important;
+    background-color: #FFFFFF !important;
+    border-top: 1px solid #F1F5F9 !important;
+    padding: 1rem 1.35rem !important;
     gap: 0.75rem !important;
+}
+
+/* Detalle de Fichas en Modales (Grid SaaS) */
+.modal-detail-label {
+    display: block !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-style: normal !important;
+    margin-bottom: 4px !important;
+}
+
+.modal-detail-value {
+    font-size: 14.5px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    font-style: normal !important;
+    line-height: 1.35 !important;
+    display: block !important;
+}
+
+.modal-section-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.modal-section-title i {
+    color: var(--primary-color) !important;
+    font-size: 0.95rem !important;
 }
 
 /* ============================================================================
@@ -2105,6 +2186,21 @@ select.form-select.text-center {
     overflow: visible !important;
 }
 
+/* Permitir scroll cuando el modal sea explícitamente scrollable */
+.modal-dialog-scrollable .modal-content.modal-modern,
+.modal-dialog-scrollable.modal-modern,
+.modal-dialog-scrollable .modal-modern {
+    overflow: hidden !important;
+    max-height: calc(100vh - 3.5rem) !important;
+}
+
+.modal-dialog-scrollable .modal-modern .modal-body,
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: calc(100vh - 200px) !important;
+}
+
 .modal-modern .modal-header {
     border-top-left-radius: 16px !important;
     border-top-right-radius: 16px !important;
@@ -2216,25 +2312,38 @@ select.form-select.text-center {
 }
 
 /* Botón de PDF Global (Estilo Docentes) */
-.btn-pdf-global {
+.btn-pdf-global,
+a.btn-pdf-global,
+button.btn-pdf-global {
     background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
     border: 1px solid #FCA5A5 !important;
-    /* Rojo suave */
     color: #EF4444 !important;
-    /* Texto rojo */
-    font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
 }
 
-.btn-pdf-global:hover {
+.btn-pdf-global:hover,
+a.btn-pdf-global:hover,
+button.btn-pdf-global:hover {
     background-color: #FEF2F2 !important;
-    /* Fondo rojo muy claro */
+    background: #FEF2F2 !important;
     border-color: #EF4444 !important;
+    color: #DC2626 !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 2px rgba(239, 68, 68, 0.1) !important;
+}
+
+.btn-pdf-global i,
+a.btn-pdf-global i {
+    color: #EF4444 !important;
 }
 
 /* ============================================================================
@@ -2620,8 +2729,16 @@ select.form-select-saas,
 }
 
 /* 3. Títulos y Labels (Estilo SaaS Pixsellz) */
-.card-header-modern {
+.form-card-modern .card-header-modern,
+.card-section-form .card-header-modern {
     justify-content: flex-start !important;
+}
+
+.card-modern > .card-header-modern {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
 }
 
 .section-icon-badge {
@@ -2847,21 +2964,47 @@ select.form-select-saas,
     margin-bottom: 6px !important;
 }
 
-/* Forzar al Selectpicker a respetar el ancho de la columna */
-.bootstrap-select {
-    width: 100% !important;
-    max-width: 100% !important;
-    display: block !important;
+/* Forzar al Selectpicker a respetar el ancho de la columna sin cortarse */
+.card-modern,
+.card-modern .card-body,
+.card-modern .card-body-modern,
+.main-container .card,
+.main-container .card-modern {
+    overflow: visible !important;
 }
 
+.bootstrap-select,
 .bootstrap-select>.dropdown-toggle {
     width: 100% !important;
     max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-/* Evitar que el plugin calcule anchos en línea */
 .bootstrap-select .dropdown-menu {
     width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    left: 0 !important;
+    right: auto !important;
+    overflow-x: hidden !important;
+}
+
+.bootstrap-select .dropdown-menu .inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+.bootstrap-select .dropdown-menu li,
+.bootstrap-select .dropdown-menu li a,
+.bootstrap-select .dropdown-menu .dropdown-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    word-break: break-word !important;
 }
 
 @media (max-width: 768px) {

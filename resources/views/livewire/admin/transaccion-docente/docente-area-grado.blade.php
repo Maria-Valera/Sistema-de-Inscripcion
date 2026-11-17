@@ -33,28 +33,29 @@
         </div>
     @endif
     @if (!$modoEditar)
-        <div class="card-modern mb-4">
-            <div class="card-header-modern">
-                <div class="header-left">
-                    <div class="header-icon">
-                        <i class="fas fa-search"></i>
+        <div class="card card-modern shadow-sm mb-4" style="border: 1px solid #E2E8F0; border-radius: 14px; background: #FFFFFF; overflow: visible !important;">
+            <div class="card-header-modern d-flex align-items-center justify-content-between p-3 px-4 bg-white border-bottom" style="border-bottom-color: #F1F5F9 !important; border-top-left-radius: 14px; border-top-right-radius: 14px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 40px; height: 40px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1;">
+                        <i class="fas fa-search" style="font-size: 1rem;"></i>
                     </div>
                     <div>
-                        <h3>Buscar Docente</h3>
-                        <p>Seleccione el docente para asignarle areas de formacion</p>
+                        <h3 class="fw-bold mb-0" style="font-size: 1.05rem; color: #1E293B;">Buscar Docente</h3>
+                        <p class="text-muted mb-0" style="font-size: 0.82rem;">Seleccione el docente para asignarle áreas de formación</p>
                     </div>
                 </div>
             </div>
-            <div class="card-body-modern" style="padding: 2rem;">
+            <div class="card-body-modern p-4" style="background-color: #FFFFFF; overflow: visible !important; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;">
                 <div class="row">
-                    <div class="col-md-12" wire:ignore>
-                        <label for="docente_select" class="form-label-modern">
-                            <i class="fas fa-chalkboard-teacher"></i>
+                    <div class="col-md-12" wire:ignore style="overflow: visible !important;">
+                        <label for="docente_select" class="form-label-modern fw-semibold mb-2" style="color: #334155; font-size: 0.9rem;">
+                            <i class="fas fa-chalkboard-teacher me-1" style="color: #4A6FC1;"></i>
                             Docente
-                            <span class="required-badge">*</span>
+                            <span class="text-danger">*</span>
                         </label>
                         <select id="docente_select"
-                            class="form-control-modern selectpicker @error('docenteId') is-invalid @enderror"
+                            class="form-select select-modern selectpicker @error('docenteId') is-invalid @enderror"
                             data-live-search="true" data-size="8" data-style="btn-default" data-width="100%"
                             wire:model.live="docenteId">
                             <option value="" selected disabled>Seleccione un docente</option>
@@ -68,13 +69,13 @@
                             @endforeach
                         </select>
                         @error('docenteId')
-                            <div class="invalid-feedback-modern" style="display: block;">
-                                <i class="fas fa-exclamation-circle"></i>
+                            <div class="invalid-feedback-modern text-danger mt-1" style="display: block; font-size: 0.82rem;">
+                                <i class="fas fa-exclamation-circle me-1"></i>
                                 {{ $message }}
                             </div>
                         @enderror
-                        <small class="form-text-modern">
-                            <i class="fas fa-info-circle"></i>
+                        <small class="text-muted d-block mt-2" style="font-size: 13px;">
+                            <i class="fas fa-info-circle me-1"></i>
                             Busque por nombre, apellido o cédula del docente
                         </small>
                     </div>
@@ -85,161 +86,120 @@
     @endif
 
     @if ($docenteSeleccionado)
-        <div class="card-modern mb-4">
-            <div class="card-header-modern">
-                <div class="header-left">
-                    <div class="header-icon" style="background: linear-gradient(135deg, var(--success), #059669);">
-                        <i class="fas fa-user-check"></i>
+        <div class="card card-modern shadow-sm mb-4" 
+             style="background-color: #FFFFFF; border: 1px solid #E2E8F0; border-left: 4px solid #4A6FC1 !important; border-radius: 14px; overflow: visible;">
+            <div class="card-header-modern d-flex align-items-center justify-content-between p-3 px-4 bg-white border-bottom" 
+                 style="border-bottom-color: #F1F5F9 !important; border-top-left-radius: 14px; border-top-right-radius: 14px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 40px; height: 40px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1;">
+                        <i class="fas fa-id-card" style="font-size: 1rem;"></i>
                     </div>
                     <div>
-                        <h3>Información del Docente</h3>
-                        <p>Datos completos del docente seleccionado</p>
+                        <div class="d-flex align-items-center gap-2">
+                            <h3 class="fw-bold mb-0" style="font-size: 1.05rem; color: #1E293B;">Información del Docente</h3>
+                            <span class="badge d-inline-flex align-items-center gap-1"
+                                  style="background-color: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; font-size: 0.75rem; font-weight: 500; padding: 0.25rem 0.55rem; border-radius: 6px;">
+                                <i class="fas fa-lock" style="font-size: 0.7rem; color: #64748B;"></i> Solo lectura
+                            </span>
+                        </div>
+                        <p class="text-muted mb-0" style="font-size: 0.82rem;">Ficha y datos personales del docente seleccionado</p>
                     </div>
                 </div>
             </div>
-            <div class="card-body-modern" style="padding: 0;">
-                <div class="details-grid">
-                    <div class="details-section">
-                        <div class="info-section">
-                            <div class="section-header">
-                                <i class="fas fa-id-badge"></i>
-                                <h4>Datos de Identificación</h4>
-                            </div>
-                            <div class="info-group">
-                                <div class="info-item">
-                                    <span class="info-label">
-                                        <i class="fas fa-id-card"></i>
-                                        Número de Cédula
-                                    </span>
-                                    <span class="info-value">
-                                        {{ $docenteSeleccionado->persona->tipoDocumento->nombre ?? 'N/A' }}-{{ $docenteSeleccionado->persona->numero_documento }}
-                                    </span>
-                                </div>
-                                @if ($docenteSeleccionado->codigo)
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="fas fa-barcode"></i>
-                                            Código
-                                        </span>
-                                        <span class="info-value">
-                                            {{ $docenteSeleccionado->codigo }}
-                                        </span>
-                                    </div>
-                                @endif
-                            </div>
+            
+            <div class="card-body-modern p-4" style="background-color: #F8FAFC; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;">
+                <div class="row g-4">
+                    {{-- Columna 1: Identificación y Contacto --}}
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-2 pb-2 mb-3 border-bottom" style="border-bottom-color: #E2E8F0 !important;">
+                            <i class="fas fa-id-card" style="color: #4A6FC1; font-size: 0.95rem;"></i>
+                            <span class="fw-bold" style="font-size: 0.92rem; color: #334155;">Identificación y Contacto</span>
                         </div>
-                        <div class="info-section">
-                            <div class="section-header">
-                                <i class="fas fa-user"></i>
-                                <h4>Información Personal</h4>
+
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Número de Cédula</label>
+                                <span class="d-block" style="color: #1E293B; font-weight: 600; font-size: 0.95rem;">
+                                    {{ $docenteSeleccionado->persona->tipoDocumento->nombre ?? 'V' }}-{{ $docenteSeleccionado->persona->numero_documento }}
+                                </span>
                             </div>
-                            <div class="info-group">
-                                <div class="info-item">
-                                    <span class="info-label">
-                                        <i class="fas fa-user"></i>
-                                        Nombre Completo
-                                    </span>
-                                    <span class="info-value">
-                                        {{ $docenteSeleccionado->persona->nombreCompleto }}
-                                    </span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">
-                                        <i class="fas fa-calendar"></i>
-                                        Fecha de Nacimiento
-                                    </span>
-                                    <span class="info-value">
-                                        {{ $docenteSeleccionado->persona->fecha_nacimiento->format('d/m/Y') }}
-                                        <span class="text-muted" style="font-size: 0.85rem;">
-                                            ({{ $docenteSeleccionado->persona->fecha_nacimiento->age }} años)
-                                        </span>
-                                    </span>
-                                </div>
-                                @if ($docenteSeleccionado->persona->genero)
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="fas fa-venus-mars"></i>
-                                            Género
-                                        </span>
-                                        <span class="info-value">
-                                            {{ $docenteSeleccionado->persona->genero->genero }}
-                                        </span>
-                                    </div>
-                                @endif
+
+                            <div class="col-sm-6 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Código Docente</label>
+                                <span class="d-block fw-bold" style="color: #4A6FC1; font-size: 0.95rem;">
+                                    {{ $docenteSeleccionado->codigo ?? 'Sin código' }}
+                                </span>
+                            </div>
+
+                            <div class="col-sm-6 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Teléfono Principal</label>
+                                <span class="d-block" style="color: #1E293B; font-weight: 500; font-size: 0.95rem;">
+                                    {{ $docenteSeleccionado->persona->telefono_completo ?? 'Sin registrar' }}
+                                </span>
+                            </div>
+
+                            <div class="col-sm-6 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Teléfono Secundario</label>
+                                <span class="d-block" style="color: #1E293B; font-weight: 500; font-size: 0.95rem;">
+                                    {{ $docenteSeleccionado->persona->telefono_dos_completo ?? 'Sin registrar' }}
+                                </span>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Dependencia</label>
+                                <span class="d-block" style="color: #1E293B; font-weight: 500; font-size: 0.95rem;">
+                                    {{ $docenteSeleccionado->dependencia ?? 'Sin especificar' }}
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="details-section">
-                        <div class="info-section">
-                            <div class="section-header">
-                                <i class="fas fa-address-book"></i>
-                                <h4>Información de Contacto</h4>
-                            </div>
-                            <div class="info-group">
-                                @if (!empty($docenteSeleccionado->persona->telefono_completo))
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="fas fa-phone"></i>
-                                            Teléfono
-                                        </span>
-                                        <span class="info-value">
-                                            {{ $docenteSeleccionado->persona->telefono_completo }}
-                                        </span>
-                                    </div>
-                                @endif
-                                @if ($docenteSeleccionado->persona->telefono_dos_completo)
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="fas fa-phone"></i>
-                                            Teléfono 2
-                                        </span>
-                                        <span class="info-value">
-                                            {{ $docenteSeleccionado->persona->telefono_dos_completo }}
-                                        </span>
-                                    </div>
-                                @endif
-                                @if ($docenteSeleccionado->dependencia)
-                                    <div class="info-item">
-                                        <span class="info-label">
-                                            <i class="fas fa-building"></i>
-                                            Dependencia
-                                        </span>
-                                        <span class="info-value">
-                                            {{ $docenteSeleccionado->dependencia }}
-                                        </span>
-                                    </div>
-                                @endif
-                            </div>
+                    {{-- Columna 2: Personal y Estudios --}}
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-2 pb-2 mb-3 border-bottom" style="border-bottom-color: #E2E8F0 !important;">
+                            <i class="fas fa-user-graduate" style="color: #4A6FC1; font-size: 0.95rem;"></i>
+                            <span class="fw-bold" style="font-size: 0.92rem; color: #334155;">Personal y Estudios</span>
                         </div>
-                        <div class="info-section">
-                            <div class="section-header">
-                                <i class="fas fa-graduation-cap"></i>
-                                <h4>Estudios Realizados</h4>
+
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Nombre Completo</label>
+                                <span class="d-block" style="color: #1E293B; font-weight: 600; font-size: 0.95rem;">
+                                    {{ $docenteSeleccionado->persona->nombreCompleto }}
+                                </span>
                             </div>
-                            <div class="info-group">
-                                @forelse($docenteSeleccionado->detalleDocenteEstudio as $detalle)
-                                    @if ($detalle->status)
-                                        <div class="info-item">
-                                            <span class="info-label">
-                                                <i class="fas fa-certificate"></i>
-                                                Título {{ $loop->iteration }}
-                                            </span>
-                                            <span class="info-value">
-                                                <span class="badge-estudio">
-                                                    {{ $detalle->estudiosRealizado->estudios ?? 'N/A' }}
-                                                </span>
-                                            </span>
-                                        </div>
+
+                            <div class="col-sm-6 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Fecha de Nacimiento</label>
+                                <span class="d-block" style="color: #1E293B; font-weight: 500; font-size: 0.95rem;">
+                                    {{ $docenteSeleccionado->persona->fecha_nacimiento ? $docenteSeleccionado->persona->fecha_nacimiento->format('d/m/Y') : 'N/A' }}
+                                    @if($docenteSeleccionado->persona->fecha_nacimiento)
+                                        <small class="text-muted fw-normal">({{ $docenteSeleccionado->persona->fecha_nacimiento->age }} años)</small>
                                     @endif
-                                @empty
-                                    <div class="info-item">
-                                        <span class="info-value text-muted">
-                                            <i class="fas fa-info-circle"></i>
-                                            No tiene estudios registrados
-                                        </span>
-                                    </div>
-                                @endforelse
+                                </span>
+                            </div>
+
+                            <div class="col-sm-6 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Género</label>
+                                <span class="d-block" style="color: #1E293B; font-weight: 500; font-size: 0.95rem;">
+                                    {{ $docenteSeleccionado->persona->genero->genero ?? 'Sin registrar' }}
+                                </span>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="text-muted d-block mb-1" style="font-size: 13px;">Estudios Realizados</label>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    @forelse($docenteSeleccionado->detalleDocenteEstudio as $detalle)
+                                        @if ($detalle->status)
+                                            <span class="badge" style="background-color: #EFF6FF; color: #1E3A8A; border: 1px solid #DBEAFE; font-size: 0.8rem; font-weight: 500; border-radius: 6px; padding: 0.35rem 0.65rem;">
+                                                <i class="fas fa-graduation-cap me-1 text-primary"></i>{{ $detalle->estudiosRealizado->estudios ?? 'N/A' }}
+                                            </span>
+                                        @endif
+                                    @empty
+                                        <span class="text-muted fst-italic" style="font-size: 0.85rem;">No tiene estudios registrados</span>
+                                    @endforelse
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -635,28 +595,63 @@
 
     @endif
 
-    @section('js')
+    {{-- Botones de Acción del Footer --}}
+    <div class="d-flex justify-content-end align-items-center gap-2 mt-4 pt-3 border-top" style="border-top-color: #E2E8F0 !important;">
+        <a href="{{ route('admin.transacciones.docente_area_grado.index') }}" class="btn-secondary-modern text-decoration-none">
+            <i class="fas fa-times me-1"></i> Cancelar
+        </a>
+        <button type="button" id="btnGuardar"
+            onclick="window.location.href='{{ route('admin.transacciones.docente_area_grado.index') }}'"
+            class="btn btn-primary-modern"
+            wire:loading.attr="disabled"
+            wire:target="docenteId, docente_id">
+            <span wire:loading.remove wire:target="docenteId, docente_id">
+                <i class="fas fa-save me-1"></i> Guardar Asignación
+            </span>
+            <span wire:loading wire:target="docenteId, docente_id">
+                <i class="fas fa-spinner fa-spin me-1"></i> Cargando...
+            </span>
+        </button>
+    </div>
+
+    @push('js')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                $('.selectpicker').selectpicker();
+                if (typeof $.fn.selectpicker !== 'undefined') {
+                    $('.selectpicker').selectpicker({
+                        width: '100%',
+                        dropdownAlignRight: false
+                    });
+                }
 
-                $('#docente_select').on('changed.bs.select', function() {
-                    @this.set('docenteId', $(this).val());
+                $('#docente_select').on('changed.bs.select change', function() {
+                    var valorDocente = $(this).val();
+                    if (typeof @this !== 'undefined') {
+                        @this.set('docenteId', valorDocente);
+                        @this.set('docente_id', valorDocente);
+                    }
                 });
 
-                $('#area_estudio_realizados_id').on('changed.bs.select', function() {
-                    @this.set('materiaId', $(this).val());
+                $('#area_estudio_realizados_id').on('changed.bs.select change', function() {
+                    if (typeof @this !== 'undefined') {
+                        @this.set('materiaId', $(this).val());
+                    }
                 });
-
             });
 
             document.addEventListener('livewire:updated', () => {
-                $('.selectpicker').selectpicker('refresh');
+                if (typeof $.fn.selectpicker !== 'undefined') {
+                    $('.selectpicker').selectpicker('refresh');
+                }
             });
 
-            Livewire.on('resetSelects', () => {
-                $('.selectpicker').val('').selectpicker('refresh');
-            });
+            if (typeof Livewire !== 'undefined') {
+                Livewire.on('resetSelects', () => {
+                    if (typeof $.fn.selectpicker !== 'undefined') {
+                        $('.selectpicker').val('').selectpicker('refresh');
+                    }
+                });
+            }
 
             setTimeout(function() {
                 $('.alert-modern').fadeOut('slow', function() {
@@ -664,5 +659,5 @@
                 });
             }, 5000);
         </script>
-    @endsection
+    @endpush
 </div>

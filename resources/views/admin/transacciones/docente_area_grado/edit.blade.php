@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ asset('css/view-styles.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
 @stop
 
 @section('js')
@@ -16,18 +17,18 @@
 @section('title', 'Editar Asignaciones a Docentes')
 
 @section('content_header')
-    <div class="content-header-modern">
-        <div class="header-content">
-            <div class="header-title">
+    <div class="content-header-modern hero-header-horario p-3 p-md-4">
+        <div class="header-content d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="header-title d-flex align-items-center gap-3">
                 <div class="icon-wrapper">
-                    <i class="fas fa-user-plus"></i>
+                    <i class="fas fa-chalkboard-teacher"></i>
                 </div>
                 <div>
-                    <h1 class="title-main">Editar Asignaciones a Docentes</h1>
-                    <p class="title-subtitle">Gestión de asignaciones académicas</p>
+                    <h1 class="title-main mb-1">Editar Asignaciones a Docentes</h1>
+                    <p class="title-subtitle mb-0">Gestión de asignaciones académicas</p>
                 </div>
             </div>
-            <a href="{{ route('admin.transacciones.docente_area_grado.index') }}" class="btn-create" style="background: var(--gray-700);">
+            <a href="{{ route('admin.transacciones.docente_area_grado.index') }}" class="btn-hero-white text-decoration-none">
                 <i class="fas fa-arrow-left"></i>
                 <span>Volver</span>
             </a>
@@ -58,17 +59,6 @@
         </div>
     @endif
     <livewire:admin.transaccion-docente.docente-area-grado :docenteId="$docenteId"/>
-    <div class="form-actions-modern">
-                    <a href="{{ route('admin.transacciones.docente_area_grado.index') }}" type="button" class="btn-secondary-modern">
-                        <i class="fas fa-arrow-left"></i> Cancelar
-                    </a>
-                    <a href="{{ route('admin.transacciones.docente_area_grado.index') }}" type="button" class="btn-create">
-                        <i class="fas fa-save"></i> Editar Asignación
-                    </a>
-                </div>
-            </div>
-        </div>
-    </form>
 </div>
 
 @endsection
