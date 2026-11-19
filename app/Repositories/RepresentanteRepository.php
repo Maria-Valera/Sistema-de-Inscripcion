@@ -54,7 +54,10 @@ class RepresentanteRepository
         return Representante::with([
             'persona.tipoDocumento',
             'persona.genero',
-            'ocupacion'
+            'ocupacion',
+            'estado',
+            'municipios',
+            'localidads'
         ])->find($id);
     }
 
@@ -63,7 +66,11 @@ class RepresentanteRepository
         return RepresentanteLegal::with([
             'representante.persona.tipoDocumento',
             'representante.persona.genero',
-            'representante.ocupacion'
+            'representante.ocupacion',
+            'representante.estado',
+            'representante.municipios',
+            'representante.localidads',
+            'banco'
         ])->find($id);
     }
 }

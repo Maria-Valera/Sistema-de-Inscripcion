@@ -255,31 +255,32 @@ class Inscripcion extends Component
         $this->evaluarDocumentosVisual();
     }
 
-    public function actualizarPadreSelect($data = null)
+    public function actualizarPadreSelect($value = null, $data = null)
     {
-        $id = $data['value'] ?? null;
+        $id = $value ?? (is_array($data) ? ($data['value'] ?? null) : $data);
         $this->padreId = $id;
         $this->padreSeleccionado = $id
             ? $this->representanteRepository->obtenerConRelaciones($id)
             : null;
     }
 
-    public function actualizarMadreSelect($data = null)
+    public function actualizarMadreSelect($value = null, $data = null)
     {
-        $id = $data['value'] ?? null;
+        $id = $value ?? (is_array($data) ? ($data['value'] ?? null) : $data);
         $this->madreId = $id;
         $this->madreSeleccionado = $id
             ? $this->representanteRepository->obtenerConRelaciones($id)
             : null;
     }
 
-    public function actualizarRepresentanteLegalSelect($data = null)
+    public function actualizarRepresentanteLegalSelect($value = null, $data = null)
     {
-        $id = $data['value'] ?? null;
+        $id = $value ?? (is_array($data) ? ($data['value'] ?? null) : $data);
         $this->representanteLegalId = $id;
         $this->representanteLegalSeleccionado = $id
             ? $this->representanteRepository->obtenerRepresentanteLegalConRelaciones($id)
             : null;
+        $this->evaluarDocumentosVisual();
     }
 
     public function updatedSeleccionarTodos($value)
@@ -811,6 +812,8 @@ class Inscripcion extends Component
     protected $listeners = [
         'recibirDatosAlumno' => 'guardarTodo',
         'padreSeleccionadoEvento' => 'actualizarPadreSelect',
+        'madreSeleccionadoEvento' => 'actualizarMadreSelect',
+        'representanteLegalSeleccionadoEvento' => 'actualizarRepresentanteLegalSelect',
         'acepta_normas_contrato' => 'actualizarEstadoBoton',
         'institucionCreada' => 'manejarInstitucionCreada',
         'localidadCreada' => 'refrescarLocalidades',

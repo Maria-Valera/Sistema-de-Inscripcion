@@ -2,19 +2,24 @@
     tabindex="-1" aria-labelledby="modalContratoConvivenciaLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
         <div class="modal-content modal-modern shadow">
-            <div class="modal-header modal-header-view">
-                <div class="w-100 text-center">
-                    <i class="fas fa-file-contract"></i>
-                    <h5 class="modal-title-view mb-2">Contrato de Convivencia</h5>
+            <div class="modal-header d-flex align-items-center justify-content-between px-4 py-3 bg-white border-bottom" style="border-bottom-color: #F1F5F9 !important;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 38px; height: 38px; border-radius: 10px; background-color: #EEF2FF; color: #4338CA; font-size: 1rem;">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title m-0 fw-bold" id="modalContratoConvivenciaLabel" style="color: #1E293B; font-size: 1.05rem;">Contrato de Convivencia</h5>
+                        <p class="text-muted m-0" style="font-size: 0.8rem;">Normas y acuerdos de convivencia escolar</p>
+                    </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
-                    data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body modal-body-view" style="max-height: 70vh; overflow-y: auto;">
-                <div class="alert alert-info mb-4"
-                    style="border-left: 5px solid var(--primary); background: var(--primary-light);">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Lea cuidadosamente las normas de convivencia antes de aceptar la inscripción.
+                <div class="alert alert-info d-flex align-items-center mb-4"
+                    style="background-color: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; color: #1E40AF;">
+                    <i class="fas fa-info-circle me-2 flex-shrink-0" style="color: #3B82F6;"></i>
+                    <span>Lea cuidadosamente las normas de convivencia antes de aceptar la inscripción.</span>
                 </div>
                 <div class="contract-content">
                     <div class="rules-container">
@@ -312,12 +317,10 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer-create">
-                <div class="footer-buttons">
-                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">
-                        Cerrar
-                    </button>
-                </div>
+            <div class="modal-footer d-flex justify-content-end align-items-center gap-2 px-4 py-3 bg-white border-top" style="border-top-color: #F1F5F9 !important;">
+                <button type="button" class="btn-secondary-modern" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
             </div>
         </div>
     </div>

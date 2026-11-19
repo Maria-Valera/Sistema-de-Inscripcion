@@ -719,7 +719,7 @@ button.btn-primary-modern.disabled {
     background-color: #FFFFFF !important;
     border-radius: 12px !important;
     border: 1px solid #E5E7EB !important;
-    box-shadow: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
     transition: all 0.2s ease !important;
 }
 
@@ -1070,7 +1070,44 @@ textarea::-webkit-input-placeholder {
 
 /* Buscador Moderno */
 .search-wrapper {
-    position: relative;
+    position: relative !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    height: 38px !important;
+    background: #FFFFFF !important;
+    width: 250px !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.search-wrapper:focus-within {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+}
+
+.search-wrapper input.search-input-modern,
+.search-wrapper input {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    padding-left: 40px !important;
+    padding-right: 12px !important;
+    width: 250px !important;
+    height: 100% !important;
+    font-size: 0.85rem !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+}
+
+.search-wrapper i.fas.fa-search {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #64748B !important;
+    font-size: 0.85rem !important;
+    pointer-events: none !important;
 }
 
 .search-input-modern {
@@ -1424,20 +1461,24 @@ select option:checked {
    10. MODALES MODERNOS (.modal-modern)
    ============================================================================ */
 /* Backdrop con desenfoque moderno (estilo iOS / macOS frosted glass) */
-.modal-backdrop {
-    background-color: rgba(15, 23, 42, 0.6) !important;
+.modal-backdrop,
+.offcanvas-backdrop {
+    background-color: rgba(15, 23, 42, 0.5) !important;
     backdrop-filter: blur(5px) !important;
     -webkit-backdrop-filter: blur(5px) !important;
     opacity: 1 !important;
 }
 
-.modal-backdrop.fade {
+.modal-backdrop.fade,
+.offcanvas-backdrop.fade {
     opacity: 0 !important;
     transition: opacity 0.25s ease-out, backdrop-filter 0.25s ease-out !important;
 }
 
 .modal-backdrop.show,
-.modal-backdrop.fade.show {
+.modal-backdrop.fade.show,
+.offcanvas-backdrop.show,
+.offcanvas-backdrop.fade.show {
     opacity: 1 !important;
 }
 
@@ -3024,4 +3065,67 @@ select.form-select-saas,
 .tipo-rep-option input:disabled+label {
     cursor: not-allowed !important;
     color: #94A3B8 !important;
+}
+
+/* ============================================================================
+   FICHA DE SOLO LECTURA (RESUMEN REPRESENTANTE)
+   ============================================================================ */
+.summary-card-readonly {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-left: 4px solid #4A6FC1 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+.summary-card-readonly .data-label {
+    font-size: 12px !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.4px !important;
+    margin-bottom: 2px !important;
+    display: block !important;
+}
+
+.summary-card-readonly .data-value {
+    font-size: 14px !important;
+    color: #1E293B !important;
+    font-weight: 600 !important;
+    word-break: break-word !important;
+    display: block !important;
+}
+
+.summary-card-readonly .section-subheading {
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    margin-bottom: 0.85rem !important;
+}
+
+.summary-card-readonly .section-subheading i {
+    color: #4A6FC1 !important;
+    font-size: 1rem !important;
+}
+
+/* Grilla Responsiva de 5 Columnas (Descripciones Físicas) */
+@media (max-width: 992px) {
+    .grid-5-cols-responsive {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-5-cols-responsive {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .grid-5-cols-responsive {
+        grid-template-columns: 1fr !important;
+    }
 }

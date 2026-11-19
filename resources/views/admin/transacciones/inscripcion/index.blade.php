@@ -1,35 +1,32 @@
 @extends('adminlte::page')
 @section('css')
-    <link rel="stylesheet" href="{{ asset('css/index.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/view-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/index.css') }}?v={{ @filemtime(public_path('css/index.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}?v={{ @filemtime(public_path('css/modal-styles.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/pagination.css') }}?v={{ @filemtime(public_path('css/pagination.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/view-styles.css') }}?v={{ @filemtime(public_path('css/view-styles.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
 @stop
 @section('title', 'Gestión de inscripciones')
 @section('content_header')
-    <div class="content-header-modern">
-        <div class="header-content">
-            <div class="header-title">
+    <div class="content-header-modern hero-header-horario p-3 p-md-4">
+        <div class="header-content d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="header-title d-flex align-items-center gap-3">
                 <div class="icon-wrapper">
-                    <i class="fas fa-layer-group"></i>
+                    <i class="fas fa-user-plus"></i>
                 </div>
                 <div>
-                    <h1 class="title-main">Gestión de inscripciones nuevo ingreso</h1>
-                    <p class="title-subtitle">
+                    <h1 class="title-main mb-1">Gestión de inscripciones nuevo ingreso</h1>
+                    <p class="title-subtitle mb-0">
                         Administración de las inscripciones de nuevo ingreso
                     </p>
                 </div>
             </div>
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div>
-                        <a href="{{ route('admin.transacciones.inscripcion.create') }}" class="btn-create"
-                            title="Crear nueva inscripción">
-                            <i class="fas fa-plus"></i>
-                            <span>Registrar</span>
-                        </a>
-                    </div>
-                </div>
+                <a href="{{ route('admin.transacciones.inscripcion.create') }}" class="btn-hero-white text-decoration-none"
+                    title="Crear nueva inscripción">
+                    <i class="fas fa-plus"></i>
+                    <span>+ Registrar</span>
+                </a>
             @endif
         </div>
     </div>
@@ -64,11 +61,11 @@
                 });
             </script>
         @endif
-        @if (request('grado_id') || request('seccion_id') || request('tipo_inscripcion'))
+        @if (request('grado_id') || request('seccion_id') || request('tipo_inscripcion') || request('status'))
             <div class="card-modern filtros-simple mb-3">
                 <div class="filtros-simple-content">
                     <div class="filtros-text">
-                        <i class="fas fa-filter"></i>
+                        <i class="fas fa-sliders-h"></i>
                         <span>Filtros activos:</span>
                         @if (request('tipo_inscripcion'))
                             <span class="badge-filtros-small">
@@ -97,32 +94,64 @@
                 </div>
             </div>
         @endif
-        <div class="card-modern">
-            <div class="card-header-modern d-flex align-items-center justify-content-between flex-wrap gap-3">
+        @php
+            $activeFiltersCount = collect(['grado_id', 'seccion_id', 'tipo_inscripcion', 'status'])
+                ->filter(fn ($key) => request()->filled($key))
+                ->count();
+        @endphp
+        <div class="card-modern shadow-sm">
+            <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-3 w-100 bg-white border-bottom px-4 py-3" style="background: #FFFFFF !important; border-bottom: 1px solid #E2E8F0 !important;">
+                <!-- IZQUIERDA: Título y Subtítulo -->
                 <div class="header-left d-flex align-items-center gap-3">
-                    <div class="header-icon">
+                    <div class="header-icon d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 40px; height: 40px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1;">
                         <i class="fas fa-list-ul"></i>
                     </div>
                     <div>
-                        <h3 class="mb-0">Listado de inscripciones</h3>
-                        <p>{{ $inscripciones->total() }} registros encontrados</p>
-
+                        <h3 class="fw-bold mb-0" style="font-size: 1.05rem; color: #1E293B;">Listado de inscripciones</h3>
+                        <p class="text-muted mb-0" style="font-size: 0.82rem;">{{ $inscripciones->total() }} registros encontrados</p>
                     </div>
                 </div>
 
-                <div class="header-right d-flex align-items-center gap-2 flex-wrap">
-                    <form action="{{ route('admin.transacciones.inscripcion.index') }}" class="mb-0 search-sm">
+                <!-- DERECHA: Controles (Buscador separado con gap-3 de los botones agrupados) -->
+                <div class="header-right d-flex align-items-center gap-3 flex-wrap">
+                    <!-- 1. El Buscador -->
+                    <form action="{{ route('admin.transacciones.inscripcion.index') }}" method="GET" class="m-0">
                         <input type="hidden" name="grado_id" value="{{ request('grado_id') }}">
                         <input type="hidden" name="seccion_id" value="{{ request('seccion_id') }}">
                         <input type="hidden" name="tipo_inscripcion" value="{{ request('tipo_inscripcion') }}">
 
-                        <div class="search-modern">
-                            <i class="fas fa-search"></i>
-                            <input type="text" name="buscar" title="Buscar por nombre, apellido o cedula" id="buscar"
-                                class="form-control-modern" placeholder="Buscar..." value="{{ request('buscar') }}">
+                        <div class="search-wrapper" style="position: relative; border: 1px solid #E2E8F0; border-radius: 8px; height: 38px; background: #FFFFFF; width: 250px; box-sizing: border-box;">
+                            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #64748B; font-size: 0.85rem; pointer-events: none; z-index: 2;"></i>
+                            <input type="text" name="buscar" id="buscar"
+                                placeholder="Buscar estudiante o cédula..." value="{{ request('buscar') }}"
+                                style="border: none !important; outline: none !important; background: transparent !important; padding-left: 40px !important; padding-right: 12px !important; width: 250px !important; height: 100% !important; font-size: 0.85rem !important; color: #1E293B !important; box-sizing: border-box !important;">
                         </div>
                     </form>
-                    <div>
+
+                    <!-- Botones de Acción Agrupados con d-flex gap-2 -->
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <!-- 3. Botón "Filtrar" -->
+                        <button type="button" class="btn btn-filter-global d-inline-flex align-items-center justify-content-center gap-2 text-nowrap"
+                            data-bs-toggle="offcanvas" data-bs-target="#panelFiltros" aria-controls="panelFiltros"
+                            title="Filtrar inscripciones" style="height: 38px; border-radius: 8px; border: 1px solid #E2E8F0; background-color: #FFFFFF; color: #1E293B; padding: 0 14px;">
+                            <i class="fas fa-sliders-h" style="color: #64748B;"></i>
+                            <span>Filtrar</span>
+                            @if ($activeFiltersCount > 0)
+                                <span class="badge text-white ms-1" style="background-color: #4A6FC1; font-size: 0.72rem; border-radius: 9999px; padding: 2px 6px;">
+                                    {{ $activeFiltersCount }}
+                                </span>
+                            @endif
+                        </button>
+
+                        <!-- 4. Botón "PDF General" -->
+                        <a href="{{ route('admin.transacciones.inscripcion.reporteGeneralNuevoIngresoPDF') }}" target="_blank"
+                            class="btn-pdf-global d-inline-flex align-items-center justify-content-center gap-2 text-nowrap" id="generarPdfBtn" style="height: 38px; border-radius: 8px;">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>PDF General</span>
+                        </a>
+
+                        <!-- 5. Botón "Ejecutar Percentil" (Primario) -->
                         @foreach ($grados as $grado)
                             @if ($grado->id === 1)
                                 @include('admin.transacciones.percentil.boton-percentil', [
@@ -132,89 +161,64 @@
                             @endif
                         @endforeach
                     </div>
-                    <button class="btn-filtro" data-bs-toggle="modal" data-bs-target="#modalFiltros">
-                        <i class="fas fa-filter"></i>
-                        @if (request('grado_id') || request('seccion_id') || request('tipo_inscripcion') || request('status'))
-                            <span class="badge-sm bg-danger">
-                                {{ collect([request('grado_id'), request('seccion_id'), request('tipo_inscripcion'), request('status')])->filter()->count() }}
-                            </span>
-                        @endif
-                    </button>
-                    <a href="{{ route('admin.transacciones.inscripcion.reporteGeneralNuevoIngresoPDF') }}" target="_blank"
-                        class="btn-pdf" id="generarPdfBtn">
-                        <i class="fas fa-file-pdf"></i> PDF General
-                    </a>
-                    @php
-                        $mostrarAnio = \App\Support\AnioEscolarSeleccionado::modelo();
-                    @endphp
-                    @if ($mostrarAnio)
-                        <div class="d-flex align-items-center bg-light rounded px-2 py-1 border">
-                            <span class="badge bg-primary me-2" style="font-size: 0.7rem;">
-                                <i class="fas fa-calendar-check me-1"></i> Calendario Escolar
-                            </span>
-                            <span class="text-muted me-2" style="font-size: 0.8rem;">
-                                <i class="fas fa-play-circle text-primary me-1"></i>
-                                {{ \Carbon\Carbon::parse($mostrarAnio->inicio_anio_escolar)->format('d/m/Y') }}
-                            </span>
-                            <span class="text-muted" style="font-size: 0.8rem;">
-                                <i class="fas fa-flag-checkered text-danger me-1"></i>
-                                {{ \Carbon\Carbon::parse($mostrarAnio->cierre_anio_escolar)->format('d/m/Y') }}
-                            </span>
-                        </div>
-                    @else
-                        <div
-                            class="d-flex align-items-center bg-warning bg-opacity-10 rounded px-2 py-1 border border-warning">
-                            <i class="fas fa-exclamation-triangle text-warning me-1"></i>
-                            <span class="fw-semibold" style="font-size: 0.8rem;">Sin año activo</span>
-                        </div>
-                    @endif
                 </div>
             </div>
-            <div class="card-body-modern">
-                <div class="table-wrapper">
-                    <table class="table-modern ">
+            <div class="card-body-modern p-0">
+                <div class="table-responsive">
+                    <table class="table-modern text-nowrap">
                         <thead>
                             <tr class="text-center">
-                                <th style="font-weight: bold">Cedula</th>
-                                <th class="text-center">Estudiante</th>
-                                <th class="text-center">Representante Legal</th>
-                                <th class="text-center">Nivel Académico</th>
-                                <th class="text-center">Sección</th>
-                                <th class="text-center">Estado</th>
-                                <th class="text-center">Acciones</th>
+                                <th style="width: 130px; text-align: center;">Cédula</th>
+                                <th style="text-align: left;">Estudiante</th>
+                                <th style="text-align: center;">Representante Legal</th>
+                                <th style="text-align: center;">Nivel Académico</th>
+                                <th style="text-align: center;">Sección</th>
+                                <th style="width: 120px; text-align: center;">Estado</th>
+                                <th style="width: 100px; text-align: center;">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="text-center">
                             @if ($inscripciones->isEmpty())
                                 <tr>
-                                    <td colspan="9">
-                                        <div class="empty-state">
-                                            <div class="empty-icon"><i class="fas fa-inbox"></i></div>
-                                            <h4>No hay inscripciones registradas</h4>
-                                            <p>
+                                    <td colspan="7" class="py-5">
+                                        <div class="empty-state-saas text-center">
+                                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                                                 style="width: 72px; height: 72px; background-color: #F8FAFC; border: 1px solid #E2E8F0; color: #94A3B8;">
+                                                <i class="fas fa-inbox fa-2x"></i>
+                                            </div>
+                                            <h4 class="fw-bold mb-1" style="color: #1E293B; font-size: 1.15rem;">No hay inscripciones registradas</h4>
+                                            <p class="text-muted mx-auto mb-3" style="max-width: 420px; font-size: 0.88rem;">
                                                 @if (request('grado_id') || request('seccion_id') || request('tipo_inscripcion') || request('buscar'))
-                                                    No se encontraron resultados con los filtros aplicados
+                                                    No se encontraron resultados con los filtros aplicados.
                                                 @else
-                                                    Agrega una nueva inscripción con el botón superior
+                                                    Comienza registrando la primera inscripción de nuevo ingreso para este año escolar.
                                                 @endif
                                             </p>
+                                            @if (\App\Support\AnioEscolarSeleccionado::esActual())
+                                                <div class="d-flex justify-content-center">
+                                                    <a href="{{ route('admin.transacciones.inscripcion.create') }}" class="btn-primary-modern text-decoration-none">
+                                                        <i class="fas fa-plus me-1"></i> + Crear primera inscripción
+                                                    </a>
+                                                </div>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
                             @else
                                 @foreach ($inscripciones as $datos)
                                     <tr class="row-12">
-                                        <td style="font-weight: bold">
+                                        <td class="fw-bold text-dark text-center" style="font-size: 0.92rem;">
                                             {{ $datos->alumno->persona->tipoDocumento->nombre }}-{{ $datos->alumno->persona->numero_documento }}
                                         </td>
-                                        <td class="tittle-main fw-bold">
-                                            {{ $datos->alumno->persona->primer_nombre }}
-                                            {{ $datos->alumno->persona->primer_apellido }}
-                                            <br>
-                                            <small>
-                                                Edad: {{ $datos->alumno->persona->fecha_nacimiento->age }} |
-                                                Peso: {{ $datos->alumno->peso }} |
-                                                Estatura: {{ $datos->alumno->estatura }}
+                                        <td class="text-start">
+                                            <div class="fw-bold" style="color: #1E293B;">
+                                                {{ $datos->alumno->persona->primer_nombre }}
+                                                {{ $datos->alumno->persona->primer_apellido }}
+                                            </div>
+                                            <small class="text-muted" style="font-size: 0.8rem;">
+                                                Edad: {{ $datos->alumno->persona->fecha_nacimiento ? $datos->alumno->persona->fecha_nacimiento->age : 'N/A' }} |
+                                                Peso: {{ $datos->alumno->peso ?? 'N/A' }} |
+                                                Estatura: {{ $datos->alumno->estatura ?? 'N/A' }}
                                             </small>
                                         </td>
                                         <td class="text-center">
@@ -222,17 +226,19 @@
                                                 {{ $datos->representanteLegal->representante->persona->primer_nombre }}
                                                 {{ $datos->representanteLegal->representante->persona->primer_apellido }}
                                             @else
-                                                No especificado
+                                                <span class="text-muted fst-italic">No especificado</span>
                                             @endif
                                         </td>
-                                        <td class="text-center">
-                                            {{ $datos->grado_actual?->numero_grado ?? 'N/A' }}
+                                        <td class="text-center fw-semibold">
+                                            {{ $datos->grado_actual?->numero_grado ? $datos->grado_actual->numero_grado . 'º' : 'N/A' }}
                                         </td>
                                         <td class="text-center">
                                             @if ($datos->seccion)
-                                                {{ $datos->seccion->nombre }}
+                                                <span class="badge" style="background-color: #EFF6FF; color: #1E3A8A; border: 1px solid #DBEAFE; font-size: 0.8rem; font-weight: 500;">
+                                                    Sección {{ $datos->seccion->nombre }}
+                                                </span>
                                             @else
-                                                N/A
+                                                <span class="text-muted fst-italic">N/A</span>
                                             @endif
                                         </td>
                                         <td class="text-center">
@@ -252,48 +258,44 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <div class="dropdown dropstart text-center">
-                                                    <button
-                                                        class="btn btn-light btn-sm rounded-circle shadow-sm action-btn"
-                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        <i class="fas fa-ellipsis-v"></i>
+                                                <div class="dropdown text-center">
+                                                    <button class="btn btn-light btn-sm rounded-circle action-btn shadow-none"
+                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 32px; height: 32px; padding: 0;">
+                                                        <i class="fas fa-ellipsis-v text-muted"></i>
                                                     </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                    <ul class="dropdown-menu dropdown-menu-modern dropdown-menu-end shadow-sm">
                                                         <li>
-                                                            <button
-                                                                class="dropdown-item d-flex align-items-center text-primary"
+                                                            <button class="dropdown-item d-flex align-items-center"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#viewModal{{ $datos->id }}">
-                                                                <i class="fas fa-eye me-2"></i>
-                                                                Ver mas
+                                                                <i class="fas fa-eye me-2 text-primary"></i>
+                                                                Ver más
                                                             </button>
                                                         </li>
                                                         @if (\App\Support\AnioEscolarSeleccionado::esActual())
                                                             @if ($datos->nuevoIngreso)
                                                                 <li>
                                                                     <a href="{{ route('admin.transacciones.inscripcion.edit', $datos->id) }}"
-                                                                        class="dropdown-item d-flex align-items-center text-warning"
+                                                                        class="dropdown-item d-flex align-items-center"
                                                                         title="Editar">
-                                                                        <i class="fas fa-edit me-2"></i>
+                                                                        <i class="fas fa-edit me-2 text-warning"></i>
                                                                         Editar
                                                                     </a>
                                                                 </li>
                                                             @endif
                                                             <li>
                                                                 @if ($datos->status === 'Activo' || $datos->status === 'Pendiente')
-                                                                    <button
-                                                                        class="dropdown-item d-flex align-items-center text-danger"
+                                                                    <button class="dropdown-item d-flex align-items-center text-danger"
                                                                         data-bs-toggle="modal"
                                                                         data-bs-target="#confirmarEliminar{{ $datos->id }}">
-                                                                        <i class="fas fa-ban me-2"></i>
+                                                                        <i class="fas fa-ban me-2 text-danger"></i>
                                                                         Inactivar
                                                                     </button>
                                                                 @else
-                                                                    <button
-                                                                        class="dropdown-item d-flex align-items-center text-success"
+                                                                    <button class="dropdown-item d-flex align-items-center text-success"
                                                                         data-bs-toggle="modal"
                                                                         data-bs-target="#confirmarRestaurar{{ $datos->id }}">
-                                                                        <i class="fas fa-undo me-2"></i>
+                                                                        <i class="fas fa-undo me-2 text-success"></i>
                                                                         Restaurar
                                                                     </button>
                                                                 @endif
@@ -303,7 +305,7 @@
                                                             <a href="{{ route('admin.transacciones.inscripcion.reporte', $datos->id) }}"
                                                                 class="dropdown-item d-flex align-items-center text-danger"
                                                                 title="Generar Reporte PDF" target="_blank">
-                                                                <i class="fas fa-file-pdf me-2"></i>
+                                                                <i class="fas fa-file-pdf me-2 text-danger"></i>
                                                                 PDF
                                                             </a>
                                                         </li>
@@ -318,7 +320,6 @@
                         </tbody>
                     </table>
                 </div>
-                @include('admin.transacciones.inscripcion.modales.filtroModal')
             </div>
             <div class="mt-3" style="display:flex; align-items:center; position:relative;">
                 <div style="margin: 0 auto;">
@@ -327,6 +328,7 @@
             </div>
         </div>
     </div>
+    @include('admin.transacciones.inscripcion.modales.filtroModal')
     @foreach ($inscripciones as $datos)
         @include('admin.transacciones.inscripcion.modales.inactivarModal', [
             'datos' => $datos,
@@ -359,9 +361,18 @@
         document.addEventListener('DOMContentLoaded', function() {
             actualizarEnlacePDF();
             window.addEventListener('popstate', actualizarEnlacePDF);
-            const filtroModal = document.getElementById('modalFiltros');
-            if (filtroModal) {
-                filtroModal.addEventListener('shown.bs.modal', actualizarEnlacePDF);
+            const filtroPanel = document.getElementById('panelFiltros');
+            if (filtroPanel) {
+                filtroPanel.addEventListener('shown.bs.offcanvas', actualizarEnlacePDF);
+            }
+        });
+
+        window.addEventListener('ui:open-filter-panel', function(e) {
+            const targetId = e.detail?.target;
+            if (!targetId) return;
+            const el = document.getElementById(targetId);
+            if (el && typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+                bootstrap.Offcanvas.getOrCreateInstance(el).show();
             }
         });
     </script>
