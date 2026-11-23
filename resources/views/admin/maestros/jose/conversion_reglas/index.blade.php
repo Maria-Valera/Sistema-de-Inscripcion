@@ -40,41 +40,52 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             border: 1px solid #e5e7eb;
         }
+        .badge-regla-directa,
+        .badge-regla-promedio,
+        .badge-regla-exonerada,
+        .badge-regla-no-cuenta {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap !important;
+            gap: 0.45rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            line-height: 1.2;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
         .badge-regla-directa {
             background-color: #ecfdf5;
             color: #065f46;
             border: 1px solid #a7f3d0;
-            font-weight: 600;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
         }
         .badge-regla-promedio {
             background-color: #eff6ff;
             color: #1e40af;
             border: 1px solid #bfdbfe;
-            font-weight: 600;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
         }
         .badge-regla-exonerada {
             background-color: #fffbeb;
             color: #92400e;
             border: 1px solid #fde68a;
-            font-weight: 600;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
+            white-space: nowrap !important;
+        }
+        .badge-regla-exonerada span {
+            white-space: nowrap !important;
         }
         .badge-regla-no-cuenta {
             background-color: #f1f5f9;
             color: #475569;
             border: 1px solid #cbd5e1;
-            font-weight: 600;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
+        }
+        .col-tipo-regla {
+            white-space: nowrap !important;
+            min-width: 175px !important;
+            width: 175px !important;
+            text-align: center !important;
         }
         .origen-pill {
             display: inline-block;
@@ -239,7 +250,7 @@
 
         {{-- Tarjeta Principal con Listado --}}
         <div class="card-modern">
-            <div class="card-header-modern">
+            <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="header-left">
                     <div class="header-icon">
                         <i class="fas fa-sync-alt"></i>
@@ -247,6 +258,14 @@
                     <div>
                         <h3>Matriz de Conversión: {{ $pensumOrigen?->codigo ?? '31059' }} &rarr; {{ $pensumDestino?->codigo ?? '31060' }}</h3>
                         <p>{{ $reglas->total() }} reglas de conversión registradas</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="input-group input-group-sm" style="min-width: 240px; max-width: 300px;">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="filtroTablaConversion" class="form-control border-start-0" placeholder="Filtrar materia o tipo..." style="box-shadow: none;">
                     </div>
                 </div>
             </div>
@@ -259,7 +278,7 @@
                                 <th>#</th>
                                 <th>Grado Destino</th>
                                 <th style="text-align: left;">Materia Resultante (Destino)</th>
-                                <th>Tipo de Regla</th>
+                                <th class="col-tipo-regla">Tipo de Regla</th>
                                 <th style="text-align: left;">Materias de Origen (Aportan)</th>
                                 <th>Base Legal / Cita</th>
                                 <th>Estado</th>
@@ -276,25 +295,31 @@
                                         </span>
                                     </td>
                                     <td style="text-align: left;">
-                                        <div class="font-weight-bold text-dark">{{ $regla->areaDestino->nombre_area_formacion ?? '' }}</div>
-                                        <small class="text-muted">Siglas: {{ $regla->areaDestino->siglas ?? '-' }}</small>
+                                        @if($regla->areaDestino)
+                                            <div class="font-weight-bold text-dark">{{ $regla->areaDestino->nombre_area_formacion }}</div>
+                                            <small class="text-muted">Siglas: {{ $regla->areaDestino->siglas ?? '-' }}</small>
+                                        @else
+                                            <span class="text-muted font-italic small">
+                                                <i class="fas fa-ban mr-1"></i> Sin área destino (Descartada)
+                                            </span>
+                                        @endif
                                     </td>
-                                    <td>
+                                    <td class="col-tipo-regla">
                                         @if($regla->tipo_regla === 'directa')
                                             <span class="badge-regla-directa">
-                                                <i class="fas fa-check-circle mr-1"></i> Directa
+                                                <i class="fas fa-check-circle"></i> Directa
                                             </span>
                                         @elseif($regla->tipo_regla === 'promedio')
                                             <span class="badge-regla-promedio">
-                                                <i class="fas fa-calculator mr-1"></i> Promedio
+                                                <i class="fas fa-calculator"></i> Promedio
                                             </span>
                                         @elseif($regla->tipo_regla === 'exonerada')
-                                            <span class="badge-regla-exonerada">
-                                                <i class="fas fa-ban mr-1"></i> Exonerada (EX)
+                                            <span class="badge-regla-exonerada" title="Exonerada por Circular N° 01">
+                                                <i class="fas fa-ban"></i> <span>Exonerada&nbsp;(EX)</span>
                                             </span>
                                         @else
                                             <span class="badge-regla-no-cuenta">
-                                                <i class="fas fa-minus-circle mr-1"></i> No cuenta
+                                                <i class="fas fa-minus-circle"></i> No cuenta
                                             </span>
                                         @endif
                                     </td>
@@ -431,12 +456,51 @@
                 </div>
 
                 {{-- Paginación --}}
-                <div class="card-footer-modern">
-                    <div class="pagination-info">
-                        Mostrando {{ $reglas->firstItem() ?? 0 }} a {{ $reglas->lastItem() ?? 0 }} de {{ $reglas->total() }} reglas
+                <div class="card-footer-modern d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="pagination-info m-0">
+                        Mostrando <span>{{ $reglas->firstItem() ?? 0 }}</span> a <span>{{ $reglas->lastItem() ?? 0 }}</span> de <span>{{ $reglas->total() }}</span> reglas
                     </div>
                     <div>
-                        {{ $reglas->links() }}
+                        @if ($reglas->hasPages())
+                            <nav aria-label="Navegación de páginas">
+                                <ul class="pagination mb-0">
+                                    {{-- Botón Anterior --}}
+                                    @if ($reglas->onFirstPage())
+                                        <li class="page-item disabled" aria-disabled="true" aria-label="Anterior">
+                                            <span class="page-link" aria-hidden="true">&laquo;</span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $reglas->previousPageUrl() }}" rel="prev" aria-label="Anterior">&laquo;</a>
+                                        </li>
+                                    @endif
+
+                                    {{-- Números de Página --}}
+                                    @foreach ($reglas->getUrlRange(1, $reglas->lastPage()) as $page => $url)
+                                        @if ($page == $reglas->currentPage())
+                                            <li class="page-item active" aria-current="page">
+                                                <span class="page-link">{{ $page }}</span>
+                                            </li>
+                                        @else
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                            </li>
+                                        @endif
+                                    @endforeach
+
+                                    {{-- Botón Siguiente --}}
+                                    @if ($reglas->hasMorePages())
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $reglas->nextPageUrl() }}" rel="next" aria-label="Siguiente">&raquo;</a>
+                                        </li>
+                                    @else
+                                        <li class="page-item disabled" aria-disabled="true" aria-label="Siguiente">
+                                            <span class="page-link" aria-hidden="true">&raquo;</span>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </nav>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -446,5 +510,34 @@
 
     {{-- Modal de creación --}}
     @include('admin.maestros.jose.conversion_reglas.modales.createModal')
+@stop
+
+@section('js')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Filtro en vivo de la tabla
+        const inputFiltro = document.getElementById('filtroTablaConversion');
+        if (inputFiltro) {
+            inputFiltro.addEventListener('input', function () {
+                const term = this.value.toLowerCase().trim();
+                const filas = document.querySelectorAll('.table-modern tbody tr');
+                filas.forEach(fila => {
+                    const texto = fila.innerText.toLowerCase();
+                    fila.style.display = texto.includes(term) ? '' : 'none';
+                });
+            });
+        }
+
+        // Si hay errores de validación, reabrir el modal que envió los datos
+        @if ($errors->any())
+            const modalId = @json(old('_modal', 'modalCrearRegla'));
+            const modalEl = document.getElementById(modalId);
+            if (modalEl && window.bootstrap) {
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        @endif
+    });
+</script>
 @stop
 

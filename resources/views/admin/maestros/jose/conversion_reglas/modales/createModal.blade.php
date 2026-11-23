@@ -18,6 +18,8 @@
 
             <form action="{{ route('admin.conversion-reglas.store') }}" method="POST" id="formCrearRegla" style="display: flex; flex-direction: column; overflow: hidden; margin: 0; max-height: 90vh;">
                 @csrf
+                {{-- Permite que el servidor sepa qué modal reabrir si hay errores de validación --}}
+                <input type="hidden" name="_modal" value="modalCrearRegla">
                 <div class="modal-body-create p-4" style="max-height: calc(85vh - 140px); overflow-y: auto; flex: 1 1 auto;">
                     <div class="row g-3">
 
@@ -84,8 +86,8 @@
                                 <span class="fw-bold font-weight-bold">Asignatura Resultante (Destino)</span>
                                 <span class="text-danger ml-1 ms-1">*</span>
                             </label>
-                            <select name="area_destino_id" id="area_destino_id" class="form-select @error('area_destino_id') is-invalid @enderror" required style="height: 46px; border-radius: 10px; color: #0f172a !important; background-color: #ffffff !important;">
-                                <option value="" style="color: #64748b;">Seleccione la materia en pensum destino...</option>
+                            <select name="area_destino_id" id="area_destino_id" class="form-select @error('area_destino_id') is-invalid @enderror" style="height: 46px; border-radius: 10px; color: #0f172a !important; background-color: #ffffff !important;">
+                                <option value="" style="color: #64748b;">Seleccione la materia en pensum destino (o vacío si no aplica)...</option>
                                 @foreach($areas as $a)
                                     <option value="{{ $a->id }}" {{ old('area_destino_id') == $a->id ? 'selected' : '' }} style="color: #0f172a !important;">
                                         [{{ $a->siglas }}] {{ $a->nombre_area_formacion }}

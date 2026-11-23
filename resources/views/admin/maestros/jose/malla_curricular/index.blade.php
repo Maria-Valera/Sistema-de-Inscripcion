@@ -44,23 +44,27 @@
             justify-content: center;
             border: 1px solid #cbd5e1;
         }
+        .badge-literal,
+        .badge-numerica {
+            display: inline-flex !important;
+            align-items: center;
+            white-space: nowrap !important;
+            gap: 0.4rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
         .badge-literal {
             background-color: #fdf2f8;
             color: #be185d;
             border: 1px solid #fbcfe8;
-            font-weight: 600;
-            padding: 0.25rem 0.55rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
         }
         .badge-numerica {
             background-color: #eff6ff;
             color: #1d4ed8;
             border: 1px solid #bfdbfe;
-            font-weight: 600;
-            padding: 0.25rem 0.55rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
         }
         .filter-panel {
             background: #ffffff;
@@ -175,7 +179,7 @@
                         <i class="fas fa-user-graduate text-primary mr-1"></i> Grado / Año Escolar
                     </label>
                     <select name="grado_id" class="form-select form-select-sm" onchange="this.form.submit()" style="color: #0f172a !important; background-color: #ffffff !important;">
-                        <option value="">Todos los grados</option>
+                        <option value="">Todos los años escolares (grados)</option>
                         @foreach($grados as $g)
                             <option value="{{ $g->id }}" {{ $gradoId == $g->id ? 'selected' : '' }} style="color: #0f172a !important;">
                                 {{ $g->nombre_grado ?? ($g->numero_grado ? $g->numero_grado . '° Año' : 'Grado ' . $g->id) }}
@@ -242,7 +246,20 @@
                             </tr>
                         </thead>
                         <tbody style="text-align: center">
+                            @php $currentGradoId = null; @endphp
                             @forelse ($mallas as $malla)
+                                @if (empty($gradoId) && $currentGradoId !== $malla->grado_id)
+                                    @php $currentGradoId = $malla->grado_id; @endphp
+                                    <tr style="background-color: #f1f5f9; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1;">
+                                        <td colspan="10" class="text-start text-left py-2 px-3 font-weight-bold" style="color: #0f172a !important; background-color: #f1f5f9 !important; font-size: 0.95rem;">
+                                            <i class="fas fa-graduation-cap text-primary mr-2 me-2"></i>
+                                            <strong>{{ $malla->grado ? ($malla->grado->nombre_grado ?? ($malla->grado->numero_grado . '° Año de Educación Media General')) : 'Año ' . $malla->grado_id }}</strong>
+                                            <span class="badge badge-light border ml-2 ms-2 font-weight-normal text-muted" style="font-size: 0.8rem;">
+                                                Año Escolar
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endif
                                 <tr>
                                     <td>
                                         <span class="badge-orden">{{ $malla->orden }}</span>
@@ -399,7 +416,46 @@
                         Mostrando {{ $mallas->firstItem() ?? 0 }} a {{ $mallas->lastItem() ?? 0 }} de {{ $mallas->total() }} asignaturas
                     </div>
                     <div>
-                        {{ $mallas->links() }}
+                        @if ($mallas->hasPages())
+                            <nav aria-label="Navegación de páginas">
+                                <ul class="pagination mb-0">
+                                    {{-- Anterior --}}
+                                    @if ($mallas->onFirstPage())
+                                        <li class="page-item disabled" aria-disabled="true">
+                                            <span class="page-link" aria-hidden="true">&laquo;</span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $mallas->previousPageUrl() }}" rel="prev">&laquo;</a>
+                                        </li>
+                                    @endif
+
+                                    {{-- Números de página --}}
+                                    @foreach ($mallas->getUrlRange(1, $mallas->lastPage()) as $page => $url)
+                                        @if ($page == $mallas->currentPage())
+                                            <li class="page-item active" aria-current="page">
+                                                <span class="page-link">{{ $page }}</span>
+                                            </li>
+                                        @else
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                            </li>
+                                        @endif
+                                    @endforeach
+
+                                    {{-- Siguiente --}}
+                                    @if ($mallas->hasMorePages())
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $mallas->nextPageUrl() }}" rel="next">&raquo;</a>
+                                        </li>
+                                    @else
+                                        <li class="page-item disabled" aria-disabled="true">
+                                            <span class="page-link" aria-hidden="true">&raquo;</span>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </nav>
+                        @endif
                     </div>
                 </div>
             </div>

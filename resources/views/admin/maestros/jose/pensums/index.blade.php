@@ -244,9 +244,14 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge-count" style="color: #0f172a !important;">
-                                            <i class="fas fa-book-open text-primary mr-1"></i> <strong style="color: #0f172a !important;">{{ $pensum->mallas_count }}</strong>
-                                        </span>
+                                        <a href="{{ route('admin.malla-curricular.index', ['pensum_id' => $pensum->id]) }}"
+                                           class="badge-count text-decoration-none shadow-sm"
+                                           title="Ver Malla Curricular del Plan {{ $pensum->codigo }}"
+                                           style="color: #0f172a !important; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.2s ease;">
+                                            <i class="fas fa-layer-group text-primary"></i>
+                                            <strong style="color: #0f172a !important;">{{ $pensum->mallas_count }} mat.</strong>
+                                            <i class="fas fa-chevron-right text-muted" style="font-size: 0.75rem;"></i>
+                                        </a>
                                     </td>
                                     <td>
                                         <span class="badge-count" style="color: #0f172a !important;">
@@ -275,7 +280,15 @@
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                                     <li>
-                                                        <button class="dropdown-item d-flex align-items-center text-primary"
+                                                        <a class="dropdown-item d-flex align-items-center text-primary"
+                                                           href="{{ route('admin.malla-curricular.index', ['pensum_id' => $pensum->id]) }}"
+                                                           title="Ver Malla Curricular">
+                                                            <i class="fas fa-layer-group me-2 mr-2"></i>
+                                                            Ver Malla Curricular
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item d-flex align-items-center text-info"
                                                                 type="button"
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#modalVerPensum{{ $pensum->id }}"

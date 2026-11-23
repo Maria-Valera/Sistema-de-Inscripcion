@@ -28,7 +28,7 @@
                     <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
                         <span class="text-muted"><i class="fas fa-book mr-2 me-2 text-primary"></i> Asignatura Destino:</span>
                         <div class="text-end text-right">
-                            <span class="font-weight-bold fw-bold text-dark d-block">{{ $regla->areaDestino->nombre_area_formacion ?? '' }}</span>
+                            <span class="font-weight-bold fw-bold text-dark d-block">{{ $regla->areaDestino->nombre_area_formacion ?? 'Sin área destino (No se toma en cuenta)' }}</span>
                             <small class="text-muted">{{ $regla->gradoDestino ? ($regla->gradoDestino->nombre_grado ?? ($regla->gradoDestino->numero_grado . '° Año')) : '' }}</small>
                         </div>
                     </div>

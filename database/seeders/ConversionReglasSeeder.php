@@ -24,64 +24,62 @@ class ConversionReglasSeeder extends Seeder
             return;
         }
 
-        $citaCircular = 'Equivalencia oficial según Circular N° 01 del MPPE (enero 2024)';
+        $citaCircular = 'Equivalencia oficial según Circular N° 01 del MPPE (12 de enero de 2024)';
 
         // =========================================================================
-        // LAS 10 REGLAS DE LA CIRCULAR 01 (Enero 2024) ENTRE PLAN 31059 Y 31060
+        // REGLAS OFICIALES DE LA CIRCULAR 01 (12/01/2024) ENTRE PLAN 31059 Y 31060
+        // Para 1er y 2do año de Educación Media General:
+        // -------------------------------------------------------------------------
+        // COMPONENTE GENERAL:
+        // 1. Lengua y Literatura (31060) <- Castellano (31059) [Homologación directa]
+        // 2. Idiomas (31060) <- Inglés y otras lenguas extranjeras (31059) [Homologación directa]
+        // 3. Matemática (31060) <- Matemáticas (31059) [Homologación directa]
+        // 4. Educación Física (31060) <- Educación Física (31059) [Homologación directa]
+        // 5. Biología, Ambiente y Tecnología (31060) <- Ciencias Naturales (31059) [Homologación directa]
+        // 6. Física (31060) <- Exonerada (EX) [Consideración 4]
+        // 7. Química (31060) <- Exonerada (EX) [Consideración 4]
+        // 8. Geografía, Historia y Soberanía Nacional (31060) <- Arte y Patrimonio + GHC (31059) [Promedio - Consideración 3]
+        // -------------------------------------------------------------------------
+        // COMPONENTE FORMACIÓN CIENTÍFICA, TECNOLÓGICA Y PRODUCTIVA:
+        // 9. Orientación Vocacional (31060) <- Orientación y Convivencia (31059) [Homologación directa]
+        // 10. Innovación Tecnológica y Productiva (31060) <- Exonerada (EX) [Consideración 4]
+        // -------------------------------------------------------------------------
+        // DESCARTE:
+        // 11. Participación en Grupos de Creación, Recreación y Producción (31059) <- No se toma en cuenta [Consideración 5]
         // =========================================================================
-        // 1. Castellano (31059) -> Lengua y Literatura (31060) [Homologación directa]
-        // 2. Inglés (31059) -> Inglés (31060) [Homologación directa]
-        // 3. Matemáticas (31059) -> Matemáticas (31060) [Homologación directa]
-        // 4. Educación Física (31059) -> Educación Física (31060) [Homologación directa]
-        // 5. Arte y Patrimonio (31059) -> Arte y Patrimonio (31060) [Homologación directa]
-        // 6. Ciencias Naturales (31059) -> Ciencias Naturales (31060) [Homologación directa]
-        // 7. Orientación y Convivencia (31059) -> Orientación y Convivencia (31060) [Homologación directa]
-        // 8. Geografía, Historia y Ciudadanía + FSN (31059) -> Geografía, Historia y Soberanía Nacional (31060) [Promedio]
-        // 9. Física, Química e Innovación Tecnológica (31060) [Exonerada - se imprime EX]
-        // 10. Grupos de Creación, Recreación y Producción (31059) [No se toma en cuenta]
 
-        // Definición de las 10 reglas por año (1er año = grado 1, 2do año = grado 2)
         $grados = [1, 2];
 
         foreach ($grados as $gradoId) {
             $reglas = [
-                // Regla 1: Castellano (id 1) -> id 1 (directa)
+                // 1. Lengua y Literatura (id 15) <- Castellano (id 1)
                 [
-                    'area_destino' => 1,
+                    'area_destino' => 15,
                     'tipo'         => 'directa',
                     'obs'          => $citaCircular . ' - Homologación de Castellano a Lengua y Literatura',
                     'origenes'     => [
                         ['grado' => $gradoId, 'area' => 1],
                     ],
                 ],
-                // Regla 2: Arte y Patrimonio (id 2) -> id 2 (directa)
+                // 2. Idiomas (id 16) <- Inglés y otras lenguas extranjeras (id 7)
                 [
-                    'area_destino' => 2,
+                    'area_destino' => 16,
                     'tipo'         => 'directa',
-                    'obs'          => $citaCircular . ' - Homologación directa Arte y Patrimonio',
+                    'obs'          => $citaCircular . ' - Homologación de Inglés a Idiomas',
                     'origenes'     => [
-                        ['grado' => $gradoId, 'area' => 2],
+                        ['grado' => $gradoId, 'area' => 7],
                     ],
                 ],
-                // Regla 3: Ciencias Naturales (id 3) -> id 3 (directa)
+                // 3. Matemática (id 17) <- Matemáticas (id 5)
                 [
-                    'area_destino' => 3,
+                    'area_destino' => 17,
                     'tipo'         => 'directa',
-                    'obs'          => $citaCircular . ' - Homologación directa Ciencias Naturales',
-                    'origenes'     => [
-                        ['grado' => $gradoId, 'area' => 3],
-                    ],
-                ],
-                // Regla 4: Matemáticas (id 5) -> id 5 (directa)
-                [
-                    'area_destino' => 5,
-                    'tipo'         => 'directa',
-                    'obs'          => $citaCircular . ' - Homologación directa Matemáticas',
+                    'obs'          => $citaCircular . ' - Homologación directa Matemática',
                     'origenes'     => [
                         ['grado' => $gradoId, 'area' => 5],
                     ],
                 ],
-                // Regla 5: Educación Física (id 6) -> id 6 (directa)
+                // 4. Educación Física (id 6) <- Educación Física (id 6)
                 [
                     'area_destino' => 6,
                     'tipo'         => 'directa',
@@ -90,53 +88,69 @@ class ConversionReglasSeeder extends Seeder
                         ['grado' => $gradoId, 'area' => 6],
                     ],
                 ],
-                // Regla 6: Inglés (id 7) -> id 7 (directa)
+                // 5. Biología, Ambiente y Tecnología (id 18) <- Ciencias Naturales (id 3)
                 [
-                    'area_destino' => 7,
+                    'area_destino' => 18,
                     'tipo'         => 'directa',
-                    'obs'          => $citaCircular . ' - Homologación directa Inglés',
+                    'obs'          => $citaCircular . ' - Homologación de Ciencias Naturales a Biología, Ambiente y Tecnología',
                     'origenes'     => [
-                        ['grado' => $gradoId, 'area' => 7],
+                        ['grado' => $gradoId, 'area' => 3],
                     ],
                 ],
-                // Regla 7: Orientación y Convivencia (id 13) -> id 13 (directa)
+                // 6. Física (id 10) <- Exonerada (EX) [Consideración 4]
                 [
-                    'area_destino' => 13,
+                    'area_destino' => 10,
+                    'tipo'         => 'exonerada',
+                    'obs'          => $citaCircular . ' - Exonerada por no estar contemplada en Plan 31059 (se asienta EX)',
+                    'origenes'     => [],
+                ],
+                // 7. Química (id 11) <- Exonerada (EX) [Consideración 4]
+                [
+                    'area_destino' => 11,
+                    'tipo'         => 'exonerada',
+                    'obs'          => $citaCircular . ' - Exonerada por no estar contemplada en Plan 31059 (se asienta EX)',
+                    'origenes'     => [],
+                ],
+                // 8. Geografía, Historia y Soberanía Nacional (id 19) <- Arte y Patrimonio (id 2) + GHC (id 8) [Promedio - Consideración 3]
+                [
+                    'area_destino' => 19,
+                    'tipo'         => 'promedio',
+                    'obs'          => $citaCircular . ' - Promedio aritmético de Arte y Patrimonio con Geografía, Historia y Ciudadanía',
+                    'origenes'     => [
+                        ['grado' => $gradoId, 'area' => 2], // Arte y Patrimonio (31059)
+                        ['grado' => $gradoId, 'area' => 8], // Geografía, Historia y Ciudadanía (31059)
+                    ],
+                ],
+                // 9. Orientación Vocacional (id 20) <- Orientación y Convivencia (id 13)
+                [
+                    'area_destino' => 20,
                     'tipo'         => 'directa',
-                    'obs'          => $citaCircular . ' - Homologación cualitativa Orientación y Convivencia',
+                    'obs'          => $citaCircular . ' - Homologación cualitativa de Orientación y Convivencia a Orientación Vocacional',
                     'origenes'     => [
                         ['grado' => $gradoId, 'area' => 13],
                     ],
                 ],
-                // Regla 8: GHC (id 8) + FSN (id 12) -> Promedia a Geografía, Historia y Soberanía Nacional (id 8)
+                // 10. Innovación Tecnológica y Productiva (id 21) <- Exonerada (EX) [Consideración 4]
                 [
-                    'area_destino' => 8,
-                    'tipo'         => 'promedio',
-                    'obs'          => $citaCircular . ' - Promedio aritmético de Geografía, Historia y Ciudadanía con Soberanía Nacional',
-                    'origenes'     => [
-                        ['grado' => $gradoId, 'area' => 8],
-                        ['grado' => $gradoId, 'area' => 12],
-                    ],
-                ],
-                // Regla 9: Física y Química / Innovación Tecnológica (id 10) -> Exonerada (sin origenes)
-                [
-                    'area_destino' => 10,
+                    'area_destino' => 21,
                     'tipo'         => 'exonerada',
-                    'obs'          => $citaCircular . ' - Exonerada por equivalencia oficial de plan (se imprime EX)',
+                    'obs'          => $citaCircular . ' - Exonerada por no estar contemplada en Plan 31059 (se asienta EX)',
                     'origenes'     => [],
                 ],
-                // Regla 10: Formación para la Soberanía Nacional (id 12) en caso de transición individual -> No cuenta
+                // 11. PGCRP (id 14 en 31059) -> No se toma en cuenta [Consideración 5]
                 [
-                    'area_destino' => 12,
+                    'area_destino' => null,
                     'tipo'         => 'no_cuenta',
-                    'obs'          => $citaCircular . ' - Contemplada dentro del promedio de Geografía e Historia',
-                    'origenes'     => [],
+                    'obs'          => $citaCircular . ' - No se toma en cuenta (no contemplada en Plan 31060)',
+                    'origenes'     => [
+                        ['grado' => $gradoId, 'area' => 14], // PGCRP en 31059
+                    ],
                 ],
             ];
 
             foreach ($reglas as $def) {
-                // Verificar que el área exista
-                if (!AreaFormacion::where('id', $def['area_destino'])->exists()) {
+                // Si tiene área de destino, verificar que exista
+                if (!is_null($def['area_destino']) && !AreaFormacion::where('id', $def['area_destino'])->exists()) {
                     continue;
                 }
 
@@ -168,7 +182,6 @@ class ConversionReglasSeeder extends Seeder
             }
         }
 
-        $this->command->info('[ConversionReglasSeeder] Las 10 reglas de conversión de la Circular 01 para 1ro y 2do sembradas.');
+        $this->command->info('[ConversionReglasSeeder] Las reglas oficiales de conversión de la Circular N° 01 sembradas correctamente.');
     }
 }
-

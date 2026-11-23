@@ -38,7 +38,8 @@ class ConversionReglaRequest extends FormRequest
                 'exists:grados,id',
             ],
             'area_destino_id' => [
-                'required',
+                Rule::requiredIf(fn() => $this->input('tipo_regla') !== 'no_cuenta'),
+                'nullable',
                 'exists:area_formacions,id',
                 Rule::unique('conversion_reglas', 'area_destino_id')
                     ->where(function ($query) use ($origenId, $destinoId, $gradoDestinoId) {
@@ -130,11 +131,11 @@ class ConversionReglaRequest extends FormRequest
                     );
                 }
 
-                // 4. No se toma en cuenta = ninguna área de origen (0)
-                if ($tipoRegla === 'no_cuenta' && $cantOrigenes > 0) {
+                // 4. No se toma en cuenta = máximo 1 área de origen (la que no se toma en cuenta)
+                if ($tipoRegla === 'no_cuenta' && $cantOrigenes > 1) {
                     $validator->errors()->add(
                         'origenes',
-                        'Una materia no contemplada en el nuevo pensum no debe asociar materias de origen.'
+                        'Una regla de materia no contemplada puede asociar como máximo 1 asignatura de origen que se descarta.'
                     );
                 }
             },

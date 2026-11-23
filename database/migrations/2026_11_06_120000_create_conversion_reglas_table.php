@@ -30,9 +30,10 @@ return new class extends Migration
                   ->comment('Grado o año en el pensum destino');
 
             $table->foreignId('area_destino_id')
+                  ->nullable()
                   ->constrained('area_formacions')
-                  ->cascadeOnDelete()
-                  ->comment('Asignatura resultante en el pensum destino');
+                  ->nullOnDelete()
+                  ->comment('Asignatura resultante en el pensum destino (NULL si no_cuenta)');
 
             $table->enum('tipo_regla', ['directa', 'promedio', 'exonerada', 'no_cuenta'])
                   ->comment('Regla MPPE: directa (1 origen), promedio (>=2 orígenes), exonerada (0 orígenes), no_cuenta (0 orígenes)');

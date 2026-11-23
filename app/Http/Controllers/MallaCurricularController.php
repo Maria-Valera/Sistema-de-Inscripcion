@@ -9,6 +9,7 @@ use App\Models\GradoAreaFormacion;
 use App\Models\Pensum;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class MallaCurricularController extends Controller
@@ -43,7 +44,12 @@ class MallaCurricularController extends Controller
             });
         }
 
-        $mallas = $query->ordenados()->paginate(15)->withQueryString();
+        // Organizado prioritariamente por año escolar (grado) y luego por secuencia oficial
+        $mallas = $query->orderBy('grado_id', 'asc')
+                        ->orderBy('orden', 'asc')
+                        ->orderBy('id', 'asc')
+                        ->paginate(50)
+                        ->withQueryString();
 
         $pensumSeleccionado = $pensums->firstWhere('id', $pensumId);
 
@@ -99,7 +105,18 @@ class MallaCurricularController extends Controller
         $pensumId = $mallaCurricular->pensum_id;
         $gradoId = $mallaCurricular->grado_id;
 
-        // Por seguridad se desactiva si está en uso
+        // Regla de integridad: No borrar si está en uso por estudiantes (materias de prosecución o historial)
+        $enUsoProsecucion = DB::table('prosecucion_areas')->where('grado_area_formacion_id', $mallaCurricular->id)->exists();
+
+        if ($enUsoProsecucion) {
+            $mallaCurricular->update(['status' => false]);
+
+            return redirect()->route('admin.malla-curricular.index', [
+                'pensum_id' => $pensumId,
+                'grado_id'  => $gradoId,
+            ])->with('warning', 'La asignatura está asociada a materias de prosecución de estudiantes. Ha sido desactivada para proteger el historial académico.');
+        }
+
         $mallaCurricular->delete();
 
         return redirect()->route('admin.malla-curricular.index', [

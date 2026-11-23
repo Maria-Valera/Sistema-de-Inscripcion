@@ -41,7 +41,12 @@
 
                     <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
                         <span class="text-muted"><i class="fas fa-layer-group mr-2 me-2 text-primary"></i> Asignaturas en Malla:</span>
-                        <span class="font-weight-bold fw-bold text-dark">{{ $pensum->mallas_count ?? $pensum->mallas()->count() }} asignaturas</span>
+                        <a href="{{ route('admin.malla-curricular.index', ['pensum_id' => $pensum->id]) }}"
+                           class="btn btn-sm btn-outline-primary"
+                           style="border-radius: 6px; font-weight: 600;"
+                           title="Ir al maestro de Malla Curricular">
+                            <i class="fas fa-external-link-alt mr-1 me-1"></i> Ver Malla ({{ $pensum->mallas_count ?? $pensum->mallas()->count() }})
+                        </a>
                     </div>
 
                     <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
@@ -67,7 +72,10 @@
                 </div>
             </div>
 
-            <div class="modal-footer-show py-3 px-4 d-flex justify-content-end align-items-center border-top" style="background: #f8fafc;">
+            <div class="modal-footer-show py-3 px-4 d-flex justify-content-between align-items-center border-top" style="background: #f8fafc;">
+                <a href="{{ route('admin.malla-curricular.index', ['pensum_id' => $pensum->id]) }}" class="btn btn-primary btn-sm px-3" style="border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-layer-group mr-1 me-1"></i> Ir a la Malla Curricular
+                </a>
                 <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">
                     Cerrar
                 </button>
