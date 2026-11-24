@@ -821,13 +821,34 @@ class Inscripcion extends Component
 
     public function manejarInstitucionCreada($data)
     {
-        if ($this->localidad_id) {
+        $id = is_array($data) ? ($data['id'] ?? null) : $data;
+        $localidadId = is_array($data) ? ($data['localidad_id'] ?? null) : null;
+
+        if ($localidadId) {
+            $this->localidad_id = $localidadId;
+            $localidad = \App\Models\Localidad::with('municipio.estado')->find($localidadId);
+            if ($localidad && $localidad->municipio) {
+                $this->municipio_id = $localidad->municipio->id;
+                $this->estado_id = $localidad->municipio->estado_id;
+                $this->municipios = \App\Models\Municipio::where('estado_id', $this->estado_id)->where('status', true)->get();
+                $this->localidades = \App\Models\Localidad::where('municipio_id', $this->municipio_id)->where('status', true)->get();
+            }
+            $this->instituciones = \App\Models\InstitucionProcedencia::where('localidad_id', $localidadId)
+                ->where('status', true)
+                ->orderBy('nombre_institucion')
+                ->get();
+        } elseif ($this->localidad_id) {
             $this->instituciones = \App\Models\InstitucionProcedencia::where('localidad_id', $this->localidad_id)
                 ->where('status', true)
                 ->orderBy('nombre_institucion')
                 ->get();
+        } else {
+            $this->instituciones = \App\Models\InstitucionProcedencia::where('status', true)
+                ->orderBy('nombre_institucion')
+                ->get();
         }
-        $this->institucion_procedencia_id = $data['id'];
+
+        $this->institucion_procedencia_id = $id;
     }
 
 

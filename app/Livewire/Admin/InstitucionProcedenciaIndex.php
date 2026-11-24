@@ -10,6 +10,7 @@ use App\Models\Localidad;
 use App\Models\Estado;
 use App\Models\Municipio;
 use App\Models\AnioEscolar;
+use App\Models\Pais;
 
 class InstitucionProcedenciaIndex extends Component
 {
@@ -17,6 +18,7 @@ class InstitucionProcedenciaIndex extends Component
 
     public $institucion_id;
     public $nombre_institucion;
+    public $pais_id;
     public $estado_id;
     public $municipio_id;
     public $localidad_id;
@@ -24,6 +26,7 @@ class InstitucionProcedenciaIndex extends Component
     public $updateMode = false;
 
     public $anioEscolarActivo = false;
+    public $paises = [];
     public $municipios = [];
     public $localidades = [];
     public $modoModal = false;
@@ -38,6 +41,9 @@ class InstitucionProcedenciaIndex extends Component
     public function mount($modoModal = false)
     {
         $this->modoModal = $modoModal;
+        $this->paises = Pais::where('status', true)
+            ->orderBy('nameES', 'asc')
+            ->get();
         $this->verificarAnioEscolar();
     }
 
@@ -60,6 +66,43 @@ class InstitucionProcedenciaIndex extends Component
     // ========================================
     // LISTENERS DE CAMBIO (SELECTS DINÁMICOS)
     // ========================================
+
+    /**
+     * Cuando cambia el país, cargar estados de ese país
+     */
+    public function updatedPaisId($paisId)
+    {
+        if ($paisId) {
+            $pais = Pais::find($paisId);
+            $esVenezuela = false;
+            if ($pais) {
+                $nombrePais = mb_strtolower($pais->nameES ?? $pais->nameEN ?? '');
+                $esVenezuela = str_contains($nombrePais, 'venezuela');
+            }
+
+            $estados = Estado::where('pais_id', $paisId)
+                ->where('status', true)
+                ->orderBy('nombre_estado', 'asc')
+                ->get();
+
+            if ($estados->isEmpty() && ($esVenezuela || $paisId == 1 || $paisId == 242)) {
+                $estados = Estado::where('status', true)
+                    ->orderBy('nombre_estado', 'asc')
+                    ->get();
+            }
+
+            $this->estados = $estados;
+        } else {
+            $this->estados = [];
+        }
+
+        $this->estado_id = null;
+        $this->municipio_id = null;
+        $this->localidad_id = null;
+
+        $this->municipios = [];
+        $this->localidades = [];
+    }
 
     /**
      * Cuando cambia el estado, cargar municipios de ese estado
@@ -128,7 +171,9 @@ class InstitucionProcedenciaIndex extends Component
             ->orderBy('nombre_institucion', 'asc')
             ->paginate(10);
 
-        return view('livewire.admin.institucion-procedencia-index', compact('instituciones', 'estados'));
+        $estadosCrear = $this->pais_id ? $this->estados : [];
+
+        return view('livewire.admin.institucion-procedencia-index', compact('instituciones', 'estados', 'estadosCrear'));
     }
 
     public function paginationView()
@@ -149,6 +194,7 @@ class InstitucionProcedenciaIndex extends Component
     {
         $this->institucion_id = null;
         $this->nombre_institucion = '';
+        $this->pais_id = null;
         $this->estado_id = null;
         $this->municipio_id = null;
         $this->localidad_id = null;

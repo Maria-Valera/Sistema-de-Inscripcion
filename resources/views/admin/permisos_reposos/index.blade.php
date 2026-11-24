@@ -31,8 +31,8 @@
                 </div>
             </div>
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear">
-                    <i class="fas fa-plus"></i>
+                <button type="button" class="btn-primary-modern" data-bs-toggle="modal" data-bs-target="#modalCrear">
+                    <i class="fas fa-plus me-1"></i>
                     <span>Registrar Permiso/Reposo</span>
                 </button>
             @endif

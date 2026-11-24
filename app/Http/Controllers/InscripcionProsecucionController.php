@@ -97,12 +97,42 @@ class InscripcionProsecucionController extends Controller
             ->orderByDesc('created_at')
             ->paginate(10);
 
+        // Alumnos disponibles para prosecución (para la modal de selección)
+        $alumnosDisponibles = collect();
+        if ($anioEscolarActivo) {
+            $anioAnterior = \App\Models\AnioEscolar::where('inicio_anio_escolar', '<', $anioEscolarActivo->inicio_anio_escolar)
+                ->orderByDesc('inicio_anio_escolar')
+                ->first();
+
+            if ($anioAnterior) {
+                $queryAlumnos = Alumno::whereHas('inscripciones', function ($q) use ($anioAnterior) {
+                    $q->where('anio_escolar_id', $anioAnterior->id);
+                })
+                ->whereDoesntHave('inscripciones', function ($q) use ($anioEscolarActivo) {
+                    $q->where('anio_escolar_id', $anioEscolarActivo->id);
+                });
+
+                if ($user && $user->hasRole('Representante')) {
+                    $queryAlumnos->visiblesParaRepresentante($user);
+                }
+
+                $alumnosDisponibles = $queryAlumnos->with([
+                    'persona.tipoDocumento',
+                    'inscripciones' => function ($q) use ($anioAnterior) {
+                        $q->where('anio_escolar_id', $anioAnterior->id)->with('grado');
+                    },
+                ])
+                ->orderBy('id')
+                ->get();
+            }
+        }
 
         return view('admin.transacciones.inscripcion_prosecucion.index', [
             'anioEscolarActivo' => (bool) $anioEscolarActivo,
             'anioEscolar' => $anioEscolarActivo,
             'esActual' => AnioEscolarSeleccionado::esActual(),
             'prosecuciones' => $prosecuciones,
+            'alumnosDisponibles' => $alumnosDisponibles,
             'grados' => $grados,
             'secciones' => $secciones,
             'buscar' => $buscar,
@@ -122,22 +152,22 @@ class InscripcionProsecucionController extends Controller
         return response()->json($secciones);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         if (!AnioEscolarSeleccionado::esActual()) {
             return redirect()->route('admin.transacciones.inscripcion_prosecucion.index')
                 ->with('warning', 'No puedes registrar nuevas prosecuciones en un año escolar anterior (solo lectura).');
         }
 
-        $this->verificarAnioEscolar();
-        $personas = Persona::all();
-        $generos = Genero::all();
-        $tipoDocumentos = TipoDocumento::all();
-        $alumnos = Alumno::all();
-        $grados = Grado::all();
-        $expresion_literaria = ExpresionLiteraria::all();
-        $institucion_procedencia = InstitucionProcedencia::all();
-        return view('admin.transacciones.inscripcion_prosecucion.create', compact('personas', 'generos', 'tipoDocumentos', 'alumnos', 'grados'));
+        // TAREA 4: Si no se seleccionó estudiante desde la modal, redirigir al index para evitar acceso por URL directa
+        if (!$request->filled('alumno_id')) {
+            return redirect()->route('admin.transacciones.inscripcion_prosecucion.index')
+                ->with('warning', 'Seleccione un estudiante desde el botón "+ Registrar" para iniciar la prosecución.');
+        }
+
+        $alumnoId = $request->get('alumno_id');
+
+        return view('admin.transacciones.inscripcion_prosecucion.create', compact('alumnoId'));
     }
 
     public function destroy($inscripcionId)

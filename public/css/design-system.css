@@ -115,7 +115,8 @@
 }
 
 .hero-header .header-content,
-.hero-header-horario .header-content {
+.hero-header-horario .header-content,
+.hero-header-modern .header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -124,14 +125,16 @@
 }
 
 .hero-header .header-title,
-.hero-header-horario .header-title {
+.hero-header-horario .header-title,
+.hero-header-modern .header-title {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
 .hero-header .title-main,
-.hero-header-horario .title-main {
+.hero-header-horario .title-main,
+.hero-header-modern .title-main {
     color: #FFFFFF !important;
     font-size: 1.45rem !important;
     font-weight: 700 !important;
@@ -140,15 +143,17 @@
 }
 
 .hero-header .title-subtitle,
-.hero-header-horario .title-subtitle {
-    color: rgba(255, 255, 255, 0.85) !important;
+.hero-header-horario .title-subtitle,
+.hero-header-modern .title-subtitle {
+    color: rgba(255, 255, 255, 0.9) !important;
     font-size: 0.88rem !important;
     margin: 0.25rem 0 0 0 !important;
     line-height: 1.35 !important;
 }
 
 .hero-header .icon-wrapper,
-.hero-header-horario .icon-wrapper {
+.hero-header-horario .icon-wrapper,
+.hero-header-modern .icon-wrapper {
     width: 48px;
     height: 48px;
     border-radius: var(--radius-md);
@@ -164,7 +169,8 @@
 }
 
 .hero-header .icon-wrapper i,
-.hero-header-horario .icon-wrapper i {
+.hero-header-horario .icon-wrapper i,
+.hero-header-modern .icon-wrapper i {
     color: #FFFFFF !important;
 }
 
@@ -212,38 +218,37 @@
    ============================================================================ */
 /* Botón Primario Moderno (Stripe / Moneyfy Style) */
 .btn-primary-modern,
+.btn-create,
 .btn-save,
 .btn-modal-create,
 .btn-primary:not(.btn-hero-white):not(.btn-outline-primary) {
-    background: var(--primary-color) !important;
-    background-color: var(--primary-color) !important;
-    border: none !important;
+    background-color: #4A6FC1 !important; /* Azul institucional */
     color: #FFFFFF !important;
-    border-radius: 8px !important;
-    padding: 10px 22px !important;
-    font-size: 0.92rem !important;
+    border: 1px solid #4A6FC1 !important;
+    border-radius: 8px !important; /* Bordes redondeados sutiles, NO píldora */
+    padding: 10px 20px !important;
     font-weight: 600 !important;
-    line-height: 1.25 !important;
+    font-size: 14px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0.5rem !important;
-    cursor: pointer !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
     text-decoration: none !important;
+    cursor: pointer !important;
     box-shadow: none !important;
-    transition: background-color 0.15s ease !important;
 }
 
 .btn-primary-modern:hover:not(:disabled),
+.btn-create:hover:not(:disabled),
 .btn-save:hover:not(:disabled),
 .btn-modal-create:hover:not(:disabled),
 .btn-primary:not(.btn-hero-white):not(.btn-outline-primary):hover:not(:disabled) {
-    background: var(--primary-hover) !important;
-    background-color: var(--primary-hover) !important;
-    border: none !important;
+    background-color: #3b5998 !important; /* Azul más oscuro al hover */
+    border-color: #3b5998 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
     color: #FFFFFF !important;
     transform: none !important;
-    box-shadow: none !important;
 }
 
 .btn-primary-modern:disabled,
@@ -531,47 +536,179 @@ button.btn-primary-modern.disabled {
     overflow: hidden !important;
 }
 
+/* Forzar encabezado gris y sin bordes duros */
+.table-modern > thead > tr > th,
 .table-modern thead th {
-    background-color: var(--bg-light) !important;
-    color: var(--text-dark) !important;
+    background-color: #F1F5F9 !important;
+    color: #475569 !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
     font-weight: 600 !important;
     font-size: 0.85rem !important;
     padding: 0.85rem 1rem !important;
-    border: none !important;
-    border-bottom: 1px solid var(--border-color) !important;
     text-transform: capitalize !important;
     white-space: nowrap !important;
+    vertical-align: middle !important;
+    box-shadow: none !important;
 }
 
 .table-modern tbody tr {
     transition: background-color 0.15s ease !important;
 }
 
-.table-modern tbody tr:hover {
-    background-color: var(--bg-light) !important;
-}
-
-/* Zebra Striping para Tablas Modernas */
-.table-modern.table-striped tbody tr:nth-of-type(even),
-.table-modern-striped tbody tr:nth-child(even) {
-    background-color: #F8FAFC !important;
-}
-
-.table-modern.table-striped tbody tr:nth-of-type(odd) {
+/* Forzar filas alternadas (Zebra Striping) ganando a Bootstrap / AdminLTE */
+.table-modern > tbody > tr:nth-of-type(odd) > *,
+.table-modern tbody tr:nth-child(odd) > td {
     background-color: #FFFFFF !important;
+    box-shadow: none !important;
 }
 
-.table-modern.table-striped tbody tr:hover {
-    background-color: #EFF6FF !important;
+.table-modern > tbody > tr:nth-of-type(even) > *,
+.table-modern tbody tr:nth-child(even) > td {
+    background-color: #F8FAFC !important; /* Gris muy claro */
+    box-shadow: none !important;
 }
 
-.table-modern tbody td {
+.table-modern > tbody > tr:hover > *,
+.table-modern.table-hover > tbody > tr:hover > *,
+.table-modern tbody tr:hover > td,
+.table-modern.table-hover tbody tr:hover > td {
+    background-color: #EFF6FF !important; /* Resaltado suave al pasar el cursor */
+    box-shadow: none !important;
+}
+
+/* Quitar el borde blanco de las celdas */
+.table-modern td {
+    border-color: transparent !important;
     padding: 0.85rem 1rem !important;
     color: var(--text-body) !important;
-    border: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
     border-bottom: 1px solid #F1F5F9 !important;
     font-size: 0.9rem !important;
     white-space: nowrap !important;
+    vertical-align: middle !important;
+}
+
+/* Botón de solo ícono estándar (estilo Horarios / 3 puntitos / ojito) */
+.btn-icon-only,
+.table-modern .btn-icon-only {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
+}
+
+.btn-icon-only:hover,
+.table-modern .btn-icon-only:hover {
+    background-color: #F1F5F9 !important; /* hover:bg-gray-100 */
+    color: #1E293B !important;
+    transform: scale(1.06) !important;
+    box-shadow: none !important;
+}
+
+.btn-icon-only:active,
+.table-modern .btn-icon-only:active {
+    background-color: #E2E8F0 !important;
+    transform: scale(0.95) !important;
+}
+
+.btn-icon-only i,
+.table-modern .btn-icon-only i {
+    font-size: 0.95rem !important;
+    line-height: 1 !important;
+    color: #64748b !important;
+}
+
+.btn-icon-only:hover i,
+.table-modern .btn-icon-only:hover i {
+    color: #1E293B !important;
+}
+
+/* Estandarización de icono de tarjeta en header moderno */
+.card-header-modern .header-icon,
+.card-header-modern .header-icon-pastel-blue,
+.header-icon-pastel-blue {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    border-radius: 10px !important;
+    background-color: #EFF6FF !important;
+    color: #4A6FC1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.15rem !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+}
+
+.card-header-modern .header-icon i,
+.card-header-modern .header-icon-pastel-blue i,
+.header-icon-pastel-blue i {
+    color: #4A6FC1 !important;
+}
+
+/* Enlaces / botones de ícono limpios en tabla (sin fondo circular) */
+.hover-text-primary {
+    transition: color 0.15s ease, transform 0.15s ease !important;
+}
+
+.hover-text-primary:hover {
+    color: #4A6FC1 !important;
+    transform: scale(1.12) !important;
+}
+
+.table-modern a.text-secondary,
+.table-modern a.hover-text-primary {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+}
+
+.table-modern .btn-link,
+.table-modern button.btn-link {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    text-decoration: none !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.table-modern .btn-link i,
+.table-modern button.btn-link i {
+    color: #64748B !important;
+    transition: color 0.15s ease, transform 0.15s ease !important;
+}
+
+.table-modern .btn-link:hover i,
+.table-modern button.btn-link:hover i {
+    color: #4A6FC1 !important;
+    transform: scale(1.15) !important;
 }
 
 .table-modern tbody tr:last-child td {
@@ -1512,6 +1649,20 @@ select option:checked {
     font-size: 1.1rem !important;
 }
 
+.modal-modern .modal-header.modal-header-view,
+.modal-content.modal-modern .modal-header.modal-header-view {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+}
+
+.modal-modern .modal-header .modal-title-view,
+.modal-content.modal-modern .modal-header .modal-title-view {
+    color: #4A6FC1 !important;
+    font-weight: 700 !important;
+    font-size: 1.35rem !important;
+}
+
 .modal-modern .modal-body,
 .modal-content.modal-modern .modal-body,
 #modalNuevoHorario .modal-body {
@@ -1528,6 +1679,99 @@ select option:checked {
     border-top: 1px solid #F1F5F9 !important;
     padding: 1rem 1.35rem !important;
     gap: 0.75rem !important;
+}
+
+/* Acordeones limpios dentro de modales modernos (Roles y Permisos) */
+.modal-modern .accordion-item {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+.modal-modern .accordion-button {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.95rem !important;
+}
+
+.modal-modern .accordion-button:not(.collapsed) {
+    background-color: #FFFFFF !important;
+    color: #4A6FC1 !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+}
+
+.modal-modern .accordion-button:focus {
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.modal-modern .accordion-button::after {
+    background-size: 0.85rem !important;
+}
+
+/* Tarjetas de Selección de Permisos (Roles y Permisos Grid) */
+.permisos-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+}
+
+@media (max-width: 991px) {
+    .permisos-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .permisos-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.permiso-card {
+    display: flex !important;
+    align-items: center !important;
+    padding: 10px 14px !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    margin-bottom: 0 !important;
+    user-select: none !important;
+    min-height: 58px !important;
+}
+
+.permiso-card:hover {
+    border-color: #4A6FC1 !important;
+    background-color: #F8FAFC !important;
+    box-shadow: 0 2px 4px rgba(74, 111, 193, 0.08) !important;
+}
+
+.permiso-card:has(.form-check-input:checked) {
+    border-color: #4A6FC1 !important;
+    background-color: #EFF6FF !important;
+}
+
+.permiso-card .form-check-input {
+    width: 1.15rem !important;
+    height: 1.15rem !important;
+    min-width: 1.15rem !important;
+    margin-top: 0 !important;
+    margin-right: 0.75rem !important;
+    border-color: #CBD5E1 !important;
+    cursor: pointer !important;
+}
+
+.permiso-card .form-check-input:checked {
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
 }
 
 /* Detalle de Fichas en Modales (Grid SaaS) */
@@ -1673,7 +1917,7 @@ select option:checked {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
     padding: 8px !important;
     min-width: 160px !important;
-    z-index: 1050 !important;
+    z-index: 9999 !important;
 }
 
 /* Tarea 3: Ítems del Menú Desplegable (General) */
@@ -1965,18 +2209,13 @@ select:disabled,
 textarea:disabled,
 .form-control:disabled,
 .form-control-modern:disabled,
-.form-select:disabled {
+.form-select:disabled,
+select.form-select:disabled {
     background-color: #F1F5F9 !important;
     cursor: not-allowed !important;
-    opacity: 0.8 !important;
+    opacity: 0.7 !important;
     border-color: #E2E8F0 !important;
-}
-
-select.form-select:disabled {
-    background-color: #F8FAFC !important;
-    color: #94A3B8 !important;
-    border-color: #E2E8F0 !important;
-    cursor: not-allowed !important;
+    color: #64748B !important;
 }
 
 select.form-select option {
@@ -2254,7 +2493,12 @@ select.form-select.text-center {
 
 /* Prevención de recorte en tablas responsivas */
 .table-responsive:has(.bootstrap-select.show),
-.table-responsive:has(.dropdown.show) {
+.table-responsive:has(.dropdown.show),
+.table-responsive:has(.dropdown-menu.show) {
+    overflow: visible !important;
+}
+
+.table-modern {
     overflow: visible !important;
 }
 
@@ -2385,6 +2629,83 @@ button.btn-pdf-global:hover {
 .btn-pdf-global i,
 a.btn-pdf-global i {
     color: #EF4444 !important;
+}
+
+/* ============================================================================
+   ESTRUCTURA DE PANELES LATERALES / OFFCANVAS (BOOTSTRAP 5 COMPATIBLE)
+   ============================================================================ */
+.offcanvas {
+    position: fixed !important;
+    bottom: 0 !important;
+    z-index: 1045 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-width: 100% !important;
+    color: #1e293b !important;
+    visibility: hidden !important;
+    background-color: #ffffff !important;
+    background-clip: padding-box !important;
+    outline: 0 !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s !important;
+}
+
+.offcanvas-end {
+    top: 0 !important;
+    right: 0 !important;
+    width: 400px !important;
+    max-width: 90vw !important;
+    border-left: 1px solid #e2e8f0 !important;
+    transform: translateX(100%) !important;
+    box-shadow: -10px 0 35px rgba(15, 23, 42, 0.12) !important;
+}
+
+.offcanvas.show {
+    visibility: visible !important;
+    transform: none !important;
+}
+
+.offcanvas-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 1.25rem 1.5rem !important;
+}
+
+.offcanvas-title {
+    margin-bottom: 0 !important;
+    line-height: 1.5 !important;
+    font-size: 1.15rem !important;
+}
+
+.offcanvas-body {
+    flex-grow: 1 !important;
+    padding: 1.25rem 1.5rem !important;
+    overflow-y: auto !important;
+}
+
+.offcanvas-footer {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Botón de cierre para modales y offcanvas moderno */
+.btn-close {
+    box-sizing: content-box !important;
+    width: 0.9em !important;
+    height: 0.9em !important;
+    padding: 0.35em !important;
+    color: #475569 !important;
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2364748b'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+    border: 0 !important;
+    border-radius: 0.375rem !important;
+    opacity: 0.65 !important;
+    cursor: pointer !important;
+    transition: opacity 0.15s ease, transform 0.15s ease !important;
+}
+
+.btn-close:hover {
+    opacity: 1 !important;
+    transform: scale(1.08) !important;
 }
 
 /* ============================================================================
@@ -2775,7 +3096,7 @@ select.form-select-saas,
     justify-content: flex-start !important;
 }
 
-.card-modern > .card-header-modern {
+.card-modern>.card-header-modern {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
@@ -3128,4 +3449,775 @@ select.form-select-saas,
     .grid-5-cols-responsive {
         grid-template-columns: 1fr !important;
     }
+}
+
+/* ============================================================================
+   FICHAS DE LECTURA LIMPIAS (PROSECUCIÓN Y ESTUDIANTE) - ESTILO SAAS
+   ============================================================================ */
+.info-block {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0 !important;
+}
+
+.info-block-header {
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.info-block-header i {
+    color: #4A6FC1 !important;
+    font-size: 0.95rem !important;
+}
+
+.info-block-header span {
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+}
+
+.info-key,
+.info-label {
+    font-size: 12px !important;
+    color: #64748B !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+    margin-bottom: 3px !important;
+    display: block !important;
+}
+
+.info-val,
+.info-value {
+    font-size: 14px !important;
+    color: #1E293B !important;
+    font-weight: 500 !important;
+    word-break: break-word !important;
+    display: block !important;
+}
+
+.info-item {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.4rem 0 !important;
+}
+
+.info-item:hover {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+.section-header {
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.section-header i {
+    color: #4A6FC1 !important;
+    font-size: 1.1rem !important;
+}
+
+.section-header h4 {
+    color: #1E293B !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+}
+
+.representante-card {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.25rem !important;
+}
+
+.legal-info-section {
+    border-top: 1px solid #E2E8F0 !important;
+    margin-top: 1.25rem !important;
+    padding-top: 1rem !important;
+}
+
+/* ============================================================================
+   ESTILOS PASTEL SAAS PARA PASOS Y REPRESENTANTES (PROSECUCIÓN / INSCRIPCIÓN)
+   ============================================================================ */
+
+/* Tarjetas de Pasos con Borde Izquierdo y Header Pastel */
+.card-step-blue,
+.card-step-purple,
+.card-step-green {
+    overflow: hidden !important;
+    border-radius: 12px !important;
+}
+
+.card-step-blue>.card-header-modern,
+.card-step-purple>.card-header-modern,
+.card-step-green>.card-header-modern {
+    margin: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 8px !important;
+}
+
+/* Regla forzada para selects nativos SaaS (.form-select, .select-modern) */
+select.form-select,
+select.select-modern {
+    background-color: #FFFFFF !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 16px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 8px 36px 8px 12px !important;
+    height: 42px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+}
+
+select.form-select:focus,
+select.select-modern:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+    outline: none !important;
+}
+
+.card-step-blue>.card-header-modern,
+.card-header-pastel-blue {
+    background-color: var(--pastel-blue-bg) !important;
+    border-bottom: 1px solid rgba(79, 70, 229, 0.15) !important;
+}
+
+.card-step-blue .header-icon-pastel {
+    background-color: #FFFFFF !important;
+    color: var(--pastel-blue-text) !important;
+    box-shadow: 0 1px 3px rgba(55, 48, 163, 0.15) !important;
+}
+
+.card-step-purple {
+    border-left: 4px solid var(--pastel-purple-border) !important;
+}
+
+.card-step-purple>.card-header-modern,
+.card-header-pastel-purple {
+    background-color: var(--pastel-purple-bg) !important;
+    border-bottom: 1px solid rgba(147, 51, 234, 0.15) !important;
+}
+
+.card-step-purple .header-icon-pastel,
+.header-icon-pastel-purple {
+    background-color: #FFFFFF !important;
+    color: var(--pastel-purple-text) !important;
+    box-shadow: 0 1px 3px rgba(107, 33, 168, 0.15) !important;
+}
+
+.card-step-green {
+    border-left: 4px solid var(--pastel-green-border) !important;
+}
+
+.card-step-green>.card-header-modern,
+.card-header-pastel-green {
+    background-color: var(--pastel-green-bg) !important;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+}
+
+.card-step-green .header-icon-pastel,
+.header-icon-pastel-green {
+    background-color: #FFFFFF !important;
+    color: var(--pastel-green-text) !important;
+    box-shadow: 0 1px 3px rgba(6, 95, 70, 0.15) !important;
+}
+
+/* Fichas de Representantes Pastel */
+.representante-card-padre {
+    border-top: 3px solid var(--pastel-blue-border) !important;
+}
+
+.representante-header-padre {
+    background-color: var(--pastel-blue-bg) !important;
+    color: var(--pastel-blue-text) !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 0.65rem 1rem !important;
+    margin: -1.5rem -1.5rem 1.25rem -1.5rem !important;
+    border-bottom: 1px solid rgba(79, 70, 229, 0.15) !important;
+}
+
+.representante-header-padre i {
+    color: var(--pastel-blue-text) !important;
+}
+
+.representante-card-madre {
+    border-top: 3px solid var(--pastel-pink-border) !important;
+}
+
+.representante-header-madre {
+    background-color: var(--pastel-pink-bg) !important;
+    color: var(--pastel-pink-text) !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 0.65rem 1rem !important;
+    margin: -1.5rem -1.5rem 1.25rem -1.5rem !important;
+    border-bottom: 1px solid rgba(236, 72, 153, 0.15) !important;
+}
+
+.representante-header-madre i {
+    color: var(--pastel-pink-text) !important;
+}
+
+.representante-card-legal {
+    border-top: 3px solid var(--pastel-green-border) !important;
+}
+
+.representante-header-legal {
+    background-color: var(--pastel-green-bg) !important;
+    color: var(--pastel-green-text) !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 0.65rem 1rem !important;
+    margin: -1.5rem -1.5rem 1.25rem -1.5rem !important;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+}
+
+.representante-header-legal i {
+    color: var(--pastel-green-text) !important;
+}
+
+/* Hover dinámico pastel en checkboxes de materias */
+.checkbox-item-modern {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 0.75rem 1rem !important;
+    transition: all 0.18s ease-in-out !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.checkbox-item-modern:hover {
+    background-color: var(--pastel-blue-bg) !important;
+    border-color: var(--pastel-blue-border) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 5px rgba(55, 48, 163, 0.08) !important;
+}
+
+.checkbox-item-modern:hover strong {
+    color: var(--pastel-blue-text) !important;
+}
+
+.checkbox-item-modern.materia-actual:hover {
+    background-color: var(--pastel-purple-bg) !important;
+    border-color: var(--pastel-purple-border) !important;
+    box-shadow: 0 2px 5px rgba(107, 33, 168, 0.08) !important;
+}
+
+.checkbox-item-modern.materia-actual:hover strong {
+    color: var(--pastel-purple-text) !important;
+}
+
+.checkbox-item-modern.border-warning:hover {
+    background-color: var(--pastel-yellow-bg) !important;
+    border-color: var(--pastel-yellow-border) !important;
+}
+
+/* ============================================================================
+   ESTILOS PARA PESTAÑAS (TABS) MODERNAS EN MODALES SAAS Y SHOWMODAL
+   ============================================================================ */
+.nav-tabs-modern {
+    border-bottom: 2px solid #E2E8F0 !important;
+    display: flex !important;
+    gap: 8px !important;
+    padding-bottom: 0 !important;
+}
+
+.nav-tabs-modern .nav-item {
+    margin-bottom: -2px !important;
+}
+
+.nav-tabs-modern .nav-link {
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    color: #64748B !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    padding: 0.75rem 1.25rem !important;
+    background: transparent !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.nav-tabs-modern .nav-link i {
+    font-size: 0.95rem !important;
+    color: #94A3B8 !important;
+    transition: color 0.2s ease !important;
+}
+
+.nav-tabs-modern .nav-link:hover {
+    color: #4A6FC1 !important;
+    border-bottom-color: #CBD5E1 !important;
+    background: transparent !important;
+}
+
+.nav-tabs-modern .nav-link:hover i {
+    color: #4A6FC1 !important;
+}
+
+.nav-tabs-modern .nav-link.active {
+    color: #4A6FC1 !important;
+    background: transparent !important;
+    border-bottom: 2px solid #4A6FC1 !important;
+}
+
+.nav-tabs-modern .nav-link.active i {
+    color: #4A6FC1 !important;
+}
+
+/* Correcciones de texto para modales: Legibilidad y tonos oscuros (#1E293B) */
+.modal-body-view .detail-value,
+.modal-body-view .detail-value.fw-bold,
+.modal-modern .detail-value,
+.modal-modern .detail-value.fw-bold {
+    color: #1E293B !important;
+    text-decoration: none !important;
+}
+
+.modal-body-view .detail-label,
+.modal-modern .detail-label {
+    color: #64748B !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+}
+
+.modal-body-view .detail-label i,
+.modal-modern .detail-label i {
+    color: #64748B !important;
+}
+
+/* Tarjetas Académicas en Modales (Colores Pastel con texto oscuro legible) */
+.card-pastel-stat-blue {
+    background-color: var(--pastel-blue-bg) !important;
+    border: 1px solid rgba(79, 70, 229, 0.2) !important;
+    border-radius: 10px !important;
+}
+
+.card-pastel-stat-blue .detail-label {
+    color: var(--pastel-blue-text) !important;
+}
+
+.card-pastel-stat-blue .detail-label i {
+    color: var(--pastel-blue-text) !important;
+}
+
+.card-pastel-stat-blue .detail-value {
+    color: #1E293B !important;
+}
+
+.card-pastel-stat-green {
+    background-color: var(--pastel-green-bg) !important;
+    border: 1px solid rgba(16, 185, 129, 0.25) !important;
+    border-radius: 10px !important;
+}
+
+.card-pastel-stat-green .detail-label {
+    color: var(--pastel-green-text) !important;
+}
+
+.card-pastel-stat-green .detail-label i {
+    color: var(--pastel-green-text) !important;
+}
+
+.card-pastel-stat-green .detail-value {
+    color: #1E293B !important;
+}
+
+.card-pastel-stat-yellow {
+    background-color: var(--pastel-yellow-bg) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    border-radius: 10px !important;
+}
+
+.card-pastel-stat-yellow .detail-label {
+    color: var(--pastel-yellow-text) !important;
+}
+
+.card-pastel-stat-yellow .detail-label i {
+    color: var(--pastel-yellow-text) !important;
+}
+
+.card-pastel-stat-yellow .detail-value {
+    color: #1E293B !important;
+}
+
+/* Cabeceras de Fichas de Representantes en Modal (Pastel) */
+.card-header-modal-padre {
+    background-color: var(--pastel-blue-bg) !important;
+    color: var(--pastel-blue-text) !important;
+    border-bottom: 1px solid rgba(79, 70, 229, 0.15) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-padre h6 {
+    color: var(--pastel-blue-text) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-padre i {
+    color: var(--pastel-blue-text) !important;
+}
+
+.card-header-modal-madre {
+    background-color: var(--pastel-pink-bg) !important;
+    color: var(--pastel-pink-text) !important;
+    border-bottom: 1px solid rgba(236, 72, 153, 0.15) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-madre h6 {
+    color: var(--pastel-pink-text) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-madre i {
+    color: var(--pastel-pink-text) !important;
+}
+
+.card-header-modal-legal {
+    background-color: var(--pastel-green-bg) !important;
+    color: var(--pastel-green-text) !important;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-legal h6 {
+    color: var(--pastel-green-text) !important;
+    font-weight: 700 !important;
+}
+
+/* ============================================================================
+   ESTILO FLOATING LABEL SAAS (STRIPE / SHOPIFY STYLE)
+   ============================================================================ */
+.floating-group {
+    position: relative;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.floating-group .form-control,
+.floating-group .form-select,
+.floating-group select.form-select,
+.floating-group input.form-control {
+    width: 100% !important;
+    height: 56px !important;
+    /* Campos más altos */
+    padding-top: 24px !important;
+    /* Espacio para el label arriba */
+    padding-bottom: 8px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 6px !important;
+    background-color: #FFFFFF !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+    line-height: 1.25 !important;
+}
+
+.floating-group textarea.form-control,
+.floating-group textarea {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 90px !important;
+    padding-top: 26px !important;
+    padding-bottom: 8px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 6px !important;
+    background-color: #FFFFFF !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+}
+
+.floating-group .form-control:focus,
+.floating-group .form-select:focus,
+.floating-group select.form-select:focus,
+.floating-group input.form-control:focus,
+.floating-group textarea:focus {
+    border-color: #4A6FC1 !important;
+    /* Azul institucional */
+    box-shadow: 0 0 0 1px #4A6FC1 !important;
+    outline: none !important;
+}
+
+.floating-group label,
+.floating-group .form-label,
+.floating-group .form-label-modern {
+    position: absolute !important;
+    top: 8px !important;
+    left: 12px !important;
+    font-size: 11px !important;
+    color: #64748B !important;
+    /* Gris medio */
+    font-weight: 500 !important;
+    pointer-events: none !important;
+    /* Permite hacer clic en el input a través del label */
+    transition: 0.2s ease all !important;
+    margin-bottom: 0 !important;
+    text-transform: none !important;
+    letter-spacing: 0.2px !important;
+    line-height: 1 !important;
+    z-index: 2 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+/* Efecto cuando el input está vacío y NO está enfocado (Label centrado) */
+.floating-group:has(input.form-control:placeholder-shown:not(:focus)) label {
+    top: 18px !important;
+    font-size: 14px !important;
+    color: #94A3B8 !important;
+}
+
+/* Cuando se enfoca (Label pequeño arriba en azul) */
+.floating-group:has(.form-control:focus) label,
+.floating-group:has(.form-select:focus) label,
+.floating-group:has(textarea:focus) label {
+    color: #4A6FC1 !important;
+    top: 8px !important;
+    font-size: 11px !important;
+}
+
+/* Cuando tiene texto o es un select o date (Label pequeño arriba en gris) */
+.floating-group:has(.form-control:not(:placeholder-shown)) label,
+.floating-group:has(input[type="date"]) label,
+.floating-group:has(.form-select) label,
+.floating-group:has(textarea:not(:placeholder-shown)) label {
+    top: 8px !important;
+    font-size: 11px !important;
+}
+
+/* Ajuste especial para selects */
+.floating-group .form-select,
+.floating-group select.form-select {
+    background-position: right 12px center !important;
+    padding-right: 36px !important;
+}
+
+/* Campos deshabilitados dentro de floating-group */
+.floating-group .form-control:disabled,
+.floating-group .form-select:disabled {
+    background-color: #F8FAFC !important;
+    color: #64748B !important;
+    cursor: not-allowed !important;
+}
+
+/* Mensajes de error en floating-group */
+.floating-group .invalid-feedback,
+.floating-group .invalid-feedback-modern {
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+/* Radio buttons y Checkboxes nítidos estilo SaaS */
+.form-check-input {
+    width: 1.15em !important;
+    height: 1.15em !important;
+    margin-top: 0.15em !important;
+    vertical-align: top !important;
+    border: 1.5px solid #94A3B8 !important;
+    cursor: pointer !important;
+}
+
+.form-check-input:checked {
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+}
+
+.form-check-input:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+}
+
+.form-check-label {
+    cursor: pointer !important;
+    color: #1E293B !important;
+    font-weight: 500 !important;
+}
+
+.card-header-modal-legal i {
+    color: var(--pastel-green-text) !important;
+}
+
+.checkbox-item-modern.border-warning,
+.checkbox-item-modern.bg-warning-light {
+    background: #FFFBEB !important;
+    background-color: #FFFBEB !important;
+    border: 1px solid #FDE68A !important;
+}
+
+.checkbox-item-modern.border-warning:hover {
+    background: #FEF3C7 !important;
+    background-color: #FEF3C7 !important;
+    border-color: #F59E0B !important;
+}
+
+/* Utilidades de Bloqueo e Interactividad (Livewire Loading) */
+.pe-none {
+    pointer-events: none !important;
+}
+
+.opacity-50 {
+    opacity: 0.5 !important;
+}
+
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+.checkbox-item-modern * {
+    cursor: pointer !important;
+}
+
+/* Píldoras Pastel de Tipo de Representante */
+.badge-pill-progenitor {
+    background-color: var(--pastel-blue-bg, #E0E7FF) !important;
+    color: var(--pastel-blue-text, #3730A3) !important;
+    font-weight: 600 !important;
+    padding: 0.38rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    border: 1px solid transparent !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.badge-pill-legal {
+    background-color: var(--pastel-purple-bg, #F3E8FF) !important;
+    color: var(--pastel-purple-text, #6B21A8) !important;
+    font-weight: 600 !important;
+    padding: 0.38rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    border: 1px solid transparent !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+/* Píldoras Pastel Universales */
+.badge-pastel-blue {
+    background-color: var(--pastel-blue-bg, #E0E7FF) !important;
+    color: var(--pastel-blue-text, #3730A3) !important;
+    font-weight: 700 !important;
+    padding: 0.35rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    border: 1px solid rgba(79, 70, 229, 0.1) !important;
+}
+
+.badge-pastel-purple {
+    background-color: var(--pastel-purple-bg, #F3E8FF) !important;
+    color: var(--pastel-purple-text, #6B21A8) !important;
+    font-weight: 600 !important;
+    padding: 0.35rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    border: 1px solid rgba(147, 51, 234, 0.1) !important;
+}
+
+.badge-pastel-green {
+    background-color: var(--pastel-green-bg, #DCFCE7) !important;
+    color: var(--pastel-green-text, #166534) !important;
+    font-weight: 600 !important;
+    padding: 0.35rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    border: 1px solid rgba(22, 101, 52, 0.1) !important;
+}
+
+/* Botón de Acción Ícono Limpio (Sin borde, fondo transparente) */
+.action-btn,
+.btn-action-icon,
+.btn-action-view {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    color: #64748B !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.action-btn:hover,
+.btn-action-icon:hover,
+.btn-action-view:hover {
+    background-color: #F1F5F9 !important;
+    color: #3B82F6 !important;
+    border: none !important;
+}
+
+.action-btn:focus,
+.btn-action-icon:focus,
+.btn-action-view:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.action-btn i,
+.btn-action-icon i,
+.btn-action-view i {
+    font-size: 1rem !important;
+}
+
+/* ============================================================================
+   ESTADO ACORDEÓN CON PERMISOS ASIGNADOS
+   ============================================================================ */
+.accordion-item.has-permissions {
+    background-color: #E2E8F0 !important; /* Gris más oscuro y visible */
+    border-left: 4px solid #4A6FC1 !important;
+}
+
+.accordion-item.has-permissions > .accordion-header > .accordion-button {
+    background-color: #E2E8F0 !important;
+    color: #1E293B !important;
 }

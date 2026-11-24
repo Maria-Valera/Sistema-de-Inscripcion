@@ -48,15 +48,26 @@
 @section('js')
 <script>
     $(document).ready(function() {
-        $('.select2').select2({
-            theme: 'bootstrap4',
-            width: '100%',
+        // Limpieza de cualquier backdrop atascado al cargar la vista
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css({'overflow': '', 'padding-right': ''});
+
+        // Asegurar que al cerrar cualquier modal se elimine el backdrop
+        $(document).on('hidden.bs.modal', '.modal', function () {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({'overflow': '', 'padding-right': ''});
         });
+
+        if ($.fn.select2) {
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+            });
+        }
 
         setTimeout(() => {
             $('.alert-modern').fadeOut('slow');
         }, 5000);
     });
-    
 </script>
 @stop

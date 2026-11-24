@@ -1,7 +1,11 @@
 @props([
-    'id' => 'filterPanel',
+    'target' => null,
+    'id' => null,
     'title' => 'Filtros',
-    'action' => url()->current(),
+    'headerTitle' => 'Filtros de Búsqueda',
+    'formId' => null,
+    'showButton' => false,
+    'action' => null,
     'searchName' => '',
     'searchValue' => '',
     'searchPlaceholder' => 'Buscar...',
@@ -10,381 +14,212 @@
     'resultsTarget' => '',
 ])
 
-<div class="offcanvas offcanvas-end filter-panel-saas" tabindex="-1" id="{{ $id }}"
-    aria-labelledby="{{ $id }}Label" data-filter-panel data-results-target="{{ $resultsTarget }}"
-    data-external-search-selector="{{ $externalSearchSelector }}">
-    <div class="offcanvas-header filter-panel-header">
-        <div class="d-flex align-items-center gap-2">
-            <span class="filter-panel-title-icon" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="6" y1="12" x2="18" y2="12"></line>
-                    <line x1="10" y1="18" x2="14" y2="18"></line>
-                </svg>
-            </span>
-            <h5 class="offcanvas-title mb-0" id="{{ $id }}Label">{{ $title }}</h5>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+@php
+    $targetId = $target ?? $id ?? 'filterPanel';
+    $resolvedFormId = $formId ?? ($targetId . '-form');
+    $isHorariosSaaS = !empty($filters) || !empty($resultsTarget) || !empty($externalSearchSelector);
+    $shouldRenderButton = $showButton && !$isHorariosSaaS;
+@endphp
+
+@if ($shouldRenderButton)
+    <!-- Botón para abrir el panel -->
+    <button class="btn btn-filter-global" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ $targetId }}" aria-controls="{{ $targetId }}">
+        <i class="fas fa-sliders-h me-2"></i> {{ $title }}
+    </button>
+@endif
+
+<!-- Panel Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="{{ $targetId }}" aria-labelledby="{{ $targetId }}Label"
+    @if($isHorariosSaaS)
+        data-filter-panel
+        data-results-target="{{ $resultsTarget }}"
+        data-external-search-selector="{{ $externalSearchSelector }}"
+    @endif>
+    <div class="offcanvas-header border-bottom bg-white">
+        <h5 class="offcanvas-title fw-bold text-dark mb-0" id="{{ $targetId }}Label">
+            <i class="fas fa-sliders-h me-2 text-primary" style="color: #4A6FC1 !important;"></i> {{ $headerTitle }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
-
-    <form id="{{ $id }}Form" action="{{ $action }}" method="GET"
-        class="filter-panel-form d-flex flex-column flex-grow-1 overflow-hidden">
-        <div class="offcanvas-body filter-panel-body">
-            <!-- Chips de filtros seleccionados -->
-            <div class="filter-chips-section mb-4" id="{{ $id }}ChipsSection">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="filter-section-label">Filtros activos</span>
-                    <button type="button" class="btn-clear-chips d-none" id="{{ $id }}ClearChipsBtn">
-                        Quitar todos
-                    </button>
-                </div>
-                <div class="filter-chips-list" id="{{ $id }}ChipsList"></div>
-                <p class="filter-chips-empty mb-0" id="{{ $id }}ChipsEmpty">
-                    Selecciona una opción para añadir filtros.
-                </p>
-            </div>
-
-            <!-- Buscador con lupa -->
-            @if ($searchName)
-                <div class="mb-4">
-                    <label for="{{ $id }}_{{ $searchName }}" class="filter-field-label">
-                        Búsqueda rápida
-                    </label>
-                    <div class="filter-search-wrapper">
-                        <span class="filter-search-icon" aria-hidden="true">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                        </span>
-                        <input type="text"
-                            id="{{ $id }}_{{ $searchName }}"
-                            name="{{ $searchName }}"
-                            value="{{ $searchValue }}"
-                            class="form-control filter-search-input"
-                            data-filter-input
-                            data-filter-label="Búsqueda"
-                            placeholder="{{ $searchPlaceholder }}"
-                            autocomplete="off">
-                        <button type="button"
-                            class="filter-search-clear {{ filled($searchValue) ? '' : 'd-none' }}"
-                            data-clear-search="{{ $id }}_{{ $searchName }}"
-                            aria-label="Limpiar búsqueda">
-                            &times;
-                        </button>
+    
+    @if($isHorariosSaaS && $action)
+        <form id="{{ $targetId }}Form" action="{{ $action }}" method="GET" class="filter-panel-form d-flex flex-column flex-grow-1 overflow-hidden">
+            <div class="offcanvas-body bg-light">
+                <!-- Chips de filtros seleccionados -->
+                <div class="filter-chips-section mb-4" id="{{ $targetId }}ChipsSection">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="filter-section-label">Filtros activos</span>
+                        <button type="button" class="btn-clear-chips d-none" id="{{ $targetId }}ClearChipsBtn">Quitar todos</button>
                     </div>
+                    <div class="filter-chips-list" id="{{ $targetId }}ChipsList"></div>
+                    <p class="filter-chips-empty mb-0" id="{{ $targetId }}ChipsEmpty">Selecciona una opción para añadir filtros.</p>
                 </div>
-            @endif
 
-            <!-- Selectores dinámicos -->
-            <div class="d-flex flex-column gap-3">
-                @foreach ($filters as $filter)
-                    @php
-                        $fieldName = $filter['name'];
-                        $fieldId = $id . '_' . $fieldName;
-                        $fieldLabel = $filter['label'] ?? $fieldName;
-                        $fieldIcon = $filter['icon'] ?? null;
-                        $fieldPlaceholder = $filter['placeholder'] ?? 'Todos';
-                        $fieldValue = (string) ($filter['value'] ?? '');
-                        $fieldOptions = $filter['options'] ?? [];
-                    @endphp
-                    <div class="filter-field-group">
-                        <label for="{{ $fieldId }}" class="filter-field-label">
-                            @if ($fieldIcon)
-                                <i class="{{ $fieldIcon }} me-1"></i>
-                            @endif
-                            <span>{{ $fieldLabel }}</span>
-                        </label>
-                        <select id="{{ $fieldId }}"
-                            name="{{ $fieldName }}"
-                            class="form-select filter-select-saas"
-                            data-filter-input
-                            data-filter-label="{{ $fieldLabel }}">
-                            <option value="">{{ $fieldPlaceholder }}</option>
-                            @foreach ($fieldOptions as $option)
-                                @php
-                                    $optValue = (string) ($option['value'] ?? '');
-                                    $optLabel = $option['label'] ?? $optValue;
-                                @endphp
-                                <option value="{{ $optValue }}" {{ $fieldValue !== '' && $fieldValue === $optValue ? 'selected' : '' }}>
-                                    {{ $optLabel }}
-                                </option>
-                            @endforeach
-                        </select>
+                @if ($searchName)
+                    <div class="mb-4">
+                        <label for="{{ $targetId }}_{{ $searchName }}" class="filter-field-label">Búsqueda rápida</label>
+                        <div class="filter-search-wrapper">
+                            <span class="filter-search-icon" aria-hidden="true">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </span>
+                            <input type="text" id="{{ $targetId }}_{{ $searchName }}" name="{{ $searchName }}" value="{{ $searchValue }}" class="form-control filter-search-input" data-filter-input data-filter-label="Búsqueda" placeholder="{{ $searchPlaceholder }}" autocomplete="off">
+                            <button type="button" class="filter-search-clear {{ filled($searchValue) ? '' : 'd-none' }}" data-clear-search="{{ $targetId }}_{{ $searchName }}" aria-label="Limpiar búsqueda">&times;</button>
+                        </div>
                     </div>
-                @endforeach
+                @endif
+
+                <div class="d-flex flex-column gap-3">
+                    @foreach ($filters as $filter)
+                        @php
+                            $fieldName = $filter['name'];
+                            $fieldId = $targetId . '_' . $fieldName;
+                            $fieldLabel = $filter['label'] ?? $fieldName;
+                            $fieldIcon = $filter['icon'] ?? null;
+                            $fieldPlaceholder = $filter['placeholder'] ?? 'Todos';
+                            $fieldValue = (string) ($filter['value'] ?? '');
+                            $fieldOptions = $filter['options'] ?? [];
+                        @endphp
+                        <div class="filter-field-group">
+                            <label for="{{ $fieldId }}" class="filter-field-label">
+                                @if ($fieldIcon)
+                                    <i class="{{ $fieldIcon }} me-1"></i>
+                                @endif
+                                <span>{{ $fieldLabel }}</span>
+                            </label>
+                            <select id="{{ $fieldId }}" name="{{ $fieldName }}" class="form-select filter-select-saas" data-filter-input data-filter-label="{{ $fieldLabel }}">
+                                <option value="">{{ $fieldPlaceholder }}</option>
+                                @foreach ($fieldOptions as $option)
+                                    @php
+                                        $optValue = (string) ($option['value'] ?? '');
+                                        $optLabel = $option['label'] ?? $optValue;
+                                    @endphp
+                                    <option value="{{ $optValue }}" {{ $fieldValue !== '' && $fieldValue === $optValue ? 'selected' : '' }}>
+                                        {{ $optLabel }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{ $slot }}
             </div>
-
-            {{ $slot }}
+            <div class="offcanvas-footer p-3 border-top bg-white d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary-modern" id="{{ $targetId }}LimpiarBtn">Limpiar</button>
+                <button type="submit" class="btn btn-primary-modern" id="{{ $targetId }}AplicarBtn">Aplicar Filtros</button>
+            </div>
+        </form>
+    @else
+        <div class="offcanvas-body bg-light">
+            {{ $slot }} <!-- Aquí los módulos inyectan sus selects -->
         </div>
-
-        <div class="filter-panel-footer">
-            <button type="button" class="btn-clear-filters" id="{{ $id }}LimpiarBtn">
-                Limpiar
-            </button>
-            <button type="submit" class="btn-apply-filters" id="{{ $id }}AplicarBtn">
-                Aplicar Filtros
-            </button>
+        <div class="offcanvas-footer p-3 border-top bg-white d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary-modern" onclick="const f = this.closest('.offcanvas').querySelector('form'); if(f) { f.reset(); if(window.$) $(f).find('select').trigger('change'); }">Limpiar</button>
+            <button type="submit" form="{{ $resolvedFormId }}" class="btn btn-primary-modern" onclick="if(!document.getElementById('{{ $resolvedFormId }}')) { const f = this.closest('.offcanvas').querySelector('form'); if(f) f.submit(); }">Aplicar Filtros</button>
         </div>
-    </form>
+    @endif
 </div>
 
 @once
-    <style>
-        .filter-panel-saas {
-            width: 420px !important;
-            max-width: 92vw !important;
-            background-color: #ffffff !important;
-            border-left: none !important;
-            border-radius: 20px 0 0 20px;
-            box-shadow: -12px 0 36px rgba(15, 23, 42, 0.12);
-            overflow: hidden;
-        }
-
-        .filter-panel-header {
-            padding: 1.35rem 1.5rem 1.1rem;
-            background-color: #ffffff;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .filter-panel-header .offcanvas-title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #0f172a;
-            letter-spacing: -0.01em;
-        }
-
-        .filter-panel-title-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            background-color: #ebf0fa;
-            color: #4A6FC1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .filter-panel-body {
-            padding: 1.25rem 1.5rem;
-            overflow-y: auto;
-            background-color: #ffffff;
-        }
-
-        .filter-section-label {
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #64748b;
-        }
-
-        .filter-chips-section {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 0.85rem 1rem;
-        }
-
-        .filter-chips-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .filter-chips-empty {
-            font-size: 0.82rem;
-            color: #94a3b8;
-        }
-
-        .filter-chip-saas {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            background-color: #ebf0fa;
-            color: #4A6FC1;
-            border: 1px solid rgba(74, 111, 193, 0.18);
-            border-radius: 9999px;
-            padding: 0.32rem 0.55rem 0.32rem 0.8rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            line-height: 1.2;
-        }
-
-        .filter-chip-remove {
-            width: 18px;
-            height: 18px;
-            border: none;
-            border-radius: 50%;
-            background-color: rgba(74, 111, 193, 0.14);
-            color: #4A6FC1;
-            font-size: 0.9rem;
-            line-height: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            padding: 0;
-            transition: background-color 0.15s ease, color 0.15s ease;
-        }
-
-        .filter-chip-remove:hover {
-            background-color: #4A6FC1;
-            color: #ffffff;
-        }
-
-        .btn-clear-chips {
-            background: transparent;
-            border: none;
-            padding: 0;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #64748b;
-            cursor: pointer;
-        }
-
-        .btn-clear-chips:hover {
-            color: #0f172a;
-            text-decoration: underline;
-        }
-
-        .filter-field-label {
-            display: block;
-            font-size: 0.84rem;
-            font-weight: 600;
-            color: #334155;
-            margin-bottom: 0.45rem;
-        }
-
-        .filter-field-label i {
-            color: #4A6FC1;
-        }
-
-        .filter-search-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .filter-search-icon {
-            position: absolute;
-            left: 0.9rem;
-            color: #94a3b8;
-            display: inline-flex;
-            align-items: center;
-            pointer-events: none;
-            transition: color 0.15s ease;
-        }
-
-        .filter-search-wrapper:focus-within .filter-search-icon {
-            color: #4A6FC1;
-        }
-
-        .filter-search-input {
-            width: 100%;
-            border-radius: 12px !important;
-            border: 1.5px solid #e2e8f0 !important;
-            padding: 0.65rem 2.3rem 0.65rem 2.5rem !important;
-            font-size: 0.9rem;
-            color: #0f172a;
-            background-color: #ffffff;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .filter-search-input::placeholder {
-            color: #94a3b8;
-        }
-
-        .filter-search-clear {
-            position: absolute;
-            right: 0.75rem;
-            border: none;
-            background: transparent;
-            color: #94a3b8;
-            font-size: 1.15rem;
-            line-height: 1;
-            cursor: pointer;
-            padding: 0.15rem 0.3rem;
-        }
-
-        .filter-search-clear:hover {
-            color: #334155;
-        }
-
-        .filter-select-saas {
-            border-radius: 12px !important;
-            border: 1.5px solid #e2e8f0 !important;
-            padding: 0.65rem 2.25rem 0.65rem 0.95rem !important;
-            font-size: 0.9rem;
-            color: #0f172a;
-            background-color: #ffffff;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .filter-search-input:focus,
-        .filter-select-saas:focus {
-            border-color: #4A6FC1 !important;
-            box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.18) !important;
-            outline: none !important;
-        }
-
-        .filter-panel-footer {
-            padding: 1rem 1.5rem 1.35rem;
-            background-color: #ffffff;
-            border-top: 1px solid #f1f5f9;
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-        }
-
-        .btn-clear-filters {
-            background: transparent;
-            border: none;
-            color: #475569;
-            font-size: 0.9rem;
-            font-weight: 600;
-            padding: 0.7rem 1rem;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: color 0.15s ease;
-        }
-
-        .btn-clear-filters:hover {
-            color: #0f172a;
-        }
-
-        .btn-apply-filters {
-            flex: 1;
-            background-color: #4A6FC1;
-            border: none;
-            color: #ffffff;
-            font-size: 0.92rem;
-            font-weight: 600;
-            padding: 0.75rem 1.25rem;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(74, 111, 193, 0.25);
-            transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
-        }
-
-        .btn-apply-filters:hover {
-            background-color: #3B5BA5;
-            box-shadow: 0 6px 16px rgba(74, 111, 193, 0.32);
-        }
-
-        .btn-apply-filters:disabled {
-            opacity: 0.7;
-            cursor: wait;
-        }
-    </style>
-
     <script>
         (function () {
-            if (window.__uiFilterPanelInitialized) return;
-            window.__uiFilterPanelInitialized = true;
+            if (window.__uiFilterPanelGlobalInitialized) return;
+            window.__uiFilterPanelGlobalInitialized = true;
 
+            function cerrarOffcanvas(panel) {
+                if (!panel) panel = document.querySelector('.offcanvas.show');
+                if (panel) {
+                    panel.classList.remove('show');
+                    setTimeout(() => {
+                        if (!panel.classList.contains('show')) {
+                            panel.style.visibility = 'hidden';
+                        }
+                    }, 300);
+                }
+                document.querySelectorAll('.offcanvas-backdrop').forEach(b => b.remove());
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+
+            function abrirOffcanvas(panel) {
+                if (!panel) return;
+                panel.style.visibility = 'visible';
+                panel.classList.add('show');
+                
+                let backdrop = document.querySelector('.offcanvas-backdrop');
+                if (!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.className = 'offcanvas-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                    backdrop.addEventListener('click', function () {
+                        cerrarOffcanvas(panel);
+                    });
+                }
+                document.body.style.overflow = 'hidden';
+            }
+
+            document.addEventListener('click', function (e) {
+                const trigger = e.target.closest('[data-bs-toggle="offcanvas"]');
+                if (trigger) {
+                    e.preventDefault();
+                    const selector = trigger.getAttribute('data-bs-target') || trigger.getAttribute('href');
+                    if (selector) {
+                        const panel = document.querySelector(selector);
+                        if (panel) {
+                            if (window.bootstrap && window.bootstrap.Offcanvas) {
+                                window.bootstrap.Offcanvas.getOrCreateInstance(panel).show();
+                            } else {
+                                abrirOffcanvas(panel);
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                const dismiss = e.target.closest('[data-bs-dismiss="offcanvas"]');
+                if (dismiss) {
+                    e.preventDefault();
+                    const panel = dismiss.closest('.offcanvas');
+                    if (panel) {
+                        if (window.bootstrap && window.bootstrap.Offcanvas) {
+                            window.bootstrap.Offcanvas.getOrCreateInstance(panel).hide();
+                        } else {
+                            cerrarOffcanvas(panel);
+                        }
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    const openPanel = document.querySelector('.offcanvas.show');
+                    if (openPanel) {
+                        if (window.bootstrap && window.bootstrap.Offcanvas) {
+                            window.bootstrap.Offcanvas.getOrCreateInstance(openPanel).hide();
+                        } else {
+                            cerrarOffcanvas(openPanel);
+                        }
+                    }
+                }
+            });
+
+            window.addEventListener('ui:open-filter-panel', function (e) {
+                const targetId = e.detail?.target;
+                if (!targetId) return;
+                const el = document.getElementById(targetId);
+                if (el) {
+                    if (window.bootstrap && window.bootstrap.Offcanvas) {
+                        window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
+                    } else {
+                        abrirOffcanvas(el);
+                    }
+                }
+            });
+
+            // Lógica para paneles con características avanzadas / SaaS (Horarios)
             function getExternalSearchInput(panel) {
                 const selector = panel?.dataset?.externalSearchSelector;
                 return selector ? document.querySelector(selector) : null;
@@ -469,14 +304,9 @@
                     count++;
                 });
 
-                if (chipsEmpty) {
-                    chipsEmpty.classList.toggle('d-none', count > 0);
-                }
-                if (clearAllBtn) {
-                    clearAllBtn.classList.toggle('d-none', count === 0);
-                }
+                if (chipsEmpty) chipsEmpty.classList.toggle('d-none', count > 0);
+                if (clearAllBtn) clearAllBtn.classList.toggle('d-none', count === 0);
 
-                // Actualizar visibilidad de botones de limpiar búsqueda dentro del panel
                 form.querySelectorAll('[data-clear-search]').forEach(btn => {
                     const targetInput = document.getElementById(btn.dataset.clearSearch);
                     if (targetInput) {
@@ -548,10 +378,7 @@
                         updateBarBadges(panel.id, countActiveInputs(form));
                     }
 
-                    if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-                        const instance = bootstrap.Offcanvas.getInstance(panel);
-                        if (instance) instance.hide();
-                    }
+                    cerrarOffcanvas(panel);
 
                     if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
                         resultsEl.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
@@ -644,14 +471,8 @@
                             });
                         }
                     }
-
-                    panel.addEventListener('shown.bs.offcanvas', function () {
-                        const firstSelect = form.querySelector('.filter-select-saas, .filter-search-input');
-                        if (firstSelect) firstSelect.focus();
-                    });
                 });
 
-                // Permitir quitar un chip activo directamente desde la barra resumen de resultados
                 document.addEventListener('click', function (e) {
                     const quickRemoveBtn = e.target.closest('[data-quick-remove-filter]');
                     if (!quickRemoveBtn) return;
@@ -685,15 +506,6 @@
                 });
             }
 
-            window.addEventListener('ui:open-filter-panel', function (e) {
-                const targetId = e.detail?.target;
-                if (!targetId) return;
-                const el = document.getElementById(targetId);
-                if (el && typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-                    bootstrap.Offcanvas.getOrCreateInstance(el).show();
-                }
-            });
-
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initFilterPanels);
             } else {
@@ -702,4 +514,3 @@
         })();
     </script>
 @endonce
-

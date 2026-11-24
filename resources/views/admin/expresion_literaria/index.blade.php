@@ -22,9 +22,9 @@
                 </div>
             </div>
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
+                <button type="button" class="btn-primary-modern" data-bs-toggle="modal" data-bs-target="#modalCrear"
                     title="Nueva expresión literaria">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus me-1"></i>
                     <span>Nueva Expresión Literaria</span>
                 </button>
             @endif

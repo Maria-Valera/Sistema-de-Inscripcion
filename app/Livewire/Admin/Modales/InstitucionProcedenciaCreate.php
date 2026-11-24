@@ -45,10 +45,28 @@ class InstitucionProcedenciaCreate extends Component
     public function updatedPaisId($paisId)
     {
         if ($paisId) {
-            $this->estados = Estado::where('pais_id', $paisId)
+            $pais = Pais::find($paisId);
+            $esVenezuela = false;
+            if ($pais) {
+                $nombrePais = mb_strtolower($pais->nameES ?? $pais->nameEN ?? '');
+                $esVenezuela = str_contains($nombrePais, 'venezuela');
+            }
+
+            // Buscar estados asociados al país seleccionado
+            $estados = Estado::where('pais_id', $paisId)
                 ->where('status', true)
                 ->orderBy('nombre_estado', 'asc')
                 ->get();
+
+            // Si es Venezuela o no se obtuvieron estados asociados por pais_id (ej. pais_id nulo en BD),
+            // cargar los estados activos disponibles en el sistema (fallback seguro)
+            if ($estados->isEmpty() && ($esVenezuela || $paisId == 1 || $paisId == 242)) {
+                $estados = Estado::where('status', true)
+                    ->orderBy('nombre_estado', 'asc')
+                    ->get();
+            }
+
+            $this->estados = $estados;
         } else {
             $this->estados = [];
         }
@@ -131,7 +149,8 @@ class InstitucionProcedenciaCreate extends Component
             'localidad_id' => $institucion->localidad_id
         ]);
 
-        $this->dispatch('cerrarModalDespuesDe', ['delay' => 1500]);
+        $this->dispatch('cerrarModalCrearInstitucion');
+        $this->dispatch('cerrarModalDespuesDe', ['delay' => 400]);
 
         $this->resetInputFields();
     }

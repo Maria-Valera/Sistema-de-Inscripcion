@@ -6,27 +6,32 @@
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
         <div class="modal-content modal-modern shadow">
-            <div class="modal-header modal-header-view">
+            <div class="modal-header d-block text-center border-bottom position-relative" style="background-color: #FFFFFF !important; color: #1E293B !important; border-bottom: 1px solid #E2E8F0 !important; padding: 24px 20px 16px 20px;">
                 <div class="w-100 text-center">
-                    <h5 class="modal-title-view mb-2">Información de Inscripción por Nuevo ingreso</h5>
-                    {{ \Carbon\Carbon::parse($datos->anioEscolar->inicio_anio_escolar)->year }}
-                    -
-                    {{ \Carbon\Carbon::parse($datos->anioEscolar->cierre_anio_escolar)->year }}
-                    <div class="d-flex justify-content-center gap-2">
+                    <h2 class="text-center mb-1" style="color: #1E293B !important; font-weight: 700; font-size: 24px; line-height: 1.3; margin: 0;">
+                        Información de Inscripción por Nuevo Ingreso
+                    </h2>
+                    <div class="mb-2 mt-1">
+                        <span class="badge" style="background-color: #EFF6FF !important; color: #4A6FC1 !important; font-weight: 600; font-size: 16px; border: 1px solid rgba(74, 111, 193, 0.25); border-radius: 50px; padding: 4px 16px; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-calendar-alt" style="color: #4A6FC1 !important;"></i>
+                            {{ \Carbon\Carbon::parse($datos->anioEscolar->inicio_anio_escolar)->year }} - {{ \Carbon\Carbon::parse($datos->anioEscolar->cierre_anio_escolar)->year }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap mt-2">
                         <span class="badge badge-status badge-{{ strtolower($datos->status) }}">
                             {{ $datos->status }}
                         </span>
-                        <span class="badge bg-white text-primary">
-                            {{ $datos->grado->numero_grado ?? 'N/A' }}° Nivel Académico
+                        <span class="badge border" style="background-color: #F8FAFC !important; color: #4A6FC1 !important; font-weight: 600; font-size: 13px;">
+                            <i class="fas fa-layer-group me-1"></i>{{ $datos->grado->numero_grado ?? 'N/A' }}° Nivel Académico
                         </span>
                         @if ($datos->seccion)
-                            <span class="badge bg-white text-primary">
-                                Sección {{ $datos->seccion->nombre }}
+                            <span class="badge border" style="background-color: #F8FAFC !important; color: #4A6FC1 !important; font-weight: 600; font-size: 13px;">
+                                <i class="fas fa-users me-1"></i>Sección {{ $datos->seccion->nombre }}
                             </span>
                         @endif
                     </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
                     data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body modal-body-view">
@@ -229,16 +234,16 @@
                         <span>Representantes</span>
                     </div>
                     <div class="card mini-card shadow-sm border-0 p-3 mt-2">
-                        <div class="row mt-2 mb-4">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                            <!-- Tarjeta del Padre -->
                             @if ($datos->padre)
-                                <div class="col-md-6">
-                                    <div class="card shadow-sm border-0 h-100 ">
-                                        <div class="card-header bg-padre text-white">
-                                            <h6 class="mb-0">
-                                                <i class="fas fa-male me-2"></i>Padre
-                                            </h6>
-                                        </div>
-                                        <div class="card-body">
+                                <div class="card card-modern shadow-sm border-0 h-100">
+                                    <div class="card-header card-header-modal-padre">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-male me-2"></i>Padre
+                                        </h6>
+                                    </div>
+                                    <div class="card-body bg-white">
                                             <div class="row">
                                                 <div class="col-md-12">
                                                     <div class="detail-item mb-2">
@@ -351,17 +356,16 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
                             @endif
+                            <!-- Tarjeta de la Madre -->
                             @if ($datos->madre)
-                                <div class="col-md-6">
-                                    <div class="card shadow-sm border-0 h-100">
-                                        <div class="card-header bg-madre text-white">
-                                            <h6 class="mb-0">
-                                                <i class="fas fa-female me-2"></i>Madre
-                                            </h6>
-                                        </div>
-                                        <div class="card-body">
+                                <div class="card card-modern shadow-sm border-0 h-100">
+                                    <div class="card-header card-header-modal-madre">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-female me-2"></i>Madre
+                                        </h6>
+                                    </div>
+                                    <div class="card-body bg-white">
                                             <div class="row">
                                                 <div class="col-md-12">
                                                     <div class="detail-item mb-2">
@@ -474,19 +478,19 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
                             @endif
                         </div>
                         <div class="row">
+                            <!-- Tarjeta del Representante Legal (100% de ancho, debajo) -->
                             @if ($datos->representanteLegal)
-                                <div class="col-md-12">
-                                    <div class="card shadow-sm border-0">
-                                        <div class="card-header bg-representante-legal text-white">
+                                <div class="col-12 mt-3">
+                                    <div class="card card-modern shadow-sm border-0">
+                                        <div class="card-header card-header-modal-legal">
                                             <h6 class="mb-0">
                                                 <i class="fas fa-user-tie me-2"></i>Representante Legal
                                             </h6>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body bg-white">
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <div class="detail-item mb-2">

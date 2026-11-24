@@ -420,9 +420,7 @@ Route::middleware(['auth', 'verified', 'forzar.cambio.password'])->prefix('admin
         Route::get('inscripcion_prosecucion/reportes/general', [InscripcionProsecucionController::class, 'reporteGeneralProsecucionPDF'])->middleware('permission:prosecucion.ver')->name('inscripcion_prosecucion.reporteGeneralProsecucionPDF');
 
         Route::middleware(['permission:prosecucion.gestionar'])->group(function () {
-            Route::get('inscripcion_prosecucion/create', function () {
-                return view('admin.transacciones.inscripcion_prosecucion.create');
-            })->name('inscripcion_prosecucion.create');
+            Route::get('inscripcion_prosecucion/create', [InscripcionProsecucionController::class, 'create'])->name('inscripcion_prosecucion.create');
             Route::get('inscripcion_prosecucion/create-alumno', function () {
                 return view('admin.transacciones.inscripcion_prosecucion.create-alumno');
             })->name('inscripcion_prosecucion.create-alumno');

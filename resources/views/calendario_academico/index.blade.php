@@ -23,8 +23,8 @@
 
             @can('calendario_academico.gestionar')
                 @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                    <button class="btn-create" onclick="window.location='{{ route('admin.calendario_academico.create_manual') }}'">
-                        <i class="fas fa-calendar-plus"></i> <span>Crear nuevo calendario</span>
+                    <button class="btn-primary-modern" onclick="window.location='{{ route('admin.calendario_academico.create_manual') }}'">
+                        <i class="fas fa-calendar-plus me-1"></i> <span>Crear nuevo calendario</span>
                     </button>
                 @endif
             @endcan

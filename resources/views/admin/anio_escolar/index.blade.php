@@ -29,8 +29,8 @@
                 </div>
             </div>
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <button type="button" id="btnNuevoAnioEscolar" class="btn-create">
-                    <i class="fas fa-plus"></i>
+                <button type="button" id="btnNuevoAnioEscolar" class="btn-primary-modern">
+                    <i class="fas fa-plus me-1"></i>
                     <span>Nuevo Calendario Escolar</span>
                 </button>
             @endif

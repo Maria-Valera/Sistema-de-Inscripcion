@@ -15,12 +15,12 @@
             <div class="card-body-modern" style="padding: 2rem;">
                 <!-- Fila 1: Identificación (4 columnas) -->
                 <div class="mb-3" style="display: grid; grid-template-columns: 1fr 1.5fr 1.5fr 1fr; gap: 16px;">
-                    <div>
-                        <label for="tipo_ci" class="form-label-modern">
-                            Doc. <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="tipo_ci">
+                            Doc. <span class="text-danger">*</span>
                         </label>
                         <select wire:model.live="tipo_documento_id" id="tipo_ci"
-                            class="form-select form-control-modern @error('tipo_documento_id') is-invalid @enderror">
+                            class="form-select @error('tipo_documento_id') is-invalid @enderror">
                             <option value="">Seleccione</option>
                             @foreach ($tipos_documentos as $item)
                                 <option value="{{ $item->id }}">{{ $item->nombre }}</option>
@@ -33,14 +33,14 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="numero_documento" class="form-label-modern">
-                            Cédula <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="numero_documento">
+                            Cédula <span class="text-danger">*</span>
                         </label>
                         <input type="text" wire:model.live="numero_documento" id="numero_documento"
-                            class="form-control form-control-modern @error('numero_documento') is-invalid @enderror text-uppercase"
+                            class="form-control @error('numero_documento') is-invalid @enderror text-uppercase"
                             maxlength="{{ $documento_maxlength }}" pattern="{{ $documento_pattern }}"
-                            inputmode="{{ $documento_inputmode }}" placeholder="{{ $documento_placeholder }}"
+                            inputmode="{{ $documento_inputmode }}" placeholder=" "
                             oninput="
                             @if ($tipo_documento_id == 1 || $tipo_documento_id == 3) this.value = this.value.replace(/[^0-9]/g,'')
                             @elseif($tipo_documento_id == 2)
@@ -53,12 +53,13 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="fecha_nacimiento" class="form-label-modern">
-                            Fecha de Nacimiento <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="fecha_nacimiento">
+                            Fecha de Nacimiento <span class="text-danger">*</span>
                         </label>
                         <input type="date" wire:model.live="fecha_nacimiento" id="fecha_nacimiento"
-                            class="form-control form-control-modern @error('fecha_nacimiento') is-invalid @enderror">
+                            placeholder=" "
+                            class="form-control @error('fecha_nacimiento') is-invalid @enderror">
                         @error('fecha_nacimiento')
                             <div class="invalid-feedback-modern">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -66,12 +67,12 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="genero" class="form-label-modern">
-                            Género <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="genero">
+                            Género <span class="text-danger">*</span>
                         </label>
                         <select wire:model.live="genero_id" id="genero"
-                            class="form-select form-control-modern @error('genero_id') is-invalid @enderror">
+                            class="form-select @error('genero_id') is-invalid @enderror">
                             <option value="">Seleccione</option>
                             @foreach ($generos as $item)
                                 <option value="{{ $item->id }}">{{ $item->genero }}</option>
@@ -87,13 +88,13 @@
 
                 <!-- Fila 2: Nombres (3 columnas) -->
                 <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                    <div>
-                        <label for="primer_nombre" class="form-label-modern">
-                            Primer Nombre <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="primer_nombre">
+                            Primer Nombre <span class="text-danger">*</span>
                         </label>
                         <input type="text" wire:model.live="primer_nombre" id="primer_nombre"
-                            class="form-control form-control-modern @error('primer_nombre') is-invalid @enderror text-capitalize"
-                            placeholder="Primer nombre">
+                            class="form-control @error('primer_nombre') is-invalid @enderror text-capitalize"
+                            placeholder=" ">
                         @error('primer_nombre')
                             <div class="invalid-feedback-modern">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -101,32 +102,34 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="segundo_nombre" class="form-label-modern">
+                    <div class="floating-group">
+                        <label for="segundo_nombre">
                             Segundo Nombre
                         </label>
-                        <input type="text" wire:model="segundo_nombre" id="segundo_nombre"
-                            class="form-control form-control-modern text-capitalize" placeholder="Segundo nombre">
+                        <input type="text" wire:model.live="segundo_nombre" id="segundo_nombre"
+                            class="form-control text-capitalize" placeholder=" "
+                            @disabled(empty($primer_nombre))>
                     </div>
 
-                    <div>
-                        <label for="tercer_nombre" class="form-label-modern">
+                    <div class="floating-group">
+                        <label for="tercer_nombre">
                             Tercer Nombre
                         </label>
                         <input type="text" wire:model.live="tercer_nombre" id="tercer_nombre"
-                            class="form-control form-control-modern text-capitalize" placeholder="Tercer nombre">
+                            class="form-control text-capitalize" placeholder=" "
+                            @disabled(empty($segundo_nombre))>
                     </div>
                 </div>
 
                 <!-- Fila 3: Apellidos (2 columnas) -->
                 <div class="mb-3" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                    <div>
-                        <label for="primer_apellido" class="form-label-modern">
-                            Primer Apellido <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="primer_apellido">
+                            Primer Apellido <span class="text-danger">*</span>
                         </label>
                         <input type="text" wire:model.live="primer_apellido" id="primer_apellido"
-                            class="form-control form-control-modern @error('primer_apellido') is-invalid @enderror text-capitalize"
-                            placeholder="Primer apellido">
+                            class="form-control @error('primer_apellido') is-invalid @enderror text-capitalize"
+                            placeholder=" ">
                         @error('primer_apellido')
                             <div class="invalid-feedback-modern">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -134,23 +137,24 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="segundo_apellido" class="form-label-modern">
+                    <div class="floating-group">
+                        <label for="segundo_apellido">
                             Segundo Apellido
                         </label>
                         <input type="text" wire:model.live="segundo_apellido" id="segundo_apellido"
-                            class="form-control form-control-modern text-capitalize" placeholder="Segundo apellido">
+                            class="form-control text-capitalize" placeholder=" "
+                            @disabled(empty($primer_apellido))>
                     </div>
                 </div>
 
                 <!-- Fila 4: Datos Complementarios (3 columnas) -->
                 <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                    <div>
-                        <label for="etnia_indigena_id" class="form-label-modern">
+                    <div class="floating-group">
+                        <label for="etnia_indigena_id">
                             Etnia Indígena
                         </label>
-                        <select wire:model.live="etnia_indigena_id" id="etnia_indigena_id"
-                            class="form-select form-control-modern @error('etnia_indigena_id') is-invalid @enderror">
+                        <select wire:model.live="etnia_indigena_id" id="etnia_indigena_id" placeholder=" "
+                            class="form-select @error('etnia_indigena_id') is-invalid @enderror">
                             <option value="">Seleccione</option>
                             @foreach ($etnia_indigenas as $item)
                                 <option value="{{ $item->id }}">{{ $item->nombre }}</option>
@@ -163,12 +167,12 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="lateralidad" class="form-label-modern">
-                            Lateralidad <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="lateralidad">
+                            Lateralidad <span class="text-danger">*</span>
                         </label>
-                        <select wire:model.live="lateralidad_id" id="lateralidad"
-                            class="form-select form-control-modern @error('lateralidad_id') is-invalid @enderror">
+                        <select wire:model.live="lateralidad_id" id="lateralidad" placeholder=" "
+                            class="form-select @error('lateralidad_id') is-invalid @enderror">
                             <option value="">Seleccione</option>
                             @foreach ($lateralidades as $item)
                                 <option value="{{ $item->id }}">{{ $item->lateralidad }}</option>
@@ -181,12 +185,12 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="orden_nacimiento" class="form-label-modern">
-                            Orden de Nacimiento <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="orden_nacimiento">
+                            Orden de Nacimiento <span class="text-danger">*</span>
                         </label>
-                        <select wire:model.live="orden_nacimiento_id" id="orden_nacimiento"
-                            class="form-select form-control-modern @error('orden_nacimiento_id') is-invalid @enderror">
+                        <select wire:model.live="orden_nacimiento_id" id="orden_nacimiento" placeholder=" "
+                            class="form-select @error('orden_nacimiento_id') is-invalid @enderror">
                             <option value="">Seleccione</option>
                             @foreach ($orden_nacimientos as $item)
                                 <option value="{{ $item->id }}">{{ $item->orden_nacimiento }}</option>
@@ -217,35 +221,38 @@
                 <div class="mb-3" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                     <!-- País -->
                     <div>
-                        <label for="paisId" class="form-label-modern">País <span
-                                class="required-badge text-danger">*</span></label>
-                        <select wire:model.live="paisId" id="paisId"
-                            class="form-select form-control-modern @error('paisId') is-invalid @enderror">
-                            <option value="">Seleccione un país</option>
-                            @foreach ($paises as $pais)
-                                <option value="{{ $pais->id }}">{{ $pais->nameES }}</option>
-                            @endforeach
-                        </select>
-                        @error('paisId')
-                            <div class="invalid-feedback-modern">{{ $message }}</div>
-                        @enderror
+                        <div class="floating-group mb-0">
+                            <label for="paisId">País <span class="text-danger">*</span></label>
+                            <select wire:model.live="paisId" id="paisId" placeholder=" "
+                                class="form-select @error('paisId') is-invalid @enderror">
+                                <option value="">Seleccione un país</option>
+                                @foreach ($paises as $pais)
+                                    <option value="{{ $pais->id }}">{{ $pais->nameES }}</option>
+                                @endforeach
+                            </select>
+                            @error('paisId')
+                                <div class="invalid-feedback-modern">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- Estado -->
                     <div>
-                        <label class="form-label-modern">Estado <span class="required-badge text-danger">*</span></label>
-                        <select wire:model.live="estado_id" id="estado_id" @disabled(!$paisId)
-                            class="form-select form-control-modern @error('estado_id') is-invalid @enderror">
-                            <option value="">Seleccione un estado</option>
-                            @foreach ($estados as $estado)
-                                <option value="{{ $estado->id }}">{{ $estado->nombre_estado }}</option>
-                            @endforeach
-                        </select>
-                        @error('estado_id')
-                            <div class="invalid-feedback-modern">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                            </div>
-                        @enderror
+                        <div class="floating-group mb-0">
+                            <label for="estado_id">Estado <span class="text-danger">*</span></label>
+                            <select wire:model.live="estado_id" id="estado_id" @disabled(!$paisId) placeholder=" "
+                                class="form-select @error('estado_id') is-invalid @enderror">
+                                <option value="">Seleccione un estado</option>
+                                @foreach ($estados as $estado)
+                                    <option value="{{ $estado->id }}">{{ $estado->nombre_estado }}</option>
+                                @endforeach
+                            </select>
+                            @error('estado_id')
+                                <div class="invalid-feedback-modern">
+                                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
                         <small class="form-text-modern d-flex align-items-center gap-1 mt-1">
                             <i class="fas fa-plus-circle text-primary"></i>
                             <a href="#" class="text-primary text-decoration-none"
@@ -257,20 +264,21 @@
 
                     <!-- Municipio -->
                     <div>
-                        <label for="municipio_id" class="form-label-modern">Municipio <span
-                                class="required-badge text-danger">*</span></label>
-                        <select wire:model.live="municipio_id" id="municipio_id" @disabled(!$estado_id)
-                            class="form-select form-control-modern @error('municipio_id') is-invalid @enderror">
-                            <option value="">Seleccione un municipio</option>
-                            @foreach ($municipios as $municipio)
-                                <option value="{{ $municipio->id }}">{{ $municipio->nombre_municipio }}</option>
-                            @endforeach
-                        </select>
-                        @error('municipio_id')
-                            <div class="invalid-feedback-modern">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                            </div>
-                        @enderror
+                        <div class="floating-group mb-0">
+                            <label for="municipio_id">Municipio <span class="text-danger">*</span></label>
+                            <select wire:model.live="municipio_id" id="municipio_id" @disabled(!$estado_id) placeholder=" "
+                                class="form-select @error('municipio_id') is-invalid @enderror">
+                                <option value="">Seleccione un municipio</option>
+                                @foreach ($municipios as $municipio)
+                                    <option value="{{ $municipio->id }}">{{ $municipio->nombre_municipio }}</option>
+                                @endforeach
+                            </select>
+                            @error('municipio_id')
+                                <div class="invalid-feedback-modern">
+                                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
                         <small class="form-text-modern d-flex align-items-center gap-1 mt-1">
                             <i class="fas fa-plus-circle text-primary"></i>
                             <a href="#" class="text-primary text-decoration-none" data-bs-toggle="modal"
@@ -282,20 +290,21 @@
 
                     <!-- Localidad -->
                     <div>
-                        <label for="localidad_id" class="form-label-modern">Localidad <span
-                                class="required-badge text-danger">*</span></label>
-                        <select wire:model.live="localidad_id" id="localidad_id" @disabled(!$municipio_id)
-                            class="form-select form-control-modern @error('localidad_id') is-invalid @enderror">
-                            <option value="">Seleccione una localidad</option>
-                            @foreach ($localidades as $localidad)
-                                <option value="{{ $localidad->id }}">{{ $localidad->nombre_localidad }}</option>
-                            @endforeach
-                        </select>
-                        @error('localidad_id')
-                            <div class="invalid-feedback-modern">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                            </div>
-                        @enderror
+                        <div class="floating-group mb-0">
+                            <label for="localidad_id">Localidad <span class="text-danger">*</span></label>
+                            <select wire:model.live="localidad_id" id="localidad_id" @disabled(!$municipio_id) placeholder=" "
+                                class="form-select @error('localidad_id') is-invalid @enderror">
+                                <option value="">Seleccione una localidad</option>
+                                @foreach ($localidades as $localidad)
+                                    <option value="{{ $localidad->id }}">{{ $localidad->nombre_localidad }}</option>
+                                @endforeach
+                            </select>
+                            @error('localidad_id')
+                                <div class="invalid-feedback-modern">
+                                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
                         <small class="form-text-modern d-flex align-items-center gap-1 mt-1">
                             <i class="fas fa-plus-circle text-primary"></i>
                             <a href="#" class="text-primary text-decoration-none" data-bs-toggle="modal"
@@ -321,15 +330,15 @@
                 </div>
             </div>
             <div class="card-body-modern" style="padding: 2rem;">
-                <div class="mb-3 grid-5-cols-responsive" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+                <div class="mb-3" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
                     <!-- 1. Estatura -->
-                    <div>
-                        <label for="talla_estudiante" class="form-label-modern">
-                            Estatura (m) <span class="required-badge text-danger">*</span>
+                    <div class="floating-group mb-0">
+                        <label for="talla_estudiante">
+                            Estatura (m) <span class="text-danger">*</span>
                         </label>
                         <input type="text" wire:model.defer="talla_estudiante" wire:blur="validarEstatura" id="talla_estudiante"
-                            placeholder="Ej: 1.66"
-                            class="form-control form-control-modern @error('talla_estudiante') is-invalid @enderror"
+                            placeholder=" "
+                            class="form-control @error('talla_estudiante') is-invalid @enderror"
                             inputmode="numeric" pattern="^[0-9]*$"
                             oninput="this.value = this.value.replace(/[^0-9.,]/g, '')" maxlength="4">
                         @error('talla_estudiante')
@@ -340,13 +349,13 @@
                     </div>
 
                     <!-- 2. Peso -->
-                    <div>
-                        <label for="peso_estudiante" class="form-label-modern">
-                            Peso (kg) <span class="required-badge text-danger">*</span>
+                    <div class="floating-group mb-0">
+                        <label for="peso_estudiante">
+                            Peso (kg) <span class="text-danger">*</span>
                         </label>
                         <input type="number" wire:model.live="peso_estudiante" id="peso_estudiante"
-                            class="form-control form-control-modern @error('peso_estudiante') is-invalid @enderror"
-                            step="0.1" min="20" max="100" placeholder="Ej: 45.5">
+                            class="form-control @error('peso_estudiante') is-invalid @enderror"
+                            step="0.1" min="20" max="100" placeholder=" ">
                         @error('peso_estudiante')
                             <div class="invalid-feedback-modern">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -355,12 +364,12 @@
                     </div>
 
                     <!-- 3. Talla Zapato -->
-                    <div>
-                        <label for="talla_zapato" class="form-label-modern">
-                            Talla Zapato <span class="required-badge text-danger">*</span>
+                    <div class="floating-group mb-0">
+                        <label for="talla_zapato">
+                            Talla Zapato <span class="text-danger">*</span>
                         </label>
-                        <select wire:model.live="talla_zapato" id="talla_zapato"
-                            class="form-select form-control-modern @error('talla_zapato') is-invalid @enderror">
+                        <select wire:model.live="talla_zapato" id="talla_zapato" placeholder=" "
+                            class="form-select @error('talla_zapato') is-invalid @enderror">
                             <option value="">Seleccione</option>
                             @foreach (range(30, 45) as $talla)
                                 <option value="{{ $talla }}">{{ $talla }}</option>
@@ -374,12 +383,12 @@
                     </div>
 
                     <!-- 4. Talla Camisa -->
-                    <div>
-                        <label for="talla_camisa_id" class="form-label-modern">
-                            Talla Camisa <span class="required-badge text-danger">*</span>
+                    <div class="floating-group mb-0">
+                        <label for="talla_camisa_id">
+                            Talla Camisa <span class="text-danger">*</span>
                         </label>
-                        <select wire:model.live="talla_camisa_id" id="talla_camisa_id"
-                            class="form-select form-control-modern @error('talla_camisa_id') is-invalid @enderror">
+                        <select wire:model.live="talla_camisa_id" id="talla_camisa_id" placeholder=" "
+                            class="form-select @error('talla_camisa_id') is-invalid @enderror">
                             <option value="">Seleccione</option>
                             @foreach ($tallas as $item)
                                 <option value="{{ $item->id }}">{{ $item->nombre }}</option>
@@ -393,12 +402,12 @@
                     </div>
 
                     <!-- 5. Talla Pantalón -->
-                    <div>
-                        <label for="talla_pantalon_id" class="form-label-modern">
-                            Talla Pantalón <span class="required-badge text-danger">*</span>
+                    <div class="floating-group mb-0">
+                        <label for="talla_pantalon_id">
+                            Talla Pantalón <span class="text-danger">*</span>
                         </label>
-                        <select wire:model.live="talla_pantalon_id" id="talla_pantalon_id"
-                            class="form-select form-control-modern @error('talla_pantalon_id') is-invalid @enderror">
+                        <select wire:model.live="talla_pantalon_id" id="talla_pantalon_id" placeholder=" "
+                            class="form-select @error('talla_pantalon_id') is-invalid @enderror">
                             <option value="">Seleccione</option>
                             @foreach ($tallas as $item)
                                 <option value="{{ $item->id }}">{{ $item->nombre }}</option>
@@ -414,3 +423,101 @@
             </div>
         </div>
     </form>
+
+    <script>
+        (function () {
+            function inicializarBloqueoCascada() {
+                const primerNombre = document.getElementById('primer_nombre');
+                const segundoNombre = document.getElementById('segundo_nombre');
+                const tercerNombre = document.getElementById('tercer_nombre');
+                const primerApellido = document.getElementById('primer_apellido');
+                const segundoApellido = document.getElementById('segundo_apellido');
+
+                if (!primerNombre || !segundoNombre || !tercerNombre || !primerApellido || !segundoApellido) {
+                    return;
+                }
+
+                function actualizarNombres() {
+                    const val1 = primerNombre.value.trim();
+                    const val2 = segundoNombre.value.trim();
+
+                    if (val1 === '') {
+                        segundoNombre.disabled = true;
+                        if (segundoNombre.value !== '') {
+                            segundoNombre.value = '';
+                            segundoNombre.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+
+                        tercerNombre.disabled = true;
+                        if (tercerNombre.value !== '') {
+                            tercerNombre.value = '';
+                            tercerNombre.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    } else {
+                        segundoNombre.disabled = false;
+                        if (val2 === '') {
+                            tercerNombre.disabled = true;
+                            if (tercerNombre.value !== '') {
+                                tercerNombre.value = '';
+                                tercerNombre.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                        } else {
+                            tercerNombre.disabled = false;
+                        }
+                    }
+                }
+
+                function actualizarApellidos() {
+                    const val1 = primerApellido.value.trim();
+
+                    if (val1 === '') {
+                        segundoApellido.disabled = true;
+                        if (segundoApellido.value !== '') {
+                            segundoApellido.value = '';
+                            segundoApellido.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    } else {
+                        segundoApellido.disabled = false;
+                    }
+                }
+
+                if (!primerNombre.dataset.cascadaVinculada) {
+                    primerNombre.addEventListener('input', actualizarNombres);
+                    segundoNombre.addEventListener('input', actualizarNombres);
+                    primerApellido.addEventListener('input', actualizarApellidos);
+                    primerNombre.dataset.cascadaVinculada = 'true';
+                }
+
+                // Habilitar campos antes del submit para que viajen los valores si fuera necesario
+                const form = primerNombre.closest('form');
+                if (form && !form.dataset.cascadaVinculada) {
+                    form.addEventListener('submit', function () {
+                        segundoNombre.disabled = false;
+                        tercerNombre.disabled = false;
+                        segundoApellido.disabled = false;
+                    });
+                    form.dataset.cascadaVinculada = 'true';
+                }
+
+                actualizarNombres();
+                actualizarApellidos();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', inicializarBloqueoCascada);
+            } else {
+                inicializarBloqueoCascada();
+            }
+
+            document.addEventListener('livewire:navigated', inicializarBloqueoCascada);
+            document.addEventListener('livewire:initialized', function () {
+                if (window.Livewire) {
+                    Livewire.hook('commit', ({ succeed }) => {
+                        succeed(() => {
+                            setTimeout(inicializarBloqueoCascada, 30);
+                        });
+                    });
+                }
+            });
+        })();
+    </script>

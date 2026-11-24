@@ -112,7 +112,7 @@
                 </div>
 
                 <div class="card-body p-0" style="background-color: #FFFFFF !important; border-radius: 0 0 12px 12px !important;">
-                    <div id="campos-madre" class="campos-representante p-4">
+                    <div id="campos-madre" class="campos-representante p-4" style="display: {{ old('estado_madre', isset($representante->madre) ? 'Presente' : '') === 'Presente' ? 'block' : 'none' }};">
                         <!-- Sub-bloque 1: Datos Personales de la Madre -->
                     <div class="form-section-header header-madre text-start mt-0">
                         <i class="fas fa-id-card"></i>
@@ -121,8 +121,8 @@
 
                     <!-- FILA 1: Identificación (Grid 1fr 1.5fr 1.5fr 1fr) -->
                     <div class="mb-3" style="display: grid; grid-template-columns: 1fr 1.5fr 1.5fr 1fr; gap: 16px;">
-                        <div>
-                            <label class="form-label" for="tipo-ci">Tipo Doc *</label>
+                        <div class="floating-group">
+                            <label for="tipo-ci">Tipo Doc <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="tipo-ci" name="tipo-ci" required>
                                 <option value="">Doc</option>
                                 @foreach ($tipoDocumentos as $tipoDoc)
@@ -132,22 +132,22 @@
                             <div class="invalid-feedback">Por favor seleccione el tipo de documento.</div>
                             <small id="tipo-ci-error" class="text-danger"></small>
                         </div>
-                        <div>
-                            <label class="form-label" for="numero_documento">Número de Cédula *</label>
+                        <div class="floating-group">
+                            <label for="numero_documento">Número de Cédula <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="numero_documento"
                                 name="numero_documento" maxlength="8" pattern="\d{6,8}"
-                                placeholder="Ej: 12345678" required
+                                placeholder=" " required
                                 oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             <div class="invalid-feedback">Número de cédula válido (6-8 dígitos).</div>
                         </div>
-                        <div>
-                            <label class="form-label" for="fechaNacimiento">Fecha de Nacimiento *</label>
-                            <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" required>
+                        <div class="floating-group">
+                            <label for="fechaNacimiento">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" placeholder=" " required>
                             <div class="invalid-feedback">Por favor ingrese una fecha válida.</div>
                             <small id="error-edad" class="text-danger d-none">Edad entre 10 y 17 años</small>
                         </div>
-                        <div>
-                            <label class="form-label" for="sexo">Género *</label>
+                        <div class="floating-group">
+                            <label for="sexo">Género <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="sexo" name="sexo" required>
                                 <option value="">Seleccione</option>
                                 @foreach ($generos as $genero)
@@ -160,36 +160,36 @@
 
                     <!-- FILA 2: Nombres (Grid 3 columnas iguales) -->
                     <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        <div>
-                            <label class="form-label" for="primer-nombre">Primer Nombre *</label>
+                        <div class="floating-group">
+                            <label for="primer-nombre">Primer Nombre <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="primer-nombre"
-                                name="primer-nombre" placeholder="Ej: María" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
+                                name="primer-nombre" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
                             <div class="invalid-feedback">Solo letras y espacios.</div>
                         </div>
-                        <div>
-                            <label class="form-label" for="segundo-nombre">Segundo Nombre</label>
+                        <div class="floating-group">
+                            <label for="segundo-nombre">Segundo Nombre</label>
                             <input type="text" class="form-control" id="segundo-nombre"
-                                name="segundo-nombre" placeholder="Opcional" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
+                                name="segundo-nombre" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                         </div>
-                        <div>
-                            <label class="form-label" for="tercer-nombre">Tercer Nombre</label>
+                        <div class="floating-group">
+                            <label for="tercer-nombre">Tercer Nombre</label>
                             <input type="text" class="form-control" id="tercer-nombre"
-                                name="tercer-nombre" placeholder="Opcional" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
+                                name="tercer-nombre" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                         </div>
                     </div>
 
                     <!-- FILA 3: Apellidos (Grid 2 columnas iguales) -->
                     <div class="mb-3" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                        <div>
-                            <label class="form-label" for="primer-apellido">Primer Apellido *</label>
+                        <div class="floating-group">
+                            <label for="primer-apellido">Primer Apellido <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="primer-apellido"
-                                name="primer-apellido" placeholder="Ej: Rodríguez" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
+                                name="primer-apellido" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
                             <div class="invalid-feedback">Solo letras y espacios.</div>
                         </div>
-                        <div>
-                            <label class="form-label" for="segundo-apellido">Segundo Apellido</label>
+                        <div class="floating-group">
+                            <label for="segundo-apellido">Segundo Apellido</label>
                             <input type="text" class="form-control" id="segundo-apellido"
-                                name="segundo-apellido" placeholder="Opcional" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
+                                name="segundo-apellido" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                         </div>
                     </div>
 
@@ -201,8 +201,8 @@
 
                     <!-- Fila 1: País, Estado, Municipio (Grid 3 columnas iguales) -->
                     <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        <div>
-                            <label class="form-label" for="idPais">País <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="idPais">País <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="idPais"
                                 name="idPais" aria-label="Seleccione un país" required>
                                 <option value="" disabled selected>Seleccione un país</option>
@@ -218,8 +218,8 @@
                             <div class="invalid-feedback">Requerido.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="idEstado">Estado <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="idEstado">Estado <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="idEstado"
                                 name="idEstado" aria-label="Seleccione un estado" required>
                                 <option value="" disabled selected>Seleccione un estado</option>
@@ -228,8 +228,8 @@
                             <small id="idEstado-error" class="text-danger"></small>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="idMunicipio">Municipio <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="idMunicipio">Municipio <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="idMunicipio"
                                 name="idMunicipio" aria-label="Seleccione un municipio" required>
                                 <option value="" disabled selected>Seleccione un municipio</option>
@@ -239,10 +239,10 @@
                         </div>
                     </div>
 
-                    <!-- Fila 2: Parroquia, Lugar de Nacimiento (Grid 1fr 2fr) -->
-                    <div class="mb-3" style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
-                        <div>
-                            <label class="form-label" for="idparroquia">Localidad / Parroquia <span class="text-danger">*</span></label>
+                    <!-- Fila 2: Parroquia, Lugar de Nacimiento (Grid 1fr 1fr) -->
+                    <div class="mb-3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="floating-group">
+                            <label for="idparroquia">Localidad / Parroquia <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="idparroquia"
                                 name="idparroquia" aria-label="Seleccione una parroquia" required>
                                 <option value="" disabled selected>Seleccione una parroquia</option>
@@ -251,21 +251,21 @@
                             <small id="idparroquia-error" class="text-danger"></small>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="lugar-nacimiento">Lugar de Nacimiento <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="lugar-nacimiento">Lugar de Nacimiento <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="lugar-nacimiento"
-                                name="lugar-nacimiento" placeholder="Ciudad o población"
+                                name="lugar-nacimiento" placeholder=" "
                                 pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" maxlength="100" required>
                             <div class="invalid-feedback">Lugar válido requerido.</div>
                         </div>
                     </div>
 
-                    <!-- Fila 3: Dirección de Habitación -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-12">
-                            <label class="form-label" for="direccion">Dirección de Habitación <span class="text-danger">*</span></label>
+                    <!-- Fila 3: Dirección de Habitación (100% ancho) -->
+                    <div class="mb-3">
+                        <div class="floating-group">
+                            <label for="direccion">Dirección de Habitación <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="direccion"
-                                name="direccion" placeholder="Calle, casa, edificio" required>
+                                name="direccion" placeholder=" " required>
                             <div class="invalid-feedback">Dirección requerida.</div>
                         </div>
                     </div>
@@ -277,8 +277,8 @@
                     </div>
 
                     <div class="mb-3" style="display: grid; grid-template-columns: 1fr 2fr 1fr 2fr; gap: 16px;">
-                        <div>
-                            <label class="form-label" for="prefijo">Prefijo 1 <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="prefijo">Prefijo 1 <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="prefijo"
                                 name="prefijo" required>
                                 <option value="" disabled selected>Prefijo</option>
@@ -292,17 +292,17 @@
                             <small id="prefijo-error" class="text-danger"></small>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="telefono">Teléfono 1 <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="telefono">Teléfono 1 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="telefono"
                                 name="telefono" pattern="[0-9]+" maxlength="11"
-                                title="Ingrese solo números (máximo 11 dígitos)" placeholder="Número de teléfono" required>
+                                title="Ingrese solo números (máximo 11 dígitos)" placeholder=" " required>
                             <div class="invalid-feedback">Número telefónico válido requerido.</div>
                             <small id="telefono-error" class="text-danger"></small>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="prefijo_dos">Prefijo 2</label>
+                        <div class="floating-group">
+                            <label for="prefijo_dos">Prefijo 2</label>
                             <select class="form-select select-modern w-100" id="prefijo_dos"
                                 name="prefijo_dos">
                                 <option value="" disabled selected>Prefijo</option>
@@ -313,11 +313,11 @@
                             <small id="prefijo_dos-error" class="text-danger"></small>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="telefono_dos">Teléfono 2</label>
+                        <div class="floating-group">
+                            <label for="telefono_dos">Teléfono 2</label>
                             <input type="text" class="form-control" id="telefono_dos"
                                 name="telefono_dos" pattern="[0-9]+" maxlength="11"
-                                title="Ingrese solo números (máximo 11 dígitos)" placeholder="Número 2">
+                                title="Ingrese solo números (máximo 11 dígitos)" placeholder=" ">
                             <small id="telefono_dos-error" class="text-danger"></small>
                         </div>
                     </div>
@@ -330,23 +330,29 @@
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label" for="ocupacion-madre">Ocupación <span class="text-danger">*</span></label>
-                            <select name="ocupacion-madre" id="ocupacion-madre"
-                                class="form-select select-modern w-100" required>
-                                <option value="" disabled selected>Seleccione una ocupación</option>
-                                @foreach ($ocupaciones as $ocupacion)
-                                    <option value="{{ $ocupacion->id }}">
-                                        {{ $ocupacion->nombre_ocupacion }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="invalid-feedback">Seleccione una ocupación.</div>
-                            <small id="ocupacion-madre-error" class="text-danger"></small>
+                            <div class="floating-group mb-0">
+                                <label for="ocupacion-madre">
+                                    <i class="fas fa-briefcase"></i> Ocupación <span class="text-danger">*</span>
+                                </label>
+                                <select name="ocupacion-madre" id="ocupacion-madre"
+                                    class="form-select select-modern w-100" required>
+                                    <option value="" disabled selected>Seleccione una ocupación</option>
+                                    @foreach ($ocupaciones as $ocupacion)
+                                        <option value="{{ $ocupacion->id }}">
+                                            {{ $ocupacion->nombre_ocupacion }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="invalid-feedback">Seleccione una ocupación.</div>
+                                <small id="ocupacion-madre-error" class="text-danger"></small>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label" for="convive-si">¿Convive con el Estudiante? <span class="text-danger">*</span></label>
-                            <div class="d-flex align-items-center gap-4" style="height: 42px;">
+                            <label class="form-label" for="convive-si" style="font-size: 13px; font-weight: 600; color: #1E293B; margin-bottom: 4px;">
+                                <i class="fas fa-home"></i> ¿Convive con el Estudiante? <span class="text-danger">*</span>
+                            </label>
+                            <div class="d-flex align-items-center gap-4" style="height: 56px;">
                                 <div class="form-check mb-0">
                                     <input class="form-check-input" type="radio" id="convive-si"
                                         name="convive" value="si">
@@ -363,12 +369,16 @@
                         </div>
 
                         <div class="col-12 d-none" id="otra-ocupacion-container">
-                            <label class="form-label" for="otra-ocupacion">Otra Ocupación <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="otra-ocupacion"
-                                name="otra-ocupacion" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+"
-                                placeholder="Especifique la ocupación">
-                            <div class="invalid-feedback">Especifique la ocupación.</div>
-                            <small id="otra-ocupacion-error" class="text-danger"></small>
+                            <div class="floating-group">
+                                <label for="otra-ocupacion">
+                                    <i class="fas fa-briefcase"></i> Otra Ocupación <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="otra-ocupacion"
+                                    name="otra-ocupacion" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+"
+                                    placeholder=" ">
+                                <div class="invalid-feedback">Especifique la ocupación.</div>
+                                <small id="otra-ocupacion-error" class="text-danger"></small>
+                            </div>
                         </div>
                     </div>
                     </div><!-- Fin campos-madre -->
@@ -415,7 +425,7 @@
                 </div>
 
                 <div class="card-body p-0" style="background-color: #FFFFFF !important; border-radius: 0 0 12px 12px !important;">
-                    <div id="campos-padre" class="campos-representante p-4">
+                    <div id="campos-padre" class="campos-representante p-4" style="display: {{ old('estado_padre', isset($representante->padre) ? 'Presente' : '') === 'Presente' ? 'block' : 'none' }};">
                         <!-- Sub-bloque 1: Datos Personales del Padre -->
                     <div class="form-section-header header-padre text-start mt-0">
                         <i class="fas fa-id-card"></i>
@@ -424,8 +434,8 @@
 
                     <!-- Fila 1: Identificación (Grid 1fr 1.5fr 1.5fr 1fr) -->
                     <div class="mb-3" style="display: grid; grid-template-columns: 1fr 1.5fr 1.5fr 1fr; gap: 16px;">
-                        <div>
-                            <label class="form-label" for="tipo-ci-padre">Tipo Doc <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="tipo-ci-padre">Tipo Doc <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="tipo-ci-padre" name="tipo-ci-padre" required>
                                 <option value="">Doc</option>
                                 @foreach ($tipoDocumentos as $tipoDoc)
@@ -435,23 +445,24 @@
                             <div class="invalid-feedback">Requerido.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="numero_documento-padre">Número de Cédula <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="numero_documento-padre">Número de Cédula <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="numero_documento-padre"
-                                name="numero_documento-padre" maxlength="8" placeholder="Ej: 12345678" required>
+                                name="numero_documento-padre" maxlength="8" placeholder=" " required
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             <div class="invalid-feedback">Número válido requerido.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="fecha-nacimiento-padre">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="fecha-nacimiento-padre">Fecha de Nacimiento <span class="text-danger">*</span></label>
                             <input type="date" id="fecha-nacimiento-padre" name="fecha-nacimiento-padre"
-                                class="form-control" required>
+                                class="form-control" placeholder=" " required>
                             <div class="invalid-feedback">Fecha válida requerida.</div>
                             <small id="error-edad-padre" class="text-danger d-none">La edad debe ser mayor de 18 años</small>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="sexo-padre">Género <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="sexo-padre">Género <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="sexo-padre" name="sexo-padre" required>
                                 <option value="">Seleccione</option>
                                 @foreach ($generos as $genero)
@@ -464,39 +475,39 @@
 
                     <!-- Fila 2: Nombres (Grid 3 columnas iguales) -->
                     <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        <div>
-                            <label class="form-label" for="primer-nombre-padre">Primer Nombre <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="primer-nombre-padre">Primer Nombre <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="primer-nombre-padre"
-                                name="primer-nombre-padre" placeholder="Ej: Carlos" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
+                                name="primer-nombre-padre" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
                             <div class="invalid-feedback">Solo letras y espacios.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="segundo-nombre-padre">Segundo Nombre</label>
+                        <div class="floating-group">
+                            <label for="segundo-nombre-padre">Segundo Nombre</label>
                             <input type="text" class="form-control" id="segundo-nombre-padre"
-                                name="segundo-nombre-padre" placeholder="Opcional" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
+                                name="segundo-nombre-padre" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                         </div>
 
-                        <div>
-                            <label class="form-label" for="tercer-nombre-padre">Tercer Nombre</label>
+                        <div class="floating-group">
+                            <label for="tercer-nombre-padre">Tercer Nombre</label>
                             <input type="text" class="form-control" id="tercer-nombre-padre"
-                                name="tercer-nombre-padre" placeholder="Opcional" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
+                                name="tercer-nombre-padre" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                         </div>
                     </div>
 
                     <!-- Fila 3: Apellidos (Grid 2 columnas iguales) -->
                     <div class="mb-3" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                        <div>
-                            <label class="form-label" for="primer-apellido-padre">Primer Apellido <span class="text-danger">*</span></label>
+                        <div class="floating-group">
+                            <label for="primer-apellido-padre">Primer Apellido <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="primer-apellido-padre"
-                                name="primer-apellido-padre" placeholder="Ej: Pérez" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
+                                name="primer-apellido-padre" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
                             <div class="invalid-feedback">Solo letras y espacios.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="segundo-apellido-padre">Segundo Apellido</label>
+                        <div class="floating-group">
+                            <label for="segundo-apellido-padre">Segundo Apellido</label>
                             <input type="text" class="form-control" id="segundo-apellido-padre"
-                                name="segundo-apellido-padre" placeholder="Opcional" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
+                                name="segundo-apellido-padre" placeholder=" " pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                         </div>
                     </div>
 
@@ -508,10 +519,8 @@
 
                     <!-- Fila 1: País, Estado, Municipio (Grid 3 columnas) -->
                     <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                        <div>
-                            <label class="form-label" for="idPais-padre">
-                                <i class="fas fa-map"></i> País <span class="text-danger">*</span>
-                            </label>
+                        <div class="floating-group">
+                            <label for="idPais-padre">País <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="idPais-padre"
                                 name="idPais-padre" aria-label="Seleccione un país" required>
                                 <option value="" disabled selected>Seleccione un país</option>
@@ -527,10 +536,8 @@
                             <div class="invalid-feedback">Requerido.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="idEstado-padre">
-                                <i class="fas fa-map"></i> Estado <span class="text-danger">*</span>
-                            </label>
+                        <div class="floating-group">
+                            <label for="idEstado-padre">Estado <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="idEstado-padre"
                                 name="idEstado-padre" aria-label="Seleccione un estado" required>
                                 <option value="" disabled selected>Seleccione un estado</option>
@@ -538,10 +545,8 @@
                             <div class="invalid-feedback">Requerido.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="idMunicipio-padre">
-                                <i class="fas fa-map-marked-alt"></i> Municipio <span class="text-danger">*</span>
-                            </label>
+                        <div class="floating-group">
+                            <label for="idMunicipio-padre">Municipio <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="idMunicipio-padre"
                                 name="idMunicipio-padre" aria-label="Seleccione un municipio" required>
                                 <option value="" disabled selected>Seleccione un municipio</option>
@@ -550,12 +555,10 @@
                         </div>
                     </div>
 
-                    <!-- Fila 2: Parroquia, Lugar de Nacimiento (Grid 1fr 2fr) -->
-                    <div class="mb-3" style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
-                        <div>
-                            <label class="form-label" for="idparroquia-padre">
-                                <i class="fas fa-map-pin"></i> Localidad / Parroquia <span class="text-danger">*</span>
-                            </label>
+                    <!-- Fila 2: Parroquia, Lugar de Nacimiento (Grid 1fr 1fr) -->
+                    <div class="mb-3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="floating-group">
+                            <label for="idparroquia-padre">Localidad / Parroquia <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="idparroquia-padre"
                                 name="idparroquia-padre" aria-label="Seleccione una parroquia" required>
                                 <option value="" disabled selected>Seleccione una parroquia</option>
@@ -563,26 +566,22 @@
                             <div class="invalid-feedback">Requerido.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="lugar-nacimiento-padre">
-                                <i class="fas fa-map-marker-alt"></i> Lugar de Nacimiento <span class="text-danger">*</span>
-                            </label>
+                        <div class="floating-group">
+                            <label for="lugar-nacimiento-padre">Lugar de Nacimiento <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="lugar-nacimiento-padre"
-                                name="lugar-nacimiento-padre" placeholder="Ej: Caracas, Venezuela"
+                                name="lugar-nacimiento-padre" placeholder=" "
                                 pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s,]+" maxlength="100" required>
                             <div class="invalid-feedback">Lugar requerido.</div>
                             <small id="lugar-nacimiento-padre-error" class="text-danger"></small>
                         </div>
                     </div>
 
-                    <!-- Fila 3: Dirección de Habitación (col-md-12) -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-12">
-                            <label class="form-label" for="direccion-padre">
-                                <i class="fas fa-home"></i> Dirección de Vivienda <span class="text-danger">*</span>
-                            </label>
+                    <!-- Fila 3: Dirección de Habitación (100% ancho) -->
+                    <div class="mb-3">
+                        <div class="floating-group">
+                            <label for="direccion-padre">Dirección de Vivienda <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="direccion-padre"
-                                name="direccion-padre" placeholder="Calle, casa, edificio" required>
+                                name="direccion-padre" placeholder=" " required>
                             <div class="invalid-feedback">Dirección requerida.</div>
                         </div>
                     </div>
@@ -594,10 +593,8 @@
                     </div>
 
                     <div class="mb-3" style="display: grid; grid-template-columns: 1fr 2fr 1fr 2fr; gap: 16px;">
-                        <div>
-                            <label class="form-label" for="prefijo-padre">
-                                <i class="fas fa-phone"></i> Prefijo 1 <span class="text-danger">*</span>
-                            </label>
+                        <div class="floating-group">
+                            <label for="prefijo-padre">Prefijo 1 <span class="text-danger">*</span></label>
                             <select class="form-select select-modern w-100" id="prefijo-padre" name="prefijo-padre"
                                 required>
                                 <option value="" disabled selected>Prefijo</option>
@@ -610,20 +607,16 @@
                             <div class="invalid-feedback">Requerido.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="telefono-padre">
-                                <i class="fas fa-phone"></i> Teléfono 1 <span class="text-danger">*</span>
-                            </label>
+                        <div class="floating-group">
+                            <label for="telefono-padre">Teléfono 1 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="telefono-padre"
                                 name="telefono-padre" pattern="[0-9]+" maxlength="11"
-                                title="Ingrese solo números (máximo 11 dígitos)" placeholder="Número de teléfono" required>
+                                title="Ingrese solo números (máximo 11 dígitos)" placeholder=" " required>
                             <div class="invalid-feedback">Número telefónico válido requerido.</div>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="prefijo_dos_padre">
-                                <i class="fas fa-phone"></i> Prefijo 2
-                            </label>
+                        <div class="floating-group">
+                            <label for="prefijo_dos_padre">Prefijo 2</label>
                             <select class="form-select select-modern w-100" id="prefijo_dos_padre"
                                 name="prefijo_dos_padre">
                                 <option value="" disabled selected>Prefijo</option>
@@ -634,13 +627,11 @@
                             <small id="prefijo_dos_padre-error" class="text-danger"></small>
                         </div>
 
-                        <div>
-                            <label class="form-label" for="telefono_dos_padre">
-                                <i class="fas fa-phone"></i> Teléfono 2
-                            </label>
+                        <div class="floating-group">
+                            <label for="telefono_dos_padre">Teléfono 2</label>
                             <input type="text" class="form-control" id="telefono_dos_padre"
                                 name="telefono_dos_padre" pattern="[0-9]+" maxlength="11"
-                                title="Ingrese solo números (máximo 11 dígitos)" placeholder="Número 2">
+                                title="Ingrese solo números (máximo 11 dígitos)" placeholder=" ">
                         </div>
                     </div>
 
@@ -652,24 +643,26 @@
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label" for="ocupacion-padre">
-                                <i class="fas fa-briefcase"></i> Ocupación <span class="text-danger">*</span>
-                            </label>
-                            <select class="form-select select-modern w-100" id="ocupacion-padre"
-                                name="ocupacion-padre" required>
-                                <option value="" disabled selected>Seleccione una ocupación</option>
-                                @foreach ($ocupaciones as $ocupacion)
-                                    <option value="{{ $ocupacion->id }}">{{ $ocupacion->nombre_ocupacion }}</option>
-                                @endforeach
-                            </select>
-                            <div class="invalid-feedback">Seleccione una ocupación.</div>
+                            <div class="floating-group mb-0">
+                                <label for="ocupacion-padre">
+                                    <i class="fas fa-briefcase"></i> Ocupación <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select select-modern w-100" id="ocupacion-padre"
+                                    name="ocupacion-padre" required>
+                                    <option value="" disabled selected>Seleccione una ocupación</option>
+                                    @foreach ($ocupaciones as $ocupacion)
+                                        <option value="{{ $ocupacion->id }}">{{ $ocupacion->nombre_ocupacion }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="invalid-feedback">Seleccione una ocupación.</div>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label" for="convive-si-padre">
+                            <label class="form-label" for="convive-si-padre" style="font-size: 13px; font-weight: 600; color: #1E293B; margin-bottom: 4px;">
                                 <i class="fas fa-home"></i> ¿Convive con el Estudiante? <span class="text-danger">*</span>
                             </label>
-                            <div class="d-flex align-items-center gap-4" style="height: 42px;">
+                            <div class="d-flex align-items-center gap-4" style="height: 56px;">
                                 <div class="form-check mb-0">
                                     <input class="form-check-input" type="radio" name="convive-padre"
                                         id="convive-si-padre" value="si" required>
@@ -770,8 +763,8 @@
 
                             <!-- Fila 1: Identificación (Grid 1fr 1.5fr 1.5fr 1fr) -->
                             <div class="mb-3" style="display: grid; grid-template-columns: 1fr 1.5fr 1.5fr 1fr; gap: 16px;">
-                                <div>
-                                    <label class="form-label" for="tipo-ci-representante">Tipo Doc <span class="text-danger">*</span></label>
+                                <div class="floating-group">
+                                    <label for="tipo-ci-representante">Tipo Doc <span class="text-danger">*</span></label>
                                     <select class="form-select select-modern w-100" id="tipo-ci-representante"
                                         name="tipo-ci-representante" required>
                                         <option value="">Doc</option>
@@ -783,26 +776,26 @@
                                     <small id="tipo-ci-representante-error" class="text-danger"></small>
                                 </div>
 
-                                <div>
-                                    <label class="form-label" for="numero_documento-representante">Número de Cédula <span class="text-danger">*</span></label>
+                                <div class="floating-group">
+                                    <label for="numero_documento-representante">Número de Cédula <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="numero_documento-representante"
                                         name="numero_documento-representante" maxlength="8" required
-                                        placeholder="Ej: 12345678" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                        placeholder=" " oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                     <input type="hidden" id="persona-id-representante" name="persona-id-representante">
                                     <input type="hidden" id="representante-id" name="representante-id">
                                     <div class="invalid-feedback">Cédula requerida.</div>
                                     <small id="numero_documento-representante-error" class="text-danger"></small>
                                 </div>
 
-                                <div>
-                                    <label class="form-label" for="fecha-nacimiento-representante">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                                <div class="floating-group">
+                                    <label for="fecha-nacimiento-representante">Fecha de Nacimiento <span class="text-danger">*</span></label>
                                     <input type="date" id="fecha-nacimiento-representante"
-                                        name="fecha-nacimiento-representante" class="form-control" required>
+                                        name="fecha-nacimiento-representante" class="form-control" placeholder=" " required>
                                     <div class="invalid-feedback">Fecha válida requerida.</div>
                                 </div>
 
-                                <div>
-                                    <label class="form-label" for="sexo-representante">Género <span class="text-danger">*</span></label>
+                                <div class="floating-group">
+                                    <label for="sexo-representante">Género <span class="text-danger">*</span></label>
                                     <select class="form-select select-modern w-100" id="sexo-representante" name="sexo-representante"
                                         required>
                                         <option value="">Seleccione</option>
@@ -817,27 +810,27 @@
 
                             <!-- Fila 2: Nombres (Grid 3 columnas iguales) -->
                             <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                                <div>
-                                    <label class="form-label" for="primer-nombre-representante">Primer Nombre <span class="text-danger">*</span></label>
+                                <div class="floating-group">
+                                    <label for="primer-nombre-representante">Primer Nombre <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="primer-nombre-representante"
-                                        name="primer-nombre-representante" placeholder="Ej: María"
+                                        name="primer-nombre-representante" placeholder=" "
                                         pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
                                     <div class="invalid-feedback">Solo letras y espacios.</div>
                                     <small class="text-danger" id="primer-nombre-representante-error"></small>
                                 </div>
 
-                                <div>
-                                    <label class="form-label" for="segundo-nombre-representante">Segundo Nombre</label>
+                                <div class="floating-group">
+                                    <label for="segundo-nombre-representante">Segundo Nombre</label>
                                     <input type="text" class="form-control" id="segundo-nombre-representante"
-                                        name="segundo-nombre-representante" placeholder="Opcional"
+                                        name="segundo-nombre-representante" placeholder=" "
                                         pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                                     <small class="text-danger" id="segundo-nombre-representante-error"></small>
                                 </div>
 
-                                <div>
-                                    <label class="form-label" for="tercer-nombre-representante">Tercer Nombre</label>
+                                <div class="floating-group">
+                                    <label for="tercer-nombre-representante">Tercer Nombre</label>
                                     <input type="text" class="form-control" id="tercer-nombre-representante"
-                                        name="tercer-nombre-representante" placeholder="Opcional"
+                                        name="tercer-nombre-representante" placeholder=" "
                                         pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                                     <small class="text-danger" id="tercer-nombre-representante-error"></small>
                                 </div>
@@ -845,19 +838,19 @@
 
                             <!-- Fila 3: Apellidos (Grid 2 columnas iguales) -->
                             <div class="mb-3" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                                <div>
-                                    <label class="form-label" for="primer-apellido-representante">Primer Apellido <span class="text-danger">*</span></label>
+                                <div class="floating-group">
+                                    <label for="primer-apellido-representante">Primer Apellido <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="primer-apellido-representante"
-                                        name="primer-apellido-representante" placeholder="Ej: González"
+                                        name="primer-apellido-representante" placeholder=" "
                                         pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" required>
                                     <div class="invalid-feedback">Solo letras y espacios.</div>
                                     <small class="text-danger" id="primer-apellido-representante-error"></small>
                                 </div>
 
-                                <div>
-                                    <label class="form-label" for="segundo-apellido-representante">Segundo Apellido</label>
+                                <div class="floating-group">
+                                    <label for="segundo-apellido-representante">Segundo Apellido</label>
                                     <input type="text" class="form-control" id="segundo-apellido-representante"
-                                        name="segundo-apellido-representante" placeholder="Opcional"
+                                        name="segundo-apellido-representante" placeholder=" "
                                         pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]*">
                                     <small class="text-danger" id="segundo-apellido-representante-error"></small>
                                 </div>
@@ -880,10 +873,8 @@
 
                         <!-- Fila 1: País, Estado, Municipio (Grid 3 columnas) -->
                         <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                            <div>
-                                <label class="form-label" for="idPais-representante">
-                                    <i class="fas fa-map"></i> País <span class="text-danger">*</span>
-                                </label>
+                            <div class="floating-group">
+                                <label for="idPais-representante">País <span class="text-danger">*</span></label>
                                 <select class="form-select select-modern w-100" id="idPais-representante"
                                     name="idPais-representante" aria-label="Seleccione un país" required>
                                     <option value="" disabled selected>Seleccione un país</option>
@@ -900,10 +891,8 @@
                                 <div class="invalid-feedback">Requerido.</div>
                             </div>
 
-                            <div>
-                                <label class="form-label" for="idEstado-representante">
-                                    <i class="fas fa-map"></i> Estado <span class="text-danger">*</span>
-                                </label>
+                            <div class="floating-group">
+                                <label for="idEstado-representante">Estado <span class="text-danger">*</span></label>
                                 <select class="form-select select-modern w-100" id="idEstado-representante"
                                     name="idEstado-representante" aria-label="Seleccione un estado" required>
                                     <option value="" disabled selected>Seleccione un estado</option>
@@ -912,10 +901,8 @@
                                 <small id="idEstado-error" class="text-danger"></small>
                             </div>
 
-                            <div>
-                                <label class="form-label" for="idMunicipio-representante">
-                                    <i class="fas fa-map-marked-alt"></i> Municipio <span class="text-danger">*</span>
-                                </label>
+                            <div class="floating-group">
+                                <label for="idMunicipio-representante">Municipio <span class="text-danger">*</span></label>
                                 <select class="form-select select-modern w-100" id="idMunicipio-representante"
                                     name="idMunicipio-representante" aria-label="Seleccione un municipio" required>
                                     <option value="" disabled selected>Seleccione un municipio</option>
@@ -925,12 +912,10 @@
                             </div>
                         </div>
 
-                        <!-- Fila 2: Parroquia, Lugar de Nacimiento (Grid 1fr 2fr) -->
-                        <div class="mb-3" style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
-                            <div>
-                                <label class="form-label" for="idparroquia-representante">
-                                    <i class="fas fa-map-pin"></i> Localidad / Parroquia <span class="text-danger">*</span>
-                                </label>
+                        <!-- Fila 2: Parroquia, Lugar de Nacimiento (Grid 1fr 1fr) -->
+                        <div class="mb-3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="floating-group">
+                                <label for="idparroquia-representante">Localidad / Parroquia <span class="text-danger">*</span></label>
                                 <select class="form-select select-modern w-100" id="idparroquia-representante"
                                     name="idparroquia-representante" aria-label="Seleccione una parroquia" required>
                                     <option value="" disabled selected>Seleccione una parroquia</option>
@@ -939,26 +924,22 @@
                                 <small id="idparroquia-representante-error" class="text-danger"></small>
                             </div>
 
-                            <div>
-                                <label class="form-label" for="lugar-nacimiento-representante">
-                                    <i class="fas fa-map-marker-alt"></i> Lugar de Nacimiento <span class="text-danger">*</span>
-                                </label>
+                            <div class="floating-group">
+                                <label for="lugar-nacimiento-representante">Lugar de Nacimiento <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="lugar-nacimiento-representante"
-                                    name="lugar-nacimiento-representante" placeholder="Ej: Caracas, Venezuela"
+                                    name="lugar-nacimiento-representante" placeholder=" "
                                     pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s,]+" maxlength="100" required>
                                 <div class="invalid-feedback">Lugar de nacimiento requerido.</div>
                                 <small id="lugar-nacimiento-representante-error" class="text-danger"></small>
                             </div>
                         </div>
 
-                        <!-- Fila 3: Dirección de Habitación (col-md-12) -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-12">
-                                <label class="form-label" for="direccion-representante">
-                                    <i class="fas fa-home"></i> Dirección de Residencia <span class="text-danger">*</span>
-                                </label>
+                        <!-- Fila 3: Dirección de Habitación (100% ancho) -->
+                        <div class="mb-3">
+                            <div class="floating-group">
+                                <label for="direccion-representante">Dirección de Residencia <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="direccion-representante"
-                                    name="direccion-representante" placeholder="Calle, casa, edificio" required>
+                                    name="direccion-representante" placeholder=" " required>
                                 <div class="invalid-feedback">Dirección requerida.</div>
                             </div>
                         </div>
@@ -970,10 +951,8 @@
                         </div>
 
                         <div class="mb-3" style="display: grid; grid-template-columns: 1fr 2fr 1fr 2fr; gap: 16px;">
-                            <div>
-                                <label class="form-label" for="prefijo-representante">
-                                    <i class="fas fa-phone"></i> Prefijo 1 <span class="text-danger">*</span>
-                                </label>
+                            <div class="floating-group">
+                                <label for="prefijo-representante">Prefijo 1 <span class="text-danger">*</span></label>
                                 <select class="form-select select-modern w-100" id="prefijo-representante"
                                     name="prefijo-representante" required>
                                     <option value="" disabled selected>Prefijo</option>
@@ -987,21 +966,17 @@
                                 <small id="prefijo-representante-error" class="text-danger"></small>
                             </div>
 
-                            <div>
-                                <label class="form-label" for="telefono-representante">
-                                    <i class="fas fa-phone"></i> Teléfono 1 <span class="text-danger">*</span>
-                                </label>
+                            <div class="floating-group">
+                                <label for="telefono-representante">Teléfono 1 <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="telefono-representante"
                                     name="telefono-representante" pattern="[0-9]+" maxlength="11"
-                                    title="Ingrese solo números (máximo 11 dígitos)" placeholder="Número de teléfono" required>
+                                    title="Ingrese solo números (máximo 11 dígitos)" placeholder=" " required>
                                 <div class="invalid-feedback">Teléfono válido requerido.</div>
                                 <small id="telefono-representante-error" class="text-danger"></small>
                             </div>
 
-                            <div>
-                                <label class="form-label" for="prefijo_dos-representante">
-                                    <i class="fas fa-phone"></i> Prefijo 2
-                                </label>
+                            <div class="floating-group">
+                                <label for="prefijo_dos-representante">Prefijo 2</label>
                                 <select class="form-select select-modern w-100" id="prefijo_dos-representante"
                                     name="prefijo_dos-representante">
                                     <option value="" disabled selected>Prefijo</option>
@@ -1012,13 +987,11 @@
                                 <small id="prefijo_dos-representante-error" class="text-danger"></small>
                             </div>
 
-                            <div>
-                                <label class="form-label" for="telefono_dos-representante">
-                                    <i class="fas fa-phone"></i> Teléfono 2
-                                </label>
+                            <div class="floating-group">
+                                <label for="telefono_dos-representante">Teléfono 2</label>
                                 <input type="text" class="form-control" id="telefono_dos-representante"
                                     name="telefono_dos-representante" pattern="[0-9]+" maxlength="11"
-                                    title="Ingrese solo números (máximo 11 dígitos)" placeholder="Número 2">
+                                    title="Ingrese solo números (máximo 11 dígitos)" placeholder=" ">
                                 <small id="telefono_dos-representante-error" class="text-danger"></small>
                             </div>
                         </div>
@@ -1029,9 +1002,11 @@
                             <h5>Relación Familiar y Ocupación</h5>
                         </div>
 
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-4">
-                                <label class="form-label" for="ocupacion-representante">
+                        <!-- Fila de 3 columnas para Ocupación, Parentesco y Convive -->
+                        <div class="mb-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <!-- Ocupación -->
+                            <div class="floating-group mb-0">
+                                <label for="ocupacion-representante">
                                     <i class="fas fa-briefcase"></i> Ocupación <span class="text-danger">*</span>
                                 </label>
                                 <select name="ocupacion-representante" id="ocupacion-representante"
@@ -1045,8 +1020,9 @@
                                 <small id="ocupacion-representante-error" class="text-danger"></small>
                             </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label" for="parentesco">
+                            <!-- Parentesco -->
+                            <div class="floating-group mb-0">
+                                <label for="parentesco">
                                     <i class="fas fa-user-tag"></i> Parentesco <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select select-modern w-100" id="parentesco" name="parentesco"
@@ -1064,11 +1040,12 @@
                                 <div class="invalid-feedback">Seleccione el parentesco.</div>
                             </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label" for="convive-si-representante">
+                            <!-- Convive -->
+                            <div>
+                                <label class="form-label" for="convive-si-representante" style="font-size: 13px; font-weight: 600; color: #1E293B; margin-bottom: 4px;">
                                     <i class="fas fa-home"></i> ¿Convive con el Estudiante? <span class="text-danger">*</span>
                                 </label>
-                                <div class="d-flex align-items-center gap-4" style="height: 42px;">
+                                <div class="d-flex align-items-center gap-3" style="height: 42px;">
                                     <div class="form-check mb-0">
                                         <input class="form-check-input" type="radio" id="convive-si-representante"
                                             name="convive-representante" value="si">
@@ -1082,27 +1059,34 @@
                                 </div>
                                 <small id="convive-representante-error" class="text-danger"></small>
                             </div>
+                        </div>
 
+                        <!-- Contenedores condicionales si selecciona Otra Ocupación -->
+                        <div class="row g-3 mb-3">
                             <div class="col-md-6 d-none" id="otra-ocupacion-representante-container">
-                                <label class="form-label" for="otra-ocupacion-representante">
-                                    <i class="fas fa-briefcase"></i> Otra Ocupación <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" class="form-control" id="otra-ocupacion-representante"
-                                    name="otra-ocupacion-representante" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+"
-                                    placeholder="Especifique la ocupación">
-                                <div class="invalid-feedback">Especifique la ocupación.</div>
-                                <small id="otra-ocupacion-representante-error" class="text-danger"></small>
+                                <div class="floating-group">
+                                    <label for="otra-ocupacion-representante">
+                                        <i class="fas fa-briefcase"></i> Otra Ocupación <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="otra-ocupacion-representante"
+                                        name="otra-ocupacion-representante" pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+"
+                                        placeholder=" ">
+                                    <div class="invalid-feedback">Especifique la ocupación.</div>
+                                    <small id="otra-ocupacion-representante-error" class="text-danger"></small>
+                                </div>
                             </div>
 
                             <div class="col-md-6 d-none" id="otra-ocupacion-container">
-                                <label class="form-label" for="otra-ocupacion-representante-extra">
-                                    <i class="fas fa-briefcase"></i> Especifique Ocupación <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" class="form-control" id="otra-ocupacion-representante-extra"
-                                    name="otra-ocupacion-representante" maxlength="50"
-                                    title="Solo se permiten letras y espacios, no se aceptan números"
-                                    pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+">
-                                <small id="otra-ocupacion-error-representante" class="text-danger"></small>
+                                <div class="floating-group">
+                                    <label for="otra-ocupacion-representante-extra">
+                                        <i class="fas fa-briefcase"></i> Especifique Ocupación <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="otra-ocupacion-representante-extra"
+                                        name="otra-ocupacion-representante" maxlength="50"
+                                        title="Solo se permiten letras y espacios, no se aceptan números"
+                                        pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" placeholder=" ">
+                                    <small id="otra-ocupacion-error-representante" class="text-danger"></small>
+                                </div>
                             </div>
                         </div>
 
@@ -1114,13 +1098,13 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="correo-representante" class="form-label-modern">
+                                <div class="floating-group">
+                                    <label for="correo-representante">
                                         <i class="fas fa-envelope"></i>
-                                        Correo Electrónico <span class="required-badge">*</span>
+                                        Correo Electrónico <span class="text-danger">*</span>
                                     </label>
-                                    <input type="email" class="form-control w-100" id="correo-representante"
-                                        name="correo-representante" required placeholder="ejemplo@correo.com">
+                                    <input type="email" class="form-control" id="correo-representante"
+                                        name="correo-representante" required placeholder=" ">
                                     <div class="invalid-feedback">Correo electrónico válido requerido.</div>
                                     <small id="correo-representante-error" class="text-danger"></small>
                                 </div>
@@ -1153,13 +1137,13 @@
                             </div>
 
                             <div class="col-md-12" id="especifique-organizacion-container" style="display: none;">
-                                <div class="form-group">
-                                    <label for="especifique-organizacion" class="form-label-modern">
+                                <div class="floating-group">
+                                    <label for="especifique-organizacion">
                                         <i class="fas fa-edit"></i>
                                         Especifique Organización
                                     </label>
-                                    <input type="text" class="form-control w-100" id="especifique-organizacion"
-                                        name="especifique-organizacion" placeholder="Especifique cuál organización">
+                                    <input type="text" class="form-control" id="especifique-organizacion"
+                                        name="especifique-organizacion" placeholder=" ">
                                     <small id="especifique-organizacion-error" class="text-danger"></small>
                                 </div>
                             </div>
@@ -1171,81 +1155,76 @@
                             <h5>Identificación Familiar y Datos Bancarios</h5>
                         </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="carnet-patria-afiliado" class="form-label-modern">
-                                        <i class="fas fa-id-card"></i>
-                                        Carnet Patria Afiliado
-                                    </label>
-                                    <select class="form-select select-modern w-100" id="carnet-patria-afiliado"
-                                        name="carnet-patria-afiliado">
-                                        <option value="">Seleccione...</option>
-                                        <option value="madre">Madre</option>
-                                        <option value="padre">Padre</option>
-                                        <option value="otro">Otro</option>
-                                    </select>
-                                    <small id="carnet-patria-afiliado-error" class="text-danger"></small>
-                                </div>
+                        <div class="mb-3" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+                            <!-- 1. Carnet Patria Afiliado -->
+                            <div class="floating-group mb-0">
+                                <label for="carnet-patria-afiliado">
+                                    <i class="fas fa-id-card"></i>
+                                    Carnet Patria Afiliado
+                                </label>
+                                <select class="form-select select-modern w-100" id="carnet-patria-afiliado"
+                                    name="carnet-patria-afiliado">
+                                    <option value="">Seleccione...</option>
+                                    <option value="madre">Madre</option>
+                                    <option value="padre">Padre</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                                <small id="carnet-patria-afiliado-error" class="text-danger"></small>
                             </div>
 
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="codigo-patria" class="form-label-modern">
-                                        <i class="fas fa-barcode"></i>
-                                        Código Carnet Patria
-                                    </label>
-                                    <input type="text" class="form-control w-100" id="codigo-patria"
-                                        name="codigo-patria" placeholder="Solo números (10-15 dígitos)" pattern="[0-9]{10,15}"
-                                        inputmode="numeric" maxlength="15" min="10"
-                                        onkeypress="return event.charCode >= 48 && event.charCode <= 57">
-                                    <small id="codigo-patria-error" class="text-danger"></small>
-                                </div>
+                            <!-- 2. Código Carnet Patria -->
+                            <div class="floating-group mb-0">
+                                <label for="codigo-patria">
+                                    <i class="fas fa-barcode"></i>
+                                    Código Carnet Patria
+                                </label>
+                                <input type="text" class="form-control" id="codigo-patria"
+                                    name="codigo-patria" placeholder=" " pattern="[0-9]{10,15}"
+                                    inputmode="numeric" maxlength="15" min="10"
+                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                                <small id="codigo-patria-error" class="text-danger"></small>
                             </div>
 
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="serial-patria" class="form-label-modern">
-                                        <i class="fas fa-hashtag"></i>
-                                        Serial Carnet Patria
-                                    </label>
-                                    <input type="text" class="form-control w-100" id="serial-patria"
-                                        name="serial-patria" placeholder="Solo números (10-15 dígitos)" pattern="[0-9]{10,15}"
-                                        inputmode="numeric" maxlength="15" min="10"
-                                        onkeypress="return event.charCode >= 48 && event.charCode <= 57">
-                                    <small id="serial-patria-error" class="text-danger"></small>
-                                </div>
+                            <!-- 3. Serial Carnet Patria -->
+                            <div class="floating-group mb-0">
+                                <label for="serial-patria">
+                                    <i class="fas fa-hashtag"></i>
+                                    Serial Carnet Patria
+                                </label>
+                                <input type="text" class="form-control" id="serial-patria"
+                                    name="serial-patria" placeholder=" " pattern="[0-9]{10,15}"
+                                    inputmode="numeric" maxlength="15" min="10"
+                                    onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                                <small id="serial-patria-error" class="text-danger"></small>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="tipo-cuenta" class="form-label-modern">
-                                        <i class="fas fa-credit-card"></i>
-                                        Tipo de Cuenta
-                                    </label>
-                                    <select class="form-select select-modern w-100" id="tipo-cuenta" name="tipo-cuenta">
-                                        <option value="">Seleccione tipo de cuenta...</option>
-                                        <option value="Ahorro">Cuenta de Ahorro</option>
-                                        <option value="Corriente">Cuenta Corriente</option>
-                                    </select>
-                                    <small id="tipo-cuenta-error" class="text-danger"></small>
-                                </div>
+                            <!-- 4. Tipo de Cuenta -->
+                            <div class="floating-group mb-0">
+                                <label for="tipo-cuenta">
+                                    <i class="fas fa-credit-card"></i>
+                                    Tipo de Cuenta
+                                </label>
+                                <select class="form-select select-modern w-100" id="tipo-cuenta" name="tipo-cuenta">
+                                    <option value="">Seleccione tipo de cuenta...</option>
+                                    <option value="Ahorro">Cuenta de Ahorro</option>
+                                    <option value="Corriente">Cuenta Corriente</option>
+                                </select>
+                                <small id="tipo-cuenta-error" class="text-danger"></small>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="banco_id" class="form-label-modern">
-                                        <i class="fas fa-university"></i>
-                                        Banco
-                                    </label>
-                                    <select class="form-select select-modern w-100" id="banco_id" name="banco_id">
-                                        <option value="" disabled selected>Seleccione un banco</option>
-                                        @foreach ($bancos as $banco)
-                                            <option value="{{ $banco->id }}">{{ $banco->nombre_banco }}</option>
-                                        @endforeach
-                                    </select>
-                                    <small id="banco-error" class="text-danger"></small>
-                                </div>
+                            <!-- 5. Banco -->
+                            <div class="floating-group mb-0">
+                                <label for="banco_id">
+                                    <i class="fas fa-university"></i>
+                                    Banco
+                                </label>
+                                <select class="form-select select-modern w-100" id="banco_id" name="banco_id">
+                                    <option value="" disabled selected>Seleccione un banco</option>
+                                    @foreach ($bancos as $banco)
+                                        <option value="{{ $banco->id }}">{{ $banco->nombre_banco }}</option>
+                                    @endforeach
+                                </select>
+                                <small id="banco-error" class="text-danger"></small>
                             </div>
                         </div>
 
@@ -1257,13 +1236,13 @@
 
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="direccion-habitacion" class="form-label-modern">
+                                <div class="floating-group">
+                                    <label for="direccion-habitacion">
                                         <i class="fas fa-home"></i>
-                                        Dirección Completa <span class="required-badge">*</span>
+                                        Dirección Completa <span class="text-danger">*</span>
                                     </label>
-                                    <textarea class="form-control w-100" id="direccion-habitacion" name="direccion-habitacion" rows="3"
-                                        required placeholder="Ingrese su dirección completa incluyendo puntos de referencia"></textarea>
+                                    <textarea class="form-control" id="direccion-habitacion" name="direccion-habitacion" rows="3"
+                                        required placeholder=" "></textarea>
                                     <div class="invalid-feedback">Dirección válida requerida.</div>
                                     <small id="direccion-habitacion-error" class="text-danger"></small>
                                 </div>

@@ -41,8 +41,8 @@
                 </a>
                 @can('cortes.gestionar')
                     @if ($puedeCrear && \App\Support\AnioEscolarSeleccionado::esActual() && $lapso->estado !== \App\Enums\EstadoLapso::Cerrado)
-                        <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#crearCorte">
-                            <i class="fas fa-plus"></i> <span>Nuevo corte</span>
+                        <button type="button" class="btn-primary-modern" data-bs-toggle="modal" data-bs-target="#crearCorte">
+                            <i class="fas fa-plus me-1"></i> <span>Nuevo corte</span>
                         </button>
                     @endif
                 @endcan

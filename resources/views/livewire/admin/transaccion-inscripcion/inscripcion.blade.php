@@ -486,12 +486,12 @@
         <div class="card-body-modern" style="padding: 2rem;">
             <div class="mb-3" style="display: grid; grid-template-columns: {{ $esPrimerGrado ? '1fr 1fr' : 'repeat(3, 1fr)' }}; gap: 24px;">
                 <!-- Campo Nivel Académico -->
-                <div>
-                    <label for="grado_id" class="form-label-modern">
-                        Nivel Académico <span class="required-badge text-danger">*</span>
+                <div class="floating-group">
+                    <label for="grado_id">
+                        Nivel Académico <span class="text-danger">*</span>
                     </label>
                     <select wire:model.live="gradoId" id="grado_id"
-                        class="form-select form-control-modern @error('gradoId') is-invalid @enderror">
+                        class="form-select @error('gradoId') is-invalid @enderror">
                         <option value="">Seleccione un nivel académico</option>
                         @foreach ($grados as $grado)
                             <option value="{{ $grado->id }}">{{ $grado->numero_grado }}°</option>
@@ -506,12 +506,12 @@
 
                 @if (!$esPrimerGrado)
                     <!-- Campo Sección -->
-                    <div>
-                        <label for="seccion_id" class="form-label-modern">
-                            Sección <span class="required-badge text-danger">*</span>
+                    <div class="floating-group">
+                        <label for="seccion_id">
+                            Sección <span class="text-danger">*</span>
                         </label>
                         <select wire:model.live="seccion_id" id="seccion_id"
-                            class="form-select form-control-modern @error('seccion_id') is-invalid @enderror">
+                            class="form-select @error('seccion_id') is-invalid @enderror">
                             <option value="">Seleccione una sección</option>
                             @foreach ($secciones as $seccion)
                                 <option value="{{ $seccion->id }}">
@@ -526,12 +526,12 @@
                 @endif
 
                 <!-- Campo Fecha de Inscripción -->
-                <div>
-                    <label for="fecha" class="form-label-modern">
-                        <i class="fas fa-calendar-alt me-1"></i> Fecha de inscripción <span class="required-badge text-danger">*</span>
+                <div class="floating-group">
+                    <label for="fecha">
+                        Fecha de inscripción <span class="text-danger">*</span>
                     </label>
                     <input type="datetime-local" value="{{ now('America/Caracas')->format('Y-m-d\TH:i') }}"
-                        id="fecha" class="form-control form-control-modern @error('fecha') is-invalid @enderror" readonly disabled>
+                        id="fecha" placeholder=" " class="form-control @error('fecha') is-invalid @enderror" readonly disabled>
                     @error('fecha')
                         <div class="invalid-feedback-modern">
                             <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -579,10 +579,10 @@
 
             <!-- Fila 1: Ubicación Geográfica del Plantel (4 columnas) -->
             <div class="mb-3" style="display: grid; grid-template-columns: repeat({{ $esVenezolano ? 4 : 1 }}, 1fr); gap: 16px;">
-                <div>
-                    <label for="paisId_procedencia" class="form-label-modern">País <span class="required-badge text-danger">*</span></label>
-                    <select wire:model.live="paisId" id="paisId_procedencia"
-                        class="form-select form-control-modern @error('paisId') is-invalid @enderror">
+                <div class="floating-group mb-0">
+                    <label for="paisId_procedencia">País <span class="text-danger">*</span></label>
+                    <select wire:model.live="paisId" id="paisId_procedencia" placeholder=" "
+                        class="form-select @error('paisId') is-invalid @enderror">
                         <option value="">Seleccione un país</option>
                         @foreach ($paises as $pais)
                             <option value="{{ $pais->id }}">{{ $pais->nameES }}</option>
@@ -594,11 +594,11 @@
                 </div>
 
                 @if ($esVenezolano)
-                    <div>
-                        <label for="estado_id" class="form-label-modern">Estado <span class="required-badge text-danger">*</span></label>
-                        <select wire:model.live="estado_id" id="estado_id"
+                    <div class="floating-group mb-0">
+                        <label for="estado_id_procedencia">Estado <span class="text-danger">*</span></label>
+                        <select wire:model.live="estado_id" id="estado_id_procedencia" placeholder=" "
                             @disabled(!$paisId)
-                            class="form-select form-control-modern @error('estado_id') is-invalid @enderror">
+                            class="form-select @error('estado_id') is-invalid @enderror">
                             <option value="">Seleccione un estado</option>
                             @foreach ($estados as $estado)
                                 <option value="{{ $estado->id }}">{{ $estado->nombre_estado }}</option>
@@ -609,11 +609,11 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="municipio_id" class="form-label-modern">Municipio <span class="required-badge text-danger">*</span></label>
-                        <select wire:model.live="municipio_id" id="municipio_id"
+                    <div class="floating-group mb-0">
+                        <label for="municipio_id_procedencia">Municipio <span class="text-danger">*</span></label>
+                        <select wire:model.live="municipio_id" id="municipio_id_procedencia" placeholder=" "
                             @disabled(!$estado_id)
-                            class="form-select form-control-modern @error('municipio_id') is-invalid @enderror">
+                            class="form-select @error('municipio_id') is-invalid @enderror">
                             <option value="">Seleccione un municipio</option>
                             @foreach ($municipios as $municipio)
                                 <option value="{{ $municipio->id }}">{{ $municipio->nombre_municipio }}</option>
@@ -624,11 +624,11 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="localidad_id" class="form-label-modern">Localidad <span class="required-badge text-danger">*</span></label>
-                        <select wire:model.live="localidad_id" id="localidad_id"
+                    <div class="floating-group mb-0">
+                        <label for="localidad_id_procedencia">Localidad <span class="text-danger">*</span></label>
+                        <select wire:model.live="localidad_id" id="localidad_id_procedencia" placeholder=" "
                             @disabled(!$municipio_id)
-                            class="form-select form-control-modern @error('localidad_id') is-invalid @enderror">
+                            class="form-select @error('localidad_id') is-invalid @enderror">
                             <option value="">Seleccione una localidad</option>
                             @foreach ($localidades as $localidad)
                                 <option value="{{ $localidad->id }}">{{ $localidad->nombre_localidad }}</option>
@@ -644,34 +644,42 @@
             </div>
 
             <!-- Fila 2: Datos de la Institución y Egreso -->
-            <div class="mb-3" style="display: grid; grid-template-columns: {{ $esPrimerGrado ? '1fr 1.5fr 1fr 1fr' : '2fr 1fr 1fr' }}; gap: 16px;">
+            <div class="mb-3" style="display: grid; grid-template-columns: {{ $esPrimerGrado ? 'repeat(4, 1fr)' : 'repeat(3, 1fr)' }}; gap: 16px;">
                 @if ($esPrimerGrado)
-                    <div>
-                        <label class="form-label-modern">Número de Zonificación</label>
-                        <input type="text" wire:model.live="numero_zonificacion"
-                            class="form-control form-control-modern" maxlength="3" inputmode="numeric"
+                    <div class="floating-group mb-0">
+                        <label for="numero_zonificacion">Número Zonificación</label>
+                        <input type="text" wire:model.live="numero_zonificacion" id="numero_zonificacion"
+                            class="form-control" maxlength="3" inputmode="numeric"
                             oninput="this.value = this.value.replace(/[^0-9]/g,'')"
-                            placeholder="Ej: 001">
+                            placeholder=" ">
                     </div>
                 @endif
 
                 <div>
-                    <label for="institucion_procedencia_id" class="form-label-modern">
-                        Institución de procedencia <span class="required-badge text-danger">*</span>
-                    </label>
-                    @if ($esVenezolano)
-                        <select wire:model.live="institucion_procedencia_id" id="institucion_procedencia_id"
-                            class="form-select form-control-modern @error('institucion_procedencia_id') is-invalid @enderror">
-                            <option value="">Seleccione</option>
-                            @foreach ($instituciones as $inst)
-                                <option value="{{ $inst->id }}">{{ $inst->nombre_institucion }}</option>
-                            @endforeach
-                        </select>
+                    <div class="floating-group mb-0">
+                        <label for="institucion_procedencia_id">
+                            Institución <span class="text-danger">*</span>
+                        </label>
+                        @if ($esVenezolano)
+                            <select wire:model.live="institucion_procedencia_id" id="institucion_procedencia_id" placeholder=" "
+                                class="form-select @error('institucion_procedencia_id') is-invalid @enderror">
+                                <option value="">Seleccione</option>
+                                @foreach ($instituciones as $inst)
+                                    <option value="{{ $inst->id }}">{{ $inst->nombre_institucion }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <input type="text" class="form-control"
+                                wire:model.live="otroPaisNombre" id="institucion_procedencia_id"
+                                placeholder=" ">
+                        @endif
                         @error('institucion_procedencia_id')
                             <div class="invalid-feedback-modern">
                                 <i class="fas fa-exclamation-circle"></i> {{ $message }}
                             </div>
                         @enderror
+                    </div>
+                    @if ($esVenezolano)
                         <small class="form-text-modern d-flex align-items-center gap-1 mt-1">
                             <i class="fas fa-plus-circle text-primary"></i>
                             <a href="#" class="text-primary text-decoration-none"
@@ -680,19 +688,15 @@
                                 Crear nueva institución
                             </a>
                         </small>
-                    @else
-                        <input type="text" class="form-control form-control-modern"
-                            wire:model.live="otroPaisNombre"
-                            placeholder="Escriba el nombre de la institución">
                     @endif
                 </div>
 
-                <div>
-                    <label for="expresion_literaria" class="form-label-modern">
-                        Literal <span class="required-badge text-danger">*</span>
+                <div class="floating-group mb-0">
+                    <label for="expresion_literaria">
+                        Literal <span class="text-danger">*</span>
                     </label>
-                    <select wire:model.live="expresion_literaria_id" id="expresion_literaria"
-                        class="form-select form-control-modern @error('expresion_literaria_id') is-invalid @enderror">
+                    <select wire:model.live="expresion_literaria_id" id="expresion_literaria" placeholder=" "
+                        class="form-select @error('expresion_literaria_id') is-invalid @enderror">
                         <option value="">Seleccione</option>
                         @foreach ($expresiones_literarias as $item)
                             <option value="{{ $item->id }}">
@@ -707,12 +711,12 @@
                     @enderror
                 </div>
 
-                <div>
-                    <label for="anio_egreso" class="form-label-modern">
-                        Año de Egreso <span class="required-badge text-danger">*</span>
+                <div class="floating-group mb-0">
+                    <label for="anio_egreso">
+                        Año de Egreso <span class="text-danger">*</span>
                     </label>
-                    <input type="date" wire:model.live="anio_egreso" id="anio_egreso"
-                        class="form-control form-control-modern @error('anio_egreso') is-invalid @enderror">
+                    <input type="date" wire:model.live="anio_egreso" id="anio_egreso" placeholder=" "
+                        class="form-control @error('anio_egreso') is-invalid @enderror">
                     @error('anio_egreso')
                         <div class="invalid-feedback-modern">
                             <i class="fas fa-exclamation-circle"></i> {{ $message }}
@@ -1038,6 +1042,23 @@
 @push('js')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Eliminar cualquier backdrop atascado al cargar la página
+            if (window.$) {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css('padding-right', '');
+
+                // Limpiar backdrop después de que cualquier modal termine su animación de cierre
+                $(document).on('hidden.bs.modal', '.modal', function () {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css('padding-right', '');
+                });
+            } else {
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+
             $('.selectpicker').selectpicker();
 
             $('#alumno_select').on('changed.bs.select', function() {
@@ -1070,6 +1091,65 @@
 
         Livewire.on('resetSelects', () => {
             $('.selectpicker').val('').selectpicker('refresh');
+        });
+
+        // Actualizar select de Institución de Procedencia al crear una nueva desde el modal y cerrar backdrop
+        Livewire.on('institucionCreada', (data) => {
+            const item = Array.isArray(data) ? data[0] : data;
+            if (!item) return;
+
+            // 1. Cerrar el modal explícitamente y limpiar backdrop
+            const modalEl = document.getElementById('modalCrearInstitucionInscripcion');
+            if (modalEl) {
+                if (window.$ && typeof $(modalEl).modal === 'function') {
+                    $(modalEl).modal('hide');
+                } else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    const m = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    if (m) m.hide();
+                }
+            }
+
+            setTimeout(() => {
+                if (window.$) {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css('padding-right', '');
+                } else {
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }
+            }, 300);
+
+            // 2. Actualizar y seleccionar la nueva institución en el <select> principal
+            if (item.id) {
+                const select = document.getElementById('institucion_procedencia_id');
+                if (select) {
+                    let opt = select.querySelector(`option[value="${item.id}"]`);
+                    if (!opt && item.nombre) {
+                        opt = new Option(item.nombre, item.id, true, true);
+                        select.add(opt);
+                    }
+                    select.value = item.id;
+                    select.dispatchEvent(new Event('change'));
+                }
+                if (window.$ && typeof $('#institucion_procedencia_id').val === 'function') {
+                    $('#institucion_procedencia_id').val(item.id).trigger('change');
+                    if (typeof $.fn.selectpicker === 'function') {
+                        $('#institucion_procedencia_id').selectpicker('refresh');
+                    }
+                }
+            }
+        });
+
+        Livewire.on('cerrarModal', () => {
+            if (window.$) {
+                $('.modal').modal('hide');
+                setTimeout(() => {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open').css('padding-right', '');
+                }, 300);
+            }
         });
     </script>
 @endpush

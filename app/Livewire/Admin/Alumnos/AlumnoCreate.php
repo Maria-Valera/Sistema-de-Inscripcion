@@ -201,6 +201,28 @@ class AlumnoCreate extends Component
         $this->validateOnly($propertyName);
     }
 
+    public function updatedPrimerNombre($value)
+    {
+        if (trim((string) $value) === '') {
+            $this->segundo_nombre = null;
+            $this->tercer_nombre = null;
+        }
+    }
+
+    public function updatedSegundoNombre($value)
+    {
+        if (trim((string) $value) === '') {
+            $this->tercer_nombre = null;
+        }
+    }
+
+    public function updatedPrimerApellido($value)
+    {
+        if (trim((string) $value) === '') {
+            $this->segundo_apellido = null;
+        }
+    }
+
     public function updatedTipoDocumentoId($value)
     {
         $this->numero_documento = null;

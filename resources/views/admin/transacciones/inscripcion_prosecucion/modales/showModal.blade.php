@@ -2,48 +2,89 @@
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
         <div class="modal-content modal-modern shadow">
-            <div class="modal-header modal-header-view">
+            <div class="modal-header d-block text-center border-bottom position-relative" style="background-color: #FFFFFF !important; color: #1E293B !important; border-bottom: 1px solid #E2E8F0 !important; padding: 24px 20px 16px 20px;">
                 <div class="w-100 text-center">
-                    <h5 class="modal-title-view mb-2">Información de Inscripción por Prosecución</h5>
-                    {{ \Carbon\Carbon::parse($datos->anioEscolar->inicio_anio_escolar)->year }}
-                    -
-                    {{ \Carbon\Carbon::parse($datos->anioEscolar->cierre_anio_escolar)->year }}
-                    <div class="d-flex justify-content-center gap-2">
+                    <h2 class="text-center mb-1" style="color: #1E293B !important; font-weight: 700; font-size: 24px; line-height: 1.3; margin: 0;">
+                        Información de Inscripción por Prosecución
+                    </h2>
+                    <div class="mb-2 mt-1">
+                        <span class="badge" style="background-color: #EFF6FF !important; color: #4A6FC1 !important; font-weight: 600; font-size: 16px; border: 1px solid rgba(74, 111, 193, 0.25); border-radius: 50px; padding: 4px 16px; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-calendar-alt" style="color: #4A6FC1 !important;"></i>
+                            {{ \Carbon\Carbon::parse($datos->anioEscolar->inicio_anio_escolar)->year }} - {{ \Carbon\Carbon::parse($datos->anioEscolar->cierre_anio_escolar)->year }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap mt-2">
                         <span class="badge badge-status badge-{{ strtolower($datos->status) }}">
                             {{ $datos->status }}
                         </span>
-                        <span class="badge bg-white text-primary">
-                            {{ $datos->grado->numero_grado ?? 'N/A' }}° Nivel Academico
+                        <span class="badge border" style="background-color: #F8FAFC !important; color: #4A6FC1 !important; font-weight: 600; font-size: 13px;">
+                            <i class="fas fa-layer-group me-1"></i>{{ $datos->grado->numero_grado ?? 'N/A' }}° Nivel Académico
                         </span>
                         @if ($datos->seccion)
-                            <span class="badge bg-white text-primary">
-                                Sección {{ $datos->seccion->nombre }}
+                            <span class="badge border" style="background-color: #F8FAFC !important; color: #4A6FC1 !important; font-weight: 600; font-size: 13px;">
+                                <i class="fas fa-users me-1"></i>Sección {{ $datos->seccion->nombre }}
                             </span>
                         @endif
                         @if ($datos->repite_grado)
-                            <span class="badge bg-warning text-dark">
-                                <i class="fas fa-redo"></i> Repite Nivel Academico
+                            <span class="badge bg-warning text-dark" style="font-size: 13px;">
+                                <i class="fas fa-redo me-1"></i> Repite Nivel Académico
                             </span>
                         @else
-                            <span class="badge bg-success">
-                                <i class="fas fa-arrow-up"></i> Promovido
+                            <span class="badge bg-success" style="font-size: 13px;">
+                                <i class="fas fa-arrow-up me-1"></i> Promovido
                             </span>
                         @endif
                     </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
                     data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body modal-body-view">
-                <div class="mb-4">
-                    @php
-                        $dato = $datos->inscripcion->alumno->persona;
-                        $alumno = $datos->inscripcion->alumno;
-                    @endphp
-                    <div class="section-title">
-                        <i class="fas fa-user-graduate"></i>
-                        <span>Datos del Estudiante</span>
-                    </div>
+            <div class="modal-body modal-body-view pt-3">
+                @php
+                    $dato = $datos->inscripcion->alumno->persona;
+                    $alumno = $datos->inscripcion->alumno;
+                    $prosecucionAreas = $datos->prosecucionAreas ?? collect();
+                    $materiasAprobadas = $datos->prosecucionAreas->where('status', 'aprobada');
+                    $materiasPendientes = $datos->prosecucionAreas->where('status', 'pendiente');
+                @endphp
+
+                <!-- Pestañas (Tabs Nav) -->
+                <ul class="nav nav-tabs nav-tabs-modern mb-4" id="modalTab{{ $datos->id }}" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="personal-tab-{{ $datos->id }}"
+                                data-bs-toggle="tab" data-bs-target="#personal-{{ $datos->id }}"
+                                type="button" role="tab" aria-controls="personal-{{ $datos->id }}" aria-selected="true">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>Datos Personales</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="academico-tab-{{ $datos->id }}"
+                                data-bs-toggle="tab" data-bs-target="#academico-{{ $datos->id }}"
+                                type="button" role="tab" aria-controls="academico-{{ $datos->id }}" aria-selected="false">
+                            <i class="fas fa-book"></i>
+                            <span>Datos Académicos</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="representantes-tab-{{ $datos->id }}"
+                                data-bs-toggle="tab" data-bs-target="#representantes-{{ $datos->id }}"
+                                type="button" role="tab" aria-controls="representantes-{{ $datos->id }}" aria-selected="false">
+                            <i class="fas fa-users"></i>
+                            <span>Representantes</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Contenido de las Pestañas -->
+                <div class="tab-content" id="modalTabContent{{ $datos->id }}">
+                    <!-- 1. PESTAÑA: DATOS PERSONALES -->
+                    <div class="tab-pane fade show active" id="personal-{{ $datos->id }}" role="tabpanel" aria-labelledby="personal-tab-{{ $datos->id }}">
+                        <div class="mb-4">
+                            <div class="section-title">
+                                <i class="fas fa-user-graduate"></i>
+                                <span>Datos del Estudiante</span>
+                            </div>
                     <div class="card mini-card shadow-sm border-0 p-3 mt-2">
                         <div class="row">
                             <div class="col-md-4 mb-4">
@@ -226,7 +267,10 @@
                         </div>
                     </div>
                 </div>
-                <hr class="my-4" style="border-top: 2px dashed #e5e7eb;">
+            </div>
+
+            <!-- 2. PESTAÑA: DATOS ACADÉMICOS -->
+            <div class="tab-pane fade" id="academico-{{ $datos->id }}" role="tabpanel" aria-labelledby="academico-tab-{{ $datos->id }}">
                 <div class="mb-4">
                     <div class="section-title">
                         <i class="fas fa-arrow-circle-up"></i>
@@ -234,8 +278,8 @@
                     </div>
                     <div class="row justify-content-center g-3 mt-2">
                         <div class="col-md-3">
-                            <div class="card shadow-sm border-0 ">
-                                <div class="card-body bg-blue">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body card-pastel-stat-blue">
                                     <div class="detail-item">
                                         <span class="detail-label">
                                             <i class="fas fa-layer-group"></i> Nivel Académico Anterior
@@ -248,13 +292,13 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-body bg-success">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body card-pastel-stat-green">
                                     <div class="detail-item">
-                                        <span class="detail-label ">
+                                        <span class="detail-label">
                                             <i class="fas fa-arrow-right"></i> Nivel de Promoción
                                         </span>
-                                        <span class="detail-value fw-bold ">
+                                        <span class="detail-value fw-bold">
                                             {{ $datos->grado?->numero_grado ?? 'N/A' }}° Nivel
                                         </span>
                                     </div>
@@ -262,15 +306,14 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card shadow-sm border-0 ">
-                                <div class="card-body {{ $datos->repite_grado ? 'bg-warning' : 'bg-success' }}">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body {{ $datos->repite_grado ? 'card-pastel-stat-yellow' : 'card-pastel-stat-green' }}">
                                     <div class="detail-item">
-                                        <span class="detail-label text-dark">
-                                            <i
-                                                class="fas {{ $datos->repite_grado ? 'fa-redo' : 'fa-check-circle' }}"></i>
+                                        <span class="detail-label">
+                                            <i class="fas {{ $datos->repite_grado ? 'fa-redo' : 'fa-check-circle' }}"></i>
                                             Estado
                                         </span>
-                                        <span class="detail-value fw-bold text-dark">
+                                        <span class="detail-value fw-bold">
                                             {{ $datos->repite_grado ? 'Repite Grado' : 'Promovido' }}
                                         </span>
                                     </div>
@@ -279,13 +322,17 @@
                         </div>
                         @if ($datos->seccion)
                             <div class="col-md-3">
-                                <div class="detail-item">
-                                    <span class="detail-label">
-                                        <i class="fas fa-th-large"></i> Sección Asignada
-                                    </span>
-                                    <span class="detail-value">
-                                        Sección {{ $datos->seccion->nombre }}
-                                    </span>
+                                <div class="card shadow-sm border-0 h-100">
+                                    <div class="card-body bg-light">
+                                        <div class="detail-item">
+                                            <span class="detail-label">
+                                                <i class="fas fa-th-large"></i> Sección Asignada
+                                            </span>
+                                            <span class="detail-value fw-bold">
+                                                Sección {{ $datos->seccion->nombre }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         @endif
@@ -394,23 +441,44 @@
                         @endif
                     </div>
                 </div>
-                <hr class="my-4" style="border-top: 2px dashed #e5e7eb;">
+
+                <div class="mb-3">
+                    <div class="section-title">
+                        <i class="fas fa-comment-dots text-secondary"></i>
+                        <span>Observaciones</span>
+                    </div>
+                    <div class="card shadow-sm border-0 mt-2">
+                        <div class="card-body bg-light">
+                            @if ($datos->observaciones)
+                                <p class="mb-0" style="white-space: pre-line; color: #1E293B;">{{ $datos->observaciones }}</p>
+                            @else
+                                <p class="text-muted mb-0 text-center">
+                                    <i class="fas fa-info-circle me-2"></i>Sin observaciones registradas
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. PESTAÑA: REPRESENTANTES -->
+            <div class="tab-pane fade" id="representantes-{{ $datos->id }}" role="tabpanel" aria-labelledby="representantes-tab-{{ $datos->id }}">
                 <div class="mb-4">
                     <div class="section-title">
                         <i class="fas fa-users"></i>
                         <span>Representantes</span>
                     </div>
                     <div class="card mini-card shadow-sm border-0 p-3 mt-2">
-                        <div class="row mt-2 mb-4">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                            <!-- Tarjeta del Padre -->
                             @if ($datos->inscripcion->padre)
-                                <div class="col-md-6">
-                                    <div class="card shadow-sm border-0 h-100 ">
-                                        <div class="card-header bg-padre text-white">
+                                <div class="card card-modern shadow-sm border-0 h-100">
+                                        <div class="card-header card-header-modal-padre">
                                             <h6 class="mb-0">
                                                 <i class="fas fa-male me-2"></i>Padre
                                             </h6>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body bg-white">
                                             <div class="row">
                                                 <div class="col-md-12">
                                                     <div class="detail-item mb-2">
@@ -522,17 +590,17 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
                             @endif
+
+                            <!-- Tarjeta de la Madre -->
                             @if ($datos->inscripcion->madre)
-                                <div class="col-md-6">
-                                    <div class="card shadow-sm border-0 h-100">
-                                        <div class="card-header bg-madre text-white">
+                                <div class="card card-modern shadow-sm border-0 h-100">
+                                        <div class="card-header card-header-modal-madre">
                                             <h6 class="mb-0">
                                                 <i class="fas fa-female me-2"></i>Madre
                                             </h6>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body bg-white">
                                             <div class="row">
                                                 <div class="col-md-12">
                                                     <div class="detail-item mb-2">
@@ -644,19 +712,19 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
                             @endif
                         </div>
                         <div class="row">
+                            <!-- Tarjeta del Representante Legal (100% de ancho, debajo) -->
                             @if ($datos->inscripcion->representanteLegal)
-                                <div class="col-md-12">
-                                    <div class="card shadow-sm border-0">
-                                        <div class="card-header bg-representante-legal text-white">
+                                <div class="col-12 mt-3">
+                                    <div class="card card-modern shadow-sm border-0">
+                                        <div class="card-header card-header-modal-legal">
                                             <h6 class="mb-0">
                                                 <i class="fas fa-user-tie me-2"></i>Representante Legal
                                             </h6>
                                         </div>
-                                        <div class="card-body">
+                                        <div class="card-body bg-white">
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <div class="detail-item mb-2">
@@ -873,26 +941,10 @@
                         </div>
                     </div>
                 </div>
-                <hr class="my-4" style="border-top: 2px dashed #e5e7eb;">
-                <div class="mb-3">
-                    <div class="section-title">
-                        <i class="fas fa-comment-dots text-secondary"></i>
-                        <span>Observaciones</span>
-                    </div>
-                    <div class="card shadow-sm border-0 mt-2">
-                        <div class="card-body bg-light">
-                            @if ($datos->observaciones)
-                                <p class="mb-0" style="white-space: pre-line;">{{ $datos->observaciones }}</p>
-                            @else
-                                <p class="text-muted mb-0 text-center">
-                                    <i class="fas fa-info-circle me-2"></i>Sin observaciones registradas
-                                </p>
-                            @endif
-                        </div>
-                    </div>
-                </div>
             </div>
-            <div class="modal-footer modal-footer-view">
+        </div>
+    </div>
+    <div class="modal-footer modal-footer-view">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="fas fa-times me-2"></i>Cerrar
                 </button>

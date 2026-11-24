@@ -38,8 +38,8 @@
             </div>
             @can('lapsos.gestionar')
                 @if ($puedeCrear && \App\Support\AnioEscolarSeleccionado::esActual())
-                    <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#crearLapso">
-                        <i class="fas fa-plus"></i> <span>Nuevo lapso</span>
+                    <button type="button" class="btn-primary-modern" data-bs-toggle="modal" data-bs-target="#crearLapso">
+                        <i class="fas fa-plus me-1"></i> <span>Nuevo lapso</span>
                     </button>
                 @endif
             @endcan

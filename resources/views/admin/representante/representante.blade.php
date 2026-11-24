@@ -140,12 +140,12 @@
                                     <td class="text-start fw-semibold text-dark text-nowrap">{{ $rep->persona->primer_apellido ?? 'N/A' }}</td>
                                     <td class="text-center text-nowrap">
                                         @if ($rep->legal)
-                                            <span class="badge" style="background-color: #EFF6FF; color: #1E3A8A; font-weight: 600; padding: 0.35rem 0.65rem; border-radius: 6px; font-size: 0.82rem; border: 1px solid #DBEAFE;">
-                                                <i class="fas fa-user-shield me-1"></i> Representante Legal
+                                            <span class="badge badge-pill-legal" style="background-color: var(--pastel-purple-bg, #F3E8FF); color: var(--pastel-purple-text, #6B21A8); font-weight: 600; padding: 0.38rem 0.85rem; border-radius: 50px; font-size: 0.82rem; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 0.4rem;">
+                                                <i class="fas fa-user-shield"></i> Representante Legal
                                             </span>
                                         @else
-                                            <span class="badge" style="background-color: #F1F5F9; color: #475569; font-weight: 600; padding: 0.35rem 0.65rem; border-radius: 6px; font-size: 0.82rem; border: 1px solid #E2E8F0;">
-                                                <i class="fas fa-user-friends me-1"></i> Progenitor
+                                            <span class="badge badge-pill-progenitor" style="background-color: var(--pastel-blue-bg, #E0E7FF); color: var(--pastel-blue-text, #3730A3); font-weight: 600; padding: 0.38rem 0.85rem; border-radius: 50px; font-size: 0.82rem; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 0.4rem;">
+                                                <i class="fas fa-user-friends"></i> Progenitor
                                             </span>
                                         @endif
                                     </td>
@@ -480,13 +480,13 @@
                 if (isLegal) {
                     // Es representante legal
                     tipoBadge.textContent = 'Representante Legal';
-                    tipoBadge.className = 'badge-pill-modern';
-                    tipoBadge.style = 'background-color: #EFF6FF; color: #1E3A8A; border: 1px solid #DBEAFE;';
+                    tipoBadge.className = 'badge-pill-legal';
+                    tipoBadge.style = 'background-color: var(--pastel-purple-bg, #F3E8FF); color: var(--pastel-purple-text, #6B21A8); border-radius: 50px; border: 1px solid transparent; padding: 0.38rem 0.85rem; font-weight: 600;';
                 } else {
                     // Es progenitor
                     tipoBadge.textContent = 'Progenitor';
-                    tipoBadge.className = 'badge-pill-modern';
-                    tipoBadge.style = 'background-color: #F1F5F9; color: #475569; border: 1px solid #E2E8F0;';
+                    tipoBadge.className = 'badge-pill-progenitor';
+                    tipoBadge.style = 'background-color: var(--pastel-blue-bg, #E0E7FF); color: var(--pastel-blue-text, #3730A3); border-radius: 50px; border: 1px solid transparent; padding: 0.38rem 0.85rem; font-weight: 600;';
                 }
 
                 // === DATOS PERSONALES ===
