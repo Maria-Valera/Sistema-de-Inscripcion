@@ -10,18 +10,6 @@
 
 @section('content')
     <div class="asistente">
-        {{-- Stepper Superior: (1) Año escolar [Activo], (2) Lapsos, (3) Calendario académico --}}
-        @include('asistente_anio._pasos', ['pasoActual' => 1])
-
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-circle mr-2 me-2"></i>{{ session('error') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        @endif
-
         {{-- Tarjeta Principal --}}
         <div class="asistente-tarjeta">
             {{-- Cabecera Morada / Azul con Subtítulo Dinámico --}}

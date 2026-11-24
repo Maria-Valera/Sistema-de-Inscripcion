@@ -19,7 +19,7 @@
 
             @can('anio_escolar.gestionar')
                 @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                    <a href="{{ route('admin.anio-escolar.create') }}" class="btn-create text-decoration-none">
+                    <a href="{{ route('admin.asistente.anio') }}" class="btn-create text-decoration-none">
                         <i class="fas fa-plus"></i>
                         <span>Nuevo Año Escolar</span>
                     </a>

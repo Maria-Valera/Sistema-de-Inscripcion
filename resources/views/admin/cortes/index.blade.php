@@ -58,25 +58,27 @@
 
         @if ($config)
             @php $texto = fn ($n) => rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.'); @endphp
-            @php $abiertoIncompleto = $faltan > 0 && $lapso->estado === \App\Enums\EstadoLapso::Abierto; @endphp
-            <div class="resumen-puntos {{ $faltan <= 0 ? 'resumen-ok' : ($abiertoIncompleto ? 'resumen-alerta' : 'resumen-pendiente') }}">
-                <span class="cifra">{{ $texto($suma) }} / {{ $texto($totalLapso) }}</span>
+                        @php $cantidad = $cortes->count(); @endphp
+            <div class="resumen-puntos {{ $cantidad > 0 ? 'resumen-ok' : 'resumen-pendiente' }}">
+                <span class="cifra">{{ $texto($totalLapso) }} pts</span>
                 <span>
-                    @if ($abiertoIncompleto)
-                        <i class="fas fa-exclamation-circle"></i> {{ $lapso->nombre }} está abierto pero sus cortes suman {{ $texto($suma) }} de {{ $texto($totalLapso) }}:
-                        faltan {{ $texto($faltan) }} puntos. Complétalos antes de que los docentes carguen notas.
-                    @elseif ($faltan <= 0)
-                        <i class="fas fa-check-circle"></i> Los cortes suman los {{ $texto($totalLapso) }} puntos del lapso: ya se puede abrir.
+                    @if ($cantidad > 0)
+                        <i class="fas fa-check-circle"></i> {{ $cantidad }} {{ $cantidad === 1 ? 'corte' : 'cortes' }}: el lapso vale {{ $texto($totalLapso) }} puntos.
                     @else
-                        <i class="fas fa-exclamation-triangle"></i> Faltan {{ $texto($faltan) }} puntos para completar el lapso.
+                        <i class="fas fa-exclamation-triangle"></i> Este lapso todavía no tiene cortes: créalos antes de abrirlo.
+                    @endif
+                    @if ($lapso->estado !== \App\Enums\EstadoLapso::Planificado)
+                        Con el lapso {{ strtolower($lapso->estado->label()) }} ya no se agregan ni se borran cortes.
                     @endif
                 </span>
-                        </div>
-            <p class="text-muted mb-3" style="margin-top: -0.5rem">
-                <i class="fas fa-calculator me-1"></i>
-                Nota del lapso = suma de los cortes ÷ {{ $config->num_cortes }}
-                (ej.: {{ $texto($totalLapso) }} ÷ {{ $config->num_cortes }} = {{ $texto($totalLapso / max(1, $config->num_cortes)) }}).
-            </p>
+            </div>
+            @if ($cantidad > 0)
+                <p class="text-muted mb-3" style="margin-top: -0.5rem">
+                    <i class="fas fa-calculator me-1"></i>
+                    Nota del lapso = suma de los cortes ÷ {{ $cantidad }}
+                    (ej.: {{ $texto($totalLapso) }} ÷ {{ $cantidad }} = {{ $texto($totalLapso / $cantidad) }}).
+                </p>
+            @endif
         @else
             <div class="alert alert-warning">
                 Este año escolar no tiene configuración de evaluación. Créala primero en
@@ -100,7 +102,7 @@
                         <h3 class="mb-0">Cortes del lapso</h3>
                         <p class="mb-0 text-muted">
                             {{ $cortes->count() }}
-                            @if ($config) de {{ $config->num_cortes }} configurados @endif
+                            de {{ \App\Models\Corte::MAXIMO_POR_LAPSO }} como máximo
                         </p>
                     </div>
                 </div>
@@ -141,10 +143,12 @@
                                                         data-bs-target="#editarCorte{{ $corte->id }}" title="Editar">
                                                         <i class="fas fa-pen"></i>
                                                     </button>
+                                                    @if ($lapso->estado === \App\Enums\EstadoLapso::Planificado)
                                                     <button class="action-btn btn-delete" data-bs-toggle="modal"
                                                         data-bs-target="#eliminarCorte{{ $corte->id }}" title="Eliminar">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
+                                                    @endif
                                                 </div>
                                             @endif
                                         @endcan
@@ -196,8 +200,9 @@
             // Validación en tiempo real de los cortes: las mismas reglas que CorteRequest.
             document.addEventListener('DOMContentLoaded', () => {
                 const lapso = { inicio: @json($lapso->fecha_inicio->toDateString()), fin: @json($lapso->fecha_fin->toDateString()) };
-                const maxCortes = {{ $config->num_cortes }};
-                const totalLapso = {{ (float) $totalLapso }};
+                const maxCortes = {{ \App\Models\Corte::MAXIMO_POR_LAPSO }};
+                const maxPuntos = {{ (float) $config->nota_maxima }};
+
                 const cortes = @json($datosCortes);
 
                 document.querySelectorAll('form.form-corte').forEach((form) => {
@@ -210,18 +215,19 @@
                         if (numero === '') e.numero = 'Debes indicar el número del corte.';
                         else if (!/^\d+$/.test(numero)) e.numero = 'Debe ser un número entero.';
                         else if (+numero < 1) e.numero = 'El número del corte debe ser como mínimo 1.';
-                        else if (+numero > maxCortes) e.numero = `El número del corte no puede pasar del número de cortes configurado (${maxCortes}).`;
+                        else if (+numero > maxCortes) e.numero = `Un lapso tiene como máximo ${maxCortes} cortes.`;
                         else if (otros.some((c) => c.numero === +numero)) e.numero = 'Ya existe un corte con ese número en este lapso.';
 
                         if (valor('nombre') === '') e.nombre = 'Debes indicar el nombre del corte.';
 
                         // Puntos: más de 0 y sin pasar de lo que dejan libre los demás cortes
                         const peso = valor('peso_lapso');
-                        const disponible = totalLapso - otros.reduce((total, c) => total + c.peso, 0);
+
                         if (peso === '') e.peso_lapso = 'Debes indicar cuántos puntos vale el corte.';
                         else if (isNaN(peso)) e.peso_lapso = 'Los puntos deben ser un número.';
                         else if (+peso <= 0) e.peso_lapso = 'El corte debe valer más de 0 puntos.';
-                        else if (+peso - disponible > 0.001) e.peso_lapso = `Los cortes de este lapso no pueden sumar más de ${numeroLegible(totalLapso)} puntos: a este corte le quedan como máximo ${numeroLegible(disponible)}.`;
+
+                        else if (+peso - maxPuntos > 0.001) e.peso_lapso = `Un corte no puede valer más de ${numeroLegible(maxPuntos)} puntos.`;
 
                         // Fechas (opcionales) dentro del lapso
                         const inicio = valor('fecha_inicio');

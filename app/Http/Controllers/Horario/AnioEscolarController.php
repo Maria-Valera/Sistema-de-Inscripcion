@@ -45,18 +45,13 @@ class AnioEscolarController extends Controller
             $nuevoAnio = AnioEscolar::create($request->validated());
         });
 
-        if ($nuevoAnio) {
+        if ($request->status === 'Activo' && $nuevoAnio) {
             session(['anio_escolar_id' => (int) $nuevoAnio->id]);
-            \App\Support\AsistenteAnioEscolar::iniciar($nuevoAnio);
+        }
 
-            // Redirige directamente al asistente de configuración de lapsos (Paso 2)
-            if (auth()->user()->can('lapsos.gestionar')) {
-                return redirect()->route('admin.asistente.lapsos')
-                    ->with('success', 'Año escolar creado exitosamente. Ahora configura sus lapsos.');
-            }
-
+        if ($request->header('referer') && str_contains($request->header('referer'), 'seleccionar-anio')) {
             return redirect()->to(auth()->user()->rutaDashboard())
-                ->with('success', 'Año escolar creado exitosamente.');
+                ->with('success', 'Año escolar creado y activado exitosamente.');
         }
 
         return redirect()->route('admin.anio-escolar.index')

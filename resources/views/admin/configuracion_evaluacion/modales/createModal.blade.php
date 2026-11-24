@@ -16,13 +16,9 @@
 
                     <div class="form-group-modern">
                         <label for="crear_anio_escolar_id" class="form-label-modern">Año escolar</label>
-                        <select class="form-control-modern" id="crear_anio_escolar_id" name="anio_escolar_id" required>
-                            @foreach ($aniosSinConfiguracion as $anio)
-                                <option value="{{ $anio->id }}" @selected(old('anio_escolar_id') == $anio->id)>
-                                    {{ $anio->inicio_anio_escolar->format('Y') }} - {{ $anio->cierre_anio_escolar->format('Y') }}
-                                </option>
-                            @endforeach
-                        </select>
+                        {{-- El año no se elige: siempre es el activo --}}
+                        <input type="text" class="form-control-modern" id="crear_anio_escolar_id" disabled
+                            value="{{ $anioActivo->inicio_anio_escolar->format('Y') }} - {{ $anioActivo->cierre_anio_escolar->format('Y') }} (año activo)">
                     </div>
 
                     @include('admin.configuracion_evaluacion.modales._campos', ['config' => null, 'prefijo' => 'crear'])

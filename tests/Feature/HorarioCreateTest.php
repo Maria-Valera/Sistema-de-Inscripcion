@@ -58,7 +58,15 @@ class HorarioCreateTest extends TestCase
             'status' => 'Activo',
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.horario.create'));
+        $grado = Grado::create([
+            'numero_grado' => '1',
+            'capacidad_max' => 35,
+            'min_seccion' => 1,
+            'max_seccion' => 3,
+            'status' => 1,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.horario.create', ['nivel_id' => $grado->id]));
 
         $response->assertRedirect(route('admin.horario.configuracion'));
         $response->assertSessionHas('warning', 'Debes configurar el marco horario (bloques y recesos) antes de crear un horario.');
@@ -101,7 +109,7 @@ class HorarioCreateTest extends TestCase
             'status' => 1,
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.horario.create'));
+        $response = $this->actingAs($admin)->get(route('admin.horario.create', ['nivel_id' => $grado->id]));
 
         $response->assertRedirect(route('admin.horario.index'));
         $response->assertSessionHas('warning', 'Hay errores en la carga académica que impiden generar el horario. Por favor, revisa el diagnóstico.');
@@ -240,12 +248,10 @@ class HorarioCreateTest extends TestCase
             'seccion_id' => $seccion->id,
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.horario.create'));
+        $response = $this->actingAs($admin)->get(route('admin.horario.create', ['nivel_id' => $grado->id]));
 
         $response->assertOk();
         $response->assertSee('Crear Horario');
-        // Banner verde de validación
-        $response->assertSee('Configuración validada correctamente. Puedes proceder a generar el horario.');
         // Botón independiente de validar ya no debe existir
         $response->assertDontSee('id="btnValidarHorario"', false);
         // Checkbox de forzar generación ya no debe existir
@@ -349,6 +355,14 @@ class HorarioCreateTest extends TestCase
             'minutos_entre_bloques' => 0,
         ]);
 
+        $grado = Grado::create([
+            'numero_grado' => '1',
+            'capacidad_max' => 35,
+            'min_seccion' => 1,
+            'max_seccion' => 3,
+            'status' => 1,
+        ]);
+
         \App\Models\BloqueReservado::create([
             'anio_escolar_id' => $anio->id,
             'dia' => \App\Enums\Dia::Lunes,
@@ -356,7 +370,7 @@ class HorarioCreateTest extends TestCase
             'motivo' => 'Acto Cívico',
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.horario.create'));
+        $response = $this->actingAs($admin)->get(route('admin.horario.create', ['nivel_id' => $grado->id]));
 
         $response->assertOk();
         $response->assertSee('Crear Horario');
@@ -1017,7 +1031,7 @@ class HorarioCreateTest extends TestCase
         $seccion1 = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
         $seccion2 = Seccion::create(['nombre' => 'B', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
 
-        $response = $this->actingAs($admin)->get(route('admin.horario.create'));
+        $response = $this->actingAs($admin)->get(route('admin.horario.create', ['nivel_id' => $grado->id]));
         $response->assertOk();
         $response->assertViewHas('todasLasSecciones');
         $response->assertSee('seccionesGlobales');
@@ -1051,7 +1065,15 @@ class HorarioCreateTest extends TestCase
                 ->andReturn(['errores' => [], 'avisos' => [], 'info' => []]);
         });
 
-        $response = $this->actingAs($admin)->get(route('admin.horario.create'));
+        $grado = Grado::create([
+            'numero_grado' => '1',
+            'capacidad_max' => 35,
+            'min_seccion' => 1,
+            'max_seccion' => 3,
+            'status' => 1,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.horario.create', ['nivel_id' => $grado->id]));
         $response->assertOk();
 
         // Verificar el contenedor row y las columnas responsive

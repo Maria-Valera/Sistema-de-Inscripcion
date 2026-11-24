@@ -9,13 +9,13 @@
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <style>
         /* Ocultar barra lateral y resetear márgenes */
-        .main-sidebar, 
-        .sidebar, 
+        .main-sidebar,
+        .sidebar,
         [class*="sidebar-dark-"] {
             display: none !important;
         }
 
-        .content-wrapper, 
+        .content-wrapper,
         body:not(.sidebar-mini-md):not(.sidebar-mini-xs):not(.layout-top-nav) .content-wrapper,
         .main-header,
         .main-footer {
@@ -175,12 +175,26 @@
                     </div>
 
                     @can('anio_escolar.gestionar')
-                        <a href="{{ route('admin.anio-escolar.create') }}" 
-                           class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm text-decoration-none"
-                           style="font-size: 0.95rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
-                            <i class="fas fa-plus-circle"></i>
-                            <span>Crear Nuevo Año Escolar</span>
-                        </a>
+                        @if (auth()->user()->can('lapsos.gestionar') && auth()->user()->can('calendario_academico.gestionar'))
+                            {{-- Asistente de año nuevo (María): año escolar → lapso 1 → calendario, todo se guarda al final --}}
+                            <a href="{{ route('admin.asistente.anio') }}"
+                               class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm text-decoration-none"
+                               style="font-size: 0.95rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Crear Nuevo Año Escolar</span>
+                            </a>
+                        @else
+                            <button type="button"
+                                    class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm text-decoration-none"
+                                    style="font-size: 0.95rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalCrearAnioEscolar"
+                                    data-toggle="modal"
+                                    data-target="#modalCrearAnioEscolar">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Crear Nuevo Año Escolar</span>
+                            </button>
+                        @endif
                     @endcan
                 @endif
 
@@ -206,7 +220,7 @@
                                         $cierreAnio = $anio->cierre_anio_escolar ? \Carbon\Carbon::parse($anio->cierre_anio_escolar)->format('Y') : '';
                                         $etiqueta = $esActivo ? 'Activo' : 'Solo consulta';
                                     @endphp
-                                    <option value="{{ $anio->id }}" 
+                                    <option value="{{ $anio->id }}"
                                             data-activo="{{ $esActivo ? '1' : '0' }}"
                                             {{ $esSeleccionado || ($loop->first && !$anioSeleccionadoId) ? 'selected' : '' }}>
                                         Período {{ $inicioAnio }} - {{ $cierreAnio }} ({{ $etiqueta }})
@@ -240,8 +254,8 @@
                 <span>
                     <i class="fas fa-user-circle mr-1 text-secondary"></i> {{ auth()->user()->name ?? 'Usuario' }}
                 </span>
-                <a href="{{ route('logout') }}" 
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+                <a href="{{ route('logout') }}"
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                    class="text-danger font-weight-bold text-decoration-none">
                     <i class="fas fa-power-off mr-1"></i> Salir
                 </a>

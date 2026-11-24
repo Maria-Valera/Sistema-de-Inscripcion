@@ -26,7 +26,8 @@
                 </div>
             </div>
             @can('configuracion_evaluacion.gestionar')
-                @if ($aniosSinConfiguracion->isNotEmpty())
+                {{-- Solo para el año activo, y solo si todavía no tiene configuración --}}
+                @if (\App\Support\AnioEscolarSeleccionado::esActual() && $puedeCrear)
                     <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear">
                         <i class="fas fa-plus"></i> <span>Nueva configuración</span>
                     </button>
@@ -40,10 +41,26 @@
     <div class="main-container">
 
         @can('configuracion_evaluacion.gestionar')
-            @if ($aniosSinConfiguracion->isNotEmpty())
+            @if ($puedeCrear)
                 @include('admin.configuracion_evaluacion.modales.createModal')
             @endif
         @endcan
+
+                {{-- Error del año escolar (no tiene campo en el formulario: el año siempre es el activo) --}}
+        @error('anio_escolar_id')
+            <div class="alerts-container">
+                <div class="alert-modern alert-danger alert alert-dismissible fade show" role="alert">
+                    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="alert-content">
+                        <h4>Error</h4>
+                        <p>{{ $message }}</p>
+                    </div>
+                    <button type="button" class="alert-close btn-close" data-bs-dismiss="alert" aria-label="Cerrar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        @enderror
 
         {{-- Mensajes --}}
         @foreach (['success' => ['alert-success', 'fa-check-circle', 'Éxito'], 'error' => ['alert-danger', 'fa-exclamation-circle', 'Error']] as $clave => [$clase, $icono, $titulo])
@@ -104,8 +121,8 @@
                                 <th style="text-align: center">Escala</th>
                                 <th style="text-align: center">Aprueba con</th>
                                 <th style="text-align: center">Redondeo</th>
-                                <th style="text-align: center">Lapsos</th>
-                                <th style="text-align: center">Cortes por lapso</th>
+                                <th style="text-align: center">Máx. lapsos</th>
+
                                 <th style="text-align: center">Máx. pendientes</th>
                                 @can('configuracion_evaluacion.gestionar')
                                     <th style="text-align: center; width: 120px">Acciones</th>
@@ -121,13 +138,14 @@
                                     <td style="text-align: center">{{ $config->nota_minima }} a {{ $config->nota_maxima }}</td>
                                     <td style="text-align: center">{{ $config->nota_aprobatoria }}</td>
                                     <td style="text-align: center">{{ $config->regla_redondeo->label() }}</td>
-                                    <td style="text-align: center">{{ $config->num_lapsos }}</td>
-                                    <td style="text-align: center">{{ $config->num_cortes }} de {{ $config->puntos_corte }} puntos</td>
+                                    <td style="text-align: center">{{ $config->max_lapsos }}</td>
                                     <td style="text-align: center">{{ $config->max_areas_pendientes }}</td>
                                     @can('configuracion_evaluacion.gestionar')
                                         <td style="text-align: center">
-                                            <div class="action-buttons">
-                                                <button class="action-btn btn-edit" data-bs-toggle="modal"
+                                            {{-- Solo la del año activo se edita o elimina; las de años anteriores quedan como se usaron --}}
+                                            @if ($config->anio_escolar_id === $anioActivo?->id)
+                                                <div class="action-buttons">
+                                                    <button class="action-btn btn-edit" data-bs-toggle="modal"
                                                     data-bs-target="#editarConfiguracion{{ $config->id }}" title="Editar">
                                                     <i class="fas fa-pen"></i>
                                                 </button>
@@ -135,13 +153,18 @@
                                                     data-bs-target="#eliminarConfiguracion{{ $config->id }}" title="Eliminar">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
-                                            </div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted" title="Año anterior: solo consulta">
+                                                    <i class="fas fa-lock"></i> Solo consulta
+                                                </span>
+                                            @endif
                                         </td>
                                     @endcan
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8">
+                                    <td colspan="7">
                                         <div class="empty-state">
                                             <div class="empty-icon"><i class="fas fa-sliders-h"></i></div>
                                             <h4>No hay configuraciones registradas</h4>
@@ -157,8 +180,10 @@
 
             @can('configuracion_evaluacion.gestionar')
                 @foreach ($configuraciones as $config)
-                    @include('admin.configuracion_evaluacion.modales.editModal')
-                    @include('admin.configuracion_evaluacion.modales.deleteModal')
+                    @if ($config->anio_escolar_id === $anioActivo?->id)
+                        @include('admin.configuracion_evaluacion.modales.editModal')
+                        @include('admin.configuracion_evaluacion.modales.deleteModal')
+                    @endif
                 @endforeach
             @endcan
 
@@ -179,9 +204,7 @@
                 nota_minima:          { min: 0, max: 99,  nombre: 'La nota mínima' },
                 nota_maxima:          { min: 1, max: 100, nombre: 'La nota máxima' },
                 nota_aprobatoria:     { min: 1, max: 99,  nombre: 'La nota aprobatoria' },
-                num_lapsos:           { min: 2, max: 4,   nombre: 'El número de lapsos' },
-                num_cortes:           { min: 1, max: 10,  nombre: 'El número de cortes' },
-                puntos_corte:         { min: 1, max: 100, nombre: 'Los puntos por corte' },
+                max_lapsos:           { min: 1, max: 6,   nombre: 'El máximo de lapsos' },
                 momentos_quedada:     { min: 1, max: 6,   nombre: 'Los momentos para áreas quedadas' },
                 max_areas_pendientes: { min: 0, max: 5,   nombre: 'El máximo de áreas pendientes' },
             };
@@ -231,7 +254,7 @@
             }
 
             document.querySelectorAll('form').forEach((form) => {
-                if (!form.querySelector('[name="num_lapsos"]')) return; // solo los formularios de M3
+                if (!form.querySelector('[name="max_lapsos"]')) return; // solo los formularios de M3
                 form.setAttribute('novalidate', 'novalidate'); // sin los avisos del navegador (salen en su idioma)
 
                 form.querySelectorAll('input[type="number"]').forEach((campo) => {
