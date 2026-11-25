@@ -8,9 +8,14 @@ return [
         'institucion' => '*',
         'escala_literal' => '*',
         'autoridad_firmante' => '*',
+        'carga_academica' => '*',
     ],
     'Subdirectora' => [
         'anio_escolar' => '*',
         'escala_literal' => '*',
+        'carga_academica' => '*',
+    ],
+    'Docente' => [
+        'carga_academica' => ['ver'],
     ],
 ];

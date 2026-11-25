@@ -16,6 +16,7 @@ class StephaniaMaestrosSeeder extends Seeder
             InstitucionSeeder::class,
             EscalaLiteralSeeder::class,
             AutoridadFirmanteSeeder::class,
+            CargaAcademicaTS0Seeder::class,
         ]);
     }
 }

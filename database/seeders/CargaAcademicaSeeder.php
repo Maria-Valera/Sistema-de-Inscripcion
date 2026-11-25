@@ -6,6 +6,7 @@ use App\Models\AnioEscolar;
 use App\Models\AreaEstudioRealizado;
 use App\Models\AreaFormacion;
 use App\Models\Aula;
+use App\Models\CalendarioAcademico;
 use App\Models\CargaAcademica;
 use App\Models\ConfiguracionHorario;
 use App\Models\DetalleDocenteEstudio;
@@ -14,6 +15,7 @@ use App\Models\DocenteAreaGrado;
 use App\Models\EstudiosRealizado;
 use App\Models\Genero;
 use App\Models\Grado;
+use App\Models\GradoSeccion;
 use App\Models\Localidad;
 use App\Models\Persona;
 use App\Models\PrefijoTelefono;
@@ -21,6 +23,7 @@ use App\Models\Seccion;
 use App\Models\seccion_aula;
 use App\Models\TipoDocumento;
 use App\Models\User;
+use App\Enums\TipoAsignacionNota;
 use App\Support\AnioEscolarSeleccionado;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -402,17 +405,23 @@ class CargaAcademicaSeeder extends Seeder
                     }
 
                     if ($docenteAsignado) {
-                        CargaAcademica::updateOrCreate(
+                        $calendarioItem = CalendarioAcademico::firstOrCreate(
+                            ['anio_escolar_id' => $anioItem->id],
                             [
-                                'anio_escolar_id' => $anioItem->id,
-                                'seccion_id' => $seccion->id,
-                                'area_formacion_id' => $area->id,
-                            ],
-                            [
-                                'docente_id' => $docenteAsignado->id,
+                                'estado' => 'confirmado',
+                                'fecha_confirmacion' => now(),
                             ]
                         );
 
+                        $gsItem = GradoSeccion::firstOrCreate(
+                            [
+                                'grado_id' => $seccion->grado_id,
+                                'seccion_id' => $seccion->id,
+                            ],
+                            ['status' => true]
+                        );
+
+                        $dagItem = null;
                         if ($detalleEstudioAsignado) {
                             $areaEstudio = AreaEstudioRealizado::where('area_formacion_id', $area->id)
                                 ->where('estudios_id', $detalleEstudioAsignado->estudios_id)
@@ -428,7 +437,7 @@ class CargaAcademicaSeeder extends Seeder
                                 );
                             }
 
-                            DocenteAreaGrado::updateOrCreate(
+                            $dagItem = DocenteAreaGrado::updateOrCreate(
                                 [
                                     'docente_estudio_realizado_id' => $detalleEstudioAsignado->id,
                                     'area_estudio_realizado_id' => $areaEstudio->id,
@@ -441,6 +450,22 @@ class CargaAcademicaSeeder extends Seeder
                                 ]
                             );
                         }
+
+                        CargaAcademica::updateOrCreate(
+                            [
+                                'calendario_academico_id' => $calendarioItem->id,
+                                'docente_id' => $docenteAsignado->id,
+                                'area_formacion_id' => $area->id,
+                                'grado_seccion_id' => $gsItem->id,
+                                'grupo_estable_id' => null,
+                            ],
+                            [
+                                'tipo' => TipoAsignacionNota::Area,
+                                'docente_area_grado_id' => $dagItem?->id,
+                                'activa' => true,
+                                'sincronizada_at' => now(),
+                            ]
+                        );
 
                         $cargasEsteAnio++;
                     }

@@ -10,6 +10,8 @@ use App\Models\AreaFormacionPosicion;
 use App\Models\Aula;
 use App\Models\BloqueReservado;
 use App\Models\CargaAcademica;
+use App\Models\CalendarioAcademico;
+use App\Models\GradoSeccion;
 use App\Models\ConfiguracionHorario;
 use App\Models\DetalleDocenteEstudio;
 use App\Models\Docente;
@@ -209,12 +211,25 @@ class ValidadorHorarioServiceTest extends TestCase
         }
 
         $anio = AnioEscolar::whereIn('status', ['Activo', 'Extendido'])->first() ?? AnioEscolar::latest('id')->first();
+        if (!$anio) {
+            $anio = AnioEscolar::create([
+                'inicio_anio_escolar' => '2026-09-15',
+                'cierre_anio_escolar' => '2027-07-15',
+                'status' => 'Activo',
+            ]);
+        }
+        $calendario = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gradoSeccion = GradoSeccion::firstOrCreate([
+            'grado_id' => $grado->id,
+            'seccion_id' => $seccion->id,
+        ]);
 
         return CargaAcademica::firstOrCreate([
-            'anio_escolar_id' => $anio?->id ?? 1,
+            'calendario_academico_id' => $calendario->id,
             'docente_id' => $docente->id,
+            'tipo' => 'area',
             'area_formacion_id' => $area->id,
-            'seccion_id' => $seccion->id,
+            'grado_seccion_id' => $gradoSeccion->id,
         ]);
     }
 

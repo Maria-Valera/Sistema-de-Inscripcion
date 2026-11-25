@@ -163,7 +163,7 @@ class PruebaMasivaHorarioCommand extends Command
 
         foreach ($secciones as $sec) {
             $asigsSec = HorarioAsignacion::where('anio_escolar_id', $anio->id)
-                ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec->id))
+                ->whereHas('cargaAcademica.gradoSeccion', fn($q) => $q->where('seccion_id', $sec->id))
                 ->get(['dia', 'bloque', 'fijada'])
                 ->map(fn($a) => [
                     'dia' => $a->dia instanceof \App\Enums\Dia ? $a->dia->value : (int) $a->dia,
@@ -263,7 +263,7 @@ class PruebaMasivaHorarioCommand extends Command
             $d = $asig->dia instanceof \App\Enums\Dia ? $asig->dia->value : (int)$asig->dia;
             $b = (int)$asig->bloque;
             $docId = $asig->cargaAcademica?->docente_id;
-            $secId = $asig->cargaAcademica?->seccion_id;
+            $secId = $asig->cargaAcademica?->gradoSeccion?->seccion_id;
 
             if ($docId) {
                 $keyDoc = "{$docId}_{$d}_{$b}";

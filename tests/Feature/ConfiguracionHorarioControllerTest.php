@@ -238,11 +238,21 @@ class ConfiguracionHorarioControllerTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        $calendario = \App\Models\CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $this->anio->id]);
+        $seccionObj = \App\Models\Seccion::find($seccionId);
+        $gradoSeccion = \App\Models\GradoSeccion::firstOrCreate(['grado_id' => $seccionObj->grado_id, 'seccion_id' => $seccionId]);
+
+        $cal = \App\Models\CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $this->anio->id]);
+        $sec = \App\Models\Seccion::find($seccionId);
+        $gs = \App\Models\GradoSeccion::firstOrCreate(['grado_id' => $sec->grado_id, 'seccion_id' => $sec->id]);
+
         $cargaId = DB::table('cargas_academicas')->insertGetId([
-            'anio_escolar_id' => $this->anio->id,
+            'calendario_academico_id' => $calendario->id,
             'docente_id' => $docenteId,
+            'tipo' => 'area',
             'area_formacion_id' => $materiaId,
-            'seccion_id' => $seccionId,
+            'grado_seccion_id' => $gradoSeccion->id,
+            'activa' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
