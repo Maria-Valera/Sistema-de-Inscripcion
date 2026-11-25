@@ -28,7 +28,7 @@ class DocenteController extends Controller
         $areaFormacionId = $request->query('area_formacion_id');
         $seccionId = $request->query('seccion_id');
 
-        $query = Docente::with(['persona', 'cargasAcademicas.areaFormacion', 'cargasAcademicas.seccion'])
+        $query = Docente::with(['persona', 'cargasAcademicas.areaFormacion', 'cargasAcademicas.gradoSeccion.seccion'])
             ->where('status', true)
             ->whereHas('persona', function ($query) {
                 $query->where('status', true);
@@ -40,13 +40,13 @@ class DocenteController extends Controller
                 // 1. Carga Académica (modelo normalizado)
                 $q->whereHas('cargasAcademicas', function ($cq) use ($gradoId, $areaFormacionId, $seccionId) {
                     if ($seccionId) {
-                        $cq->where('seccion_id', $seccionId);
+                        $cq->whereHas('gradoSeccion', fn($gs) => $gs->where('seccion_id', $seccionId));
                     }
                     if ($areaFormacionId) {
                         $cq->where('area_formacion_id', $areaFormacionId);
                     }
                     if ($gradoId) {
-                        $cq->whereHas('seccion', fn($sq) => $sq->where('grado_id', $gradoId));
+                        $cq->whereHas('gradoSeccion', fn($gs) => $gs->where('grado_id', $gradoId));
                     }
                 })
                 // 2. Fallback: docente_area_grados (histórico)
@@ -79,12 +79,13 @@ class DocenteController extends Controller
                     ->all();
 
                 $secciones = $cargas->map(function ($c) use ($gradoId) {
-                    if (!$c->seccion) return null;
-                    if ($gradoId && $c->seccion->grado_id != $gradoId) return null;
+                    $sec = $c->gradoSeccion?->seccion;
+                    if (!$sec) return null;
+                    if ($gradoId && $sec->grado_id != $gradoId) return null;
                     return [
-                        'id' => $c->seccion->id,
-                        'nombre' => $c->seccion->nombre,
-                        'grado_id' => $c->seccion->grado_id,
+                        'id' => $sec->id,
+                        'nombre' => $sec->nombre,
+                        'grado_id' => $sec->grado_id,
                     ];
                 })->filter()->unique('id')->values()->all();
             } else {

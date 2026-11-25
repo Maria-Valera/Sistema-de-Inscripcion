@@ -7,6 +7,8 @@ use App\Models\AreaEstudioRealizado;
 use App\Models\AreaFormacion;
 use App\Models\Aula;
 use App\Models\CargaAcademica;
+use App\Models\CalendarioAcademico;
+use App\Models\GradoSeccion;
 use App\Models\ConfiguracionHorario;
 use App\Models\DetalleDocenteEstudio;
 use App\Models\Docente;
@@ -241,11 +243,15 @@ class HorarioCreateTest extends TestCase
             'status' => 1,
         ]);
 
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
         CargaAcademica::create([
-            'anio_escolar_id' => $anio->id,
+            'calendario_academico_id' => $cal->id,
             'docente_id' => $docente->id,
+            'tipo' => 'area',
             'area_formacion_id' => $area->id,
-            'seccion_id' => $seccion->id,
+            'grado_seccion_id' => $gs->id,
         ]);
 
         $response = $this->actingAs($admin)->get(route('admin.horario.create', ['nivel_id' => $grado->id]));
@@ -443,11 +449,15 @@ class HorarioCreateTest extends TestCase
             'status' => true,
         ]);
 
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
         CargaAcademica::create([
-            'anio_escolar_id' => $anio->id,
+            'calendario_academico_id' => $cal->id,
             'docente_id' => $docente->id,
+            'tipo' => 'area',
             'area_formacion_id' => $area->id,
-            'seccion_id' => $seccion->id,
+            'grado_seccion_id' => $gs->id,
         ]);
 
         $response = $this->actingAs($admin)
@@ -536,11 +546,15 @@ class HorarioCreateTest extends TestCase
             'status' => true,
         ]);
 
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
         $carga = CargaAcademica::create([
-            'anio_escolar_id' => $anio->id,
+            'calendario_academico_id' => $cal->id,
             'docente_id' => $docente->id,
+            'tipo' => 'area',
             'area_formacion_id' => $area->id,
-            'seccion_id' => $seccion->id,
+            'grado_seccion_id' => $gs->id,
         ]);
 
         \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
@@ -610,7 +624,16 @@ class HorarioCreateTest extends TestCase
         $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 35, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => true]);
         $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
         $area = AreaFormacion::create(['nombre_area_formacion' => 'Castellano', 'codigo_area' => 'CAS-1', 'siglas' => 'CAS', 'bloques_semanales' => 2, 'status' => true]);
-        $carga = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccion->id]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
+        $carga = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $docente->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area->id,
+            'grado_seccion_id' => $gs->id,
+        ]);
 
         \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
         \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
@@ -656,7 +679,16 @@ class HorarioCreateTest extends TestCase
         $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 35, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => true]);
         $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
         $area = AreaFormacion::create(['nombre_area_formacion' => 'Inglés', 'codigo_area' => 'ING-1', 'siglas' => 'ING', 'bloques_semanales' => 2, 'status' => true]);
-        $carga = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccion->id]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
+        $carga = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $docente->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area->id,
+            'grado_seccion_id' => $gs->id,
+        ]);
 
         \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
         \DB::table('dias_semana')->insert(['id' => 2, 'nombre_dia' => 'Martes', 'status' => 1]);
@@ -703,8 +735,24 @@ class HorarioCreateTest extends TestCase
 
         $area = AreaFormacion::create(['nombre_area_formacion' => 'Matemática', 'codigo_area' => 'MAT-1', 'siglas' => 'MAT', 'bloques_semanales' => 4, 'status' => true]);
 
-        $cargaA = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccionA->id]);
-        $cargaB = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccionB->id]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gsA = GradoSeccion::firstOrCreate(['grado_id' => $seccionA->grado_id, 'seccion_id' => $seccionA->id]);
+        $gsB = GradoSeccion::firstOrCreate(['grado_id' => $seccionB->grado_id, 'seccion_id' => $seccionB->id]);
+
+        $cargaA = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $docente->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area->id,
+            'grado_seccion_id' => $gsA->id,
+        ]);
+        $cargaB = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $docente->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area->id,
+            'grado_seccion_id' => $gsB->id,
+        ]);
 
         \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
         \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
@@ -766,8 +814,23 @@ class HorarioCreateTest extends TestCase
         $area1 = AreaFormacion::create(['nombre_area_formacion' => 'Historia', 'codigo_area' => 'HIS-1', 'siglas' => 'HIS', 'bloques_semanales' => 2, 'status' => true]);
         $area2 = AreaFormacion::create(['nombre_area_formacion' => 'Geografía', 'codigo_area' => 'GEO-1', 'siglas' => 'GEO', 'bloques_semanales' => 2, 'status' => true]);
 
-        $carga1 = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc1->id, 'area_formacion_id' => $area1->id, 'seccion_id' => $seccion->id]);
-        $carga2 = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc2->id, 'area_formacion_id' => $area2->id, 'seccion_id' => $seccion->id]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
+        $carga1 = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $doc1->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area1->id,
+            'grado_seccion_id' => $gs->id,
+        ]);
+        $carga2 = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $doc2->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area2->id,
+            'grado_seccion_id' => $gs->id,
+        ]);
 
         \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
         \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
@@ -821,7 +884,16 @@ class HorarioCreateTest extends TestCase
         $grado = Grado::create(['numero_grado' => '1', 'capacidad_max' => 35, 'min_seccion' => 1, 'max_seccion' => 3, 'status' => true]);
         $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 20, 'status' => true]);
         $area = AreaFormacion::create(['nombre_area_formacion' => 'Física', 'codigo_area' => 'FIS-1', 'siglas' => 'FIS', 'bloques_semanales' => 2, 'status' => true]);
-        $carga = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccion->id]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
+        $carga = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $docente->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area->id,
+            'grado_seccion_id' => $gs->id,
+        ]);
 
         \DB::table('dias_semana')->insert([
             ['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1],
@@ -906,8 +978,24 @@ class HorarioCreateTest extends TestCase
         $area1 = AreaFormacion::create(['nombre_area_formacion' => 'Historia', 'codigo_area' => 'HIS-1', 'siglas' => 'HIS', 'bloques_semanales' => 2, 'status' => true]);
         $area2 = AreaFormacion::create(['nombre_area_formacion' => 'Geografía', 'codigo_area' => 'GEO-1', 'siglas' => 'GEO', 'bloques_semanales' => 2, 'status' => true]);
 
-        $cargaA = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc1->id, 'area_formacion_id' => $area1->id, 'seccion_id' => $seccionA->id]);
-        $cargaB = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $doc2->id, 'area_formacion_id' => $area2->id, 'seccion_id' => $seccionB->id]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gsA = GradoSeccion::firstOrCreate(['grado_id' => $seccionA->grado_id, 'seccion_id' => $seccionA->id]);
+        $gsB = GradoSeccion::firstOrCreate(['grado_id' => $seccionB->grado_id, 'seccion_id' => $seccionB->id]);
+
+        $cargaA = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $doc1->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area1->id,
+            'grado_seccion_id' => $gsA->id,
+        ]);
+        $cargaB = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $doc2->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area2->id,
+            'grado_seccion_id' => $gsB->id,
+        ]);
 
         \DB::table('dias_semana')->insert(['id' => 1, 'nombre_dia' => 'Lunes', 'status' => 1]);
         \DB::table('bloque_horarios')->insert(['id' => 1, 'hora_inicio' => '07:00:00', 'hora_fin' => '07:45:00', 'status' => 1]);
@@ -977,7 +1065,16 @@ class HorarioCreateTest extends TestCase
         $seccion = Seccion::create(['nombre' => 'C', 'grado_id' => $grado->id, 'cantidad_actual' => 25, 'status' => true]);
 
         $area = AreaFormacion::create(['nombre_area_formacion' => 'Castellano', 'codigo_area' => 'CAS-1', 'siglas' => 'CAS', 'bloques_semanales' => 2, 'status' => true]);
-        $carga = CargaAcademica::create(['anio_escolar_id' => $anio->id, 'docente_id' => $docente->id, 'area_formacion_id' => $area->id, 'seccion_id' => $seccion->id]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
+        $carga = CargaAcademica::create([
+            'calendario_academico_id' => $cal->id,
+            'docente_id' => $docente->id,
+            'tipo' => 'area',
+            'area_formacion_id' => $area->id,
+            'grado_seccion_id' => $gs->id,
+        ]);
 
         HorarioAsignacion::create([
             'anio_escolar_id' => $anio->id,
@@ -1111,11 +1208,15 @@ class HorarioCreateTest extends TestCase
         $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 15, 'status' => true]);
 
         $area = AreaFormacion::create(['nombre_area_formacion' => 'Matemática', 'codigo_area' => 'MAT-1', 'siglas' => 'MAT', 'bloques_semanales' => 2, 'status' => true]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
         $carga = CargaAcademica::create([
-            'anio_escolar_id' => $anio->id,
+            'calendario_academico_id' => $cal->id,
             'docente_id' => $docente->id,
+            'tipo' => 'area',
             'area_formacion_id' => $area->id,
-            'seccion_id' => $seccion->id,
+            'grado_seccion_id' => $gs->id,
         ]);
 
         $aula1 = Aula::create(['nombre_aula' => 'Aula 1', 'tipo_aula' => Aula::TIPO_REGULAR, 'capacidad_maxima' => 30]);
@@ -1160,11 +1261,15 @@ class HorarioCreateTest extends TestCase
         $seccion = Seccion::create(['nombre' => 'A', 'grado_id' => $grado->id, 'cantidad_actual' => 15, 'status' => true]);
 
         $area = AreaFormacion::create(['nombre_area_formacion' => 'Física', 'codigo_area' => 'FIS-1', 'siglas' => 'FIS', 'bloques_semanales' => 2, 'status' => true]);
+        $cal = CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anio->id]);
+        $gs = GradoSeccion::firstOrCreate(['grado_id' => $seccion->grado_id, 'seccion_id' => $seccion->id]);
+
         $carga = CargaAcademica::create([
-            'anio_escolar_id' => $anio->id,
+            'calendario_academico_id' => $cal->id,
             'docente_id' => $docente->id,
+            'tipo' => 'area',
             'area_formacion_id' => $area->id,
-            'seccion_id' => $seccion->id,
+            'grado_seccion_id' => $gs->id,
         ]);
 
         $response = $this->actingAs($admin)->postJson('/api/horario/guardar-asignaciones', [

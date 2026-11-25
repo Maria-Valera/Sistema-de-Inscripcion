@@ -44,4 +44,14 @@ return [
             'autoridad_firmante.gestionar',
         ],
     ],
+    'carga_academica' => [
+        'nombre' => 'Cargas Académicas',
+        'icono' => 'fas fa-chalkboard-teacher',
+        'ruta' => 'admin.cargas-academicas.index',
+        'grupo' => 'notas',
+        'permisos' => [
+            'carga_academica.ver',
+            'carga_academica.gestionar',
+        ],
+    ],
 ];
