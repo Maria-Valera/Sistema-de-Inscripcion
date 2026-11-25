@@ -9,6 +9,7 @@ use App\Http\Controllers\Horario\AnioEscolarController;
 use App\Http\Controllers\InstitucionController;
 use App\Http\Controllers\EscalaLiteralController;
 use App\Http\Controllers\AutoridadFirmanteController;
+use App\Http\Controllers\CargaAcademicaController;
 
 Route::middleware(['permission:anio_escolar.cambiar'])->group(function () {
     Route::get('seleccionar-anio', [SeleccionarAnioEscolarController::class, 'index'])
@@ -44,4 +45,12 @@ Route::middleware('permission:autoridad_firmante.gestionar')->group(function () 
 Route::middleware(['permission:anio_escolar.gestionar'])->group(function () {
     Route::get('anio-escolar/crear', [AnioEscolarController::class, 'create'])->name('anio-escolar.create');
     Route::resource('anio-escolar', AnioEscolarController::class)->except(['create']);
+});
+
+// Maestro S5: Cargas Académicas (TS0)
+Route::middleware('permission:carga_academica.ver')->group(function () {
+    Route::get('cargas-academicas', [CargaAcademicaController::class, 'index'])->name('cargas-academicas.index');
+});
+Route::middleware('permission:carga_academica.gestionar')->group(function () {
+    Route::post('cargas-academicas/generar', [CargaAcademicaController::class, 'generar'])->name('cargas-academicas.generar');
 });

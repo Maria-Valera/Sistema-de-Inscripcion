@@ -34,16 +34,17 @@ Class GeneradorHorarioService
         $query = CargaAcademica::with([
             'docente.persona',
             'areaFormacion.aula',
-            'seccion.grado',
+            'gradoSeccion.seccion',
+            'gradoSeccion.grado',
         ]);
 
         if ($anioEscolarId !== null) {
-            $query->where('anio_escolar_id', $anioEscolarId);
+            $query->whereHas('calendarioAcademico', fn($q) => $q->where('anio_escolar_id', $anioEscolarId));
         }
 
         //filtro grado y seccion
         if ($gradoId !== null) {
-            $query->whereHas('seccion', function ($q) use ($gradoId) {
+            $query->whereHas('gradoSeccion', function ($q) use ($gradoId) {
                 $q->where('grado_id', $gradoId);
             });
         }
@@ -58,8 +59,8 @@ Class GeneradorHorarioService
         return $asignaciones->map(function ($fila) {
             $docente = $fila->docente;
             $area = $fila->areaFormacion;
-            $seccion = $fila->seccion;
-            $grado = $seccion?->grado;
+            $seccion = $fila->gradoSeccion?->seccion;
+            $grado = $fila->gradoSeccion?->grado ?? $seccion?->grado;
 
             return [
                 'carga_academica_id' => $fila->id,
@@ -866,14 +867,14 @@ Class GeneradorHorarioService
 
         // Las asignaciones conservadas (fijadas o fuera del alcance) ocupan docente, sección y aula
         $conservadas = HorarioAsignacion::where('anio_escolar_id', $anio)
-            ->with('cargaAcademica.seccion')
+            ->with('cargaAcademica.gradoSeccion.seccion')
             ->get();
 
         $bloquesFijadosPorCarga = [];
 
         foreach ($conservadas as $c) {
             $estaEnAlcance = true;
-            if ($gradoId !== null && $c->cargaAcademica?->seccion?->grado_id != $gradoId) {
+            if ($gradoId !== null && $c->cargaAcademica?->gradoSeccion?->grado_id != $gradoId) {
                 $estaEnAlcance = false;
             }
             if ($areaId !== null && $c->cargaAcademica?->area_formacion_id != $areaId) {
@@ -885,7 +886,7 @@ Class GeneradorHorarioService
                 $cDia = $c->dia instanceof Dia ? $c->dia->value : (int) $c->dia;
                 $cBloque = (int) $c->bloque;
                 $cDocenteId = $c->cargaAcademica?->docente_id;
-                $cSeccionId = $c->cargaAcademica?->seccion_id;
+                $cSeccionId = $c->cargaAcademica?->gradoSeccion?->seccion_id;
                 $cMateriaId = $c->cargaAcademica?->area_formacion_id;
 
                 if ($cDocenteId && $cDia && $cBloque) {
@@ -1185,7 +1186,7 @@ Class GeneradorHorarioService
                 ->where('fijada', false);
 
             if ($gradoId !== null) {
-                $aBorrar->whereHas('cargaAcademica.seccion', function ($q) use ($gradoId) {
+                $aBorrar->whereHas('cargaAcademica.gradoSeccion', function ($q) use ($gradoId) {
                     $q->where('grado_id', $gradoId);
                 });
             }

@@ -117,7 +117,8 @@ class GeneradorHorarioController extends Controller
         $query = HorarioAsignacion::with([
             'cargaAcademica.docente.persona',
             'cargaAcademica.areaFormacion.aula',
-            'cargaAcademica.seccion.grado',
+            'cargaAcademica.gradoSeccion.seccion',
+            'cargaAcademica.gradoSeccion.grado',
             'aula'
         ])
         ->where('anio_escolar_id', $anioEscolarId)
@@ -125,7 +126,7 @@ class GeneradorHorarioController extends Controller
 
         // Filtrar por grado_id si se proporciona
         if (isset($validado['grado_id']) && $validado['grado_id']) {
-            $query->whereHas('cargaAcademica.seccion', function($q) use ($validado) {
+            $query->whereHas('cargaAcademica.gradoSeccion', function($q) use ($validado) {
                 $q->where('grado_id', $validado['grado_id']);
             });
         }
@@ -143,8 +144,8 @@ class GeneradorHorarioController extends Controller
                 $docente = $carga?->docente;
                 $persona = $docente?->persona;
                 $materia = $carga?->areaFormacion;
-                $seccion = $carga?->seccion;
-                $grado = $seccion?->grado;
+                $seccion = $carga?->gradoSeccion?->seccion;
+                $grado = $carga?->gradoSeccion?->grado ?? $seccion?->grado;
 
                 $diaVal = (int) $asignacion->dia;
                 $bloqueVal = (int) $asignacion->bloque;
@@ -247,7 +248,7 @@ class GeneradorHorarioController extends Controller
             if ($resultado['nivel'] == 1) {
                 // Nivel 1: Mover la asignación
                 $asignacion = HorarioAsignacion::where('anio_escolar_id', $validado['anio_escolar_id'])
-                    ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $validado['docente_id'])->where('seccion_id', $validado['seccion_id']))
+                    ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $validado['docente_id'])->whereHas('gradoSeccion', fn($gs) => $gs->where('seccion_id', $validado['seccion_id'])))
                     ->where('dia', $validado['dia_actual'])
                     ->where('bloque', $validado['bloque_actual'])
                     ->first();
@@ -268,7 +269,7 @@ class GeneradorHorarioController extends Controller
 
                 // Actualizar clase original
                 $asignacionOriginal = HorarioAsignacion::where('anio_escolar_id', $validado['anio_escolar_id'])
-                    ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $claseOriginal['docente_id'])->where('seccion_id', $claseOriginal['seccion_id']))
+                    ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $claseOriginal['docente_id'])->whereHas('gradoSeccion', fn($gs) => $gs->where('seccion_id', $claseOriginal['seccion_id'])))
                     ->where('dia', $claseOriginal['dia_origen'])
                     ->where('bloque', $claseOriginal['bloque_origen'])
                     ->first();
@@ -285,7 +286,7 @@ class GeneradorHorarioController extends Controller
 
                 // Actualizar clase intercambio
                 $asignacionIntercambio = HorarioAsignacion::where('anio_escolar_id', $validado['anio_escolar_id'])
-                    ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $claseIntercambio['docente_id'])->where('seccion_id', $claseIntercambio['seccion_id']))
+                    ->whereHas('cargaAcademica', fn($q) => $q->where('docente_id', $claseIntercambio['docente_id'])->whereHas('gradoSeccion', fn($gs) => $gs->where('seccion_id', $claseIntercambio['seccion_id'])))
                     ->where('dia', $claseIntercambio['dia_origen'])
                     ->where('bloque', $claseIntercambio['bloque_origen'])
                     ->first();
@@ -317,7 +318,7 @@ class GeneradorHorarioController extends Controller
         }
 
         $aula_id = $validado['aula_id'];
-        $seccionId = $asignacion->cargaAcademica?->seccion_id ?? $asignacion->seccion_id;
+        $seccionId = $asignacion->cargaAcademica?->gradoSeccion?->seccion_id ?? $asignacion->seccion_id;
 
         // Validar capacidad del aula
         if ($seccionId && !$this->generador->validarCapacidadAula($aula_id, $seccionId)) {
@@ -359,7 +360,7 @@ class GeneradorHorarioController extends Controller
             return response()->json(['error' => 'Día y bloque son requeridos y deben ser válidos'], 422);
         }
 
-        $asignacion = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula'])->find($id);
+        $asignacion = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.gradoSeccion.seccion', 'cargaAcademica.gradoSeccion.grado', 'aula'])->find($id);
         if (!$asignacion) {
             return response()->json(['error' => 'Asignación no encontrada'], 404);
         }
@@ -425,13 +426,13 @@ class GeneradorHorarioController extends Controller
         }
 
         // 6. Validar conflicto de sección
-        $seccionId = $asignacion->cargaAcademica?->seccion_id;
+        $seccionId = $asignacion->cargaAcademica?->gradoSeccion?->seccion_id;
         if ($seccionId) {
             $conflictoSeccion = HorarioAsignacion::where('anio_escolar_id', $asignacion->anio_escolar_id)
                 ->where('id', '!=', $id)
                 ->where('dia', $dia)
                 ->where('bloque', $bloque)
-                ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $seccionId))
+                ->whereHas('cargaAcademica.gradoSeccion', fn($q) => $q->where('seccion_id', $seccionId))
                 ->exists();
 
             if ($conflictoSeccion) {
@@ -466,14 +467,14 @@ class GeneradorHorarioController extends Controller
         }
 
         // Recargar con relaciones para devolver datos completos
-        $asignacion->load(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula']);
+        $asignacion->load(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.gradoSeccion.seccion', 'cargaAcademica.gradoSeccion.grado', 'aula']);
 
         return response()->json(['success' => true, 'asignacion' => $asignacion]);
     }
 
     public function toggleFijar(Request $request, int $id)
     {
-        $asignacion = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula'])->find($id);
+        $asignacion = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.gradoSeccion.seccion', 'cargaAcademica.gradoSeccion.grado', 'aula'])->find($id);
         if (!$asignacion) {
             return response()->json(['error' => 'Asignación no encontrada'], 404);
         }
@@ -501,9 +502,9 @@ class GeneradorHorarioController extends Controller
         ]);
 
         // Cargar ambos registros con relaciones
-        $asignacion1 = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula'])
+        $asignacion1 = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.gradoSeccion.seccion', 'cargaAcademica.gradoSeccion.grado', 'aula'])
             ->find($validado['horario_id_1']);
-        $asignacion2 = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula'])
+        $asignacion2 = HorarioAsignacion::with(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.gradoSeccion.seccion', 'cargaAcademica.gradoSeccion.grado', 'aula'])
             ->find($validado['horario_id_2']);
 
         if (!$asignacion1 || !$asignacion2) {
@@ -588,14 +589,14 @@ class GeneradorHorarioController extends Controller
         }
 
         // 5. Validar conflicto de secciones en destino
-        $sec1 = $asignacion1->cargaAcademica?->seccion_id;
+        $sec1 = $asignacion1->cargaAcademica?->gradoSeccion?->seccion_id;
         if ($sec1) {
             $conflictoSeccion1 = HorarioAsignacion::where('anio_escolar_id', $asignacion1->anio_escolar_id)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
                 ->where('dia', $dia2)
                 ->where('bloque', $bloque2)
-                ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec1))
+                ->whereHas('cargaAcademica.gradoSeccion', fn($q) => $q->where('seccion_id', $sec1))
                 ->exists();
 
             if ($conflictoSeccion1) {
@@ -603,14 +604,14 @@ class GeneradorHorarioController extends Controller
             }
         }
 
-        $sec2 = $asignacion2->cargaAcademica?->seccion_id;
+        $sec2 = $asignacion2->cargaAcademica?->gradoSeccion?->seccion_id;
         if ($sec2) {
             $conflictoSeccion2 = HorarioAsignacion::where('anio_escolar_id', $asignacion2->anio_escolar_id)
                 ->where('id', '!=', $asignacion1->id)
                 ->where('id', '!=', $asignacion2->id)
                 ->where('dia', $dia1)
                 ->where('bloque', $bloque1)
-                ->whereHas('cargaAcademica', fn($q) => $q->where('seccion_id', $sec2))
+                ->whereHas('cargaAcademica.gradoSeccion', fn($q) => $q->where('seccion_id', $sec2))
                 ->exists();
 
             if ($conflictoSeccion2) {
@@ -697,8 +698,8 @@ class GeneradorHorarioController extends Controller
         }
 
         // Recargar relaciones para devolver datos completos
-        $asignacion1->load(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula']);
-        $asignacion2->load(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.seccion.grado', 'aula']);
+        $asignacion1->load(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.gradoSeccion.seccion', 'cargaAcademica.gradoSeccion.grado', 'aula']);
+        $asignacion2->load(['cargaAcademica.docente.persona', 'cargaAcademica.areaFormacion', 'cargaAcademica.gradoSeccion.seccion', 'cargaAcademica.gradoSeccion.grado', 'aula']);
 
         return response()->json([
             'success' => true,
@@ -756,7 +757,7 @@ class GeneradorHorarioController extends Controller
 
             if ($seccionIds->isNotEmpty()) {
                 $queryBorrar->whereHas('cargaAcademica', function ($q) use ($seccionIds, $materiaIds) {
-                    $q->whereIn('seccion_id', $seccionIds);
+                    $q->whereHas('gradoSeccion', fn($gs) => $gs->whereIn('seccion_id', $seccionIds));
                     if ($materiaIds->isNotEmpty()) {
                         $q->whereIn('area_formacion_id', $materiaIds);
                     }
@@ -805,11 +806,18 @@ class GeneradorHorarioController extends Controller
                     }
 
                     if (!$cargaAcademicaId) {
-                        $carga = CargaAcademica::firstOrCreate([
-                            'anio_escolar_id' => $anioEscolarId,
-                            'docente_id' => $docenteId,
-                            'area_formacion_id' => $materiaId,
+                        $cal = \App\Models\CalendarioAcademico::firstOrCreate(['anio_escolar_id' => $anioEscolarId]);
+                        $seccionModel = $seccionesPorId->get($seccionId);
+                        $gradoSeccion = \App\Models\GradoSeccion::firstOrCreate([
+                            'grado_id' => $seccionModel?->grado_id,
                             'seccion_id' => $seccionId,
+                        ]);
+                        $carga = CargaAcademica::firstOrCreate([
+                            'calendario_academico_id' => $cal->id,
+                            'docente_id' => $docenteId,
+                            'tipo' => \App\Enums\TipoAsignacionNota::Area,
+                            'area_formacion_id' => $materiaId,
+                            'grado_seccion_id' => $gradoSeccion->id,
                         ]);
                         $cargaAcademicaId = $carga->id;
                     }

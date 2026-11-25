@@ -7,6 +7,12 @@ return [
     'calendario'  => [],
     'notas'       => [
         [
+            'text' => 'Cargas Académicas',
+            'url'  => 'admin/cargas-academicas',
+            'icon' => 'fas fa-chalkboard-teacher',
+            'can'  => 'carga_academica.ver',
+        ],
+        [
             'text' => 'Escala Literal',
             'url'  => 'admin/escala-literal',
             'icon' => 'fas fa-sort-alpha-down',

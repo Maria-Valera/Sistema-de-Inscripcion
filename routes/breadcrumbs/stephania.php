@@ -20,6 +20,11 @@ Breadcrumbs::for('admin.autoridad-firmante.index', function (Trail $trail) {
     $trail->push('Autoridades Firmantes', route('admin.autoridad-firmante.index'));
 });
 
+Breadcrumbs::for('admin.cargas-academicas.index', function (Trail $trail) {
+    $trail->parent('home');
+    $trail->push('Cargas Académicas', route('admin.cargas-academicas.index'));
+});
+
 Breadcrumbs::for('admin.anio-escolar.index', function (Trail $trail) {
     $trail->parent('home');
     $trail->push('Años Escolares', route('admin.anio-escolar.index'));

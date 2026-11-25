@@ -64,13 +64,14 @@ class ValidadorHorarioService
         $secciones = $seccionesQuery->get();
 
         // 3. Cargar asignaciones de carga académica (CargaAcademica)
-        $cargasQuery = CargaAcademica::where('anio_escolar_id', $anio)->with([
+        $cargasQuery = CargaAcademica::whereHas('calendarioAcademico', fn($q) => $q->where('anio_escolar_id', $anio))->with([
             'docente.persona',
             'areaFormacion.aula',
-            'seccion.grado'
+            'gradoSeccion.seccion',
+            'gradoSeccion.grado',
         ]);
         if ($gradoId !== null) {
-            $cargasQuery->whereHas('seccion', fn($q) => $q->where('grado_id', $gradoId));
+            $cargasQuery->whereHas('gradoSeccion', fn($q) => $q->where('grado_id', $gradoId));
         }
         $cargasAcademicas = $cargasQuery->get();
 
@@ -183,7 +184,7 @@ class ValidadorHorarioService
         }
 
         // 5. SECCIONES: Validar aula regular, capacidad, exceso de bloques, huecos y áreas sin docente
-        $cargasPorSeccion = $cargasAcademicas->groupBy('seccion_id');
+        $cargasPorSeccion = $cargasAcademicas->groupBy(fn($c) => $c->gradoSeccion?->seccion_id);
 
         foreach ($secciones as $seccion) {
             $gradoNombre = $seccion->grado ? "{$seccion->grado->numero_grado}° año" : "Grado {$seccion->grado_id}";

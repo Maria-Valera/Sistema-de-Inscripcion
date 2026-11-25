@@ -69,8 +69,9 @@ class InscripcionPolicy
 
             $seccionesHorario = DB::table('horario_asignaciones')
                 ->join('cargas_academicas', 'horario_asignaciones.carga_academica_id', '=', 'cargas_academicas.id')
+                ->join('grado_seccion', 'cargas_academicas.grado_seccion_id', '=', 'grado_seccion.id')
                 ->where('cargas_academicas.docente_id', $docente->id)
-                ->pluck('cargas_academicas.seccion_id')
+                ->pluck('grado_seccion.seccion_id')
                 ->toArray();
 
             $secciones = array_values(array_unique(array_filter(array_merge($seccionesCarga, $seccionesHorario))));
