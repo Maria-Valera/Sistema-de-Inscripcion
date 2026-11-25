@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use App\Models\Estado;
 use App\Models\AnioEscolar;
 use App\Models\Pais;
@@ -47,13 +48,16 @@ class EstadoIndex extends Component
     public function render()
     {
         $paises = Pais::where('status', true)
+            ->select('id', 'nameES')
+            ->orderBy('nameES', 'asc')
             ->get();
+
         $estados = Estado::where('estados.status', true)
             ->join('pais', 'estados.pais_id', '=', 'pais.id')
             ->when($this->search, function ($query) {
                 $query->where('estados.nombre_estado', 'like', '%' . $this->search . '%');
             })
-            ->select('estados.*', 'pais.nameES')
+            ->select('estados.id', 'estados.nombre_estado', 'estados.pais_id', 'estados.status', 'pais.nameES')
             ->orderBy('estados.nombre_estado', 'asc')
             ->paginate(10);
 
@@ -76,6 +80,14 @@ class EstadoIndex extends Component
         $this->estado_id = null;
         $this->pais_id = null;
         $this->updateMode = false;
+        $this->resetValidation();
+    }
+
+    #[On('abrirModalCrear')]
+    public function create()
+    {
+        $this->resetInputFields();
+        $this->resetValidation();
     }
 
     public function store()
@@ -100,11 +112,12 @@ class EstadoIndex extends Component
 
     public function edit($id)
     {
+        $this->resetValidation();
         if (!$this->verificarAccion()) {
             return;
         }
-        $estado = Estado::findOrFail($id);
-        $this->estado_id = $id;
+        $estado = Estado::select('id', 'nombre_estado', 'pais_id')->findOrFail($id);
+        $this->estado_id = $estado->id;
         $this->nombre_estado = $estado->nombre_estado;
         $this->pais_id = $estado->pais_id;
         $this->updateMode = true;

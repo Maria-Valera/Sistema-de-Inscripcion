@@ -35,7 +35,16 @@ class AutoridadFirmanteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cargo' => ['required', Rule::in(array_keys(AutoridadFirmante::CARGOS))],
+            'cargo' => [
+                'required',
+                Rule::in([
+                    'director',
+                    'subdirector_academico',
+                    'coordinador_control_estudios',
+                    'coordinador_evaluacion',
+                    'docente_firmante_mppe',
+                ]),
+            ],
             'persona_id' => ['required', 'exists:personas,id'],
             'encargado' => ['nullable', 'boolean'],
             'gaceta' => ['nullable', 'string', 'max:100'],
@@ -50,7 +59,12 @@ class AutoridadFirmanteRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
+            if ($validator->errors()->has('desde') || $validator->errors()->has('hasta') || $validator->errors()->has('cargo') || $validator->errors()->has('persona_id')) {
+                return;
+            }
+
             $cargo = $this->input('cargo');
+            $personaId = $this->input('persona_id');
             $desde = $this->input('desde');
             $hasta = $this->input('hasta');
             
@@ -62,27 +76,64 @@ class AutoridadFirmanteRequest extends FormRequest
                 $anioId = $paramAutoridad->anio_escolar_id;
             }
 
-            // Regla de negocio: si el cargo NO es 'docente_firmante_mppe', debe ser único por periodo (sin solapamiento)
-            if ($cargo && $cargo !== 'docente_firmante_mppe' && $desde && $anioId) {
+            if (!$anioId || !$cargo || !$desde) {
+                return;
+            }
+
+            // 1. Regla para cargos singulares (director, subdirector_academico, coordinador_control_estudios, coordinador_evaluacion):
+            // Ningún cargo de este tipo puede tener dos personas con fechas solapadas en el mismo año escolar.
+            if ($cargo !== 'docente_firmante_mppe') {
                 $solapado = AutoridadFirmante::where('anio_escolar_id', $anioId)
                     ->where('cargo', $cargo)
                     ->when($ignorarId, fn($q) => $q->where('id', '!=', $ignorarId))
-                    ->where(function ($q) use ($desde, $hasta) {
+                    ->where(function ($query) use ($desde, $hasta) {
                         if ($hasta) {
-                            $q->where('desde', '<=', $hasta);
+                            $query->where('desde', '<=', $hasta)
+                                  ->where(function ($sub) use ($desde) {
+                                      $sub->whereNull('hasta')
+                                          ->orWhere('hasta', '>=', $desde);
+                                  });
+                        } else {
+                            $query->whereNull('hasta')
+                                  ->orWhere('hasta', '>=', $desde);
                         }
-                        $q->where(function ($sub) use ($desde) {
-                            $sub->whereNull('hasta')
-                                ->orWhere('hasta', '>=', $desde);
-                        });
                     })
-                    ->exists();
+                    ->first();
 
                 if ($solapado) {
                     $cargoNombre = AutoridadFirmante::CARGOS[$cargo] ?? $cargo;
+                    $personaExistente = $solapado->persona?->nombre_completo ?? 'otra persona';
+                    $rangoExistente = $solapado->desde?->format('d/m/Y') . ' al ' . ($solapado->hasta ? $solapado->hasta->format('d/m/Y') : 'Indefinido');
                     $validator->errors()->add(
                         'cargo',
-                        "Ya existe una autoridad asignada como '{$cargoNombre}' en este año escolar cuyo período de vigencia se solapa con las fechas indicadas."
+                        "Ya existe una autoridad asignada como '{$cargoNombre}' ({$personaExistente}) en este año escolar con vigencia solapada ({$rangoExistente})."
+                    );
+                }
+            } else {
+                // 2. Regla para docente_firmante_mppe:
+                // No permitir duplicar la misma persona en el mismo cargo con fechas solapadas.
+                $solapadoDocente = AutoridadFirmante::where('anio_escolar_id', $anioId)
+                    ->where('cargo', $cargo)
+                    ->where('persona_id', $personaId)
+                    ->when($ignorarId, fn($q) => $q->where('id', '!=', $ignorarId))
+                    ->where(function ($query) use ($desde, $hasta) {
+                        if ($hasta) {
+                            $query->where('desde', '<=', $hasta)
+                                  ->where(function ($sub) use ($desde) {
+                                      $sub->whereNull('hasta')
+                                          ->orWhere('hasta', '>=', $desde);
+                                  });
+                        } else {
+                            $query->whereNull('hasta')
+                                  ->orWhere('hasta', '>=', $desde);
+                        }
+                    })
+                    ->first();
+
+                if ($solapadoDocente) {
+                    $validator->errors()->add(
+                        'persona_id',
+                        "Esta persona ya está registrada como Docente Firmante MPPE con un período de vigencia que se solapa con las fechas indicadas."
                     );
                 }
             }
@@ -95,12 +146,12 @@ class AutoridadFirmanteRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'cargo' => 'cargo',
-            'persona_id' => 'persona',
-            'encargado' => 'condición de encargado',
-            'gaceta' => 'número de gaceta o resolución',
-            'desde' => 'fecha de inicio',
-            'hasta' => 'fecha de culminación',
+            'cargo' => 'Cargo',
+            'persona_id' => 'Persona',
+            'encargado' => 'Condición de Encargado',
+            'gaceta' => 'Gaceta Oficial / Resolución',
+            'desde' => 'Vigencia Desde',
+            'hasta' => 'Vigencia Hasta',
         ];
     }
 
@@ -110,14 +161,14 @@ class AutoridadFirmanteRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'cargo.required' => 'Debe seleccionar un cargo.',
+            'cargo.required' => 'El campo Cargo es obligatorio.',
             'cargo.in' => 'El cargo seleccionado no es válido.',
-            'persona_id.required' => 'Debe seleccionar a una persona.',
+            'persona_id.required' => 'El campo Persona es obligatorio.',
             'persona_id.exists' => 'La persona seleccionada no está registrada en el sistema.',
-            'desde.required' => 'La fecha de inicio de vigencia es obligatoria.',
-            'desde.date' => 'La fecha de inicio debe ser una fecha válida.',
-            'hasta.date' => 'La fecha de culminación debe ser una fecha válida.',
-            'hasta.after_or_equal' => 'La fecha de culminación debe ser posterior o igual a la fecha de inicio.',
+            'desde.required' => 'El campo Vigencia Desde es obligatorio.',
+            'desde.date' => 'El campo Vigencia Desde debe ser una fecha válida.',
+            'hasta.date' => 'El campo Vigencia Hasta debe ser una fecha válida.',
+            'hasta.after_or_equal' => 'El campo Vigencia Hasta debe ser una fecha posterior o igual a Vigencia Desde.',
         ];
     }
 }

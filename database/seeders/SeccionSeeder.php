@@ -14,6 +14,12 @@ class SeccionSeeder extends Seeder
     public function run(): void
     {
         DB::table('seccions')->insert([
+            /* Grado 1 */
+            ['nombre' => 'A', 'cantidad_actual' => '0', 'grado_id' => '1', 'ejecucion_percentil_id' => null, 'status' => true, ],
+            ['nombre' => 'B', 'cantidad_actual' => '0', 'grado_id' => '1', 'ejecucion_percentil_id' => null, 'status' => true, ],
+            ['nombre' => 'C', 'cantidad_actual' => '0', 'grado_id' => '1', 'ejecucion_percentil_id' => null, 'status' => true, ],
+            ['nombre' => 'D', 'cantidad_actual' => '0', 'grado_id' => '1', 'ejecucion_percentil_id' => null, 'status' => true, ],
+            ['nombre' => 'E', 'cantidad_actual' => '0', 'grado_id' => '1', 'ejecucion_percentil_id' => null, 'status' => true, ],
             /* Grado 2 */
             ['nombre' => 'A', 'cantidad_actual' => '0', 'grado_id' => '2', 'ejecucion_percentil_id' => null, 'status' => true, ],
             ['nombre' => 'B', 'cantidad_actual' => '0', 'grado_id' => '2', 'ejecucion_percentil_id' => null, 'status' => true, ],

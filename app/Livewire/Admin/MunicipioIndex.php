@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use App\Models\Estado;
 use App\Models\Municipio;
 use App\Models\AnioEscolar;
@@ -40,7 +41,11 @@ class MunicipioIndex extends Component
     ];
     public function render()
     {
-        $paises = Pais::where('status', true)->get();
+        $paises = Pais::where('status', true)
+            ->select('id', 'nameES')
+            ->orderBy('nameES', 'asc')
+            ->get();
+
         $municipios = Municipio::where('municipios.status', true)
             ->join('estados', 'municipios.estado_id', '=', 'estados.id')
             ->join('pais', 'estados.pais_id', '=', 'pais.id')
@@ -48,12 +53,16 @@ class MunicipioIndex extends Component
                 $query->where('municipios.nombre_municipio', 'like', '%' . $this->search . '%');
             })
             ->select(
-                'municipios.*',
+                'municipios.id',
+                'municipios.nombre_municipio',
+                'municipios.estado_id',
+                'municipios.status',
                 'pais.nameES as pais_nombre',
                 'estados.nombre_estado as estado_nombre'
             )
             ->orderBy('municipios.nombre_municipio', 'asc')
             ->paginate(10);
+
         return view('livewire.admin.municipio-index', compact('municipios', 'paises'));
     }
 
@@ -61,6 +70,7 @@ class MunicipioIndex extends Component
     {
         $this->estados = Estado::where('pais_id', $paisId)
             ->where('status', true)
+            ->select('id', 'nombre_estado', 'pais_id')
             ->orderBy('nombre_estado')
             ->get();
         $this->estado_id = null;
@@ -82,7 +92,16 @@ class MunicipioIndex extends Component
         $this->municipio_id = null;
         $this->estado_id = null;
         $this->pais_id = null;
+        $this->estados = [];
         $this->updateMode = false;
+        $this->resetValidation();
+    }
+
+    #[On('abrirModalCrear')]
+    public function create()
+    {
+        $this->resetInputFields();
+        $this->resetValidation();
     }
 
     public function store()
@@ -107,15 +126,25 @@ class MunicipioIndex extends Component
 
     public function edit($id)
     {
-        $municipio = Municipio::with('estado')->findOrFail($id);
+        $this->resetValidation();
+        $municipio = Municipio::with('estado:id,pais_id')
+            ->select('id', 'nombre_municipio', 'estado_id')
+            ->findOrFail($id);
+
         $this->municipio_id = $municipio->id;
         $this->nombre_municipio = $municipio->nombre_municipio;
-        $this->pais_id = $municipio->estado->pais_id;
+        $this->pais_id = $municipio->estado ? $municipio->estado->pais_id : null;
         $this->estado_id = $municipio->estado_id;
-        $this->estados = Estado::where('pais_id', $this->pais_id)
-            ->where('status', true)
-            ->orderBy('nombre_estado')
-            ->get();
+
+        // Solo recargar estados si no están cargados para este país
+        if (empty($this->estados) || !is_iterable($this->estados) || empty($this->estados->first()) || $this->estados->first()->pais_id != $this->pais_id) {
+            $this->estados = Estado::where('pais_id', $this->pais_id)
+                ->where('status', true)
+                ->select('id', 'nombre_estado', 'pais_id')
+                ->orderBy('nombre_estado')
+                ->get();
+        }
+
         $this->updateMode = true;
     }
 

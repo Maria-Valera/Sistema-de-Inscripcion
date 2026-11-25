@@ -2,6 +2,7 @@
 
     <a class="nav-link {{ $item['class'] }} @isset($item['shift']) {{ $item['shift'] }} @endisset"
        href="{{ $item['href'] }}" @isset($item['target']) target="{{ $item['target'] }}" @endisset
+       title="{{ $item['text'] }}"
        {!! $item['data-compiled'] ?? '' !!}>
 
         <i class="nav-icon {{ $item['icon'] ?? 'far fa-fw fa-circle' }} {{

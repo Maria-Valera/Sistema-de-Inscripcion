@@ -12,7 +12,10 @@ class SeccionAulaSeeder extends Seeder
     public function run(): void
     {
         $secciones = Seccion::all();
-        $aulas = Aula::where('status', true)->get();
+        $aulas = Aula::where('status', true)->where('tipo_aula', 'Aula Regular')->get();
+        if ($aulas->isEmpty()) {
+            $aulas = Aula::where('status', true)->get();
+        }
 
         if ($aulas->isEmpty()) {
             $this->command->warn('No hay aulas disponibles para asignar.');
@@ -20,14 +23,13 @@ class SeccionAulaSeeder extends Seeder
         }
 
         foreach ($secciones as $index => $seccion) {
-            // Asignar un aula rotativa
+            // Asignar un aula regular rotativa
             $aula = $aulas[$index % $aulas->count()];
 
-            seccion_aula::create([
-                'id_seccion' => $seccion->id,
-                'id_aula' => $aula->id_aula,
-                'status' => true,
-            ]);
+            seccion_aula::updateOrCreate(
+                ['id_seccion' => $seccion->id],
+                ['id_aula' => $aula->id_aula, 'status' => true]
+            );
         }
 
         $this->command->info('Asignaciones Sección-Aula creadas correctamente.');

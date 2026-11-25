@@ -164,29 +164,29 @@
                     </div>
                 @endif
 
-                {{-- Aviso y botón de creación cuando no hay ningún año escolar activo --}}
+                {{-- Aviso compacto y botón de creación cuando no hay ningún año escolar activo --}}
                 @if(!$anioActivo)
-                    <div class="alert alert-warning py-3 px-3 mb-3 border-0 shadow-sm" style="background-color: #fffbeb; color: #b45309; border-left: 4px solid #f59e0b !important; border-radius: 8px;">
-                        <div class="d-flex align-items-center mb-1">
-                            <i class="fas fa-exclamation-triangle mr-2 text-warning"></i>
-                            <span class="font-weight-bold">No hay ningún año escolar activo</span>
+                    <div class="alert alert-warning py-2 px-3 mb-3 border-0 shadow-sm d-flex align-items-center" style="background-color: #fffbeb; color: #b45309; border-left: 4px solid #f59e0b !important; border-radius: 8px; font-size: 0.875rem;">
+                        <i class="fas fa-exclamation-triangle text-warning mr-2 flex-shrink-0" style="font-size: 1.05rem;"></i>
+                        <div class="small">
+                            <strong class="font-weight-bold">No hay ningún año escolar activo.</strong>
+                            <span class="d-inline ml-1">Crea y activa un nuevo período para operar.</span>
                         </div>
-                        <p class="small mb-0">Actualmente no existe un período académico activo en el sistema. Puedes crear y activar un nuevo año escolar para comenzar a operar.</p>
                     </div>
 
                     @can('anio_escolar.gestionar')
-                                                @if (auth()->user()->can('lapsos.gestionar') && auth()->user()->can('calendario_academico.gestionar'))
+                        @if (auth()->user()->can('lapsos.gestionar') && auth()->user()->can('calendario_academico.gestionar'))
                             {{-- Asistente de año nuevo (María): año escolar → lapso 1 → calendario, todo se guarda al final --}}
                             <a href="{{ route('admin.asistente.anio') }}"
-                               class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm"
-                               style="font-size: 1rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                               class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm text-decoration-none"
+                               style="font-size: 0.95rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                                 <i class="fas fa-plus-circle"></i>
                                 <span>Crear Nuevo Año Escolar</span>
                             </a>
                         @else
-                                                        <button type="button"
-                                    class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm"
-                                    style="font-size: 1rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
+                            <button type="button"
+                                    class="btn btn-success btn-block mb-3 py-2 font-weight-bold d-flex align-items-center justify-content-center shadow-sm text-decoration-none"
+                                    style="font-size: 0.95rem; border-radius: 10px; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalCrearAnioEscolar"
                                     data-toggle="modal"
@@ -266,10 +266,6 @@
         </div>
     </div>
 
-    {{-- Modal para crear nuevo año escolar --}}
-    @can('anio_escolar.gestionar')
-        @include('admin.maestros.stephania.anio_escolar.modales.createModal')
-    @endcan
 @stop
 
 @section('js')

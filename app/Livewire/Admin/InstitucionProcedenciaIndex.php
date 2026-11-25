@@ -4,11 +4,13 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use App\Models\InstitucionProcedencia;
 use App\Models\Localidad;
 use App\Models\Estado;
 use App\Models\Municipio;
 use App\Models\AnioEscolar;
+use App\Models\Pais;
 
 class InstitucionProcedenciaIndex extends Component
 {
@@ -16,6 +18,7 @@ class InstitucionProcedenciaIndex extends Component
 
     public $institucion_id;
     public $nombre_institucion;
+    public $pais_id;
     public $estado_id;
     public $municipio_id;
     public $localidad_id;
@@ -23,6 +26,7 @@ class InstitucionProcedenciaIndex extends Component
     public $updateMode = false;
 
     public $anioEscolarActivo = false;
+    public $paises = [];
     public $municipios = [];
     public $localidades = [];
     public $modoModal = false;
@@ -37,6 +41,9 @@ class InstitucionProcedenciaIndex extends Component
     public function mount($modoModal = false)
     {
         $this->modoModal = $modoModal;
+        $this->paises = Pais::where('status', true)
+            ->orderBy('nameES', 'asc')
+            ->get();
         $this->verificarAnioEscolar();
     }
 
@@ -61,6 +68,43 @@ class InstitucionProcedenciaIndex extends Component
     // ========================================
 
     /**
+     * Cuando cambia el país, cargar estados de ese país
+     */
+    public function updatedPaisId($paisId)
+    {
+        if ($paisId) {
+            $pais = Pais::find($paisId);
+            $esVenezuela = false;
+            if ($pais) {
+                $nombrePais = mb_strtolower($pais->nameES ?? $pais->nameEN ?? '');
+                $esVenezuela = str_contains($nombrePais, 'venezuela');
+            }
+
+            $estados = Estado::where('pais_id', $paisId)
+                ->where('status', true)
+                ->orderBy('nombre_estado', 'asc')
+                ->get();
+
+            if ($estados->isEmpty() && ($esVenezuela || $paisId == 1 || $paisId == 242)) {
+                $estados = Estado::where('status', true)
+                    ->orderBy('nombre_estado', 'asc')
+                    ->get();
+            }
+
+            $this->estados = $estados;
+        } else {
+            $this->estados = [];
+        }
+
+        $this->estado_id = null;
+        $this->municipio_id = null;
+        $this->localidad_id = null;
+
+        $this->municipios = [];
+        $this->localidades = [];
+    }
+
+    /**
      * Cuando cambia el estado, cargar municipios de ese estado
      */
     public function updatedEstadoId($estadoId)
@@ -74,7 +118,7 @@ class InstitucionProcedenciaIndex extends Component
             $this->municipios = [];
         }
 
-        // Reiniciar los selects dependientes
+        // Resetear selecciones dependientes
         $this->municipio_id = null;
         $this->localidad_id = null;
         $this->localidades = [];
@@ -94,38 +138,42 @@ class InstitucionProcedenciaIndex extends Component
             $this->localidades = [];
         }
 
-        // Reiniciar el select dependiente
+        // Resetear selección dependiente
         $this->localidad_id = null;
     }
 
-    // ========================================
-    // RENDER
-    // ========================================
-
     public function render()
     {
-        // Solo cargar estados (municipios y localidades se cargan dinámicamente)
         $estados = Estado::where('status', true)
+            ->select('id', 'nombre_estado')
             ->orderBy('nombre_estado', 'asc')
             ->get();
 
-        $instituciones = InstitucionProcedencia::where('status', true)
+        $instituciones = InstitucionProcedencia::where('institucion_procedencias.status', true)
+            ->join('localidads', 'institucion_procedencias.localidad_id', '=', 'localidads.id')
+            ->join('municipios', 'localidads.municipio_id', '=', 'municipios.id')
+            ->join('estados', 'municipios.estado_id', '=', 'estados.id')
             ->when($this->search, function ($query) {
-                $query->where('nombre_institucion', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('localidad', function ($q) {
-                        $q->where('nombre_localidad', 'like', '%' . $this->search . '%');
-                    })
-                    ->orWhereHas('localidad.municipio', function ($q) {
-                        $q->where('nombre_municipio', 'like', '%' . $this->search . '%');
-                    })
-                    ->orWhereHas('localidad.municipio.estado', function ($q) {
-                        $q->where('nombre_estado', 'like', '%' . $this->search . '%');
-                    });
+                $query->where('institucion_procedencias.nombre_institucion', 'like', '%' . $this->search . '%')
+                    ->orWhere('localidads.nombre_localidad', 'like', '%' . $this->search . '%')
+                    ->orWhere('municipios.nombre_municipio', 'like', '%' . $this->search . '%')
+                    ->orWhere('estados.nombre_estado', 'like', '%' . $this->search . '%');
             })
+            ->select(
+                'institucion_procedencias.id',
+                'institucion_procedencias.nombre_institucion',
+                'institucion_procedencias.localidad_id',
+                'institucion_procedencias.status',
+                'localidads.nombre_localidad as localidad_nombre',
+                'municipios.nombre_municipio as municipio_nombre',
+                'estados.nombre_estado as estado_nombre'
+            )
             ->orderBy('nombre_institucion', 'asc')
             ->paginate(10);
 
-        return view('livewire.admin.institucion-procedencia-index', compact('instituciones', 'estados'));
+        $estadosCrear = $this->pais_id ? $this->estados : [];
+
+        return view('livewire.admin.institucion-procedencia-index', compact('instituciones', 'estados', 'estadosCrear'));
     }
 
     public function paginationView()
@@ -146,14 +194,22 @@ class InstitucionProcedenciaIndex extends Component
     {
         $this->institucion_id = null;
         $this->nombre_institucion = '';
+        $this->pais_id = null;
         $this->estado_id = null;
         $this->municipio_id = null;
         $this->localidad_id = null;
         $this->municipios = [];
         $this->localidades = [];
         $this->updateMode = false;
+        $this->resetValidation();
     }
 
+    #[On('abrirModalCrear')]
+    public function create()
+    {
+        $this->resetInputFields();
+        $this->resetValidation();
+    }
 
     public function store()
     {
@@ -163,12 +219,13 @@ class InstitucionProcedenciaIndex extends Component
 
         $this->validate();
 
-        // Verificar duplicados
-        if (InstitucionProcedencia::where('nombre_institucion', $this->nombre_institucion)
+        // Validar que no exista una institución con el mismo nombre en la misma localidad
+        $existe = InstitucionProcedencia::where('nombre_institucion', $this->nombre_institucion)
             ->where('localidad_id', $this->localidad_id)
             ->where('status', true)
-            ->exists()
-        ) {
+            ->exists();
+
+        if ($existe) {
             session()->flash('error', 'Ya existe una institución con ese nombre en esta localidad.');
             return;
         }
@@ -194,11 +251,18 @@ class InstitucionProcedenciaIndex extends Component
 
     public function edit($id)
     {
+        $this->resetValidation();
         if (!$this->verificarAccion()) {
             return;
         }
 
-        $inst = InstitucionProcedencia::with('localidad.municipio.estado')->findOrFail($id);
+        $inst = InstitucionProcedencia::with([
+            'localidad:id,nombre_localidad,municipio_id',
+            'localidad.municipio:id,nombre_municipio,estado_id',
+            'localidad.municipio.estado:id,nombre_estado'
+        ])
+        ->select('id', 'nombre_institucion', 'localidad_id')
+        ->findOrFail($id);
 
         $this->institucion_id = $inst->id;
         $this->nombre_institucion = $inst->nombre_institucion;
@@ -212,12 +276,14 @@ class InstitucionProcedenciaIndex extends Component
             // Cargar municipios del estado seleccionado
             $this->municipios = Municipio::where('estado_id', $this->estado_id)
                 ->where('status', true)
+                ->select('id', 'nombre_municipio', 'estado_id')
                 ->orderBy('nombre_municipio', 'asc')
                 ->get();
 
             // Cargar localidades del municipio seleccionado
             $this->localidades = Localidad::where('municipio_id', $this->municipio_id)
                 ->where('status', true)
+                ->select('id', 'nombre_localidad', 'municipio_id')
                 ->orderBy('nombre_localidad', 'asc')
                 ->get();
         }
@@ -233,9 +299,14 @@ class InstitucionProcedenciaIndex extends Component
 
         $this->validate();
 
-        $inst = InstitucionProcedencia::findOrFail($this->institucion_id);
+        $institucion = InstitucionProcedencia::find($this->institucion_id);
 
-        // Verificar duplicados (excepto el registro actual)
+        if (!$institucion) {
+            session()->flash('error', 'La institución no existe.');
+            return;
+        }
+
+        // Validar que no exista otra institución con el mismo nombre en la misma localidad
         $existe = InstitucionProcedencia::where('nombre_institucion', $this->nombre_institucion)
             ->where('localidad_id', $this->localidad_id)
             ->where('status', true)
@@ -247,7 +318,7 @@ class InstitucionProcedenciaIndex extends Component
             return;
         }
 
-        $inst->update([
+        $institucion->update([
             'nombre_institucion' => $this->nombre_institucion,
             'localidad_id' => $this->localidad_id,
         ]);
@@ -263,8 +334,8 @@ class InstitucionProcedenciaIndex extends Component
             return;
         }
 
-        $inst = InstitucionProcedencia::findOrFail($id);
-        $inst->update(['status' => false]);
+        $institucion = InstitucionProcedencia::findOrFail($id);
+        $institucion->update(['status' => false]);
 
         session()->flash('success', 'Institución eliminada correctamente.');
         $this->dispatch('cerrarModal');

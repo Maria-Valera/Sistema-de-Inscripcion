@@ -9,17 +9,11 @@ use App\Models\Grado;
 use \App\Models\Seccion;
 use \App\Models\AreaFormacion;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\AnioEscolarSeleccionado;
 
 
 class DocenteAreaGradoController extends Controller
 {
-    private function verificarAnioEscolar()
-    {
-        return \App\Models\AnioEscolar::where('status', 'Activo')
-            ->orWhere('status', 'Extendido')
-            ->exists();
-    }
-
     public function index(Request $request)
     {
         $gradosEscolares = collect();
@@ -66,7 +60,8 @@ class DocenteAreaGradoController extends Controller
         ->paginate(10)
         ->withQueryString();
 
-        $anioEscolarActivo = $this->verificarAnioEscolar();
+        $anioEscolarActivo = AnioEscolarSeleccionado::esActual();
+        $mostrarAnio = AnioEscolarSeleccionado::modelo();
 
         $gradosEscolares = Grado::where('status', true)
             ->orderBy('numero_grado')
@@ -85,6 +80,7 @@ class DocenteAreaGradoController extends Controller
         return view('admin.transacciones.docente_area_grado.index', compact(
             'docentes',
             'anioEscolarActivo',
+            'mostrarAnio',
             'buscar',
             'gradosEscolares',
             'secciones',

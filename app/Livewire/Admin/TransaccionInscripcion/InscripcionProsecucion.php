@@ -91,7 +91,7 @@ class InscripcionProsecucion extends Component
         $this->validateOnly($propertyName);
     }
 
-    public function mount()
+    public function mount($alumnoId = null)
     {
         $puedeGestionar = auth()->user()?->can('prosecucion.gestionar')
             || auth()->user()?->can('portal_prosecucion.registrar');
@@ -113,6 +113,11 @@ class InscripcionProsecucion extends Component
 
         $this->cargarDatosIniciales();
         $this->cargarGrados();
+
+        $alumnoId = $alumnoId ?: request('alumno_id');
+        if ($alumnoId) {
+            $this->seleccionarAlumno($alumnoId);
+        }
     }
 
     public function cargarDatosIniciales()

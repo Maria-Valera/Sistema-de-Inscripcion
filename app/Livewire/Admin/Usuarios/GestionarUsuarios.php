@@ -12,6 +12,8 @@ use App\Models\TipoDocumento;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
@@ -28,16 +30,27 @@ class GestionarUsuarios extends Component
     public $filtroActivo = '';
 
     // Modales de control
-    public $modalModulosAbierto = false;
     public $modalCorreoAbierto = false;
     public $modalCrearAbierto = false;
 
-    // Estado para gestionar módulos extra
-    public $usuarioSeleccionadoId = null;
-    public $usuarioSeleccionadoNombre = '';
-    public $usuarioSeleccionadoEmail = '';
-    public $permisosSeleccionados = [];
-    public $permisosPorRol = [];
+    // Modal Permisos (Componente Hijo)
+    public $usuarioParaPermisos = null;
+
+    protected $listeners = [
+        'cerrarModalPermisos' => 'cerrarModalPermisos',
+    ];
+
+    #[On('cerrarModalPermisos')]
+    public function cerrarModalPermisos(): void
+    {
+        $this->usuarioParaPermisos = null;
+    }
+
+    public function abrirModalModulos(int $userId): void
+    {
+        $this->verificarPermiso();
+        $this->usuarioParaPermisos = $userId;
+    }
 
     // Estado para corregir correo
     public $corregirPersonaId = null;
@@ -75,7 +88,7 @@ class GestionarUsuarios extends Component
             'primer_apellido'     => 'required|string|max:50',
             'email_crear'         => 'required|email|max:255|unique:users,email',
             'roles_crear'         => 'required|array|min:1',
-            'roles_crear.*'       => 'in:Admin,Subdirectora,Docente,Representante',
+            'roles_crear.*'       => 'string|exists:roles,name',
             'rol_principal_crear' => 'required|string',
         ];
     }
@@ -259,94 +272,7 @@ class GestionarUsuarios extends Component
         session()->flash('success', "Se generó una nueva contraseña temporal y se envió a {$user->email}.");
     }
 
-    /**
-     * Abrir modal para gestionar módulos extra con permisos granulares.
-     */
-     public function abrirModalModulos(int $userId): void
-     {
-         $this->verificarPermiso();
- 
-         $user = User::with(['roles', 'permissions'])->findOrFail($userId);
-         $this->usuarioSeleccionadoId = $user->id;
-         $this->usuarioSeleccionadoNombre = $user->name;
-         $this->usuarioSeleccionadoEmail = $user->email;
-         $this->permisosPorRol = $user->getPermissionsViaRoles()->pluck('name')->toArray();
-         $this->permisosSeleccionados = $user->getDirectPermissions()->pluck('name')->toArray();
-         $this->modalModulosAbierto = true;
-     }
- 
-     public function cerrarModalModulos(): void
-     {
-         $this->modalModulosAbierto = false;
-         $this->usuarioSeleccionadoId = null;
-         $this->permisosSeleccionados = [];
-         $this->permisosPorRol = [];
-     }
- 
-     /**
-      * Guarda la selección granular de permisos para el usuario.
-      */
-     public function guardarPermisosModulos(GestionarModulosUsuarioAction $action): void
-     {
-         $this->verificarPermiso();
- 
-         if (!$this->usuarioSeleccionadoId) {
-             return;
-         }
- 
-         $user = User::findOrFail($this->usuarioSeleccionadoId);
- 
-         // Permisos que se desean tener de forma directa (excluyendo los que ya tiene por rol)
-         $nuevosDirectosDeseados = array_values(array_diff($this->permisosSeleccionados, $this->permisosPorRol));
-         $directosActuales = $user->getDirectPermissions()->pluck('name')->toArray();
- 
-         $aAsignar = array_values(array_diff($nuevosDirectosDeseados, $directosActuales));
-         $aRetirar = array_values(array_diff($directosActuales, $nuevosDirectosDeseados));
- 
-         if (!empty($aAsignar)) {
-             $action->asignar($user, $aAsignar);
-         }
- 
-         if (!empty($aRetirar)) {
-             $action->retirar($user, $aRetirar);
-         }
- 
-         session()->flash('success', "Permisos del usuario {$user->name} actualizados exitosamente.");
-         $this->cerrarModalModulos();
-     }
- 
-     /**
-      * Asignar módulo completo extra (retrocompatibilidad).
-      */
-     public function asignarModulo(string $claveModulo, GestionarModulosUsuarioAction $action): void
-     {
-         $this->verificarPermiso();
- 
-         $user = User::findOrFail($this->usuarioSeleccionadoId);
-         $action->asignar($user, $claveModulo);
- 
-         $this->permisosSeleccionados = $user->getDirectPermissions()->pluck('name')->toArray();
-         session()->flash('success', "Módulo '{$claveModulo}' asignado exitosamente como extra.");
-     }
- 
-     /**
-      * Retirar módulo completo extra (retrocompatibilidad).
-      */
-     public function retirarModulo(string $claveModulo, GestionarModulosUsuarioAction $action): void
-     {
-         $this->verificarPermiso();
- 
-         $user = User::findOrFail($this->usuarioSeleccionadoId);
-         $conserva = $action->retirar($user, $claveModulo);
- 
-         $this->permisosSeleccionados = $user->getDirectPermissions()->pluck('name')->toArray();
- 
-         if ($conserva) {
-             session()->flash('info', "Se retiraron los permisos directos, pero el usuario aún conserva el módulo '{$claveModulo}' a través de sus roles.");
-         } else {
-             session()->flash('success', "Módulo '{$claveModulo}' retirado exitosamente.");
-         }
-     }
+
 
     /**
      * Abrir modal para corregir correo.
@@ -441,7 +367,7 @@ class GestionarUsuarios extends Component
             'primer_apellido'     => 'required|string|max:50',
             'email_crear'         => 'required|email|max:255|unique:users,email',
             'roles_crear'         => 'required|array|min:1',
-            'roles_crear.*'       => 'in:Admin,Subdirectora,Docente,Representante',
+            'roles_crear.*'       => 'string|exists:roles,name',
             'rol_principal_crear' => 'required|string',
         ]);
 
@@ -530,7 +456,7 @@ class GestionarUsuarios extends Component
     {
         $this->verificarPermiso();
 
-        $query = User::with(['roles', 'persona', 'permissions'])
+        $query = User::with(['roles.permissions', 'persona', 'permissions'])
             ->when($this->search, function ($q) {
                 $term = '%' . trim($this->search) . '%';
                 $q->where(function ($sub) use ($term) {
@@ -551,51 +477,37 @@ class GestionarUsuarios extends Component
 
         $usuarios = $query->paginate(10);
 
-        // Módulos para el modal de gestión si hay usuario seleccionado
-        $infoModulos = [];
-        if ($this->usuarioSeleccionadoId) {
-            $usuarioSel = User::with(['roles', 'permissions'])->find($this->usuarioSeleccionadoId);
-            if ($usuarioSel) {
-                $permsRol = $usuarioSel->getPermissionsViaRoles()->pluck('name')->flip();
-                $directos = $usuarioSel->getDirectPermissions()->pluck('name')->flip();
+        // Caché de roles disponibles para selectores
+        $roles = Cache::remember('roles_disponibles_all', 3600, fn () => Role::all());
+        $rolesDisponibles = $roles->pluck('name');
 
-                foreach (config('modulos', []) as $clave => $configMod) {
-                    $pMod = $configMod['permisos'] ?? [];
+        // Mapeo en caché de módulos por rol para acelerar drásticamente el renderizado de la tabla
+        $modulosPorRolCache = Cache::remember('modulos_por_rol_map', 3600, function () {
+            $roles = Role::with('permissions')->get();
+            $modulosConfig = config('modulos', []);
+            $map = [];
 
-                    $tienePorRol = false;
-                    foreach ($pMod as $p) {
-                        if (isset($permsRol[$p])) {
-                            $tienePorRol = true;
+            foreach ($roles as $rol) {
+                $rolPerms = $rol->permissions->pluck('name')->flip();
+                $map[$rol->name] = [];
+                foreach ($modulosConfig as $clave => $cMod) {
+                    foreach ($cMod['permisos'] ?? [] as $p) {
+                        if (isset($rolPerms[$p])) {
+                            $map[$rol->name][] = $cMod['nombre'] ?? $clave;
                             break;
                         }
                     }
-
-                    $tieneDirecto = false;
-                    foreach ($pMod as $p) {
-                        if (isset($directos[$p])) {
-                            $tieneDirecto = true;
-                            break;
-                        }
-                    }
-
-                    $infoModulos[$clave] = [
-                        'nombre'        => $configMod['nombre'] ?? $clave,
-                        'grupo'         => $configMod['grupo'] ?? 'general',
-                        'tiene_por_rol' => $tienePorRol,
-                        'tiene_directo' => $tieneDirecto,
-                        'activo'        => $tienePorRol || $tieneDirecto,
-                    ];
                 }
             }
-        }
-
-        $rolesDisponibles = Role::pluck('name');
+            return $map;
+        });
 
         return view('livewire.admin.usuarios.gestionar-usuarios', [
-            'usuarios'         => $usuarios,
-            'infoModulos'      => $infoModulos,
-            'rolesDisponibles' => $rolesDisponibles,
-            'tipos_documentos' => $this->tipos_documentos,
+            'usuarios'           => $usuarios,
+            'roles'              => $roles,
+            'rolesDisponibles'   => $rolesDisponibles,
+            'tipos_documentos'   => $this->tipos_documentos,
+            'modulosPorRolCache' => $modulosPorRolCache,
         ]);
     }
 }

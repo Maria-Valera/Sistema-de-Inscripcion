@@ -255,31 +255,32 @@ class Inscripcion extends Component
         $this->evaluarDocumentosVisual();
     }
 
-    public function actualizarPadreSelect($data = null)
+    public function actualizarPadreSelect($value = null, $data = null)
     {
-        $id = $data['value'] ?? null;
+        $id = $value ?? (is_array($data) ? ($data['value'] ?? null) : $data);
         $this->padreId = $id;
         $this->padreSeleccionado = $id
             ? $this->representanteRepository->obtenerConRelaciones($id)
             : null;
     }
 
-    public function actualizarMadreSelect($data = null)
+    public function actualizarMadreSelect($value = null, $data = null)
     {
-        $id = $data['value'] ?? null;
+        $id = $value ?? (is_array($data) ? ($data['value'] ?? null) : $data);
         $this->madreId = $id;
         $this->madreSeleccionado = $id
             ? $this->representanteRepository->obtenerConRelaciones($id)
             : null;
     }
 
-    public function actualizarRepresentanteLegalSelect($data = null)
+    public function actualizarRepresentanteLegalSelect($value = null, $data = null)
     {
-        $id = $data['value'] ?? null;
+        $id = $value ?? (is_array($data) ? ($data['value'] ?? null) : $data);
         $this->representanteLegalId = $id;
         $this->representanteLegalSeleccionado = $id
             ? $this->representanteRepository->obtenerRepresentanteLegalConRelaciones($id)
             : null;
+        $this->evaluarDocumentosVisual();
     }
 
     public function updatedSeleccionarTodos($value)
@@ -811,6 +812,8 @@ class Inscripcion extends Component
     protected $listeners = [
         'recibirDatosAlumno' => 'guardarTodo',
         'padreSeleccionadoEvento' => 'actualizarPadreSelect',
+        'madreSeleccionadoEvento' => 'actualizarMadreSelect',
+        'representanteLegalSeleccionadoEvento' => 'actualizarRepresentanteLegalSelect',
         'acepta_normas_contrato' => 'actualizarEstadoBoton',
         'institucionCreada' => 'manejarInstitucionCreada',
         'localidadCreada' => 'refrescarLocalidades',
@@ -818,13 +821,34 @@ class Inscripcion extends Component
 
     public function manejarInstitucionCreada($data)
     {
-        if ($this->localidad_id) {
+        $id = is_array($data) ? ($data['id'] ?? null) : $data;
+        $localidadId = is_array($data) ? ($data['localidad_id'] ?? null) : null;
+
+        if ($localidadId) {
+            $this->localidad_id = $localidadId;
+            $localidad = \App\Models\Localidad::with('municipio.estado')->find($localidadId);
+            if ($localidad && $localidad->municipio) {
+                $this->municipio_id = $localidad->municipio->id;
+                $this->estado_id = $localidad->municipio->estado_id;
+                $this->municipios = \App\Models\Municipio::where('estado_id', $this->estado_id)->where('status', true)->get();
+                $this->localidades = \App\Models\Localidad::where('municipio_id', $this->municipio_id)->where('status', true)->get();
+            }
+            $this->instituciones = \App\Models\InstitucionProcedencia::where('localidad_id', $localidadId)
+                ->where('status', true)
+                ->orderBy('nombre_institucion')
+                ->get();
+        } elseif ($this->localidad_id) {
             $this->instituciones = \App\Models\InstitucionProcedencia::where('localidad_id', $this->localidad_id)
                 ->where('status', true)
                 ->orderBy('nombre_institucion')
                 ->get();
+        } else {
+            $this->instituciones = \App\Models\InstitucionProcedencia::where('status', true)
+                ->orderBy('nombre_institucion')
+                ->get();
         }
-        $this->institucion_procedencia_id = $data['id'];
+
+        $this->institucion_procedencia_id = $id;
     }
 
 

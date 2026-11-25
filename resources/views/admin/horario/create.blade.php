@@ -108,6 +108,17 @@
             align-self: flex-start !important;
             padding: 0.3rem 0.5rem !important;
             margin: 0 !important;
+            background: rgba(79, 70, 229, 0.15) !important; /* Púrpura/índigo translúcido suave coordinado */
+            color: #1e1b4b !important;                       /* Texto oscuro para contraste */
+            border: 1px solid rgba(79, 70, 229, 0.3) !important;
+            border-radius: 0.375rem !important;
+            box-shadow: 0 1px 3px rgba(79, 70, 229, 0.08) !important;
+            transition: background-color 0.15s ease, border-color 0.15s ease !important;
+        }
+
+        .drop-zone .assigned-docente:hover {
+            background: rgba(79, 70, 229, 0.24) !important;
+            border-color: rgba(79, 70, 229, 0.45) !important;
         }
 
         .drop-zone .assigned-docente .adm-mini {
@@ -124,6 +135,7 @@
 
         .drop-zone .assigned-docente .adm-mini .adm-mini-nombre {
             font-weight: 600;
+            color: #1e1b4b !important;
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 85px;
@@ -131,12 +143,110 @@
         }
 
         .drop-zone .assigned-docente .adm-mini .adm-mini-seccion {
-            opacity: 0.85;
+            color: #3730a3 !important;
+            opacity: 0.95;
             flex-shrink: 0;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 0.2rem;
+        }
+
+        .drop-zone .assigned-docente .adm-mini .btn-lock-toggle.text-warning {
+            color: #b45309 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-mini .btn-lock-toggle.text-muted {
+            color: #4338ca !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full {
+            background: rgba(79, 70, 229, 0.16) !important; /* Mismo color translúcido que los bloques */
+            backdrop-filter: blur(8px) !important;           /* Efecto cristal elegante */
+            -webkit-backdrop-filter: blur(8px) !important;
+            color: #1e1b4b !important;
+            border: 1px solid rgba(79, 70, 229, 0.35) !important;
+            border-radius: 0.75rem !important;
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .docente-nombre {
+            color: #1e1b4b !important;
+            font-weight: 700 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .docente-cedula {
+            color: #4338ca !important;
+            font-weight: 500 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .docente-materia {
+            color: #3730a3 !important;
+            font-weight: 600 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .pildora-selector {
+            width: 100%;
+            background: #ffffff !important; /* Selectores blancos para destacar dentro de la tarjeta translúcida */
+            color: #1e293b !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 50px;
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+            text-align-last: center;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .drop-zone .assigned-docente .adm-full .pildora-selector:focus {
+            border-color: #4f46e5 !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .drop-zone .assigned-docente .adm-full .pildora-selector:disabled {
+            background: #f8fafc !important;
+            color: #64748b !important;
+            border-color: #e2e8f0 !important;
+            opacity: 1 !important;
+            cursor: default;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-eliminar-docente {
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+            border: 1px solid #fca5a5 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-eliminar-docente:hover {
+            background: #ef4444 !important;
+            color: #ffffff !important;
+            border-color: #dc2626 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle {
+            background: transparent;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle:hover {
+            background: rgba(79, 70, 229, 0.15);
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-warning {
+            color: #b45309 !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted {
+            color: #4338ca !important;
+        }
+
+        .drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted:hover {
+            color: #1e1b4b !important;
         }
 
         .drop-zone .assigned-docente .pildora-selector {
@@ -227,58 +337,150 @@
 
         /* Estilos específicos adicionales para modo selección */
         .btn-modo-seleccion {
-            background: var(--horario-secondary);
-            color: white;
-            border: none;
-            padding: 0.625rem 1rem;
-            border-radius: 0.375rem;
+            background-color: #FFFFFF;
+            color: #1E293B;
+            border: 1px solid #D1D5DB;
+            padding: 6px 14px;
+            border-radius: 10px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
             transition: all 0.15s ease-in-out;
         }
 
         .btn-modo-seleccion.activo {
-            background: var(--horario-primary);
+            background-color: #EFF6FF;
+            color: #4A6FC1;
+            border-color: #4A6FC1;
+        }
+
+        /* =========================================================
+           Barra Flotante de Selección Múltiple (Píldora Light Mode)
+           ========================================================= */
+        @keyframes slideUpFloatingBar {
+            from {
+                transform: translate(-50%, 20px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
         }
 
         .barra-seleccion-flotante {
-            position: fixed;
-            bottom: 1.25rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            border-radius: 0.375rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            padding: 0.75rem 1.25rem;
-            display: none;
-            align-items: center;
-            gap: 0.9375rem;
-            z-index: 9995;
-            border: 1px solid var(--gray-200);
+            position: fixed !important;
+            bottom: 24px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: #FFFFFF !important;
+            color: #1E293B !important;
+            border-radius: 9999px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            border: 1px solid #E2E8F0 !important;
+            padding: 10px 22px !important;
+            display: none !important;
+            align-items: center !important;
+            gap: 16px !important;
+            z-index: 1080 !important;
+            white-space: nowrap !important;
         }
 
         .barra-seleccion-flotante.visible {
-            display: flex;
+            display: flex !important;
+            animation: slideUpFloatingBar 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
         }
 
-        .btn-eliminar-seleccionados {
-            background: var(--horario-danger);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
+        .barra-seleccion-flotante .barra-seleccion-info {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            font-size: 0.9rem !important;
+            color: #1E293B !important;
         }
 
-        .btn-cancelar-seleccion {
-            background: var(--gray-200);
-            color: var(--gray-700);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            cursor: pointer;
+        .barra-seleccion-flotante .barra-seleccion-info i {
+            color: #1E293B !important;
+            font-size: 0.95rem !important;
+        }
+
+        .barra-seleccion-flotante #contadorSeleccionados {
+            color: #1E293B !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+        }
+
+        .barra-seleccion-flotante #contadorSeleccionados strong {
+            font-weight: 700 !important;
+            color: #1E293B !important;
+        }
+
+        .barra-seleccion-flotante .barra-seleccion-divider {
+            width: 1px !important;
+            height: 22px !important;
+            background: #CBD5E1 !important;
+        }
+
+        .barra-seleccion-flotante .barra-seleccion-acciones {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+
+        .barra-seleccion-flotante .btn-eliminar-seleccionados {
+            background: transparent !important;
+            color: #EF4444 !important;
+            border: 1px solid #FCA5A5 !important;
+            padding: 6px 14px !important;
+            border-radius: 9999px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            font-size: 0.86rem !important;
+            font-weight: 600 !important;
+            line-height: 1.25 !important;
+            transition: all 0.18s ease-in-out !important;
+        }
+
+        .barra-seleccion-flotante .btn-eliminar-seleccionados:hover {
+            background: #FEF2F2 !important;
+            border-color: #F87171 !important;
+            color: #DC2626 !important;
+        }
+
+        .barra-seleccion-flotante .btn-eliminar-seleccionados i {
+            font-size: 0.85rem !important;
+            color: inherit !important;
+        }
+
+        .barra-seleccion-flotante .btn-cancelar-seleccion {
+            background: transparent !important;
+            color: #64748B !important;
+            border: none !important;
+            padding: 6px 12px !important;
+            border-radius: 9999px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            font-size: 0.86rem !important;
+            font-weight: 500 !important;
+            line-height: 1.25 !important;
+            transition: all 0.18s ease-in-out !important;
+        }
+
+        .barra-seleccion-flotante .btn-cancelar-seleccion:hover {
+            color: #334155 !important;
+            background: #F1F5F9 !important;
+        }
+
+        .barra-seleccion-flotante .btn-cancelar-seleccion i {
+            font-size: 0.8rem !important;
+            color: inherit !important;
         }
 
         /* Modal de detalles de conflicto */
@@ -605,12 +807,14 @@
         }
 
     </style>
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}?v={{ @filemtime(public_path('css/horario-pilot.css')) }}">
 @stop
 
 @section('title', $modoEdicion ? 'Editar Horario' : 'Crear Horario')
 
 @section('content_header')
-    <div class="content-header-modern">
+    <div class="content-header-modern hero-header-horario">
         <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
@@ -621,8 +825,12 @@
                     <p class="title-subtitle">{{ $modoEdicion ? 'Modificación de horarios académicos' : 'Asignación de horarios académicos' }}</p>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <button class="btn-generar-horario" id="btnGenerarHorario">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <a href="{{ route('admin.horario.index') }}" class="btn btn-outline-light d-inline-flex align-items-center gap-2" id="btnVolverPaso1">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Volver al listado</span>
+                </a>
+                <button class="btn-generar-horario btn-hero-white" id="btnGenerarHorario">
                     <span class="spinner"></span>
                     <span class="btn-text">
                         <i class="fas fa-magic"></i>
@@ -639,14 +847,6 @@
     <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;"></div>
 
     <div class="main-container">
-        <!-- Banner informativo de validación de entrada exitosa -->
-        <div class="alert alert-success d-flex align-items-center gap-3 p-3 mb-4 rounded-3 shadow-sm border-0" style="background-color: #ecfdf5; border-left: 5px solid #10b981 !important;">
-            <i class="fas fa-check-circle fs-4 text-success"></i>
-            <div>
-                <strong class="d-block text-success" style="font-size: 0.95rem;">Configuración validada correctamente. Puedes proceder a generar el horario.</strong>
-                <span class="text-muted small">El marco horario y la carga académica cumplen con los requisitos mínimos de viabilidad.</span>
-            </div>
-        </div>
 
         <!-- Parámetros de edición (ocultos) -->
         <input type="hidden" id="editGradoId" value="{{ $editGradoId ?? '' }}">
@@ -654,114 +854,107 @@
         <input type="hidden" id="modoEdicion" value="{{ $modoEdicion ? 'true' : 'false' }}">
 
 
-        <!-- Selección de nivel académico y área de formación -->
-        <div class="selection-section" id="seccionNivel">
-            <h4 class="mb-3">
-                <i class="fas fa-graduation-cap" style="color: var(--primary);"></i>
-                Paso 1: Seleccionar Nivel Académico y Área de Formación
-            </h4>
-            <div class="selection-row">
-                <div class="form-group-modern">
-                    <label class="form-label-modern">
-                        <i class="fas fa-layer-group" style="color: var(--primary);"></i>
-                        Nivel Académico
-                    </label>
-                    <select class="form-select form-control-modern" id="nivelAcademico">
-                        <option value="">Seleccione un nivel académico</option>
-                        @foreach($grados as $grado)
-                            <option value="{{ $grado->id }}" {{ $editGradoId == $grado->id ? 'selected' : '' }}>
-                                {{ $grado->numero_grado }}° Grado
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group-modern">
-                    <label class="form-label-modern">
-                        <i class="fas fa-book" style="color: var(--primary);"></i>
-                        Área de Formación
-                    </label>
-                    <select class="form-select form-control-modern" id="areaFormacion" disabled>
-                        <option value="">Seleccione nivel académico primero</option>
-                    </select>
-                </div>
-                <button class="btn-filter" id="btnContinuar" disabled>
-                    <i class="fas fa-arrow-right"></i>
-                    Continuar
-                </button>
-            </div>
-        </div>
-
-        <!-- Ocultar Paso 1 en modo edición -->
-        <style>
-            @if(isset($modo_edicion) && $modo_edicion)
-                #seccionNivel {
-                    display: none !important;
-                }
-                #vistaCalendario {
-                    display: flex !important;
-                }
+        <!-- Parámetros seleccionados desde el modal (ocultos para mantener compatibilidad con la cuadrícula JS) -->
+        <select class="d-none" id="nivelAcademico" aria-hidden="true">
+            <option value="">Seleccione un nivel académico</option>
+            @foreach($grados as $grado)
+                <option value="{{ $grado->id }}" {{ (string)($nivelId ?? $editGradoId ?? '') === (string)$grado->id ? 'selected' : '' }}>
+                    {{ $grado->numero_grado }}° Grado
+                </option>
+            @endforeach
+        </select>
+        <select class="d-none" id="areaFormacion" aria-hidden="true">
+            <option value="">Seleccione un área de formación</option>
+            @if(!empty($areaSeleccionada))
+                <option value="{{ $areaSeleccionada->id }}" selected>{{ $areaSeleccionada->nombre_area_formacion }}</option>
             @endif
-        </style>
+        </select>
 
-        <!-- Vista del calendario (oculta inicialmente) -->
-        <div class="row" id="vistaCalendario" style="display: none;">
+        <!-- Selectores ocultos para compatibilidad interna de la cuadrícula JS -->
+        <select class="d-none" id="seccion" aria-hidden="true">
+            <option value="">Todas las secciones</option>
+            @foreach($secciones as $seccion)
+                <option value="{{ $seccion->id }}">
+                    {{ $seccion->nombre }}
+                </option>
+            @endforeach
+        </select>
+        <select class="d-none" id="aula" aria-hidden="true">
+            <option value="">Todas las aulas</option>
+            @foreach($aulas as $aula)
+                <option value="{{ is_array($aula) ? $aula['id_aula'] : $aula->id_aula }}"
+                        data-seccion="{{ is_array($aula) ? $aula['seccion_id'] : null }}"
+                        data-tipo="{{ is_array($aula) ? $aula['tipo_aula'] : $aula->tipo_aula }}">
+                    {{ is_array($aula) ? $aula['nombre_aula'] : $aula->nombre_aula }}
+                </option>
+            @endforeach
+        </select>
+
+        <!-- Vista del calendario (visible directamente) -->
+        <div class="row" id="vistaCalendario">
             <!-- Cuadrícula -->
             <div class="col-12 col-lg-8 col-xl-9 mb-4">
                 <div class="main-content">
-                    <!-- Header de contexto -->
-                    <div class="context-header" id="contextHeader">
-                        <div class="context-info">
-                            <span class="context-item">
+                    <!-- Toolbar Unificada: Pastillas a la Izquierda + Botones a la Derecha -->
+                    <div class="context-header d-flex justify-content-between align-items-center flex-wrap gap-3" id="contextHeader">
+                        <div class="context-info d-flex align-items-center flex-wrap">
+                            <span class="context-item px-3 py-1">
                                 <i class="fas fa-graduation-cap"></i>
-                                <span id="contextNivel">Nivel Académico: No seleccionado</span>
+                                <span id="contextNivel">
+                                    {{ !empty($nivelSeleccionado) ? $nivelSeleccionado->numero_grado . '° Grado' : 'No seleccionado' }}
+                                </span>
                             </span>
-                            <span class="context-separator">|</span>
-                            <span class="context-item">
+                            <span class="context-item px-3 py-1">
                                 <i class="fas fa-book"></i>
-                                <span id="contextArea">Área de Formación: No seleccionada</span>
+                                <span id="contextArea">
+                                    {{ !empty($areaSeleccionada) ? $areaSeleccionada->nombre_area_formacion : 'No seleccionada' }}
+                                </span>
                             </span>
                         </div>
-                        <button class="btn-back-mini" id="btnVolverPaso1">
-                            <i class="fas fa-arrow-left"></i>
-                            Cambiar selección
-                        </button>
+
+                        <div class="d-flex align-items-center flex-wrap gap-2 ms-auto">
+                            <button type="button" class="btn-filter-saas btn-modo-seleccion" id="btnModoSeleccion">
+                                <i class="fas fa-check-square"></i>
+                                <span>Seleccionar múltiples</span>
+                            </button>
+                            <x-ui.filter-bar target="createHorarioFilterPanel" label="Filtrar" :active-count="0" />
+                        </div>
                     </div>
 
-                    <!-- Filtros de refinamiento -->
-                    <div class="selection-section">
-                        <div class="selection-row">
-                            <div class="form-group-modern">
-                                <label class="form-label-modern">
-                                    <i class="fas fa-users" style="color: var(--primary);"></i>
-                                    Sección
-                                </label>
-                                <select class="form-select form-control-modern" id="seccion">
-                                    <option value="">Todas las secciones</option>
-                                    @foreach($secciones as $seccion)
-                                        <option value="{{ $seccion->id }}">
-                                            {{ $seccion->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group-modern">
-                                <label class="form-label-modern">
-                                    <i class="fas fa-door-open" style="color: var(--primary);"></i>
-                                    Aula
-                                </label>
-                                <select class="form-select form-control-modern" id="aula">
-                                    <option value="">Todas las aulas</option>
-                                    @foreach($aulas as $aula)
-                                        <option value="{{ is_array($aula) ? $aula['id_aula'] : $aula->id_aula }}"
-                                                data-seccion="{{ is_array($aula) ? $aula['seccion_id'] : null }}"
-                                                data-tipo="{{ is_array($aula) ? $aula['tipo_aula'] : $aula->tipo_aula }}">
-                                            {{ is_array($aula) ? $aula['nombre_aula'] : $aula->nombre_aula }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                    @php
+                        $seccionFilterOptions = collect($secciones)->map(fn ($s) => [
+                            'value' => (string) $s->id,
+                            'label' => $s->nombre,
+                        ])->values()->all();
+
+                        $aulaFilterOptions = collect($aulas)->map(fn ($a) => [
+                            'value' => (string) (is_array($a) ? $a['id_aula'] : $a->id_aula),
+                            'label' => is_array($a) ? $a['nombre_aula'] : $a->nombre_aula,
+                        ])->values()->all();
+                    @endphp
+                    <x-ui.filter-panel
+                        id="createHorarioFilterPanel"
+                        title="Filtros de Horario"
+                        :action="url()->current()"
+                        :filters="[
+                            [
+                                'name' => 'seccion_id',
+                                'label' => 'Sección',
+                                'icon' => 'fas fa-users',
+                                'placeholder' => 'Todas las secciones',
+                                'value' => '',
+                                'options' => $seccionFilterOptions,
+                            ],
+                            [
+                                'name' => 'aula_id',
+                                'label' => 'Aula',
+                                'icon' => 'fas fa-door-open',
+                                'placeholder' => 'Todas las aulas',
+                                'value' => '',
+                                'options' => $aulaFilterOptions,
+                            ],
+                        ]"
+                    />
 
                     <!-- Matriz de Horarios -->
                     <div class="horario-matrix-wrapper">
@@ -781,7 +974,7 @@
             <!-- Panel lateral -->
             <div class="col-12 col-lg-4 col-xl-3">
                 <div class="card shadow-sm border-0 sidebar-docentes">
-                    <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <div class="card-header bg-white border-bottom d-flex align-items-center">
                         <i class="fas fa-chalkboard-teacher mr-2"></i>
                         <h5 class="card-title mb-0 font-weight-bold" style="font-size: 0.95rem;">Docentes Disponibles</h5>
                     </div>
@@ -826,18 +1019,14 @@
                 </div>
             </div>
         </div>
-        <div class="header-actions">
+        <div class="footer-actions-container d-flex justify-content-end align-items-center flex-wrap gap-3">
             <a href="{{ route('admin.horario.index') }}" class="btn-back">
                 <i class="fas fa-arrow-left"></i>
-                Volver
+                <span>Volver</span>
             </a>
-            <button class="btn-save" id="btnGuardarHorario">
+            <button type="button" class="btn-save" id="btnGuardarHorario">
                 <i class="fas fa-save"></i>
-                Guardar Horario
-            </button>
-            <button class="btn-modo-seleccion" id="btnModoSeleccion">
-                <i class="fas fa-check-square"></i>
-                Seleccionar múltiples
+                <span>Guardar Horario</span>
             </button>
         </div>
     </div>
@@ -848,13 +1037,23 @@
         <p id="overlay-carga-mensaje">Cargando...</p>
     </div>
 
-    <!-- Barra de selección flotante -->
-    <div class="barra-seleccion-flotante" id="barraSeleccionFlotante">
-        <span id="contadorSeleccionados">0 seleccionados</span>
-        <button class="btn-eliminar-seleccionados" id="btnEliminarSeleccionados">
-            <i class="fas fa-trash"></i> Eliminar seleccionados
-        </button>
-        <button class="btn-cancelar-seleccion" id="btnCancelarSeleccion">Cancelar</button>
+    <!-- Barra de selección flotante estilo Píldora Light Mode -->
+    <div class="barra-seleccion-flotante" id="barraSeleccionFlotante" role="toolbar" aria-label="Acciones de selección múltiple">
+        <div class="barra-seleccion-info">
+            <i class="fas fa-check-circle"></i>
+            <span id="contadorSeleccionados"><strong>0</strong> seleccionados</span>
+        </div>
+        <div class="barra-seleccion-divider"></div>
+        <div class="barra-seleccion-acciones">
+            <button type="button" class="btn-eliminar-seleccionados" id="btnEliminarSeleccionados" title="Eliminar asignaciones seleccionadas">
+                <i class="fas fa-trash-alt"></i>
+                <span>Eliminar seleccionados</span>
+            </button>
+            <button type="button" class="btn-cancelar-seleccion" id="btnCancelarSeleccion" title="Cancelar selección">
+                <i class="fas fa-times"></i>
+                <span>Cancelar</span>
+            </button>
+        </div>
     </div>
 
     <!-- Modal de Validación Previa (M4) -->
@@ -936,14 +1135,11 @@
 
             console.log('Modo edición detectado:', { modoEdicion, editGradoId, editSeccionId });
 
-            // Si está en modo edición, ocultar Paso 1 y cargar datos directamente
+            // Si está en modo edición, cargar datos directamente
             if (modoEdicion && editGradoId) {
                 console.log('Iniciando modo edición...');
 
-                // Ocultar Paso 1 inmediatamente
-                seccionNivel.style.display = 'none';
-
-                // Mostrar Paso 2 inmediatamente
+                // Mostrar cuadrícula inmediatamente
                 vistaCalendario.style.display = 'flex';
 
                 // Pre-cargar el grado
@@ -980,7 +1176,7 @@
                                             if (areaFormacionSelect.options[i].value == areaSeleccionar) {
                                                 areaFormacionSelect.selectedIndex = i;
                                                 areaFormacionSelect.disabled = false;
-                                                btnContinuar.disabled = false;
+                                                if (btnContinuar) btnContinuar.disabled = false;
                                                 console.log('Área seleccionada en índice:', i);
                                                 break;
                                             }
@@ -1447,10 +1643,9 @@
             inicializarDragAndDrop();
             
             // ============================================================
-            // Popup flotante para tarjetas de docente (hover)
+            // Popup flotante para tarjetas de docente (solo por clic)
             // ============================================================
             let tarjetaConPopup = null;
-            let timeoutCerrarPopup = null;
 
             function posicionarPopup(tarjeta) {
                 const popup = tarjeta.querySelector('.adm-full');
@@ -1480,15 +1675,17 @@
                 popup.style.top = top + 'px';
             }
 
+            function cerrarPopup() {
+                if (tarjetaConPopup) {
+                    tarjetaConPopup.classList.remove('popup-activo');
+                    tarjetaConPopup = null;
+                }
+            }
+
             function abrirPopup(tarjeta) {
                 if (tarjetaConPopup === tarjeta) return;
 
-                // Cerrar el anterior
-                if (tarjetaConPopup) {
-                    tarjetaConPopup.classList.remove('popup-activo');
-                }
-
-                clearTimeout(timeoutCerrarPopup);
+                cerrarPopup();
                 tarjetaConPopup = tarjeta;
                 tarjeta.classList.add('popup-activo');
 
@@ -1497,59 +1694,62 @@
                 posicionarPopup(tarjeta);
             }
 
-            function cerrarPopup() {
-                clearTimeout(timeoutCerrarPopup);
-                timeoutCerrarPopup = setTimeout(() => {
-                    if (tarjetaConPopup) {
-                        tarjetaConPopup.classList.remove('popup-activo');
-                        tarjetaConPopup = null;
-                    }
-                }, 180); // margen para que el mouse pueda llegar al popup
-            }
-
-            // Mostrar al entrar a la tarjeta
-            document.addEventListener('mouseover', function(e) {
-                const tarjeta = e.target.closest('.assigned-docente');
-                if (!tarjeta) return;
-
-                // Si entramos a un hijo del popup, no reabrir
-                if (e.target.closest('.adm-full')) {
-                    clearTimeout(timeoutCerrarPopup);
-                    return;
-                }
-
-                abrirPopup(tarjeta);
-            });
-
-            // Cerrar al salir (con retardo, para permitir moverse al popup)
-            document.addEventListener('mouseout', function(e) {
-                const tarjeta = e.target.closest('.assigned-docente');
-                if (!tarjeta || tarjeta !== tarjetaConPopup) return;
-
-                // Si el mouse se va al popup mismo, no cerrar
-                const related = e.relatedTarget;
-                if (related && related.closest('.adm-full')) return;
-
-                // Si todavía está dentro de la tarjeta, no cerrar
-                if (related && tarjeta.contains(related)) return;
-
-                cerrarPopup();
-            });
-
             // Reposicionar si el usuario hace scroll con el popup abierto
             window.addEventListener('scroll', () => {
                 if (tarjetaConPopup) posicionarPopup(tarjetaConPopup);
             }, true);
-            // Función para validar ambos campos del Paso 1
+
+            // Abrir al hacer clic en la tarjeta; mantener abierto al interactuar dentro del popover
+            document.addEventListener('click', function(e) {
+                if (typeof modoSeleccionActivo !== 'undefined' && modoSeleccionActivo) return;
+
+                // No cerrar ni interferir cuando se hace clic dentro del popover (excepto botón eliminar)
+                if (e.target.closest('.adm-full')) {
+                    if (e.target.closest('.btn-eliminar-docente')) {
+                        cerrarPopup();
+                    } else {
+                        e.stopPropagation();
+                    }
+                    return;
+                }
+
+                // No abrir popover si se hace clic en el botón de candado de la tarjeta mini
+                if (e.target.closest('.btn-lock-toggle')) {
+                    return;
+                }
+
+                const tarjeta = e.target.closest('.assigned-docente');
+                if (tarjeta) {
+                    if (tarjetaConPopup === tarjeta) {
+                        cerrarPopup();
+                    } else {
+                        abrirPopup(tarjeta);
+                    }
+                } else {
+                    cerrarPopup();
+                }
+            });
+
+            // Cerrar el popover al cambiar sección o aula dentro del mismo
+            document.addEventListener('change', function(e) {
+                if (e.target.closest('.adm-full .pildora-selector')) {
+                    setTimeout(cerrarPopup, 120);
+                }
+            });
+
+            // Cerrar con tecla Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    cerrarPopup();
+                }
+            });
+            // Función para validar ambos campos (compatibilidad interna)
             function validarPaso1() {
+                if (!btnContinuar) return;
                 const nivelSeleccionado = nivelSelect.value;
                 const areaSeleccionada = areaFormacionSelect.value;
-                
-                if (nivelSeleccionado && areaSeleccionada) {
-                    btnContinuar.disabled = false;
-                } else {
-                    btnContinuar.disabled = true;
-                }
+
+                btnContinuar.disabled = !(nivelSeleccionado && areaSeleccionada);
             }
 
             // Filtrar áreas de formación por nivel académico
@@ -1595,24 +1795,9 @@
                 const nivelTexto = nivelSelect.options[nivelSelect.selectedIndex]?.text || 'No seleccionado';
                 const areaTexto = areaFormacionSelect.options[areaFormacionSelect.selectedIndex]?.text || 'No seleccionada';
                 
-                contextNivel.textContent = `Nivel Académico: ${nivelTexto}`;
-                contextArea.textContent = `Área de Formación: ${areaTexto}`;
+                contextNivel.textContent = nivelTexto;
+                contextArea.textContent = areaTexto;
             }
-
-            // Volver al Paso 1
-            btnVolverPaso1.addEventListener('click', function() {
-                horarioAsignaciones = {};
-                modoSeleccionActivo = false;
-                asignacionesSeleccionadas.clear();
-                actualizarBarraFlotante();
-                btnModoSeleccion.classList.remove('activo');
-                document.querySelectorAll('.drop-zone').forEach(dz => {
-                    dz.classList.remove('modo-seleccion', 'seleccionado');
-                });
-                vistaCalendario.style.display = 'none';
-                seccionNivel.style.display = 'block';
-                actualizarContexto();
-            });
 
             // Almacenar información de contexto para las asignaciones
             let asignacionesContexto = {};
@@ -1796,26 +1981,42 @@
                         }
                     }
 
+                    const seccionesPillsHtml = seccionesAMostrar.length > 0
+                        ? seccionesAMostrar.map(s => `<span class="docente-seccion-pill">${s.nombre}</span>`).join('')
+                        : (docente.secciones && docente.secciones.length > 0
+                            ? docente.secciones.map(s => `<span class="docente-seccion-pill">${s.nombre}</span>`).join('')
+                            : '<span class="text-muted" style="font-size: 0.74rem;">Sin sección</span>');
+
                     const seccionTexto = seccionesAMostrar.length > 0 
                         ? seccionesAMostrar.map(s => s.nombre).join(', ') 
                         : (docente.secciones && docente.secciones.length > 0 
                             ? docente.secciones.map(s => s.nombre).join(', ') 
                             : 'Sin sección asignada');
 
+                    const clasePastelDocente = obtenerClasePastel(docente.id, nombre);
+
                     return `
-                        <div class="docente-card" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${areaTexto}" data-cedula="${docente.cedula || 'N/A'}" data-horas="${horasAcademicas}">
-                            <div class="docente-name">${nombre}</div>
-                            <div class="docente-area">
+                        <div class="docente-card ${clasePastelDocente}" draggable="true" data-id="${docente.id}" data-nombre="${nombre}" data-area="${areaTexto}" data-cedula="${docente.cedula || 'N/A'}" data-horas="${horasAcademicas}">
+                            <div class="docente-header-row">
+                                <div class="docente-name">${nombre}</div>
+                                <span class="docente-grip-icon" title="Arrastrar al horario">
+                                    <i class="fas fa-grip-vertical"></i>
+                                </span>
+                            </div>
+
+                            <div class="docente-area-row">
                                 <i class="fas fa-book"></i>
-                                ${areaTexto}
+                                <span>${areaTexto}</span>
                             </div>
-                            <div class="docente-area">
-                                <i class="fas fa-users"></i>
-                                ${seccionTexto}
-                            </div>
-                            <div class="docente-horas">
-                                <i class="fas fa-clock"></i>
-                                ${horasAcademicas} horas académicas
+
+                            <div class="docente-pills-row">
+                                <div class="docente-secciones-group">
+                                    ${seccionesPillsHtml}
+                                </div>
+                                <div class="docente-horas-pill">
+                                    <i class="fas fa-clock"></i>
+                                    <span>${horasAcademicas}h</span>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1835,17 +2036,25 @@
 
                 // Obtener filtros seleccionados
                 const seccionId = document.getElementById('seccion')?.value || '';
+                const aulaId = document.getElementById('aula')?.value || '';
                 const areaFormacionId = areaFormacionSelect?.value || '';
 
-                console.log('Renderizando calendario con filtros:', { seccionId, areaFormacionId });
+                console.log('Renderizando calendario con filtros:', { seccionId, aulaId, areaFormacionId });
 
-                // Filtrar horarioData por sección y área de formación
+                // Filtrar horarioData por sección, aula y área de formación
                 let horarioFiltrado = horarioData;
 
                 if (seccionId) {
                     horarioFiltrado = horarioFiltrado.filter(h => {
                         const secId = h.seccion_id || h.cargaAcademica?.seccion?.id;
                         return secId == seccionId;
+                    });
+                }
+
+                if (aulaId) {
+                    horarioFiltrado = horarioFiltrado.filter(h => {
+                        const aId = h.aula_id || h.aula?.id_aula || h.aula?.id;
+                        return aId == aulaId;
                     });
                 }
 
@@ -2009,11 +2218,33 @@
             }
 
             // Función helper para formatear la sección en la píldora compacta (ej. "(A)", "(B)", etc.)
+            const PALETA_PASTEL_TARJETAS = [
+                'card-pastel-blue',
+                'card-pastel-purple',
+                'card-pastel-green',
+                'card-pastel-orange',
+                'card-pastel-pink',
+                'card-pastel-teal',
+            ];
+
+            function obtenerClasePastel(docenteId, docenteNombre) {
+                const clave = String(docenteId || docenteNombre || '0');
+                if (/^\d+$/.test(clave)) {
+                    return PALETA_PASTEL_TARJETAS[Number(clave) % PALETA_PASTEL_TARJETAS.length];
+                }
+                let hash = 0;
+                for (let i = 0; i < clave.length; i++) {
+                    hash = ((hash << 5) - hash) + clave.charCodeAt(i);
+                    hash |= 0;
+                }
+                return PALETA_PASTEL_TARJETAS[Math.abs(hash) % PALETA_PASTEL_TARJETAS.length];
+            }
+
             function formatearPildoraSeccion(asignacion) {
                 const letra = obtenerLetraSeccion(asignacion);
-                if (letra === 'Sin Sección') return 'Sin Sección';
-                if (letra.startsWith('(') && letra.endsWith(')')) return letra;
-                return `(${letra})`;
+                if (letra === 'Sin Sección') return '<span class="adm-mini-badge">-</span>';
+                const limpia = letra.replace(/[()]/g, '').trim();
+                return `<span class="adm-mini-badge">${limpia}</span>`;
             }
 
             function renderizarAsignacionLocalHTML(key, asignacion, index) {
@@ -2088,13 +2319,22 @@
                 const draggableAttrLocal = esFijadaLocal ? 'draggable="false"' : 'draggable="true"';
                 const fijadaClsLocal = esFijadaLocal ? ' clase-fijada' : '';
 
+                const seccionLetraLocal = obtenerLetraSeccion(asignacion);
+                const seccionEtiquetaLocal = seccionLetraLocal === 'Sin Sección' ? 'Sin Sección' : `Sección ${seccionLetraLocal}`;
+                const clasePastelLocal = obtenerClasePastel(asignacion.docenteId || asignacion.id, asignacion.nombre);
+
                 return `
                     <div class="assigned-docente${fijadaClsLocal}" ${draggableAttrLocal} data-fijada="${esFijadaLocal}">
-                        <div class="adm-mini">
-                            <span class="adm-mini-nombre">${asignacion.nombre}</span>
-                            <span class="adm-mini-seccion">${formatearPildoraSeccion(asignacion)} ${lockIconLocalHtml}</span>
+                        <div class="adm-mini event-card ${clasePastelLocal}" style="padding: 8px 10px; border-radius: 8px; border: none; margin-bottom: 4px; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: inherit; font-size: 13px; margin-bottom: 2px; line-height: 1.25;">
+                                ${asignacion.nombre}
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: inherit; opacity: 0.85;">
+                                <span>${seccionEtiquetaLocal}</span>
+                                <span style="opacity: 0.75;">${lockIconLocalHtml}</span>
+                            </div>
                         </div>
-                        <div class="adm-full">
+                        <div class="adm-full ${clasePastelLocal}">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="docente-nombre">${asignacion.nombre}</span>
                                 ${lockIconLocalHtml}
@@ -2160,13 +2400,22 @@
                 const draggableAttr = esFijada ? 'draggable="false"' : 'draggable="true"';
                 const fijadaCls = esFijada ? ' clase-fijada' : '';
 
+                const seccionEtiqueta = seccionLetra === 'Sin Sección' ? 'Sin Sección' : `Sección ${seccionLetra}`;
+                const docenteIdRef = horarioAsignado.cargaAcademica?.docente?.id || horarioAsignado.docente_id;
+                const clasePastel = obtenerClasePastel(docenteIdRef, docenteNombre);
+
                 return `
                     <div class="assigned-docente${fijadaCls}" ${draggableAttr} data-asignacion-id="${asignacionId}" data-fijada="${esFijada}">
-                        <div class="adm-mini">
-                            <span class="adm-mini-nombre">${docenteNombre}</span>
-                            <span class="adm-mini-seccion">${seccionPildora} ${lockIconHtml}</span>
+                        <div class="adm-mini event-card ${clasePastel}" style="padding: 8px 10px; border-radius: 8px; border: none; margin-bottom: 4px; cursor: pointer; transition: all 0.2s;">
+                            <div style="font-weight: 600; color: inherit; font-size: 13px; margin-bottom: 2px; line-height: 1.25;">
+                                ${docenteNombre}
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: inherit; opacity: 0.85;">
+                                <span>${seccionEtiqueta}</span>
+                                <span style="opacity: 0.75;">${lockIconHtml}</span>
+                            </div>
                         </div>
-                        <div class="adm-full">
+                        <div class="adm-full ${clasePastel}">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="docente-nombre">${docenteNombre}</span>
                                 ${lockIconHtml}
@@ -2198,6 +2447,7 @@
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         }
                     });
@@ -2439,27 +2689,20 @@
                 mostrarToast(mensaje, tipo, null, esPersistente);
             }
 
-            // Continuar a la vista del calendario
-            btnContinuar.addEventListener('click', async function() {
-                const nivel = nivelSelect.value;
-                const area = areaFormacionSelect.value;
-                
-                if (!nivel || !area) {
-                    mostrarNotificacion('Por favor, seleccione tanto el nivel académico como el área de formación', 'warning');
-                    return;
-                }
+            // Cargar cuadrícula directamente con los parámetros seleccionados en el modal
+            (async function initCalendarioDirecto() {
+                if (modoEdicion) return;
 
-                // Actualizar header de contexto
+                const nivel = nivelSelect?.value;
+                const area = areaFormacionSelect?.value;
+                if (!nivel || !area) return;
+
                 actualizarContexto();
-
-                // Mostrar vista del calendario pero deshabilitar interacción durante carga
-                seccionNivel.style.display = 'none';
                 vistaCalendario.style.display = 'flex';
                 vistaCalendario.style.pointerEvents = 'none';
                 vistaCalendario.style.opacity = '0.5';
 
                 try {
-                    // Cargar datos en paralelo y esperar a que terminen
                     await Promise.all([
                         cargarDatosAPI(),
                         cargarDocentesAPI(nivel)
@@ -2469,11 +2712,10 @@
                     console.error('Error al cargar datos:', error);
                     mostrarNotificacion('Error al cargar datos del calendario', 'error');
                 } finally {
-                    // Restaurar interacción
                     vistaCalendario.style.pointerEvents = '';
                     vistaCalendario.style.opacity = '';
                 }
-            });
+            })();
 
             // Cambiar nivel académico y recargar grilla
             nivelSelect.addEventListener('change', function() {
@@ -2574,6 +2816,60 @@
                     }
                 }
             }
+
+            // Vincular panel lateral de filtros (Offcanvas) con #seccion y #aula sin recargar la página
+            (function vincularPanelFiltrosCreate() {
+                const panelEl = document.getElementById('createHorarioFilterPanel');
+                const formEl = document.getElementById('createHorarioFilterPanelForm');
+                const limpiarBtn = document.getElementById('createHorarioFilterPanelLimpiarBtn');
+                const panelSeccion = document.getElementById('createHorarioFilterPanel_seccion_id');
+                const panelAula = document.getElementById('createHorarioFilterPanel_aula_id');
+                const hiddenAula = document.getElementById('aula');
+                const badgeEl = document.querySelector('[data-filter-count-for="createHorarioFilterPanel"]');
+
+                if (!panelEl || !formEl || !panelSeccion || !panelAula || !hiddenAula) return;
+
+                function actualizarBadgeFiltrosCreate() {
+                    const activos = (seccionSelect.value ? 1 : 0) + (hiddenAula.value ? 1 : 0);
+                    if (badgeEl) {
+                        badgeEl.textContent = activos;
+                        badgeEl.classList.toggle('d-none', activos === 0);
+                    }
+                }
+
+                function aplicarFiltrosDesdePanel() {
+                    const seccionAnterior = seccionSelect.value;
+                    seccionSelect.value = panelSeccion.value || '';
+                    hiddenAula.value = panelAula.value || '';
+
+                    if (seccionAnterior !== seccionSelect.value) {
+                        seccionSelect.dispatchEvent(new Event('change'));
+                    } else {
+                        renderizarCalendario();
+                    }
+                    actualizarBadgeFiltrosCreate();
+
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+                        bootstrap.Offcanvas.getOrCreateInstance(panelEl).hide();
+                    }
+                }
+
+                formEl.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    aplicarFiltrosDesdePanel();
+                }, true);
+
+                if (limpiarBtn) {
+                    limpiarBtn.addEventListener('click', function () {
+                        setTimeout(() => {
+                            panelSeccion.value = '';
+                            panelAula.value = '';
+                            aplicarFiltrosDesdePanel();
+                        }, 10);
+                    });
+                }
+            })();
 
             // Inicializar Drag and Drop
             function inicializarDragAndDrop() {
@@ -2870,6 +3166,7 @@
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                             },
                             body: JSON.stringify({
@@ -2881,7 +3178,7 @@
                         const data = await response.json();
 
                         if (!response.ok) {
-                            mostrarNotificacion(data.error || 'Error al mover asignación', 'error');
+                            mostrarNotificacion(data.error || data.message || 'Error al mover asignación', 'error');
                             return;
                         }
 
@@ -3048,6 +3345,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
                         body: JSON.stringify({
@@ -3059,7 +3357,7 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        mostrarNotificacion(data.error || 'Error al guardar horario', 'error');
+                        mostrarNotificacion(data.error || data.message || 'Error al guardar horario', 'error');
                         return;
                     }
 
@@ -3098,16 +3396,21 @@
                 try {
                     const response = await fetch(`/api/horario/${asignacionId}/aula`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
                         body: JSON.stringify({ aula_id: nuevaAulaId })
                     });
 
                     const data = await response.json();
 
                     if (!response.ok) {
-                        errorContainer.textContent = data.error || 'Error al actualizar el aula';
+                        const errMsg = data.error || data.message || 'Error al actualizar el aula';
+                        errorContainer.textContent = errMsg;
                         errorContainer.classList.add('visible');
-                        mostrarNotificacion(data.error || 'Error al actualizar el aula', 'error');
+                        mostrarNotificacion(errMsg, 'error');
                         return;
                     }
 
@@ -3281,6 +3584,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
                         body: JSON.stringify({
@@ -3292,7 +3596,7 @@
                     const valData = await valResponse.json();
 
                     if (!valResponse.ok) {
-                        mostrarNotificacion(valData.error || 'Error al validar viabilidad del horario', 'error');
+                        mostrarNotificacion(valData.error || valData.message || 'Error al validar viabilidad del horario', 'error');
                         return;
                     }
 
@@ -3310,6 +3614,7 @@
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
                         body: JSON.stringify({ 
@@ -3324,7 +3629,7 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        mostrarNotificacion(data.error || 'Error al generar horario', 'error');
+                        mostrarNotificacion(data.error || data.message || 'Error al generar horario', 'error');
                         return;
                     }
 
@@ -3393,12 +3698,15 @@
                 try {
                     const response = await fetch(`/api/horario/${asignacionId}`, {
                         method: 'DELETE',
-                        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' }
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        }
                     });
                     const data = await response.json();
 
                     if (!response.ok) {
-                        mostrarNotificacion(data.error || 'Error al eliminar asignación', 'error');
+                        mostrarNotificacion(data.error || data.message || 'Error al eliminar asignación', 'error');
                         return;
                     }
 
@@ -3461,7 +3769,7 @@
 
             function actualizarBarraFlotante() {
                 const cantidad = asignacionesSeleccionadas.size;
-                contadorSeleccionados.textContent = `${cantidad} seleccionado${cantidad !== 1 ? 's' : ''}`;
+                contadorSeleccionados.innerHTML = `<strong>${cantidad}</strong> seleccionado${cantidad !== 1 ? 's' : ''}`;
                 barraSeleccionFlotante.classList.toggle('visible', modoSeleccionActivo && cantidad > 0);
             }
 
@@ -3477,6 +3785,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                         },
                         body: JSON.stringify({ ids })
@@ -3484,7 +3793,7 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        mostrarNotificacion(data.error || 'Error al eliminar asignaciones', 'error');
+                        mostrarNotificacion(data.error || data.message || 'Error al eliminar asignaciones', 'error');
                         return;
                     }
 

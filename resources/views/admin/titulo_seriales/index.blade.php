@@ -44,8 +44,8 @@
             </div>
             @can('titulo_seriales.gestionar')
                 @if ($anio && \App\Support\AnioEscolarSeleccionado::esActual())
-                    <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#crearSeriales">
-                        <i class="fas fa-plus"></i> <span>Registrar seriales</span>
+                    <button type="button" class="btn-primary-modern" data-bs-toggle="modal" data-bs-target="#crearSeriales">
+                        <i class="fas fa-plus me-1"></i> <span>Registrar seriales</span>
                     </button>
                 @endif
             @endcan

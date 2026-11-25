@@ -225,6 +225,7 @@ return [
 
     'custom_css' => [
         'css/admin-custom.css',
+        'css/design-system.css',
     ],
 
     /*
@@ -275,10 +276,10 @@ return [
                     'can' => ['horarios.ver', 'portal_horarios.ver_docente'],
                 ],
                 [
-                    'text' => 'Configuración de Bloques',
+                    'text' => 'Configuración',
                     'url' => 'admin/horario/configuracion',
-                    'icon' => 'fas fa-cogs',
-                    'active' => ['admin/horario/configuracion*'],
+                    'icon' => 'fas fa-sliders-h',
+                    'active' => ['admin/horario/configuracion*', 'admin/horario/posiciones*'],
                     'can' => 'horarios.gestionar',
                 ],
             ],
@@ -784,5 +785,5 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'livewire' => false,
+    'livewire' => true,
 ];

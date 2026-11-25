@@ -47,10 +47,9 @@ class ConfiguracionHorarioControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Configuración de Bloques Horarios');
-        $response->assertSee('Hora de Inicio de Jornada');
+        $response->assertSee('Hora de Inicio');
         $response->assertSee('Descansos y Recesos');
-        $response->assertSee('Bloques Reservados (Grupos Estables)');
-        $response->assertSee('Agregar Bloque Reservado');
+        $response->assertSee('Bloques Reservados');
         $response->assertSee('Vista Previa en Vivo');
     }
 
@@ -92,7 +91,6 @@ class ConfiguracionHorarioControllerTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('configuracion_horario', [
-            'anio_escolar_id' => $this->anio->id,
             'hora_inicio' => '07:30:00',
             'numero_bloques' => 4,
             'duracion_bloque_min' => 90,
@@ -138,7 +136,7 @@ class ConfiguracionHorarioControllerTest extends TestCase
         $response = $this->actingAs($this->user)
             ->put(route('admin.horario.configuracion.update'), $payload);
 
-        $response->assertSessionHas('error');
+        $response->assertSessionHasErrors('reservados');
     }
 
     public function test_usuario_recibe_error_si_reserva_bloque_excede_limite(): void

@@ -5,6 +5,7 @@
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
     <style>
         .badge {
             font-size: 85%;
@@ -18,7 +19,7 @@
 @stop
 
 @section('content_header')
-    <div class="content-header-modern">
+    <div class="content-header-modern hero-header-modern">
         <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
@@ -34,5 +35,7 @@
 @stop
 
 @section('content')
-    @livewire('admin.auditoria.index-auditoria')
+    <div class="main-container">
+        @livewire('admin.auditoria.index-auditoria')
+    </div>
 @stop

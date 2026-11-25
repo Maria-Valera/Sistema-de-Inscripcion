@@ -943,6 +943,34 @@ class RepresentanteController extends Controller
                 'lugar-nacimiento-padre' => 'nullable|string|max:255|regex:/^[A-Za-záéíóúÁÉÍÓÚñÑ\s,]+$/',
             ];
 
+            // TAREA 4: Validaciones condicionales según estado de la madre y del padre
+            $estadoMadre = $request->input('estado_madre');
+            $estadoPadre = $request->input('estado_padre');
+
+            if ($estadoMadre === 'Presente') {
+                $rules['numero_documento'] = 'required_if:estado_madre,Presente|nullable|string|max:20';
+                $rules['primer-nombre'] = 'required_if:estado_madre,Presente|nullable|string|max:50';
+                $rules['primer-apellido'] = 'required_if:estado_madre,Presente|nullable|string|max:50';
+            } else {
+                unset($rules['idparroquia']);
+                $rules['idparroquia'] = 'nullable';
+                $rules['numero_documento'] = 'nullable';
+                $rules['primer-nombre'] = 'nullable';
+                $rules['primer-apellido'] = 'nullable';
+            }
+
+            if ($estadoPadre === 'Presente') {
+                $rules['numero_documento-padre'] = 'required_if:estado_padre,Presente|nullable|string|max:20';
+                $rules['primer-nombre-padre'] = 'required_if:estado_padre,Presente|nullable|string|max:50';
+                $rules['primer-apellido-padre'] = 'required_if:estado_padre,Presente|nullable|string|max:50';
+            } else {
+                unset($rules['idparroquia-padre']);
+                $rules['idparroquia-padre'] = 'nullable';
+                $rules['numero_documento-padre'] = 'nullable';
+                $rules['primer-nombre-padre'] = 'nullable';
+                $rules['primer-apellido-padre'] = 'nullable';
+            }
+
             $messages = [
                 'primer-nombre-representante.required' => 'El primer nombre es obligatorio',
                 'primer-apellido-representante.required' => 'El primer apellido es obligatorio',
@@ -1595,7 +1623,7 @@ class RepresentanteController extends Controller
             }
 
             $numero_documentoMadre = $request->input('numero_documento');
-            if ($numero_documentoMadre) {
+            if ($numero_documentoMadre && $request->input('estado_madre') === 'Presente') {
                 Log::info('Procesando datos de la madre', ['numero_documento' => $numero_documentoMadre]);
 
                 $personaMadre = Persona::firstOrNew(['numero_documento' => $numero_documentoMadre]);
@@ -1676,7 +1704,7 @@ class RepresentanteController extends Controller
             }
 
             $numero_documentoPadre = $request->input('numero_documento-padre');
-            if ($numero_documentoPadre) {
+            if ($numero_documentoPadre && $request->input('estado_padre') === 'Presente') {
                 Log::info('Procesando datos del padre', ['numero_documento' => $numero_documentoPadre]);
 
                 $personaPadre = Persona::firstOrNew(['numero_documento' => $numero_documentoPadre]);

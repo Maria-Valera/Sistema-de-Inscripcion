@@ -6,12 +6,13 @@
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
 @stop
 
 @section('title', 'Gestión de Aulas')
 
 @section('content_header')
-    <div class="content-header-modern">
+    <div class="content-header-modern hero-header-horario">
         <div class="header-content">
             <div class="header-title">
                 <div class="icon-wrapper">
@@ -19,11 +20,11 @@
                 </div>
                 <div>
                     <h1 class="title-main">Gestión de Aulas</h1>
-
+                    <p class="title-subtitle">Administración de espacios físicos, laboratorios y salas académicas</p>
                 </div>
             </div>
 
-            <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear">
+            <button type="button" class="btn-hero-white" data-bs-toggle="modal" data-bs-target="#modalCrear">
                 <i class="fas fa-plus"></i>
                 <span>Nueva Aula</span>
             </button>
@@ -69,102 +70,166 @@
             </div>
         @endif
 
-        <div class="card-modern">
-            <div class="card-header-modern">
-                <div class="header-left">
-                    <div class="header-icon">
+        <div class="card-modern shadow-sm">
+            <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="header-left d-flex align-items-center gap-3">
+                    <div class="header-icon d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1;">
                         <i class="fas fa-list-ul"></i>
                     </div>
                     <div>
-                        <h3>Listado de Aulas</h3>
-                        <p>{{ $aulas->total() }} registros encontrados</p>
+                        <h3 class="fw-bold mb-0" style="font-size: 1.05rem; color: #1E293B;">Listado de Aulas</h3>
+                        <p class="text-muted mb-0" style="font-size: 0.82rem;">{{ $aulas->total() }} registros encontrados</p>
+                    </div>
+                </div>
+
+                {{-- Buscador Redondeado (Design System) --}}
+                <div class="header-right">
+                    <div class="search-wrapper position-relative" style="width: 260px;">
+                        <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 50%; transform: translateY(-50%); z-index: 10; font-size: 0.85rem;"></i>
+                        <input type="text"
+                               id="buscarAula"
+                               class="form-control search-input-modern pl-5"
+                               placeholder="Buscar aula..."
+                               style="padding-left: 40px !important; border-radius: 10px; height: 38px; font-size: 0.85rem;">
                     </div>
                 </div>
             </div>
 
-            <div class="card-body-modern">
+            <div class="card-body-modern p-0">
                 <div class="table-wrapper">
-                    <table class="table-modern overflow-hidden">
+                    <table class="table-modern" id="tablaAulas">
                         <thead>
-                            <tr style="text-align: center">
-                                <th style="text-align: center">#</th>
-                                <th style="text-align: center">Nombre del Aula</th>
-                                <th style="text-aling:center">Tipo Aula</th>
-                                <th style="text-align: center">Acciones</th>
+                            <tr class="text-center">
+                                <th style="width: 70px;">#</th>
+                                <th class="text-start">Nombre del Aula</th>
+                                <th>Tipo de Aula</th>
+                                <th style="width: 100px;">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody style="text-align: center">
+                        <tbody class="text-center">
                             @if ($aulas->isEmpty())
                                 <tr>
                                     <td colspan="4">
-                                        <div class="empty-state">
-                                            <div class="empty-icon">
-                                                <i class="fas fa-inbox"></i>
+                                        <div class="empty-state text-center py-5">
+                                            <div class="empty-icon text-muted mb-2 opacity-50">
+                                                <i class="fas fa-door-open fa-3x"></i>
                                             </div>
-                                            <h4>No hay aulas registradas</h4>
-                                            <p>Agrega una nueva aula con el botón superior</p>
+                                            <h4 class="fw-bold" style="color: #1E293B; font-size: 1.1rem;">No hay aulas registradas</h4>
+                                            <p class="text-muted" style="font-size: 0.88rem;">Agrega una nueva aula con el botón superior.</p>
                                         </div>
                                     </td>
                                 </tr>
                             @else
                                 @foreach ($aulas as $index => $aula)
-                                    <tr class="row-12" style="text-align: center">
-                                        <td>{{ $index + 1 }}</td>
-                                        <td class="title-main">{{ $aula->nombre_aula }}</td>
-                                        <td>{{ $aula->tipo_aula }}</td>
+                                    <tr>
+                                        <td class="text-muted" style="font-size: 0.85rem;">{{ $aulas->firstItem() ? ($aulas->firstItem() + $index) : ($index + 1) }}</td>
+                                        <td class="text-start">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="d-inline-flex align-items-center justify-content-center rounded-2"
+                                                     style="width: 32px; height: 32px; background-color: #EFF6FF; color: #4A6FC1; font-size: 0.9rem;">
+                                                    <i class="fas fa-chalkboard"></i>
+                                                </div>
+                                                <span class="fw-bold text-dark" style="font-size: 0.93rem;">
+                                                    {{ $aula->nombre_aula }}
+                                                </span>
+                                            </div>
+                                        </td>
                                         <td>
-                                            <div class="action-buttons">
-
-                                                <button class="action-btn btn-edit" data-bs-toggle="modal"
-                                                    data-bs-target="#modalEditar{{ $aula->id_aula }}"
-                                                    title="Editar">
-                                                    <i class="fas fa-pen"></i>
-                                                </button>
-
-                                                <button class="action-btn btn-delete" data-bs-toggle="modal"
-                                                    data-bs-target="#confirmarEliminar{{ $aula->id_aula }}"
-                                                    title="Eliminar">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-
+                                            <span class="badge" style="background-color: #F8FAFC; color: #334155; font-weight: 600; padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.85rem; border: 1px solid #E2E8F0;">
+                                                <i class="fas fa-layer-group text-primary me-1"></i>
+                                                {{ $aula->tipo_aula }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons justify-content-center">
+                                                <div class="dropdown text-center">
+                                                    <button class="action-btn"
+                                                            type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-modern">
+                                                        <li>
+                                                            <button class="dropdown-item dropdown-item-modern item-edit"
+                                                                type="button"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#modalEditar{{ $aula->id_aula }}"
+                                                                title="Editar">
+                                                                <i class="fas fa-pen me-2"></i>
+                                                                <span>Editar</span>
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button class="dropdown-item dropdown-item-modern item-delete"
+                                                                type="button"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#confirmarEliminar{{ $aula->id_aula }}"
+                                                                title="Eliminar">
+                                                                <i class="fas fa-trash-alt me-2"></i>
+                                                                <span>Eliminar</span>
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
 
                                     @include('aulas.modales.editModal')
 
-                                    {{-- Modal Confirmar Eliminar --}}
-                                    <div class="modal fade" id="confirmarEliminar{{ $aula->id_aula }}" tabindex="-1"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content modal-modern">
-                                                <div class="modal-header-delete">
-                                                    <div class="modal-icon-delete">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </div>
-                                                    <h5 class="modal-title-delete">Confirmar Eliminación</h5>
-                                                    <button type="button" class="btn-close-modal"
-                                                        data-bs-dismiss="modal" aria-label="Cerrar">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body-delete">
-                                                    <p>¿Deseas Eliminar el aula <strong>{{ $aula->nombre_aula }}</strong>?</p>
-                                                    <p class="delete-warning">El aula quedará inactiva y no aparecerá en el sistema.</p>
-                                                </div>
-                                                <div class="modal-footer-delete">
-                                                    <form action="{{ route('aulas.destroy', $aula) }}" method="POST"
-                                                        class="w-100">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <div class="footer-buttons">
-                                                            <button type="button" class="btn-modal-cancel"
-                                                                data-bs-dismiss="modal">Cancelar</button>
-                                                            <button type="submit"
-                                                                class="btn-modal-delete">Eliminar</button>
+                                    {{-- Modal Confirmar Eliminar con Design System --}}
+                                    <div class="modal fade modal-danger-delete" id="confirmarEliminar{{ $aula->id_aula }}" tabindex="-1"
+                                        aria-labelledby="modalLabel{{ $aula->id_aula }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+                                            <div class="modal-content modal-modern shadow-lg" style="border: 1px solid #E2E8F0; border-radius: 16px; overflow: hidden; background: #FFFFFF;">
+                                                <div class="modal-header d-flex align-items-center justify-content-between px-4 py-3 bg-white border-bottom" style="border-bottom-color: #F1F5F9 !important;">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
+                                                             style="width: 44px; height: 44px; border-radius: 12px; background-color: #FEE2E2; color: #EF4444;">
+                                                            <i class="fas fa-trash-alt" style="font-size: 1.15rem;"></i>
                                                         </div>
-                                                    </form>
+                                                        <div>
+                                                            <h5 class="modal-title m-0 fw-bold" id="modalLabel{{ $aula->id_aula }}" style="color: #1E293B; font-size: 1.1rem;">
+                                                                Confirmar Eliminación
+                                                            </h5>
+                                                            <p class="text-muted m-0" style="font-size: 0.82rem;">Acción destructiva sobre aula</p>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                                 </div>
+
+                                                <form action="{{ route('aulas.destroy', $aula) }}" method="POST" class="w-100 m-0">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <div class="modal-body px-4 py-3" style="background-color: #FFFFFF;">
+                                                        <p class="fw-semibold mb-2" style="color: #1E293B; font-size: 0.95rem;">
+                                                            ¿Deseas eliminar el aula <strong>{{ $aula->nombre_aula }}</strong>?
+                                                        </p>
+                                                        <p class="text-muted mb-3" style="font-size: 0.85rem;">
+                                                            El aula quedará inactiva y no aparecerá en el sistema.
+                                                        </p>
+                                                        <div class="p-3 d-flex align-items-center gap-3"
+                                                             style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;">
+                                                            <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                                                                 style="width: 40px; height: 40px; background-color: #EFF6FF; color: #4A6FC1; font-size: 1.1rem;">
+                                                                <i class="fas fa-door-open"></i>
+                                                            </div>
+                                                            <div>
+                                                                <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ $aula->nombre_aula }}</div>
+                                                                <div class="text-muted" style="font-size: 0.8rem;">Tipo: {{ $aula->tipo_aula }}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="modal-footer d-flex justify-content-end align-items-center gap-2 px-4 py-3 bg-white border-top" style="border-top-color: #F1F5F9 !important;">
+                                                        <button type="button" class="btn-secondary-modern" data-bs-dismiss="modal">
+                                                            <i class="fas fa-times me-1"></i> Cancelar
+                                                        </button>
+                                                        <button type="submit" class="btn" style="background-color: #EF4444; color: #FFF; border-radius: 8px; font-weight: 600; padding: 9px 18px; border: none;">
+                                                            <i class="fas fa-trash-alt me-1"></i> Eliminar
+                                                        </button>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
@@ -181,7 +246,7 @@
 
     </div>
 
-    @section('js')
+@section('js')
 <script>
     const urlVerificar = "{{ route('aulas.verificarExistencia') }}";
     const csrfToken    = "{{ csrf_token() }}";
@@ -262,13 +327,31 @@
 
         inputCrear.addEventListener('input', validarCrear);
 
-        // Limpiar modal al cerrar
-        document.getElementById('modalCrear').addEventListener('hidden.bs.modal', () => {
-            inputCrear.value = '';
-            inputCrear.classList.remove('is-invalid');
+        // Función para limpiar modal crear
+        function limpiarModalCrear() {
+            const form = document.getElementById('formCrearAula');
+            if (form) form.reset();
+            if (inputCrear) {
+                inputCrear.value = '';
+                inputCrear.classList.remove('is-invalid');
+            }
+            const tipoAulaCrear = document.getElementById('tipo_aula_crear');
+            if (tipoAulaCrear) {
+                tipoAulaCrear.value = '';
+                tipoAulaCrear.classList.remove('is-invalid');
+            }
             ocultarTodos('crear');
+            const errTipo = document.getElementById('error-tipo-crear-vacio');
+            if (errTipo) errTipo.style.display = 'none';
             setBoton('btnGuardarCrear', true);
-        });
+        }
+
+        // Limpiar modal al abrir y al cerrar
+        const modalCrearEl = document.getElementById('modalCrear');
+        if (modalCrearEl) {
+            modalCrearEl.addEventListener('show.bs.modal', limpiarModalCrear);
+            modalCrearEl.addEventListener('hidden.bs.modal', limpiarModalCrear);
+        }
 
         // Bloquear envío si hay error
         document.getElementById('formCrearAula').addEventListener('submit', (e) => {
@@ -321,6 +404,27 @@
             }
         });
     });
+
+    // Limpiar errores en modales de edición al cerrarse
+    document.querySelectorAll('[id^="modalEditar"]').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', () => {
+            modal.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            modal.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+        });
+    });
+
+    // ─── Buscador en tiempo real ─────────────────────────────
+    const inputBuscarAula = document.getElementById('buscarAula');
+    if (inputBuscarAula) {
+        inputBuscarAula.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            document.querySelectorAll('#tablaAulas tbody tr').forEach(row => {
+                if (row.cells.length === 1) return;
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    }
 </script>
 @endsection
 @endsection

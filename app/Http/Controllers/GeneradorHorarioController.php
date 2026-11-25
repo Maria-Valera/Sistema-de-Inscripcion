@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\GeneradorHorarioService;
 use App\Services\ValidadorHorarioService;
 use App\Models\HorarioAsignacion;
-use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Models\AreaFormacion;
 use App\Models\CargaAcademica;
 use App\Models\BloqueReservado;
@@ -22,11 +22,6 @@ class GeneradorHorarioController extends Controller
     {
         $this->generador = $generador;
         $this->validador = $validador;
-    }
-
-    private function getAnioEscolarActivo()
-    {
-        return AnioEscolar::activos()->first();
     }
 
     private function obtenerAulaRegularDeSeccion($seccionId)
@@ -56,11 +51,11 @@ class GeneradorHorarioController extends Controller
             'area_formacion_id' => 'nullable|integer',
         ]);
 
-        // Si no se proporciona anio_escolar_id, usar el activo
-        $anioEscolarId = $validado['anio_escolar_id'] ?? $this->getAnioEscolarActivo()?->id;
+        // Si no se proporciona anio_escolar_id, usar el seleccionado
+        $anioEscolarId = $validado['anio_escolar_id'] ?? AnioEscolarSeleccionado::id();
 
         if (!$anioEscolarId) {
-            return response()->json(['error' => 'No hay año escolar activo'], 400);
+            return response()->json(['error' => 'No hay año escolar seleccionado'], 400);
         }
 
         $resultado = $this->generador->generar(
@@ -81,10 +76,10 @@ class GeneradorHorarioController extends Controller
             'grado_id' => 'nullable|integer',
         ]);
 
-        $anioEscolarId = $validado['anio_escolar_id'] ?? $this->getAnioEscolarActivo()?->id;
+        $anioEscolarId = $validado['anio_escolar_id'] ?? AnioEscolarSeleccionado::id();
 
         if (!$anioEscolarId) {
-            return response()->json(['error' => 'No hay año escolar activo'], 400);
+            return response()->json(['error' => 'No hay año escolar seleccionado'], 400);
         }
 
         $resultado = $this->validador->validar(
@@ -97,9 +92,9 @@ class GeneradorHorarioController extends Controller
 
     public function getAnioEscolarActivoAPI()
     {
-        $anioEscolar = $this->getAnioEscolarActivo();
+        $anioEscolar = AnioEscolarSeleccionado::modelo();
         if (!$anioEscolar) {
-            return response()->json(['error' => 'No hay año escolar activo'], 404);
+            return response()->json(['error' => 'No hay año escolar seleccionado'], 404);
         }
         return response()->json($anioEscolar);
     }
@@ -112,11 +107,11 @@ class GeneradorHorarioController extends Controller
             'area_formacion_id' => 'nullable|integer',
         ]);
 
-        // Si no se proporciona anio_escolar_id, usar el activo
-        $anioEscolarId = $validado['anio_escolar_id'] ?? $this->getAnioEscolarActivo()?->id;
+        // Si no se proporciona anio_escolar_id, usar el seleccionado
+        $anioEscolarId = $validado['anio_escolar_id'] ?? AnioEscolarSeleccionado::id();
 
         if (!$anioEscolarId) {
-            return response()->json(['error' => 'No hay año escolar activo'], 400);
+            return response()->json(['error' => 'No hay año escolar seleccionado'], 400);
         }
 
         $query = HorarioAsignacion::with([
@@ -741,16 +736,35 @@ class GeneradorHorarioController extends Controller
             'anio_escolar_id' => 'nullable|integer',
         ]);
 
-        // Si no se proporciona anio_escolar_id, usar el activo
-        $anioEscolarId = $validado['anio_escolar_id'] ?? $this->getAnioEscolarActivo()?->id;
+        // Si no se proporciona anio_escolar_id, usar el seleccionado o el activo
+        $anioEscolarId = !empty($validado['anio_escolar_id'])
+            ? (int) $validado['anio_escolar_id']
+            : (AnioEscolarSeleccionado::id() ?: \App\Models\AnioEscolar::where('status', 'Activo')->value('id'));
 
         if (!$anioEscolarId) {
-            return response()->json(['error' => 'No hay año escolar activo'], 400);
+            return response()->json(['error' => 'No hay año escolar seleccionado ni activo en el sistema.'], 422);
         }
 
         return \DB::transaction(function() use ($validado, $anioEscolarId) {
-            // Limpiar asignaciones anteriores del mismo año escolar
-            HorarioAsignacion::where('anio_escolar_id', $anioEscolarId)->delete();
+            $asignacionesEntrantes = collect($validado['asignaciones']);
+            $seccionIds = $asignacionesEntrantes->pluck('seccion_id')->filter()->unique();
+            $materiaIds = $asignacionesEntrantes->pluck('materia_id')->filter()->unique();
+
+            // Limpiar únicamente las asignaciones anteriores del ámbito que se está guardando
+            $queryBorrar = HorarioAsignacion::where('anio_escolar_id', $anioEscolarId)
+                ->where('fijada', false);
+
+            if ($seccionIds->isNotEmpty()) {
+                $queryBorrar->whereHas('cargaAcademica', function ($q) use ($seccionIds, $materiaIds) {
+                    $q->whereIn('seccion_id', $seccionIds);
+                    if ($materiaIds->isNotEmpty()) {
+                        $q->whereIn('area_formacion_id', $materiaIds);
+                    }
+                });
+                $queryBorrar->delete();
+            } else {
+                $queryBorrar->delete();
+            }
 
             $asignacionesGuardadas = 0;
             $errores = [];
@@ -825,6 +839,7 @@ class GeneradorHorarioController extends Controller
                         'fijada' => !empty($asignacion['fijada']),
                         'conflicto_manual' => false,
                     ]);
+                    $asignacionesGuardadas++;
                 } catch (\Illuminate\Database\QueryException $e) {
                     $msg = ($e->getCode() == 23000 || str_contains($e->getMessage(), 'unique_carga_bloque') || str_contains($e->getMessage(), 'UNIQUE constraint failed'))
                         ? 'La clase ya está asignada en ese día y bloque'

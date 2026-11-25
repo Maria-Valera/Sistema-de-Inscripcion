@@ -286,5 +286,159 @@ class AutoridadFirmanteTest extends TestCase
         $response->assertRedirect(route('admin.autoridad-firmante.index'));
         $this->assertDatabaseMissing('autoridad_firmantes', ['id' => $autoridad->id]);
     }
+
+    public function test_crear_autoridad_firmante_ajax_retorna_201_json(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->postJson(route('admin.autoridad-firmante.store'), [
+                'cargo' => 'director',
+                'persona_id' => $this->persona1->id,
+                'encargado' => true,
+                'gaceta' => 'Gaceta Oficial 1234',
+                'desde' => '2026-09-01',
+                'hasta' => null,
+            ]);
+
+        $response->assertStatus(201);
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Autoridad firmante registrada exitosamente.',
+        ]);
+        $this->assertDatabaseHas('autoridad_firmantes', [
+            'cargo' => 'director',
+            'persona_id' => $this->persona1->id,
+            'encargado' => true,
+            'gaceta' => 'Gaceta Oficial 1234',
+        ]);
+    }
+
+    public function test_error_validacion_fechas_solapadas_retorna_422_json_en_espanol(): void
+    {
+        AutoridadFirmante::create([
+            'anio_escolar_id' => $this->anioActivo->id,
+            'cargo' => 'director',
+            'persona_id' => $this->persona1->id,
+            'encargado' => false,
+            'desde' => '2026-09-01',
+            'hasta' => null,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->postJson(route('admin.autoridad-firmante.store'), [
+                'cargo' => 'director',
+                'persona_id' => $this->persona2->id,
+                'desde' => '2026-10-01',
+                'hasta' => '2027-01-31',
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['cargo']);
+        $json = $response->json();
+        $this->assertStringContainsString("Ya existe una autoridad asignada como 'Director(a)'", $json['errors']['cargo'][0]);
+    }
+
+    public function test_solapamiento_docente_firmante_misma_persona_retorna_422_json(): void
+    {
+        AutoridadFirmante::create([
+            'anio_escolar_id' => $this->anioActivo->id,
+            'cargo' => 'docente_firmante_mppe',
+            'persona_id' => $this->persona1->id,
+            'encargado' => false,
+            'desde' => '2026-09-01',
+            'hasta' => '2026-12-31',
+        ]);
+
+        // Intentar registrar a la misma persona en un período solapado
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->postJson(route('admin.autoridad-firmante.store'), [
+                'cargo' => 'docente_firmante_mppe',
+                'persona_id' => $this->persona1->id,
+                'desde' => '2026-11-01',
+                'hasta' => '2027-03-31',
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['persona_id']);
+        $json = $response->json();
+        $this->assertStringContainsString('Esta persona ya está registrada como Docente Firmante MPPE', $json['errors']['persona_id'][0]);
+    }
+
+    public function test_endpoint_personas_por_cargo_filtra_adecuadamente(): void
+    {
+        // Vincular persona1 como docente
+        $this->userSinPermiso->update(['persona_id' => $this->persona1->id]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->getJson(route('admin.autoridad-firmante.personas-por-cargo', ['cargo' => 'docente_firmante_mppe']));
+
+        $response->assertOk();
+        $personas = $response->json();
+        $this->assertIsArray($personas);
+        // Debe contener a persona1 que tiene rol Docente
+        $ids = array_column($personas, 'id');
+        $this->assertContains($this->persona1->id, $ids);
+    }
+
+    public function test_actualizar_autoridad_firmante_ajax_retorna_200_json(): void
+    {
+        $autoridad = AutoridadFirmante::create([
+            'anio_escolar_id' => $this->anioActivo->id,
+            'cargo' => 'director',
+            'persona_id' => $this->persona1->id,
+            'encargado' => false,
+            'gaceta' => 'Gaceta 100',
+            'desde' => '2026-09-01',
+            'hasta' => null,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->putJson(route('admin.autoridad-firmante.update', $autoridad), [
+                'cargo' => 'director',
+                'persona_id' => $this->persona1->id,
+                'encargado' => true,
+                'gaceta' => 'Gaceta Modificada 200',
+                'desde' => '2026-09-01',
+                'hasta' => null,
+            ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'success' => true,
+            'message' => 'Autoridad firmante actualizada exitosamente.',
+        ]);
+        $this->assertDatabaseHas('autoridad_firmantes', [
+            'id' => $autoridad->id,
+            'encargado' => true,
+            'gaceta' => 'Gaceta Modificada 200',
+        ]);
+    }
+
+    public function test_error_validacion_actualizar_autoridad_firmante_ajax_retorna_422_json(): void
+    {
+        $autoridad = AutoridadFirmante::create([
+            'anio_escolar_id' => $this->anioActivo->id,
+            'cargo' => 'subdirector_academico',
+            'persona_id' => $this->persona2->id,
+            'encargado' => false,
+            'desde' => '2026-09-01',
+            'hasta' => null,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->withSession(['anio_escolar_id' => $this->anioActivo->id])
+            ->putJson(route('admin.autoridad-firmante.update', $autoridad), [
+                'cargo' => 'cargo_invalido',
+                'persona_id' => 999999,
+                'desde' => 'no-es-fecha',
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['cargo', 'persona_id', 'desde']);
+    }
 }
 

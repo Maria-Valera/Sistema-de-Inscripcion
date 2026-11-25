@@ -1,169 +1,143 @@
-<div class="modal fade" id="modalFiltros" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-md">
-        <div class="modal-content modal-modern">
+<div class="offcanvas offcanvas-end filter-panel-saas" tabindex="-1" id="panelFiltros" aria-labelledby="panelFiltrosLabel" style="width: 420px; max-width: 92vw;">
+    <!-- Header -->
+    <div class="offcanvas-header filter-panel-header d-flex align-items-center justify-content-between p-3 px-4 border-bottom bg-white" style="border-bottom-color: #F1F5F9 !important;">
+        <div class="d-flex align-items-center gap-2">
+            <span class="filter-panel-title-icon" aria-hidden="true" style="width: 36px; height: 36px; border-radius: 10px; background-color: #EFF6FF; color: #4A6FC1; display: inline-flex; align-items: center; justify-content: center;">
+                <i class="fas fa-filter" style="font-size: 0.95rem;"></i>
+            </span>
+            <h5 class="offcanvas-title mb-0 fw-bold" id="panelFiltrosLabel" style="font-size: 1.1rem; color: #0F172A;">
+                Filtros de Búsqueda
+            </h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+    </div>
 
-            <!-- Header -->
-            <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title d-flex align-items-center gap-2" style="color: var(--primary);">
-                    <i class="fas fa-filter"></i>
-                    Filtros
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Body -->
+    <form method="GET" action="{{ route('admin.transacciones.inscripcion.index') }}" id="formFiltros" class="d-flex flex-column flex-grow-1 overflow-hidden m-0">
+        {{-- Mantener término de búsqueda si existe --}}
+        @if(request('buscar'))
+            <input type="hidden" name="buscar" value="{{ request('buscar') }}">
+        @endif
+
+        <div class="offcanvas-body filter-panel-body p-4" style="overflow-y: auto; background-color: #FFFFFF;">
+            <!-- Estado de la Inscripción -->
+            <div class="mb-4">
+                <label for="status" class="form-label-modern fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                    <i class="fas fa-toggle-on me-1" style="color: #4A6FC1;"></i> Estado de la inscripción
+                </label>
+                <select name="status" id="status" class="form-select select-modern">
+                    <option value="">Todos los estados</option>
+                    <option value="Activo" {{ request('status', 'Activo') == 'Activo' ? 'selected' : '' }}>
+                        Activo
+                    </option>
+                    <option value="Pendiente" {{ request('status') == 'Pendiente' ? 'selected' : '' }}>
+                        Pendiente
+                    </option>
+                    <option value="Inactivo" {{ request('status') == 'Inactivo' ? 'selected' : '' }}>
+                        Inactivo
+                    </option>
+                </select>
             </div>
-            <hr>
 
-            <!-- Body -->
-            <div class="modal-body pt-0">
-                <form method="GET" action="{{ route('admin.transacciones.inscripcion.index') }}" id="formFiltros">
-
-                    {{-- STATUS --}}
-                    <label for="status">
-                        <i class="fas fa-toggle-on" style="color: var(--primary);"></i>
-                        Estado de la inscripción
-                    </label>
-                    <select name="status" id="status" class="form-select form-control-modern">
-                        <option value="">Todos</option>
-                        <option value="Activo" {{ request('status', 'Activo') == 'Activo' ? 'selected' : '' }}>
-                            Activo
+            <!-- Niveles Académicos -->
+            <div class="mb-4">
+                <label for="grado_select" class="form-label-modern fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                    <i class="fas fa-layer-group me-1" style="color: #4A6FC1;"></i> Niveles académicos
+                </label>
+                <select name="grado_id" id="grado_select" class="form-select select-modern">
+                    <option value="">Todos los niveles</option>
+                    @foreach ($grados as $grado)
+                        <option value="{{ $grado->id }}" {{ request('grado_id') == $grado->id ? 'selected' : '' }}>
+                            Nivel {{ $grado->numero_grado }}º
                         </option>
-                        <option value="Pendiente" {{ request('status') == 'Pendiente' ? 'selected' : '' }}>
-                            Pendiente
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Sección -->
+            <div class="mb-4">
+                <label for="seccion_select" class="form-label-modern fw-semibold mb-2" style="color: #334155; font-size: 0.88rem;">
+                    <i class="fas fa-th-large me-1" style="color: #4A6FC1;"></i> Sección
+                </label>
+                <select name="seccion_id" id="seccion_select" class="form-select select-modern"
+                    {{ !request('grado_id') ? 'disabled' : '' }}>
+                    <option value="">
+                        @if (!request('grado_id'))
+                            Primero seleccione un nivel académico
+                        @elseif($secciones->isEmpty())
+                            No hay secciones para este nivel académico
+                        @else
+                            Todas las secciones
+                        @endif
+                    </option>
+                    @foreach ($secciones as $seccion)
+                        <option value="{{ $seccion->id }}" {{ request('seccion_id') == $seccion->id ? 'selected' : '' }}>
+                            Sección {{ $seccion->nombre }}
                         </option>
-                        <option value="Inactivo" {{ request('status') == 'Inactivo' ? 'selected' : '' }}>
-                            Inactivo
-                        </option>
-                    </select>
-                    <br>
-
-
-                    {{-- GRADO --}}
-                    <label class="form-label-modern">
-                        <i class="fas fa-layer-group" style="color: var(--primary);"></i>
-                        Niveles academicos
-                    </label>
-                    <select name="grado_id" id="grado_select" class="form-select form-control-modern">
-                        <option value="">Todos los niveles</option>
-                        @foreach ($grados as $grado)
-                            <option value="{{ $grado->id }}"
-                                {{ request('grado_id') == $grado->id ? 'selected' : '' }}>
-                                {{ $grado->numero_grado }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <br>
-
-                    {{-- SECCIÓN --}}
-                    <label class="form-label-modern">
-                        <i class="fas fa-th-large" style="color: var(--primary);"></i>
-                        Sección
-                    </label>
-                    <select name="seccion_id" id="seccion_select" class="form-select form-control-modern"
-                        {{ !request('grado_id') ? 'disabled' : '' }}>
-                        <option value="">
-                            @if (!request('grado_id'))
-                                Primero seleccione un nivel academico
-                            @elseif($secciones->isEmpty())
-                                No hay secciones para este nivel academico
-                            @else
-                                Todas las secciones
-                            @endif
-                        </option>
-                        @foreach ($secciones as $seccion)
-                            <option value="{{ $seccion->id }}"
-                                {{ request('seccion_id') == $seccion->id ? 'selected' : '' }}>
-                                {{ $seccion->nombre }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <button type="submit" class="btn-modal-create mt-4 w-100">
-                        <i class="fas fa-check"></i>
-                        Aplicar
-                    </button>
-                </form>
+                    @endforeach
+                </select>
             </div>
         </div>
-    </div>
+
+        <!-- Footer -->
+        <div class="filter-panel-footer d-flex align-items-center justify-content-between p-3 px-4 border-top bg-white" style="border-top-color: #F1F5F9 !important;">
+            <a href="{{ route('admin.transacciones.inscripcion.index') }}" class="btn-secondary-modern text-decoration-none">
+                <i class="fas fa-undo me-1"></i> Limpiar
+            </a>
+            <button type="submit" class="btn-primary-modern">
+                <i class="fas fa-filter me-1"></i> Aplicar Filtros
+            </button>
+        </div>
+    </form>
 </div>
-
-<style>
-    #modalFiltros .modal-content {
-        border: 1px solid var(--primary);
-        box-shadow: var(--shadow-sm);
-    }
-
-    #modalFiltros .modal-footer {
-        justify-content: space-between;
-    }
-
-    #modalFiltros .form-control-modern {
-        border-width: 1px;
-    }
-
-    #modalFiltros .form-control-modern:focus {
-        border-color: var(--primary);
-    }
-</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-
         const gradoSelect = document.getElementById('grado_select');
         const seccionSelect = document.getElementById('seccion_select');
-
-        // URL correcta (con /admin)
         const baseUrl = "{{ url('admin/transacciones/secciones-por-grado') }}";
 
-        gradoSelect.addEventListener('change', async function() {
+        if (gradoSelect && seccionSelect) {
+            gradoSelect.addEventListener('change', async function() {
+                const gradoId = this.value;
 
-            const gradoId = this.value;
+                seccionSelect.innerHTML = '';
+                seccionSelect.disabled = true;
 
-            // Reset
-            seccionSelect.innerHTML = '';
-            seccionSelect.disabled = true;
-
-            if (!gradoId) {
-                seccionSelect.innerHTML =
-                    '<option value="">Primero seleccione un grado</option>';
-                return;
-            }
-
-            // Loading
-            seccionSelect.innerHTML =
-                '<option value="">Cargando secciones...</option>';
-
-            try {
-                const response = await fetch(`${baseUrl}/${gradoId}`);
-
-                if (!response.ok) {
-                    throw new Error('Error HTTP ' + response.status);
-                }
-
-                const secciones = await response.json();
-
-                seccionSelect.innerHTML =
-                    '<option value="">Todas las secciones</option>';
-
-                if (!secciones.length) {
-                    seccionSelect.innerHTML =
-                        '<option value="">No hay secciones para este grado</option>';
+                if (!gradoId) {
+                    seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel académico</option>';
                     return;
                 }
 
-                secciones.forEach(seccion => {
-                    const option = document.createElement('option');
-                    option.value = seccion.id;
-                    option.textContent = `${seccion.nombre}`;
-                    seccionSelect.appendChild(option);
-                });
+                seccionSelect.innerHTML = '<option value="">Cargando secciones...</option>';
 
-                seccionSelect.disabled = false;
+                try {
+                    const response = await fetch(`${baseUrl}/${gradoId}`);
+                    if (!response.ok) {
+                        throw new Error('Error HTTP ' + response.status);
+                    }
 
-            } catch (error) {
-                console.error('Error al cargar secciones:', error);
-                seccionSelect.innerHTML =
-                    '<option value="">Error al cargar secciones</option>';
-            }
-        });
+                    const secciones = await response.json();
+                    seccionSelect.innerHTML = '<option value="">Todas las secciones</option>';
+
+                    if (!secciones.length) {
+                        seccionSelect.innerHTML = '<option value="">No hay secciones para este nivel académico</option>';
+                        return;
+                    }
+
+                    secciones.forEach(seccion => {
+                        const option = document.createElement('option');
+                        option.value = seccion.id;
+                        option.textContent = `Sección ${seccion.nombre}`;
+                        seccionSelect.appendChild(option);
+                    });
+
+                    seccionSelect.disabled = false;
+                } catch (error) {
+                    console.error('Error al cargar secciones:', error);
+                    seccionSelect.innerHTML = '<option value="">Error al cargar secciones</option>';
+                }
+            });
+        }
     });
 </script>

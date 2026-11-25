@@ -310,24 +310,27 @@ function inicializarValidacionesGrado() {
         return true;
     });
 
-    // Limpiar el formulario cuando se cierre el modal
+    // Limpiar el formulario cuando se abra o se cierre el modal
     const modal = document.getElementById('modalCrearGrado');
     if (modal) {
-        modal.addEventListener('hidden.bs.modal', function() {
-            console.log('Modal de nivel academico cerrado, limpiando formulario...');
+        function limpiarFormularioCrear() {
+            console.log('Limpiando formulario de nivel academico...');
             form.reset();
-            const errores = form.querySelectorAll('.error-validacion, .is-invalid');
+            const errores = form.querySelectorAll('.error-validacion, .is-invalid, .invalid-feedback, .server-error');
             errores.forEach(error => {
-                if (error.classList.contains('error-validacion')) {
-                    error.remove();
-                } else {
+                if (error.classList.contains('is-invalid')) {
                     error.classList.remove('is-invalid');
+                } else {
+                    error.remove();
                 }
             });
             if (contenedorAlerta) {
                 contenedorAlerta.innerHTML = '';
             }
-        });
+        }
+
+        modal.addEventListener('show.bs.modal', limpiarFormularioCrear);
+        modal.addEventListener('hidden.bs.modal', limpiarFormularioCrear);
     }
 
     console.log('Validaciones de nivel academico inicializadas correctamente');

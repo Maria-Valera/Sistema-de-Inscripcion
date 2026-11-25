@@ -1104,8 +1104,8 @@ Class GeneradorHorarioService
             $areaFormacionId = $totalBloques;
             $gradoId = $totalDias;
             $totalDias = 5;
-            $config = \App\Models\ConfiguracionHorario::where('anio_escolar_id', $anioEscolar)->first();
-            $totalBloques = $config ? (int)$config->numero_bloques : 8;
+            $config = app(\App\Services\ConfiguracionHorarioService::class)->actual();
+            $totalBloques = (int)$config->numero_bloques;
         }
 
         $totalDias = (int) ($totalDias ?? 5);

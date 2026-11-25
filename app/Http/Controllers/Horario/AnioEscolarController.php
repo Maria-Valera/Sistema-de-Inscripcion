@@ -22,7 +22,15 @@ class AnioEscolarController extends Controller
     }
 
     /**
-     * Almacena un nuevo año escolar.
+     * Muestra la vista de formulario con asistente (wizard) para crear un nuevo año escolar (Paso 1).
+     */
+    public function create(): View
+    {
+        return view('admin.maestros.stephania.anio_escolar.create');
+    }
+
+    /**
+     * Almacena un nuevo año escolar y avanza al paso 2 del asistente (Lapsos).
      * Regla de negocio: Si se crea con status = 'Activo', desactiva todos los demás años escolares.
      */
     public function store(AnioEscolarRequest $request): RedirectResponse
@@ -41,7 +49,7 @@ class AnioEscolarController extends Controller
             session(['anio_escolar_id' => (int) $nuevoAnio->id]);
         }
 
-                if ($request->header('referer') && str_contains($request->header('referer'), 'seleccionar-anio')) {
+        if ($request->header('referer') && str_contains($request->header('referer'), 'seleccionar-anio')) {
             return redirect()->to(auth()->user()->rutaDashboard())
                 ->with('success', 'Año escolar creado y activado exitosamente.');
         }

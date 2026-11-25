@@ -15,13 +15,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function limpiarFormulario() {
         const form = document.getElementById('formCrear');
         if (form) {
+            form.reset();
             // Limpiar errores
-            const errores = form.querySelectorAll('.error-validacion, .is-invalid');
+            const errores = form.querySelectorAll('.error-validacion, .is-invalid, .invalid-feedback, .server-error');
             errores.forEach(error => {
-                if (error.classList.contains('error-validacion')) {
-                    error.remove();
-                } else {
+                if (error.classList.contains('is-invalid')) {
                     error.classList.remove('is-invalid');
+                } else {
+                    error.remove();
                 }
             });
             // Limpiar alertas
@@ -33,9 +34,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (modalCrear) {
+        // Limpiar e inicializar cuando el modal va a mostrarse
+        modalCrear.addEventListener('show.bs.modal', function() {
+            limpiarFormulario();
+            if (!validacionesInicializadas) {
+                inicializarValidacionesCrear();
+                validacionesInicializadas = true;
+            }
+        });
+
         // Inicializar validaciones cuando el modal se muestra
         modalCrear.addEventListener('shown.bs.modal', function() {
-            console.log('Modal mostrado, inicializando validaciones...');
             limpiarFormulario();
             if (!validacionesInicializadas) {
                 inicializarValidacionesCrear();
@@ -45,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Limpiar el formulario cuando se oculte el modal
         modalCrear.addEventListener('hidden.bs.modal', function() {
-            console.log('Modal oculto, limpiando formulario...');
             limpiarFormulario();
         });
     }

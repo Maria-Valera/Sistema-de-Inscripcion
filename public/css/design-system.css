@@ -1,0 +1,4223 @@
+/**
+ * ============================================================================
+ * SISTEMA DE DISEÑO GLOBAL (DESIGN SYSTEM)
+ * E.B.N.B. Stephania / Antigravity UI Architecture
+ * ============================================================================
+ * Centraliza variables de color, tipografía, componentes visuales,
+ * botones, badges, tablas, modales, sidebar y barra superior para todo el sistema.
+ */
+
+/* ============================================================================
+   1. VARIABLES CSS GLOBALES (:root)
+   ============================================================================ */
+:root {
+    /* Colores Principales */
+    --primary-color: #4A6FC1;
+    --primary-hover: #3b5998;
+    --primary-dark: #3B5BA5;
+    --primary-light: #EDF2FC;
+    --primary-lighter: #D6E2F9;
+    --navy-dark: #1E3A8A;
+    --sidebar-bg: #0F172A;
+    --sidebar-surface: #1E293B;
+
+    /* Grises y Superficies */
+    --bg-light: #F8FAFC;
+    --bg-page: #F4F6F9;
+    --border-color: #E2E8F0;
+    --border-subtle: #CBD5E1;
+    --border-strong: #94A3B8;
+    --text-dark: #1E293B;
+    --text-body: #334155;
+    --text-muted: #64748B;
+    --text-light: #94A3B8;
+
+    /* Estados Semánticos */
+    --success: #16A34A;
+    --success-bg: #DCFCE7;
+    --success-text: #166534;
+
+    --danger: #EF4444;
+    --danger-bg: #FEE2E2;
+    --danger-text: #991B1B;
+
+    --warning: #F59E0B;
+    --warning-bg: #FEF3C7;
+    --warning-text: #92400E;
+
+    --info: #0284C7;
+    --info-bg: #E0F2FE;
+    --info-text: #0369A1;
+
+    /* Colores Pastel (Tarjetas de Clases, Docentes y Eventos) */
+    --pastel-blue-bg: #E0E7FF;
+    --pastel-blue-text: #3730A3;
+    --pastel-blue-border: #4F46E5;
+
+    --pastel-green-bg: #D1FAE5;
+    --pastel-green-text: #065F46;
+    --pastel-green-border: #10B981;
+
+    --pastel-pink-bg: #FCE7F3;
+    --pastel-pink-text: #9D174D;
+    --pastel-pink-border: #EC4899;
+
+    --pastel-purple-bg: #F3E8FF;
+    --pastel-purple-text: #6B21A8;
+    --pastel-purple-border: #9333EA;
+
+    --pastel-yellow-bg: #FEF3C7;
+    --pastel-yellow-text: #92400E;
+    --pastel-yellow-border: #F59E0B;
+
+    --pastel-orange-bg: #FFEDD5;
+    --pastel-orange-text: #9A3412;
+    --pastel-orange-border: #EA580C;
+
+    --pastel-teal-bg: #CCFBF1;
+    --pastel-teal-text: #115E59;
+    --pastel-teal-border: #14B8A6;
+
+    /* Dimensiones Estructurales */
+    --sidebar-width: 280px;
+    --sidebar-mini-width: 70px;
+    --topbar-height: 66px;
+
+    /* Sombras */
+    --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.12);
+    --shadow-hero: 0 10px 25px -8px rgba(59, 89, 152, 0.38);
+    --shadow-floating: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Radios */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 16px;
+    --radius-pill: 9999px;
+}
+
+/* ============================================================================
+   2. HERO HEADER (BARRA SUPERIOR DE MÓDULO)
+   ============================================================================ */
+.hero-header,
+.content-header-modern.hero-header-horario,
+.content-header-modern.hero-header-modern {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-hero) !important;
+    margin-bottom: 1.5rem !important;
+    padding: 1.25rem 1.5rem !important;
+    color: #FFFFFF !important;
+}
+
+.hero-header .header-content,
+.hero-header-horario .header-content,
+.hero-header-modern .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.hero-header .header-title,
+.hero-header-horario .header-title,
+.hero-header-modern .header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.hero-header .title-main,
+.hero-header-horario .title-main,
+.hero-header-modern .title-main {
+    color: #FFFFFF !important;
+    font-size: 1.45rem !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    line-height: 1.25 !important;
+}
+
+.hero-header .title-subtitle,
+.hero-header-horario .title-subtitle,
+.hero-header-modern .title-subtitle {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 0.88rem !important;
+    margin: 0.25rem 0 0 0 !important;
+    line-height: 1.35 !important;
+}
+
+.hero-header .icon-wrapper,
+.hero-header-horario .icon-wrapper,
+.hero-header-modern .icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    box-shadow: none !important;
+}
+
+.hero-header .icon-wrapper i,
+.hero-header-horario .icon-wrapper i,
+.hero-header-modern .icon-wrapper i {
+    color: #FFFFFF !important;
+}
+
+/* Botón Blanco para Hero Header */
+.btn-hero-white {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    background-color: #FFFFFF !important;
+    color: var(--primary-color) !important;
+    border: 1px solid #FFFFFF !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.625rem 1.25rem !important;
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12) !important;
+    cursor: pointer !important;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease !important;
+}
+
+.btn-hero-white i,
+.btn-hero-white .btn-text {
+    color: var(--primary-color) !important;
+}
+
+.btn-hero-white:hover,
+.btn-hero-white:focus {
+    background-color: #F1F5F9 !important;
+    border-color: #F1F5F9 !important;
+    color: var(--primary-dark) !important;
+    text-decoration: none !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18) !important;
+}
+
+.btn-hero-white:hover i,
+.btn-hero-white:focus i {
+    color: var(--primary-dark) !important;
+}
+
+/* ============================================================================
+   3. BOTONES MODERNOS (.btn-*)
+   ============================================================================ */
+/* Botón Primario Moderno (Stripe / Moneyfy Style) */
+.btn-primary-modern,
+.btn-create,
+.btn-save,
+.btn-modal-create,
+.btn-primary:not(.btn-hero-white):not(.btn-outline-primary) {
+    background-color: #4A6FC1 !important; /* Azul institucional */
+    color: #FFFFFF !important;
+    border: 1px solid #4A6FC1 !important;
+    border-radius: 8px !important; /* Bordes redondeados sutiles, NO píldora */
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+}
+
+.btn-primary-modern:hover:not(:disabled),
+.btn-create:hover:not(:disabled),
+.btn-save:hover:not(:disabled),
+.btn-modal-create:hover:not(:disabled),
+.btn-primary:not(.btn-hero-white):not(.btn-outline-primary):hover:not(:disabled) {
+    background-color: #3b5998 !important; /* Azul más oscuro al hover */
+    border-color: #3b5998 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    color: #FFFFFF !important;
+    transform: none !important;
+}
+
+.btn-primary-modern:disabled,
+.btn-primary-modern[disabled],
+.btn-primary-modern.disabled,
+button.btn-primary-modern:disabled,
+button.btn-primary-modern[disabled],
+button.btn-primary-modern.disabled {
+    background-color: #94A3B8 !important;
+    background: #94A3B8 !important;
+    border-color: #94A3B8 !important;
+    color: #FFFFFF !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    opacity: 0.85 !important;
+}
+
+.btn-primary-modern:disabled i,
+.btn-primary-modern[disabled] i,
+.btn-primary-modern.disabled i {
+    color: #FFFFFF !important;
+}
+
+/* Livewire Loading States */
+[wire\:loading]:not([wire\:loading\.remove]) {
+    display: none;
+}
+
+[wire\:loading\.remove] {
+    display: inline-flex;
+}
+
+.btn-primary-modern i,
+.btn-save i,
+.btn-modal-create i,
+.btn-primary i {
+    color: #FFFFFF !important;
+}
+
+/* Botón Secundario Moderno / Outline (Stripe / Moneyfy Style) */
+.btn-secondary-modern,
+.btn-filter-saas,
+.btn-saas-secondary,
+.btn-back,
+.btn-footer-secondary {
+    background-color: #FFFFFF !important;
+    color: #374151 !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    padding: 7px 14px !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
+}
+
+.btn-secondary-modern:hover,
+.btn-filter-saas:hover,
+.btn-saas-secondary:hover,
+.btn-back:hover,
+.btn-footer-secondary:hover {
+    background-color: #F9FAFB !important;
+    border-color: #D1D5DB !important;
+    color: #111827 !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+}
+
+.btn-secondary-modern i,
+.btn-filter-saas i,
+.btn-back i {
+    color: #6B7280 !important;
+}
+
+/* Botón Peligro / Eliminar */
+.btn-danger-modern {
+    background-color: var(--danger) !important;
+    color: #FFFFFF !important;
+    border: 1px solid var(--danger) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.6rem 1.25rem !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25) !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.btn-danger-modern:hover:not(:disabled) {
+    background-color: #DC2626 !important;
+    border-color: #DC2626 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3) !important;
+}
+
+/* Botón Ghost de Peligro */
+.btn-danger-ghost {
+    background: transparent !important;
+    color: var(--danger) !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 6px 14px !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.btn-danger-ghost:hover {
+    background: #FEF2F2 !important;
+    border-color: #F87171 !important;
+    color: #DC2626 !important;
+}
+
+/* Botón de Modo Selección (Toolbar) */
+.btn-modo-seleccion {
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    height: 38px !important;
+    padding: 6px 14px !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    box-shadow: var(--shadow-xs) !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+    white-space: nowrap !important;
+}
+
+.btn-modo-seleccion span {
+    display: inline-block !important;
+    color: var(--text-dark) !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+}
+
+.btn-modo-seleccion i {
+    color: var(--text-muted) !important;
+    font-size: 0.9rem !important;
+}
+
+.btn-modo-seleccion:hover {
+    background-color: var(--bg-light) !important;
+    border-color: var(--border-strong) !important;
+    color: #0F172A !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.btn-modo-seleccion.activo {
+    background-color: #EFF6FF !important;
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+}
+
+.btn-modo-seleccion.activo span,
+.btn-modo-seleccion.activo i {
+    color: var(--primary-color) !important;
+}
+
+/* ============================================================================
+   4. PÍLDORAS Y BADGES (.badge-*)
+   ============================================================================ */
+.badge-primary,
+.badge.bg-primary {
+    background-color: #EFF6FF !important;
+    color: var(--navy-dark) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+}
+
+.badge-success,
+.badge.bg-success {
+    background-color: var(--success-bg) !important;
+    color: var(--success-text) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+}
+
+.badge-danger,
+.badge.bg-danger {
+    background-color: var(--danger-bg) !important;
+    color: var(--danger-text) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+}
+
+.badge-warning,
+.badge.bg-warning {
+    background-color: var(--warning-bg) !important;
+    color: var(--warning-text) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+}
+
+.badge-kpi {
+    background-color: var(--primary-light) !important;
+    color: var(--primary-dark) !important;
+    border: 1px solid rgba(74, 111, 193, 0.25) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+}
+
+/* Pastillas de Contexto (Toolbar de Módulos) */
+.context-item {
+    background-color: #EFF6FF !important;
+    color: var(--navy-dark) !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 0.35rem 0.9rem !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    white-space: nowrap !important;
+}
+
+.context-item span {
+    color: var(--navy-dark) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+.context-item i {
+    color: var(--primary-color) !important;
+    font-size: 13px !important;
+}
+
+/* ============================================================================
+   5. TABLAS MODERNAS (.table-modern) Y CUADRÍCULA DE HORARIO
+   ============================================================================ */
+.table-modern {
+    width: 100% !important;
+    background-color: #FFFFFF !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+}
+
+/* Forzar encabezado gris y sin bordes duros */
+.table-modern > thead > tr > th,
+.table-modern thead th {
+    background-color: #F1F5F9 !important;
+    color: #475569 !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    padding: 0.85rem 1rem !important;
+    text-transform: capitalize !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    box-shadow: none !important;
+}
+
+.table-modern tbody tr {
+    transition: background-color 0.15s ease !important;
+}
+
+/* Forzar filas alternadas (Zebra Striping) ganando a Bootstrap / AdminLTE */
+.table-modern > tbody > tr:nth-of-type(odd) > *,
+.table-modern tbody tr:nth-child(odd) > td {
+    background-color: #FFFFFF !important;
+    box-shadow: none !important;
+}
+
+.table-modern > tbody > tr:nth-of-type(even) > *,
+.table-modern tbody tr:nth-child(even) > td {
+    background-color: #F8FAFC !important; /* Gris muy claro */
+    box-shadow: none !important;
+}
+
+.table-modern > tbody > tr:hover > *,
+.table-modern.table-hover > tbody > tr:hover > *,
+.table-modern tbody tr:hover > td,
+.table-modern.table-hover tbody tr:hover > td {
+    background-color: #EFF6FF !important; /* Resaltado suave al pasar el cursor */
+    box-shadow: none !important;
+}
+
+/* Quitar el borde blanco de las celdas */
+.table-modern td {
+    border-color: transparent !important;
+    padding: 0.85rem 1rem !important;
+    color: var(--text-body) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+}
+
+/* Botón de solo ícono estándar (estilo Horarios / 3 puntitos / ojito) */
+.btn-icon-only,
+.table-modern .btn-icon-only {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
+}
+
+.btn-icon-only:hover,
+.table-modern .btn-icon-only:hover {
+    background-color: #F1F5F9 !important; /* hover:bg-gray-100 */
+    color: #1E293B !important;
+    transform: scale(1.06) !important;
+    box-shadow: none !important;
+}
+
+.btn-icon-only:active,
+.table-modern .btn-icon-only:active {
+    background-color: #E2E8F0 !important;
+    transform: scale(0.95) !important;
+}
+
+.btn-icon-only i,
+.table-modern .btn-icon-only i {
+    font-size: 0.95rem !important;
+    line-height: 1 !important;
+    color: #64748b !important;
+}
+
+.btn-icon-only:hover i,
+.table-modern .btn-icon-only:hover i {
+    color: #1E293B !important;
+}
+
+/* Estandarización de icono de tarjeta en header moderno */
+.card-header-modern .header-icon,
+.card-header-modern .header-icon-pastel-blue,
+.header-icon-pastel-blue {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    border-radius: 10px !important;
+    background-color: #EFF6FF !important;
+    color: #4A6FC1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.15rem !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+}
+
+.card-header-modern .header-icon i,
+.card-header-modern .header-icon-pastel-blue i,
+.header-icon-pastel-blue i {
+    color: #4A6FC1 !important;
+}
+
+/* Enlaces / botones de ícono limpios en tabla (sin fondo circular) */
+.hover-text-primary {
+    transition: color 0.15s ease, transform 0.15s ease !important;
+}
+
+.hover-text-primary:hover {
+    color: #4A6FC1 !important;
+    transform: scale(1.12) !important;
+}
+
+.table-modern a.text-secondary,
+.table-modern a.hover-text-primary {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+}
+
+.table-modern .btn-link,
+.table-modern button.btn-link {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    text-decoration: none !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.table-modern .btn-link i,
+.table-modern button.btn-link i {
+    color: #64748B !important;
+    transition: color 0.15s ease, transform 0.15s ease !important;
+}
+
+.table-modern .btn-link:hover i,
+.table-modern button.btn-link:hover i {
+    color: #4A6FC1 !important;
+    transform: scale(1.15) !important;
+}
+
+.table-modern tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Cuadrícula de Horarios (Aireada) */
+.horario-matrix-wrapper {
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.05) !important;
+    overflow-x: auto !important;
+    width: 100% !important;
+}
+
+.horario-matrix {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    background: #FFFFFF !important;
+    border: none !important;
+    margin-bottom: 0 !important;
+}
+
+.horario-matrix thead th {
+    background: var(--bg-light) !important;
+    background-color: var(--bg-light) !important;
+    color: var(--text-dark) !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    text-align: center !important;
+    text-transform: capitalize !important;
+    padding: 0.85rem 0.5rem !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.horario-matrix thead th.time-header,
+.horario-matrix thead th:first-child {
+    background: var(--bg-light) !important;
+    color: var(--text-dark) !important;
+    border-right: 1px solid var(--border-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    text-align: right !important;
+    padding: 0.85rem 0.85rem 0.85rem 0.25rem !important;
+}
+
+.horario-matrix tbody td.time-cell,
+.horario-matrix tbody td:first-child {
+    background: var(--bg-light) !important;
+    color: var(--text-dark) !important;
+    font-size: 0.74rem !important;
+    text-align: right !important;
+    vertical-align: top !important;
+    padding: 0.65rem 0.85rem 0.65rem 0.25rem !important;
+    border: none !important;
+    border-right: 1px solid var(--border-color) !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+}
+
+.horario-matrix tbody td.drop-zone {
+    background: #FFFFFF !important;
+    border: none !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    padding: 0.45rem !important;
+    min-height: 95px !important;
+    transition: background-color 0.15s ease !important;
+}
+
+.horario-matrix tbody td.drop-zone:hover {
+    background: var(--bg-light) !important;
+}
+
+.drop-zone .drop-zone-inner {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    gap: 0.25rem !important;
+    align-items: stretch !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Tarjetas de Asignación en Cuadrícula (calendar.me SaaS) */
+.drop-zone .assigned-docente {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    border: none !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    color: #3730A3 !important;
+    cursor: pointer !important;
+}
+
+.drop-zone .assigned-docente.popup-activo .adm-mini {
+    visibility: visible !important;
+}
+
+.drop-zone .assigned-docente:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.drop-zone .assigned-docente .adm-mini.event-card {
+    display: block !important;
+    width: 100% !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    margin-bottom: 4px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    white-space: normal !important;
+    overflow: visible !important;
+}
+
+.drop-zone .assigned-docente .adm-mini.event-card:hover {
+    filter: brightness(0.96);
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.14) !important;
+}
+
+.drop-zone .assigned-docente .adm-mini.event-card .btn-lock-toggle {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: inherit !important;
+    line-height: 1 !important;
+    font-size: 11px !important;
+}
+
+/* ============================================================================
+   5. TARJETAS SAAS MODERNAS (.card, .card-modern, .config-card)
+   Inspiradas en Stripe / Moneyfy UI: fondo blanco, bordes 12px, borde 1px solid #E5E7EB, sin sombras pesadas
+   ============================================================================ */
+.card,
+.card-modern,
+.config-card {
+    background-color: #FFFFFF !important;
+    border-radius: 12px !important;
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.2s ease !important;
+}
+
+.card .card-body,
+.card-modern .card-body,
+.config-card .config-card-body {
+    padding: 24px !important;
+}
+
+.card .card-header,
+.card-modern .card-header,
+.config-card .config-card-header {
+    background-color: #FFFFFF !important;
+    border-bottom: 1px solid #F3F4F6 !important;
+    padding: 18px 24px !important;
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+}
+
+/* ============================================================================
+   6. TARJETAS PASTEL (.card-pastel-*)
+   ============================================================================ */
+.card-pastel-blue {
+    background-color: var(--pastel-blue-bg) !important;
+    color: var(--pastel-blue-text) !important;
+}
+
+.card-pastel-purple {
+    background-color: var(--pastel-purple-bg) !important;
+    color: var(--pastel-purple-text) !important;
+}
+
+.card-pastel-green {
+    background-color: var(--pastel-green-bg) !important;
+    color: var(--pastel-green-text) !important;
+}
+
+.card-pastel-yellow,
+.card-pastel-orange {
+    background-color: var(--pastel-yellow-bg) !important;
+    color: var(--pastel-yellow-text) !important;
+}
+
+.card-pastel-pink {
+    background-color: var(--pastel-pink-bg) !important;
+    color: var(--pastel-pink-text) !important;
+}
+
+.card-pastel-teal {
+    background-color: var(--pastel-teal-bg) !important;
+    color: var(--pastel-teal-text) !important;
+}
+
+/* Borde superior de acento para popovers / modales informativos */
+.adm-full.card-pastel-blue,
+.card-pastel-blue.adm-full {
+    border-top: 4px solid var(--pastel-blue-border) !important;
+}
+
+.adm-full.card-pastel-purple,
+.card-pastel-purple.adm-full {
+    border-top: 4px solid var(--pastel-purple-border) !important;
+}
+
+.adm-full.card-pastel-green,
+.card-pastel-green.adm-full {
+    border-top: 4px solid var(--pastel-green-border) !important;
+}
+
+.adm-full.card-pastel-orange,
+.card-pastel-orange.adm-full {
+    border-top: 4px solid var(--pastel-yellow-border) !important;
+}
+
+.adm-full.card-pastel-pink,
+.card-pastel-pink.adm-full {
+    border-top: 4px solid var(--pastel-pink-border) !important;
+}
+
+.adm-full.card-pastel-teal,
+.card-pastel-teal.adm-full {
+    border-top: 4px solid var(--pastel-teal-border) !important;
+}
+
+/* Tarjetas de Docentes en Sidebar */
+.sidebar-docentes .docente-card {
+    background: #FFFFFF !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 14px 16px !important;
+    margin-bottom: 12px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+    cursor: grab !important;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease !important;
+}
+
+.sidebar-docentes .docente-card:active {
+    cursor: grabbing !important;
+}
+
+.sidebar-docentes .docente-card:last-child {
+    margin-bottom: 0 !important;
+}
+
+.sidebar-docentes .docente-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-md) !important;
+    filter: brightness(0.97) !important;
+}
+
+.sidebar-docentes .docente-card .docente-header-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-bottom: 6px !important;
+}
+
+.sidebar-docentes .docente-card .docente-name {
+    font-weight: 600 !important;
+    color: var(--text-dark) !important;
+    font-size: 0.95rem !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+}
+
+.sidebar-docentes .docente-card .docente-grip-icon {
+    color: rgba(30, 41, 59, 0.45) !important;
+    font-size: 0.85rem !important;
+    flex-shrink: 0 !important;
+}
+
+.sidebar-docentes .docente-card .docente-area-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: var(--text-body) !important;
+    font-size: 0.82rem !important;
+    margin-bottom: 10px !important;
+}
+
+.sidebar-docentes .docente-card .docente-area-row i {
+    color: inherit !important;
+    opacity: 0.8 !important;
+    font-size: 0.82rem !important;
+}
+
+.sidebar-docentes .docente-card .docente-pills-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 0 !important;
+}
+
+.sidebar-docentes .docente-card .docente-secciones-group {
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+}
+
+.sidebar-docentes .docente-card .docente-seccion-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255, 255, 255, 0.78) !important;
+    color: var(--text-dark) !important;
+    font-weight: 700 !important;
+    font-size: 0.74rem !important;
+    padding: 2px 8px !important;
+    border-radius: var(--radius-pill) !important;
+    line-height: 1.3 !important;
+}
+
+.sidebar-docentes .docente-card .docente-horas-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    color: var(--text-body) !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    margin-left: auto !important;
+}
+
+.sidebar-docentes .docente-card .docente-horas-pill i {
+    color: #D97706 !important;
+}
+
+/* Popover Flotante de Asignación (.adm-full) */
+.drop-zone .assigned-docente .adm-full {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: #0F172A !important;
+    border: 1px solid var(--border-color) !important;
+    border-top: 4px solid var(--primary-color) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 20px 35px -8px rgba(15, 23, 42, 0.24), 0 8px 16px -6px rgba(15, 23, 42, 0.12) !important;
+    z-index: 1060 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-nombre {
+    color: #0F172A !important;
+    font-weight: 700 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-cedula {
+    color: var(--text-muted) !important;
+    font-weight: 500 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .docente-materia {
+    color: var(--text-body) !important;
+    font-weight: 600 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .pildora-selector {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-subtle) !important;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-muted {
+    color: #475569 !important;
+}
+
+.drop-zone .assigned-docente .adm-full .btn-lock-toggle.text-warning {
+    color: #D97706 !important;
+}
+
+/* Acciones del Pie de Página (Footer Actions) */
+.footer-actions-container {
+    margin-top: 24px !important;
+    padding-top: 8px !important;
+}
+
+.hero-header-horario #btnVolverPaso1 {
+    border-radius: var(--radius-md) !important;
+    padding: 0.58rem 1.05rem !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    transition: background-color 0.18s ease, border-color 0.18s ease !important;
+}
+
+.hero-header-horario #btnVolverPaso1:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* ============================================================================
+   7. FORMULARIOS, SELECTS Y FILTROS (.select-modern, select.form-select)
+   ============================================================================ */
+label.form-label,
+.form-label-modern {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    margin-bottom: 6px !important;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+input.form-control,
+input.form-control-modern,
+textarea.form-control,
+.form-control {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    -webkit-text-fill-color: #1E293B !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.92rem !important;
+    line-height: 1.45 !important;
+    height: 42px;
+    box-shadow: none !important;
+    transition: border-color 0.15s ease !important;
+}
+
+textarea.form-control {
+    height: auto !important;
+}
+
+input.form-control:focus,
+input.form-control-modern:focus,
+textarea.form-control:focus,
+.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* ============================================================================
+   ESTILO GLOBAL PARA TEXTOS DE EJEMPLO (PLACEHOLDERS)
+   ============================================================================ */
+::placeholder {
+    color: #9CA3AF !important;
+    /* Gris suave (Tailwind gray-400) */
+    -webkit-text-fill-color: #9CA3AF !important;
+    opacity: 1 !important;
+    /* Firefox baja la opacidad por defecto, esto la fuerza a 1 */
+}
+
+::-webkit-input-placeholder {
+    color: #9CA3AF !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+::-moz-placeholder {
+    color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+:-ms-input-placeholder {
+    color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+/* Asegurar que se aplique a los inputs modernos de Bootstrap */
+.form-control::placeholder,
+.form-control-modern::placeholder,
+.form-select::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: #9CA3AF !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+.form-control::-webkit-input-placeholder,
+.form-control-modern::-webkit-input-placeholder,
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+    color: #9CA3AF !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+    opacity: 1 !important;
+}
+
+/* Buscador Moderno */
+.search-wrapper {
+    position: relative !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    height: 38px !important;
+    background: #FFFFFF !important;
+    width: 250px !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.search-wrapper:focus-within {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+}
+
+.search-wrapper input.search-input-modern,
+.search-wrapper input {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    padding-left: 40px !important;
+    padding-right: 12px !important;
+    width: 250px !important;
+    height: 100% !important;
+    font-size: 0.85rem !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+}
+
+.search-wrapper i.fas.fa-search {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #64748B !important;
+    font-size: 0.85rem !important;
+    pointer-events: none !important;
+}
+
+.search-input-modern {
+    padding-left: 40px !important;
+    border-radius: 8px !important;
+}
+
+.select-modern,
+select.form-select,
+select.form-control,
+.toolbar-select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.75rem center !important;
+    background-size: 0.95em !important;
+    padding-right: 2.25rem !important;
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    -webkit-text-fill-color: #1E293B !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    color-scheme: light !important;
+    font-weight: 500 !important;
+    line-height: 1.35 !important;
+    height: 42px !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s ease !important;
+}
+
+.select-modern:focus,
+select.form-select:focus,
+select.form-control:focus,
+.toolbar-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+select option {
+    background-color: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    -webkit-text-fill-color: var(--text-dark) !important;
+    padding: 8px 10px !important;
+}
+
+select option:checked {
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    background-color: var(--primary-color) !important;
+}
+
+/* Toolbar de Filtros */
+#contextHeader.context-header,
+.filter-toolbar {
+    background: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border: 1px solid var(--border-color) !important;
+    border-left: 4px solid var(--primary-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 12px 16px !important;
+    margin-bottom: 1rem !important;
+    box-shadow: var(--shadow-xs) !important;
+}
+
+/* ============================================================================
+   8. BARRA FLOTANTE DE ACCIONES (.barra-seleccion-flotante)
+   ============================================================================ */
+@keyframes slideUpFloatingBar {
+    from {
+        transform: translate(-50%, 20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+.barra-seleccion-flotante {
+    position: fixed !important;
+    bottom: 24px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: #FFFFFF !important;
+    color: var(--text-dark) !important;
+    border-radius: var(--radius-pill) !important;
+    box-shadow: var(--shadow-floating) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 10px 22px !important;
+    display: none !important;
+    align-items: center !important;
+    gap: 16px !important;
+    z-index: 1080 !important;
+    white-space: nowrap !important;
+}
+
+.barra-seleccion-flotante.visible {
+    display: flex !important;
+    animation: slideUpFloatingBar 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.barra-seleccion-flotante .barra-seleccion-info {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 0.9rem !important;
+    color: var(--text-dark) !important;
+}
+
+.barra-seleccion-flotante .barra-seleccion-info i {
+    color: var(--text-dark) !important;
+    font-size: 0.95rem !important;
+}
+
+.barra-seleccion-flotante #contadorSeleccionados {
+    color: var(--text-dark) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+.barra-seleccion-flotante #contadorSeleccionados strong {
+    font-weight: 700 !important;
+    color: var(--text-dark) !important;
+}
+
+.barra-seleccion-flotante .barra-seleccion-divider {
+    width: 1px !important;
+    height: 22px !important;
+    background: var(--border-subtle) !important;
+}
+
+.barra-seleccion-flotante .barra-seleccion-acciones {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.barra-seleccion-flotante .btn-eliminar-seleccionados {
+    background: transparent !important;
+    color: var(--danger) !important;
+    border: 1px solid #FCA5A5 !important;
+    padding: 6px 14px !important;
+    border-radius: var(--radius-pill) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.barra-seleccion-flotante .btn-eliminar-seleccionados:hover {
+    background: #FEF2F2 !important;
+    border-color: #F87171 !important;
+    color: #DC2626 !important;
+}
+
+.barra-seleccion-flotante .btn-eliminar-seleccionados i {
+    font-size: 0.85rem !important;
+    color: inherit !important;
+}
+
+.barra-seleccion-flotante .btn-cancelar-seleccion {
+    background: transparent !important;
+    color: var(--text-muted) !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: var(--radius-pill) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+    transition: all 0.18s ease-in-out !important;
+}
+
+.barra-seleccion-flotante .btn-cancelar-seleccion:hover {
+    color: var(--text-body) !important;
+    background: #F1F5F9 !important;
+}
+
+.barra-seleccion-flotante .btn-cancelar-seleccion i {
+    font-size: 0.8rem !important;
+    color: inherit !important;
+}
+
+/* ============================================================================
+   9. SIDEBAR OSCURO (#0F172A) Y TOPBAR BLANCA (#FFFFFF)
+   ============================================================================ */
+/* Estructura del Sidebar */
+.main-sidebar,
+.main-sidebar.sidebar-dark-primary,
+.main-sidebar .sidebar {
+    background-color: var(--sidebar-bg) !important;
+}
+
+.main-sidebar .brand-link {
+    background-color: var(--sidebar-bg) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    height: var(--topbar-height) !important;
+    min-height: var(--topbar-height) !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 1.25rem !important;
+}
+
+.main-sidebar .brand-link .brand-text {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+}
+
+/* Navegación del Sidebar */
+.main-sidebar .nav-sidebar>.nav-item>.nav-link,
+.main-sidebar .nav-treeview>.nav-item>.nav-link {
+    color: #CBD5E1 !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    transition: background-color 0.16s ease, color 0.16s ease !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link:hover:not(.active) {
+    background-color: var(--sidebar-surface) !important;
+    color: #F8FAFC !important;
+}
+
+.main-sidebar.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active,
+.main-sidebar.sidebar-dark-primary .nav-treeview>.nav-item>.nav-link.active {
+    background-color: rgba(74, 111, 193, 0.15) !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    border-left: 3px solid #60A5FA !important;
+}
+
+.main-sidebar.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active .nav-icon {
+    color: #93C5FD !important;
+}
+
+/* Topbar Blanca Fija */
+.main-header,
+.main-header.navbar {
+    background-color: #FFFFFF !important;
+    min-height: var(--topbar-height) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Indicador de Año Escolar en la Barra Superior */
+.anio-escolar-pill {
+    background-color: var(--navy-dark) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 10px 18px !important;
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+    color: #FFFFFF !important;
+    gap: 0.65rem !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.16) !important;
+}
+
+.anio-escolar-pill .anio-icon {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 16px !important;
+}
+
+.anio-escolar-pill .anio-label {
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-weight: 500 !important;
+    font-size: 16px !important;
+}
+
+.anio-escolar-pill .anio-years {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+.badge-status-activo {
+    background-color: #DCFCE7 !important;
+    color: #166534 !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 3px 10px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    gap: 0.4rem !important;
+}
+
+.badge-status-consultar {
+    background-color: #FEE2E2 !important;
+    color: #991B1B !important;
+    border-radius: var(--radius-pill) !important;
+    padding: 3px 10px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
+    gap: 0.4rem !important;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.dot-success {
+    background-color: var(--success);
+}
+
+.status-dot.dot-danger {
+    background-color: var(--danger);
+}
+
+.anio-divider {
+    width: 1px;
+    height: 16px;
+    background-color: rgba(255, 255, 255, 0.25);
+    display: inline-block;
+}
+
+.btn-cambiar-anio {
+    color: #DBEAFE !important;
+    background: transparent !important;
+    border: none !important;
+    text-decoration: none !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    gap: 0.4rem !important;
+    padding: 0 !important;
+}
+
+.btn-cambiar-anio:hover {
+    color: #FFFFFF !important;
+    text-decoration: none !important;
+}
+
+.btn-cambiar-anio i {
+    font-size: 14px !important;
+    color: #DBEAFE !important;
+}
+
+/* ============================================================================
+   10. MODALES MODERNOS (.modal-modern)
+   ============================================================================ */
+/* Backdrop con desenfoque moderno (estilo iOS / macOS frosted glass) */
+.modal-backdrop,
+.offcanvas-backdrop {
+    background-color: rgba(15, 23, 42, 0.5) !important;
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+    opacity: 1 !important;
+}
+
+.modal-backdrop.fade,
+.offcanvas-backdrop.fade {
+    opacity: 0 !important;
+    transition: opacity 0.25s ease-out, backdrop-filter 0.25s ease-out !important;
+}
+
+.modal-backdrop.show,
+.modal-backdrop.fade.show,
+.offcanvas-backdrop.show,
+.offcanvas-backdrop.fade.show {
+    opacity: 1 !important;
+}
+
+.modal-modern,
+.modal-content.modal-modern,
+.modal-modern.modal-content,
+.modal-modern .modal-content,
+#modalNuevoHorario .modal-content {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+    overflow: hidden !important;
+}
+
+.modal-modern .modal-header,
+.modal-content.modal-modern .modal-header,
+#modalNuevoHorario .modal-header {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    padding: 1.15rem 1.35rem !important;
+}
+
+.modal-modern .modal-header .modal-title,
+.modal-content.modal-modern .modal-header .modal-title,
+#modalNuevoHorario .modal-header .modal-title {
+    color: var(--text-dark) !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+}
+
+.modal-modern .modal-header.modal-header-view,
+.modal-content.modal-modern .modal-header.modal-header-view {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+}
+
+.modal-modern .modal-header .modal-title-view,
+.modal-content.modal-modern .modal-header .modal-title-view {
+    color: #4A6FC1 !important;
+    font-weight: 700 !important;
+    font-size: 1.35rem !important;
+}
+
+.modal-modern .modal-body,
+.modal-content.modal-modern .modal-body,
+#modalNuevoHorario .modal-body {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    padding: 1.25rem 1.35rem !important;
+}
+
+.modal-modern .modal-footer,
+.modal-content.modal-modern .modal-footer,
+#modalNuevoHorario .modal-footer {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border-top: 1px solid #F1F5F9 !important;
+    padding: 1rem 1.35rem !important;
+    gap: 0.75rem !important;
+}
+
+/* Acordeones limpios dentro de modales modernos (Roles y Permisos) */
+.modal-modern .accordion-item {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+.modal-modern .accordion-button {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.95rem !important;
+}
+
+.modal-modern .accordion-button:not(.collapsed) {
+    background-color: #FFFFFF !important;
+    color: #4A6FC1 !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+}
+
+.modal-modern .accordion-button:focus {
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.modal-modern .accordion-button::after {
+    background-size: 0.85rem !important;
+}
+
+/* Tarjetas de Selección de Permisos (Roles y Permisos Grid) */
+.permisos-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+}
+
+@media (max-width: 991px) {
+    .permisos-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .permisos-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.permiso-card {
+    display: flex !important;
+    align-items: center !important;
+    padding: 10px 14px !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    margin-bottom: 0 !important;
+    user-select: none !important;
+    min-height: 58px !important;
+}
+
+.permiso-card:hover {
+    border-color: #4A6FC1 !important;
+    background-color: #F8FAFC !important;
+    box-shadow: 0 2px 4px rgba(74, 111, 193, 0.08) !important;
+}
+
+.permiso-card:has(.form-check-input:checked) {
+    border-color: #4A6FC1 !important;
+    background-color: #EFF6FF !important;
+}
+
+.permiso-card .form-check-input {
+    width: 1.15rem !important;
+    height: 1.15rem !important;
+    min-width: 1.15rem !important;
+    margin-top: 0 !important;
+    margin-right: 0.75rem !important;
+    border-color: #CBD5E1 !important;
+    cursor: pointer !important;
+}
+
+.permiso-card .form-check-input:checked {
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+}
+
+/* Detalle de Fichas en Modales (Grid SaaS) */
+.modal-detail-label {
+    display: block !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    font-style: normal !important;
+    margin-bottom: 4px !important;
+}
+
+.modal-detail-value {
+    font-size: 14.5px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    font-style: normal !important;
+    line-height: 1.35 !important;
+    display: block !important;
+}
+
+.modal-section-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.modal-section-title i {
+    color: var(--primary-color) !important;
+    font-size: 0.95rem !important;
+}
+
+/* ============================================================================
+   11. ACCORDIONS Y DIAGNÓSTICOS DE CONFLICTOS / ERRORES
+   ============================================================================ */
+.accordion-seccion-error .accordion-button:not(.collapsed) {
+    background-color: #FEF3C7 !important;
+    color: #92400E !important;
+    box-shadow: none !important;
+}
+
+.accordion-seccion-error .accordion-button {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+.accordion-seccion-error .accordion-item {
+    border: 1px solid #FED7AA !important;
+    border-radius: var(--radius-sm) !important;
+    margin-bottom: 0.5rem !important;
+    overflow: hidden !important;
+    background: #FFFFFF !important;
+}
+
+.materia-error-item {
+    transition: background-color 0.15s ease !important;
+}
+
+.materia-error-item:hover {
+    background-color: #FFF7ED !important;
+}
+
+/* ============================================================================
+   12. BOTONES DE ACCIÓN (TRES PUNTOS) Y MENÚS DESPLEGABLES (DROPDOWNS)
+   ============================================================================ */
+/* Tarea 1: Botón de los Tres Puntos (Trigger) */
+.action-btn,
+.action-btn-dots,
+.action-btn-saas,
+.btn-action-dots {
+    width: 32px !important;
+    height: 32px !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #475569 !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease !important;
+    padding: 0 !important;
+}
+
+.action-btn:hover,
+.action-btn:focus,
+.action-btn[aria-expanded="true"],
+.action-btn-dots:hover,
+.action-btn-dots:focus,
+.action-btn-dots[aria-expanded="true"],
+.action-btn-saas:hover,
+.action-btn-saas:focus,
+.action-btn-saas[aria-expanded="true"],
+.btn-action-dots:hover,
+.btn-action-dots:focus,
+.btn-action-dots[aria-expanded="true"] {
+    background-color: #F1F5F9 !important;
+    color: #1E293B !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.action-btn i,
+.action-btn-dots i,
+.action-btn-saas i,
+.btn-action-dots i {
+    font-size: 0.95rem !important;
+    color: #475569 !important;
+    transition: color 0.15s ease !important;
+}
+
+.action-btn:hover i,
+.action-btn[aria-expanded="true"] i,
+.action-btn-dots:hover i,
+.action-btn-dots[aria-expanded="true"] i,
+.action-btn-saas:hover i,
+.action-btn-saas[aria-expanded="true"] i,
+.btn-action-dots:hover i,
+.btn-action-dots[aria-expanded="true"] i {
+    color: #1E293B !important;
+}
+
+/* Tarea 2: Contenedor del Menú Desplegable (Dropdown Menu) */
+.dropdown-menu-modern,
+.dropdown-menu-saas,
+.table-modern .dropdown-menu,
+.card-modern .dropdown-menu {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    padding: 8px !important;
+    min-width: 160px !important;
+    z-index: 9999 !important;
+}
+
+/* Tarea 3: Ítems del Menú Desplegable (General) */
+.dropdown-menu-modern .dropdown-item,
+.dropdown-menu-saas .dropdown-item,
+.dropdown-item-modern,
+.table-modern .dropdown-menu .dropdown-item,
+.card-modern .dropdown-menu .dropdown-item {
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+    border: none !important;
+    background: transparent !important;
+    width: 100% !important;
+    text-align: left !important;
+}
+
+.dropdown-menu-modern .dropdown-item:hover,
+.dropdown-menu-saas .dropdown-item:hover,
+.dropdown-item-modern:hover,
+.table-modern .dropdown-menu .dropdown-item:hover,
+.card-modern .dropdown-menu .dropdown-item:hover {
+    background-color: #F1F5F9 !important;
+    color: #1E293B !important;
+}
+
+.dropdown-menu-modern .dropdown-item i,
+.dropdown-menu-saas .dropdown-item i,
+.dropdown-item-modern i,
+.table-modern .dropdown-menu .dropdown-item i,
+.card-modern .dropdown-menu .dropdown-item i {
+    width: 16px !important;
+    font-size: 0.88rem !important;
+    text-align: center !important;
+    color: #64748B;
+    transition: color 0.15s ease !important;
+}
+
+/* Ítems Semánticos del Dropdown (Colores Vivos y Sobrios) */
+/* 1. Ver Más / Azul Institucional */
+.dropdown-item-modern.text-primary,
+.dropdown-menu-modern .dropdown-item.text-primary,
+.table-modern .dropdown-menu .dropdown-item.text-primary {
+    color: #4A6FC1 !important;
+}
+
+.dropdown-item-modern.text-primary i,
+.dropdown-menu-modern .dropdown-item.text-primary i,
+.table-modern .dropdown-menu .dropdown-item.text-primary i {
+    color: #4A6FC1 !important;
+}
+
+.dropdown-item-modern.text-primary:hover,
+.dropdown-menu-modern .dropdown-item.text-primary:hover {
+    background-color: #EFF6FF !important;
+    color: #3B5998 !important;
+}
+
+/* 2. Editar / Ámbar Advertencia (#D97706) */
+.dropdown-item-edit,
+.dropdown-item.item-edit,
+.dropdown-item-modern.item-edit,
+.dropdown-item-modern.text-warning,
+.dropdown-menu-modern .dropdown-item.item-edit,
+.dropdown-menu-modern .dropdown-item.text-warning,
+.table-modern .dropdown-menu .dropdown-item.item-edit,
+.table-modern .dropdown-menu .dropdown-item.text-warning {
+    color: #D97706 !important;
+}
+
+.dropdown-item-edit i,
+.dropdown-item.item-edit i,
+.dropdown-item-modern.item-edit i,
+.dropdown-item-modern.text-warning i,
+.dropdown-menu-modern .dropdown-item.item-edit i,
+.dropdown-menu-modern .dropdown-item.text-warning i,
+.table-modern .dropdown-menu .dropdown-item.item-edit i,
+.table-modern .dropdown-menu .dropdown-item.text-warning i {
+    color: #D97706 !important;
+}
+
+.dropdown-item-edit:hover,
+.dropdown-item.item-edit:hover,
+.dropdown-item-modern.item-edit:hover,
+.dropdown-item-modern.text-warning:hover,
+.dropdown-menu-modern .dropdown-item.item-edit:hover,
+.dropdown-menu-modern .dropdown-item.text-warning:hover,
+.table-modern .dropdown-menu .dropdown-item.item-edit:hover,
+.table-modern .dropdown-menu .dropdown-item.text-warning:hover {
+    background-color: #FEF3C7 !important;
+    color: #B45309 !important;
+}
+
+.dropdown-item-edit:hover i,
+.dropdown-item.item-edit:hover i,
+.dropdown-item-modern.item-edit:hover i,
+.dropdown-item-modern.text-warning:hover i,
+.dropdown-menu-modern .dropdown-item.item-edit:hover i,
+.dropdown-menu-modern .dropdown-item.text-warning:hover i,
+.table-modern .dropdown-menu .dropdown-item.item-edit:hover i,
+.table-modern .dropdown-menu .dropdown-item.text-warning:hover i {
+    color: #B45309 !important;
+}
+
+/* 3. Disponibilidad / Azul Oscuro (#1E3A8A) */
+.dropdown-item-modern.text-navy,
+.dropdown-menu-modern .dropdown-item.text-navy,
+.table-modern .dropdown-menu .dropdown-item.text-navy {
+    color: #1E3A8A !important;
+}
+
+.dropdown-item-modern.text-navy i,
+.dropdown-menu-modern .dropdown-item.text-navy i,
+.table-modern .dropdown-menu .dropdown-item.text-navy i {
+    color: #1E3A8A !important;
+}
+
+.dropdown-item-modern.text-navy:hover,
+.dropdown-menu-modern .dropdown-item.text-navy:hover {
+    background-color: #EFF6FF !important;
+    color: #172554 !important;
+}
+
+/* 4. Ítem Eliminar / Inactivar (Rojo Suave / Elegante #EF4444) */
+.dropdown-item-danger,
+.dropdown-item-delete,
+.dropdown-item.item-delete,
+.dropdown-item-modern.item-delete,
+.dropdown-item-modern.text-danger,
+.dropdown-menu-modern .dropdown-item.item-delete,
+.dropdown-menu-modern .dropdown-item.text-danger,
+.dropdown-menu-saas .dropdown-item.text-danger,
+.table-modern .dropdown-menu .dropdown-item.item-delete,
+.table-modern .dropdown-menu .dropdown-item.text-danger {
+    color: #EF4444 !important;
+}
+
+.dropdown-item-danger i,
+.dropdown-item-delete i,
+.dropdown-item.item-delete i,
+.dropdown-item-modern.item-delete i,
+.dropdown-item-modern.text-danger i,
+.dropdown-menu-modern .dropdown-item.item-delete i,
+.dropdown-menu-modern .dropdown-item.text-danger i,
+.dropdown-menu-saas .dropdown-item.text-danger i,
+.table-modern .dropdown-menu .dropdown-item.item-delete i,
+.table-modern .dropdown-menu .dropdown-item.text-danger i {
+    color: #EF4444 !important;
+}
+
+.dropdown-item-danger:hover,
+.dropdown-item-delete:hover,
+.dropdown-item.item-delete:hover,
+.dropdown-item-modern.item-delete:hover,
+.dropdown-item-modern.text-danger:hover,
+.dropdown-menu-modern .dropdown-item.item-delete:hover,
+.dropdown-menu-modern .dropdown-item.text-danger:hover,
+.dropdown-menu-saas .dropdown-item.text-danger:hover,
+.table-modern .dropdown-menu .dropdown-item.item-delete:hover,
+.table-modern .dropdown-menu .dropdown-item.text-danger:hover {
+    background-color: #FEF2F2 !important;
+    color: #DC2626 !important;
+}
+
+.dropdown-item-danger:hover i,
+.dropdown-item-delete:hover i,
+.dropdown-item.item-delete:hover i,
+.dropdown-item-modern.item-delete:hover i,
+.dropdown-item-modern.text-danger:hover i,
+.dropdown-menu-modern .dropdown-item.item-delete:hover i,
+.dropdown-menu-modern .dropdown-item.text-danger:hover i,
+.dropdown-menu-saas .dropdown-item.text-danger:hover i,
+.table-modern .dropdown-menu .dropdown-item.item-delete:hover i,
+.table-modern .dropdown-menu .dropdown-item.text-danger:hover i {
+    color: #DC2626 !important;
+}
+
+/* 5. Ítem Neutro / Acción Secundaria / Descarga PDF (#475569) */
+.dropdown-item-modern.text-secondary,
+.dropdown-menu-modern .dropdown-item.text-secondary,
+.dropdown-item-modern.item-pdf,
+.dropdown-menu-modern .dropdown-item.item-pdf {
+    color: #475569 !important;
+}
+
+.dropdown-item-modern.text-secondary i,
+.dropdown-menu-modern .dropdown-item.text-secondary i,
+.dropdown-item-modern.item-pdf i,
+.dropdown-menu-modern .dropdown-item.item-pdf i {
+    color: #475569 !important;
+}
+
+.dropdown-item-modern.text-secondary:hover,
+.dropdown-menu-modern .dropdown-item.text-secondary:hover,
+.dropdown-item-modern.item-pdf:hover,
+.dropdown-menu-modern .dropdown-item.item-pdf:hover {
+    background-color: #F1F5F9 !important;
+    color: #1E293B !important;
+}
+
+.dropdown-item-modern.text-secondary:hover i,
+.dropdown-menu-modern .dropdown-item.text-secondary:hover i,
+.dropdown-item-modern.item-pdf:hover i,
+.dropdown-menu-modern .dropdown-item.item-pdf:hover i {
+    color: #1E293B !important;
+}
+
+/* ============================================================================
+   BOTÓN PDF OUTLINE / SECUNDARIO DESTACADO (.btn-pdf-outline)
+   ============================================================================ */
+.btn-pdf-outline,
+.btn-outline-danger-modern {
+    background-color: #FFFFFF !important;
+    border: 1px solid #FCA5A5 !important;
+    color: #EF4444 !important;
+    border-radius: 10px !important;
+    height: 38px !important;
+    padding: 0 16px !important;
+    font-size: 0.86rem !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: none !important;
+}
+
+.btn-pdf-outline i,
+.btn-outline-danger-modern i {
+    color: #EF4444 !important;
+    font-size: 0.95rem !important;
+    transition: color 0.15s ease !important;
+}
+
+.btn-pdf-outline:hover,
+.btn-pdf-outline:focus,
+.btn-outline-danger-modern:hover,
+.btn-outline-danger-modern:focus {
+    background-color: #FEF2F2 !important;
+    border-color: #EF4444 !important;
+    color: #DC2626 !important;
+    box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.btn-pdf-outline:hover i,
+.btn-outline-danger-modern:hover i {
+    color: #DC2626 !important;
+}
+
+/* ============================================================================
+   ESTILOS DE SELECTS NATIVOS (.form-select)
+   ============================================================================ */
+select.form-select,
+.select-modern {
+    height: 42px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 8px 36px 8px 14px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    background-color: #FFFFFF !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+select.form-select:hover,
+.select-modern:hover {
+    border-color: #CBD5E1 !important;
+}
+
+select.form-select:focus,
+.select-modern:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+    outline: none !important;
+}
+
+/* Inputs Deshabilitados */
+input:disabled,
+select:disabled,
+textarea:disabled,
+.form-control:disabled,
+.form-control-modern:disabled,
+.form-select:disabled,
+select.form-select:disabled {
+    background-color: #F1F5F9 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+    border-color: #E2E8F0 !important;
+    color: #64748B !important;
+}
+
+select.form-select option {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    font-size: 14px !important;
+    padding: 8px !important;
+}
+
+select.form-select.text-center {
+    text-align: center;
+    text-align-last: center;
+}
+
+/* ============================================================================
+   ESTILOS MODERNOS PARA BOOTSTRAP-SELECT (SELECTPICKER)
+   ============================================================================ */
+
+/* 1. Contenedor del Selectpicker */
+.bootstrap-select {
+    width: 100% !important;
+}
+
+.bootstrap-select.form-control,
+.bootstrap-select.form-control-modern,
+.bootstrap-select.select-modern {
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    height: auto !important;
+}
+
+.bootstrap-select {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* 2. Botón Toggle del Selectpicker */
+.bootstrap-select>.dropdown-toggle,
+.bootstrap-select>button.btn.dropdown-toggle,
+.bootstrap-select .btn.dropdown-toggle.btn-light,
+.bootstrap-select .btn.dropdown-toggle.btn-default {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    color: #1E293B !important;
+    height: 42px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transition: all 0.2s ease-in-out !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+}
+
+/* Estados Hover, Focus y Open del Botón */
+.bootstrap-select>.dropdown-toggle:hover,
+.bootstrap-select>.dropdown-toggle:focus,
+.bootstrap-select.show>.dropdown-toggle,
+.bootstrap-select.open>.dropdown-toggle,
+.bootstrap-select .btn.dropdown-toggle:hover,
+.bootstrap-select .btn.dropdown-toggle:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+    background-color: #FFFFFF !important;
+    outline: none !important;
+}
+
+/* Texto Seleccionado y Placeholder */
+.bootstrap-select>.dropdown-toggle .filter-option {
+    display: flex !important;
+    align-items: center !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+}
+
+.bootstrap-select>.dropdown-toggle .filter-option-inner-inner {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.bootstrap-select>.dropdown-toggle .filter-option-placeholder {
+    color: #94A3B8 !important;
+    font-weight: 400 !important;
+}
+
+/* Flecha / Caret Personalizado */
+.bootstrap-select>.dropdown-toggle::after {
+    border-top: 5px solid #64748B !important;
+    border-right: 4px solid transparent !important;
+    border-left: 4px solid transparent !important;
+    border-bottom: 0 !important;
+    margin-left: auto !important;
+    transition: transform 0.2s ease-in-out !important;
+    vertical-align: middle !important;
+}
+
+.bootstrap-select.show>.dropdown-toggle::after,
+.bootstrap-select.open>.dropdown-toggle::after {
+    transform: rotate(180deg) !important;
+}
+
+/* Estado Deshabilitado */
+.bootstrap-select.disabled>.dropdown-toggle,
+.bootstrap-select>.dropdown-toggle.disabled,
+.bootstrap-select .btn.dropdown-toggle:disabled {
+    background-color: #F8FAFC !important;
+    color: #94A3B8 !important;
+    border-color: #E2E8F0 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+/* 3. Menú Desplegable */
+.bootstrap-select .dropdown-menu {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 8px !important;
+    background-color: #FFFFFF !important;
+    z-index: 9999 !important;
+    font-size: 14px !important;
+    min-width: 100% !important;
+}
+
+/* Lista interna */
+.bootstrap-select .dropdown-menu .inner {
+    padding: 0 !important;
+    max-height: 260px !important;
+}
+
+.bootstrap-select .dropdown-menu ul {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.bootstrap-select .dropdown-menu li {
+    margin-bottom: 2px !important;
+}
+
+.bootstrap-select .dropdown-menu li:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Elementos / Opciones de la lista */
+.bootstrap-select .dropdown-menu .dropdown-item,
+.bootstrap-select .dropdown-menu li a {
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    color: #1E293B !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: all 0.15s ease !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+}
+
+/* Hover y Focus de Opciones */
+.bootstrap-select .dropdown-menu .dropdown-item:hover,
+.bootstrap-select .dropdown-menu .dropdown-item:focus,
+.bootstrap-select .dropdown-menu li a:hover,
+.bootstrap-select .dropdown-menu li a:focus,
+.bootstrap-select .dropdown-menu li.active:not(.selected) a {
+    background-color: #EFF6FF !important;
+    color: #1E3A8A !important;
+}
+
+/* Opción Seleccionada */
+.bootstrap-select .dropdown-menu .dropdown-item.selected,
+.bootstrap-select .dropdown-menu .dropdown-item.active,
+.bootstrap-select .dropdown-menu li.selected a,
+.bootstrap-select .dropdown-menu li.selected.active a {
+    background-color: #EFF6FF !important;
+    color: #1E3A8A !important;
+    font-weight: 600 !important;
+}
+
+/* Icono de Check en Opción Seleccionada */
+.bootstrap-select .dropdown-menu .dropdown-item .check-mark,
+.bootstrap-select .dropdown-menu li a .check-mark {
+    color: #4A6FC1 !important;
+    margin-left: auto !important;
+    font-size: 13px !important;
+}
+
+/* Deshabilitados en Lista */
+.bootstrap-select .dropdown-menu li.disabled a {
+    color: #94A3B8 !important;
+    cursor: not-allowed !important;
+    background-color: transparent !important;
+}
+
+/* 4. Buscador interno del Selectpicker (data-live-search="true") */
+.bootstrap-select .bs-searchbox {
+    padding: 4px 6px 8px 6px !important;
+}
+
+.bootstrap-select .bs-searchbox input.form-control {
+    border-radius: 8px !important;
+    border: 1px solid #E5E7EB !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    background-color: #F8FAFC !important;
+    color: #1E293B !important;
+    height: 38px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.bootstrap-select .bs-searchbox input.form-control:focus {
+    border-color: #4A6FC1 !important;
+    background-color: #FFFFFF !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+}
+
+/* Sin resultados */
+.bootstrap-select .dropdown-menu .no-results {
+    padding: 10px 12px !important;
+    color: #64748B !important;
+    font-size: 13px !important;
+    background-color: transparent !important;
+}
+
+/* 5. Correcciones de Z-Index y Desbordamiento (Overflow) */
+.bootstrap-select .dropdown-menu {
+    z-index: 9999 !important;
+}
+
+.modal-modern,
+.modal-content.modal-modern {
+    overflow: visible !important;
+}
+
+.modal-modern .modal-body,
+.modal-body:has(.bootstrap-select) {
+    overflow: visible !important;
+}
+
+/* Permitir scroll cuando el modal sea explícitamente scrollable */
+.modal-dialog-scrollable .modal-content.modal-modern,
+.modal-dialog-scrollable.modal-modern,
+.modal-dialog-scrollable .modal-modern {
+    overflow: hidden !important;
+    max-height: calc(100vh - 3.5rem) !important;
+}
+
+.modal-dialog-scrollable .modal-modern .modal-body,
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: calc(100vh - 200px) !important;
+}
+
+.modal-modern .modal-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+}
+
+.modal-modern .modal-footer {
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+}
+
+/* Prevención de recorte en tablas responsivas */
+.table-responsive:has(.bootstrap-select.show),
+.table-responsive:has(.dropdown.show),
+.table-responsive:has(.dropdown-menu.show) {
+    overflow: visible !important;
+}
+
+.table-modern {
+    overflow: visible !important;
+}
+
+/* ==========================================================================
+   6. Utilidades Responsivas y Media Queries (Mobile & Desktop)
+   ========================================================================== */
+
+/* Soporte para clases responsivas Bootstrap 4/5 */
+@media (min-width: 768px) {
+    .w-md-auto {
+        width: auto !important;
+    }
+
+    .hero-header .btn-hero-white,
+    .hero-header-horario .btn-hero-white,
+    .btn-hero-white.w-md-auto,
+    .btn-hero-white {
+        width: auto !important;
+    }
+
+    .card-header-modern .search-wrapper {
+        width: 260px !important;
+    }
+}
+
+@media (min-width: 576px) {
+    .w-sm-auto {
+        width: auto !important;
+    }
+}
+
+/* Ajustes exclusivos para móvil y tablet pequeña (< 768px) */
+@media (max-width: 767.98px) {
+    .anio-escolar-pill {
+        padding: 6px 12px !important;
+        font-size: 13px !important;
+        gap: 0.4rem !important;
+        border-radius: var(--radius-sm) !important;
+    }
+
+    .anio-escolar-pill .anio-icon,
+    .anio-escolar-pill .anio-years,
+    .btn-cambiar-anio {
+        font-size: 13px !important;
+    }
+
+    /* Hero Header en móvil */
+    .hero-header,
+    .content-header-modern.hero-header-horario,
+    .content-header-modern.hero-header-modern {
+        padding: 1.25rem 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .btn-hero-white.w-100 {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .anio-escolar-pill {
+        padding: 5px 8px !important;
+        font-size: 12px !important;
+    }
+
+    .anio-escolar-pill .anio-years {
+        font-size: 12px !important;
+    }
+}
+
+/* ============================================================================
+   BOTONES GLOBALES DE TOOLBAR (ESTANDARIZADOS)
+   ============================================================================ */
+
+/* Botón de Filtros Global */
+.btn-filter-global {
+    background-color: #FFFFFF !important;
+    border: 1px solid #d1d5db !important;
+    color: #1E293B !important;
+    font-weight: 600 !important;
+    padding: 0.625rem 1.05rem !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-filter-global:hover {
+    background-color: #F8FAFC !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Botón de PDF Global (Estilo Docentes) */
+.btn-pdf-global,
+a.btn-pdf-global,
+button.btn-pdf-global {
+    background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
+    border: 1px solid #FCA5A5 !important;
+    color: #EF4444 !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+}
+
+.btn-pdf-global:hover,
+a.btn-pdf-global:hover,
+button.btn-pdf-global:hover {
+    background-color: #FEF2F2 !important;
+    background: #FEF2F2 !important;
+    border-color: #EF4444 !important;
+    color: #DC2626 !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 2px rgba(239, 68, 68, 0.1) !important;
+}
+
+.btn-pdf-global i,
+a.btn-pdf-global i {
+    color: #EF4444 !important;
+}
+
+/* ============================================================================
+   ESTRUCTURA DE PANELES LATERALES / OFFCANVAS (BOOTSTRAP 5 COMPATIBLE)
+   ============================================================================ */
+.offcanvas {
+    position: fixed !important;
+    bottom: 0 !important;
+    z-index: 1045 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-width: 100% !important;
+    color: #1e293b !important;
+    visibility: hidden !important;
+    background-color: #ffffff !important;
+    background-clip: padding-box !important;
+    outline: 0 !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s !important;
+}
+
+.offcanvas-end {
+    top: 0 !important;
+    right: 0 !important;
+    width: 400px !important;
+    max-width: 90vw !important;
+    border-left: 1px solid #e2e8f0 !important;
+    transform: translateX(100%) !important;
+    box-shadow: -10px 0 35px rgba(15, 23, 42, 0.12) !important;
+}
+
+.offcanvas.show {
+    visibility: visible !important;
+    transform: none !important;
+}
+
+.offcanvas-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 1.25rem 1.5rem !important;
+}
+
+.offcanvas-title {
+    margin-bottom: 0 !important;
+    line-height: 1.5 !important;
+    font-size: 1.15rem !important;
+}
+
+.offcanvas-body {
+    flex-grow: 1 !important;
+    padding: 1.25rem 1.5rem !important;
+    overflow-y: auto !important;
+}
+
+.offcanvas-footer {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Botón de cierre para modales y offcanvas moderno */
+.btn-close {
+    box-sizing: content-box !important;
+    width: 0.9em !important;
+    height: 0.9em !important;
+    padding: 0.35em !important;
+    color: #475569 !important;
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2364748b'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+    border: 0 !important;
+    border-radius: 0.375rem !important;
+    opacity: 0.65 !important;
+    cursor: pointer !important;
+    transition: opacity 0.15s ease, transform 0.15s ease !important;
+}
+
+.btn-close:hover {
+    opacity: 1 !important;
+    transform: scale(1.08) !important;
+}
+
+/* ============================================================================
+   PANEL DE FILTROS / OFFCANVAS SAAS (ESTILO HORARIOS)
+   ============================================================================ */
+.filter-panel-saas {
+    width: 420px !important;
+    max-width: 92vw !important;
+    background-color: #ffffff !important;
+    border-left: none !important;
+    border-radius: 20px 0 0 20px !important;
+    box-shadow: -12px 0 36px rgba(15, 23, 42, 0.12) !important;
+    overflow: hidden !important;
+}
+
+.filter-panel-header {
+    padding: 1.35rem 1.5rem 1.1rem !important;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+
+.filter-panel-header .offcanvas-title {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.01em !important;
+}
+
+.filter-panel-title-icon {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    background-color: #EFF6FF !important;
+    color: #4A6FC1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+
+.filter-panel-body {
+    padding: 1.25rem 1.5rem !important;
+    overflow-y: auto !important;
+    background-color: #ffffff !important;
+}
+
+.filter-section-label {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #64748b !important;
+}
+
+.filter-chips-section {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 0.85rem 1rem !important;
+}
+
+.filter-chips-list {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+}
+
+.filter-chips-empty {
+    font-size: 0.82rem !important;
+    color: #94a3b8 !important;
+}
+
+.filter-chip-saas {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.45rem !important;
+    background-color: #EFF6FF !important;
+    color: #1E3A8A !important;
+    border: 1px solid #DBEAFE !important;
+    border-radius: 9999px !important;
+    padding: 0.32rem 0.55rem 0.32rem 0.8rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+}
+
+.filter-chip-remove {
+    width: 18px !important;
+    height: 18px !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background-color: rgba(74, 111, 193, 0.14) !important;
+    color: #4A6FC1 !important;
+    font-size: 0.9rem !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.filter-chip-remove:hover {
+    background-color: #4A6FC1 !important;
+    color: #ffffff !important;
+}
+
+.btn-clear-chips {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+}
+
+.btn-clear-chips:hover {
+    color: #0f172a !important;
+    text-decoration: underline !important;
+}
+
+.filter-field-group {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.filter-field-label {
+    display: block !important;
+    font-size: 0.84rem !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    margin-bottom: 0.45rem !important;
+}
+
+.filter-field-label i {
+    color: #4A6FC1 !important;
+}
+
+.select-modern,
+.filter-select-saas {
+    border-radius: 10px !important;
+    border: 1.5px solid #E2E8F0 !important;
+    padding: 0.6rem 2.25rem 0.6rem 0.95rem !important;
+    font-size: 0.88rem !important;
+    color: #1E293B !important;
+    background-color: #ffffff !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.select-modern:focus,
+.filter-select-saas:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.18) !important;
+    outline: none !important;
+}
+
+.filter-panel-footer {
+    padding: 1.1rem 1.5rem !important;
+    background-color: #ffffff !important;
+    border-top: 1px solid #f1f5f9 !important;
+}
+
+/* ============================================================================
+   ESTILOS DE FORMULARIO MODERNO (REPRESENTANTE / PROGENITORES)
+   ============================================================================ */
+
+/* 1. Tarjetas con Patrón Clásico (Encabezado de Color Pastel + Cuerpo Blanco Puro) */
+.form-card-modern {
+    background-color: #FFFFFF !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+    transition: all 0.2s ease;
+}
+
+/* Madre: Borde rosa suave (#FBCFE8), Encabezado rosa claro (#FDF2F8), Cuerpo blanco (#FFFFFF) */
+#seccion-madre,
+.card-section-madre {
+    background-color: #FFFFFF !important;
+    border: 1px solid #FBCFE8 !important;
+    border-radius: 12px !important;
+}
+
+#seccion-madre .card-header-modern,
+.card-section-madre .card-header-modern,
+.card-header-madre {
+    background-color: #FDF2F8 !important;
+    border-bottom: 1px solid #FBCFE8 !important;
+    border-radius: 12px 12px 0 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#seccion-madre .card-body,
+.card-section-madre .card-body {
+    background-color: #FFFFFF !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* Padre: Borde azul suave (#BAE6FD), Encabezado azul claro (#F0F9FF), Cuerpo blanco (#FFFFFF) */
+#seccion-padre,
+.card-section-padre {
+    background-color: #FFFFFF !important;
+    border: 1px solid #BAE6FD !important;
+    border-radius: 12px !important;
+}
+
+#seccion-padre .card-header-modern,
+.card-section-padre .card-header-modern,
+.card-header-padre {
+    background-color: #F0F9FF !important;
+    border-bottom: 1px solid #BAE6FD !important;
+    border-radius: 12px 12px 0 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#seccion-padre .card-body,
+.card-section-padre .card-body {
+    background-color: #FFFFFF !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* Representante Legal: Borde verde suave (#BBF7D0), Encabezado verde claro (#F0FDF4), Cuerpo blanco (#FFFFFF) */
+#seccion-representante-legal,
+.card-section-representante {
+    background-color: #FFFFFF !important;
+    border: 1px solid #BBF7D0 !important;
+    border-radius: 12px !important;
+}
+
+#seccion-representante-legal .card-header-modern,
+.card-section-representante .card-header-modern,
+.card-header-legal {
+    background-color: #F0FDF4 !important;
+    border-bottom: 1px solid #BBF7D0 !important;
+    border-radius: 12px 12px 0 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#seccion-representante-legal .card-body,
+.card-section-representante .card-body {
+    background-color: #FFFFFF !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* 2. Estilo de los Inputs: Blanco Puro (#FFFFFF) con borde gris muy sutil (#E5E7EB) */
+.form-card-modern input.form-control,
+.form-card-modern select.form-select,
+.form-card-modern textarea.form-control,
+.form-card-modern .bootstrap-select>.btn.dropdown-toggle,
+.form-card-modern .bootstrap-select>button.btn.dropdown-toggle,
+.main-container input.form-control,
+.main-container select.form-select,
+.main-container textarea.form-control,
+.main-container .bootstrap-select>.btn.dropdown-toggle,
+input.form-control-saas,
+select.form-select-saas,
+.form-control-modern-white {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    color: #1E293B !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    padding: 0.55rem 0.85rem !important;
+    height: 42px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.form-card-modern textarea.form-control,
+.main-container textarea.form-control {
+    height: auto !important;
+}
+
+.form-card-modern input[type="date"],
+.main-container input[type="date"] {
+    color: #1E293B !important;
+}
+
+/* Evitar doble borde o sombras extrañas en selects y bootstrap-select */
+.form-card-modern .bootstrap-select,
+.main-container .bootstrap-select {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+.form-card-modern .bootstrap-select>.btn.dropdown-toggle,
+.main-container .bootstrap-select>.btn.dropdown-toggle {
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.form-card-modern .bootstrap-select .filter-option,
+.main-container .bootstrap-select .filter-option {
+    text-align: left !important;
+}
+
+.form-card-modern .form-group,
+.main-container .form-group {
+    width: 100% !important;
+}
+
+/* Focus por sección: borde del color de la sección + sombra suave */
+/* Focus en Madre (Rosa) */
+#seccion-madre input.form-control:focus,
+#seccion-madre select.form-select:focus,
+#seccion-madre textarea.form-control:focus,
+#seccion-madre .bootstrap-select>.btn.dropdown-toggle:focus,
+#seccion-madre .bootstrap-select.show>.btn.dropdown-toggle,
+.card-section-madre input.form-control:focus,
+.card-section-madre select.form-select:focus,
+.card-section-madre textarea.form-control:focus,
+.card-section-madre .bootstrap-select>.btn.dropdown-toggle:focus,
+.card-section-madre .bootstrap-select.show>.btn.dropdown-toggle {
+    background-color: #FFFFFF !important;
+    border-color: #EC4899 !important;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2) !important;
+    outline: none !important;
+}
+
+/* Focus en Padre (Azul) */
+#seccion-padre input.form-control:focus,
+#seccion-padre select.form-select:focus,
+#seccion-padre textarea.form-control:focus,
+#seccion-padre .bootstrap-select>.btn.dropdown-toggle:focus,
+#seccion-padre .bootstrap-select.show>.btn.dropdown-toggle,
+.card-section-padre input.form-control:focus,
+.card-section-padre select.form-select:focus,
+.card-section-padre textarea.form-control:focus,
+.card-section-padre .bootstrap-select>.btn.dropdown-toggle:focus,
+.card-section-padre .bootstrap-select.show>.btn.dropdown-toggle {
+    background-color: #FFFFFF !important;
+    border-color: #38BDF8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+    outline: none !important;
+}
+
+/* Focus en Representante Legal (Verde) */
+#seccion-representante-legal input.form-control:focus,
+#seccion-representante-legal select.form-select:focus,
+#seccion-representante-legal textarea.form-control:focus,
+#seccion-representante-legal .bootstrap-select>.btn.dropdown-toggle:focus,
+#seccion-representante-legal .bootstrap-select.show>.btn.dropdown-toggle,
+.card-section-representante input.form-control:focus,
+.card-section-representante select.form-select:focus,
+.card-section-representante textarea.form-control:focus,
+.card-section-representante .bootstrap-select>.btn.dropdown-toggle:focus,
+.card-section-representante .bootstrap-select.show>.btn.dropdown-toggle {
+    background-color: #FFFFFF !important;
+    border-color: #34D399 !important;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25) !important;
+    outline: none !important;
+}
+
+/* Placeholders limpios en gris claro, sin cursiva */
+.form-card-modern input::placeholder,
+.form-card-modern textarea::placeholder,
+.form-card-modern .bootstrap-select .filter-option-placeholder,
+.main-container input::placeholder,
+.main-container textarea::placeholder,
+.main-container .bootstrap-select .filter-option-placeholder {
+    color: #9CA3AF !important;
+    font-style: normal !important;
+    font-weight: 400 !important;
+    opacity: 1 !important;
+}
+
+/* 3. Títulos y Labels (Estilo SaaS Pixsellz) */
+.form-card-modern .card-header-modern,
+.card-section-form .card-header-modern {
+    justify-content: flex-start !important;
+}
+
+.card-modern>.card-header-modern {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.section-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Badges circulares por Sección sobre el encabezado pastel */
+.section-icon-badge.badge-madre {
+    background-color: #FFFFFF !important;
+    color: #9D174D !important;
+    box-shadow: 0 1px 3px rgba(157, 23, 77, 0.12) !important;
+}
+
+.section-icon-badge.badge-padre {
+    background-color: #FFFFFF !important;
+    color: #0369A1 !important;
+    box-shadow: 0 1px 3px rgba(3, 105, 161, 0.12) !important;
+}
+
+.section-icon-badge.badge-representante {
+    background-color: #FFFFFF !important;
+    color: #065F46 !important;
+    box-shadow: 0 1px 3px rgba(6, 95, 70, 0.12) !important;
+}
+
+/* Labels pequeños, oscuros (#374151), en negrita y sin cursiva */
+.form-card-modern label,
+.form-label-modern,
+.form-label-section-title {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    font-style: normal !important;
+    margin-bottom: 0.35rem !important;
+    display: inline-block;
+}
+
+.form-label-modern i {
+    color: #64748B;
+    font-size: 0.8rem;
+    margin-right: 3px;
+}
+
+.required-badge {
+    color: #EF4444 !important;
+    font-weight: 700 !important;
+    margin-left: 2px;
+}
+
+/* Sub-encabezados Limpios (SIN banner de fondo) */
+.form-section-header {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 0 !important;
+    padding: 0 0 6px 0 !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-section-header h5 {
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    margin-bottom: 0 !important;
+    letter-spacing: 0.2px;
+}
+
+.form-section-header i {
+    font-size: 1rem !important;
+}
+
+/* Colores de acento para ícono y texto del sub-encabezado */
+.form-section-header.header-madre i {
+    color: #DB2777 !important;
+}
+
+.form-section-header.header-madre h5 {
+    color: #9D174D !important;
+}
+
+.form-section-header.header-padre i {
+    color: #0284C7 !important;
+}
+
+.form-section-header.header-padre h5 {
+    color: #0369A1 !important;
+}
+
+.form-section-header.header-representante i {
+    color: #059669 !important;
+}
+
+.form-section-header.header-representante h5 {
+    color: #065F46 !important;
+}
+
+/* 4. Pills de Selección de Estado (Presente / Ausente) con color */
+.state-pill-item {
+    cursor: pointer;
+    margin-bottom: 0;
+    user-select: none;
+    position: relative;
+    display: inline-block;
+}
+
+.state-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid #D1D5DB;
+    background-color: #FFFFFF;
+    color: #475569;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+}
+
+.state-pill-btn:hover {
+    background-color: #F8FAFC;
+    border-color: #94A3B8;
+    color: #1E293B;
+}
+
+/* Presente (cuando está seleccionado): Fondo verde claro (#DCFCE7), texto verde oscuro (#166534), borde verde (#86EFAC) */
+.state-pill-item input[type="radio"]:checked+.state-pill-btn.pill-presente,
+.state-pill-item:has(input[type="radio"]:checked) .state-pill-btn.pill-presente,
+.state-pill-btn.pill-presente.active {
+    background-color: #DCFCE7 !important;
+    border-color: #86EFAC !important;
+    color: #166534 !important;
+    box-shadow: 0 1px 3px rgba(22, 101, 52, 0.15) !important;
+}
+
+.state-pill-item input[type="radio"]:checked+.state-pill-btn.pill-presente i,
+.state-pill-item:has(input[type="radio"]:checked) .state-pill-btn.pill-presente i,
+.state-pill-btn.pill-presente.active i {
+    color: #16A34A !important;
+}
+
+/* Ausente (cuando está seleccionado): Fondo rojo claro (#FEE2E2), texto rojo oscuro (#991B1B), borde rojo (#FCA5A5) */
+.state-pill-item input[type="radio"]:checked+.state-pill-btn.pill-ausente,
+.state-pill-item:has(input[type="radio"]:checked) .state-pill-btn.pill-ausente,
+.state-pill-btn.pill-ausente.active {
+    background-color: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
+    color: #991B1B !important;
+    box-shadow: 0 1px 3px rgba(153, 27, 27, 0.15) !important;
+}
+
+.state-pill-item input[type="radio"]:checked+.state-pill-btn.pill-ausente i,
+.state-pill-item:has(input[type="radio"]:checked) .state-pill-btn.pill-ausente i,
+.state-pill-btn.pill-ausente.active i {
+    color: #DC2626 !important;
+}
+
+/* 5. Selector de Tipo de Representante */
+.tipo-rep-alert {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 1.25rem 1.5rem !important;
+    box-shadow: none !important;
+}
+
+.tipo-rep-option {
+    background-color: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 0.75rem 1.15rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.tipo-rep-option:hover {
+    background-color: #F8FAFC;
+    border-color: #CBD5E1;
+}
+
+.tipo-rep-option:has(input[type="radio"]:checked) {
+    background-color: #EFF6FF !important;
+    border-color: #4A6FC1 !important;
+    color: #1E3A8A !important;
+    box-shadow: 0 2px 5px rgba(74, 111, 193, 0.15) !important;
+}
+
+.tipo-rep-option:has(input[type="radio"]:checked) label {
+    font-weight: 600 !important;
+    color: #1E3A8A !important;
+}
+
+/* 6. Ancho Completo del Formulario de Representantes y Grid de Filas */
+.main-container,
+#representante-form,
+.card-section-madre,
+.card-section-padre,
+.card-section-representante {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.card-section-madre .form-label,
+.card-section-padre .form-label,
+.card-section-representante .form-label {
+    white-space: nowrap !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+    margin-bottom: 6px !important;
+}
+
+/* Forzar al Selectpicker a respetar el ancho de la columna sin cortarse */
+.card-modern,
+.card-modern .card-body,
+.card-modern .card-body-modern,
+.main-container .card,
+.main-container .card-modern {
+    overflow: visible !important;
+}
+
+.bootstrap-select,
+.bootstrap-select>.dropdown-toggle {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.bootstrap-select .dropdown-menu {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    left: 0 !important;
+    right: auto !important;
+    overflow-x: hidden !important;
+}
+
+.bootstrap-select .dropdown-menu .inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+.bootstrap-select .dropdown-menu li,
+.bootstrap-select .dropdown-menu li a,
+.bootstrap-select .dropdown-menu .dropdown-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+}
+
+@media (max-width: 768px) {
+    div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Opciones de tipo de representante cuando están deshabilitadas */
+.tipo-rep-option:has(input:disabled) {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+}
+
+.tipo-rep-option input:disabled+label {
+    cursor: not-allowed !important;
+    color: #94A3B8 !important;
+}
+
+/* ============================================================================
+   FICHA DE SOLO LECTURA (RESUMEN REPRESENTANTE)
+   ============================================================================ */
+.summary-card-readonly {
+    background-color: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-left: 4px solid #4A6FC1 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+.summary-card-readonly .data-label {
+    font-size: 12px !important;
+    color: #64748B !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.4px !important;
+    margin-bottom: 2px !important;
+    display: block !important;
+}
+
+.summary-card-readonly .data-value {
+    font-size: 14px !important;
+    color: #1E293B !important;
+    font-weight: 600 !important;
+    word-break: break-word !important;
+    display: block !important;
+}
+
+.summary-card-readonly .section-subheading {
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    margin-bottom: 0.85rem !important;
+}
+
+.summary-card-readonly .section-subheading i {
+    color: #4A6FC1 !important;
+    font-size: 1rem !important;
+}
+
+/* Grilla Responsiva de 5 Columnas (Descripciones Físicas) */
+@media (max-width: 992px) {
+    .grid-5-cols-responsive {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-5-cols-responsive {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .grid-5-cols-responsive {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ============================================================================
+   FICHAS DE LECTURA LIMPIAS (PROSECUCIÓN Y ESTUDIANTE) - ESTILO SAAS
+   ============================================================================ */
+.info-block {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0 !important;
+}
+
+.info-block-header {
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.info-block-header i {
+    color: #4A6FC1 !important;
+    font-size: 0.95rem !important;
+}
+
+.info-block-header span {
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+    color: #1E293B !important;
+}
+
+.info-key,
+.info-label {
+    font-size: 12px !important;
+    color: #64748B !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+    margin-bottom: 3px !important;
+    display: block !important;
+}
+
+.info-val,
+.info-value {
+    font-size: 14px !important;
+    color: #1E293B !important;
+    font-weight: 500 !important;
+    word-break: break-word !important;
+    display: block !important;
+}
+
+.info-item {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.4rem 0 !important;
+}
+
+.info-item:hover {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+.section-header {
+    border-bottom: 1px solid #E2E8F0 !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.section-header i {
+    color: #4A6FC1 !important;
+    font-size: 1.1rem !important;
+}
+
+.section-header h4 {
+    color: #1E293B !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+}
+
+.representante-card {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.25rem !important;
+}
+
+.legal-info-section {
+    border-top: 1px solid #E2E8F0 !important;
+    margin-top: 1.25rem !important;
+    padding-top: 1rem !important;
+}
+
+/* ============================================================================
+   ESTILOS PASTEL SAAS PARA PASOS Y REPRESENTANTES (PROSECUCIÓN / INSCRIPCIÓN)
+   ============================================================================ */
+
+/* Tarjetas de Pasos con Borde Izquierdo y Header Pastel */
+.card-step-blue,
+.card-step-purple,
+.card-step-green {
+    overflow: hidden !important;
+    border-radius: 12px !important;
+}
+
+.card-step-blue>.card-header-modern,
+.card-step-purple>.card-header-modern,
+.card-step-green>.card-header-modern {
+    margin: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 8px !important;
+}
+
+/* Regla forzada para selects nativos SaaS (.form-select, .select-modern) */
+select.form-select,
+select.select-modern {
+    background-color: #FFFFFF !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 16px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 8px 36px 8px 12px !important;
+    height: 42px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+}
+
+select.form-select:focus,
+select.select-modern:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.15) !important;
+    outline: none !important;
+}
+
+.card-step-blue>.card-header-modern,
+.card-header-pastel-blue {
+    background-color: var(--pastel-blue-bg) !important;
+    border-bottom: 1px solid rgba(79, 70, 229, 0.15) !important;
+}
+
+.card-step-blue .header-icon-pastel {
+    background-color: #FFFFFF !important;
+    color: var(--pastel-blue-text) !important;
+    box-shadow: 0 1px 3px rgba(55, 48, 163, 0.15) !important;
+}
+
+.card-step-purple {
+    border-left: 4px solid var(--pastel-purple-border) !important;
+}
+
+.card-step-purple>.card-header-modern,
+.card-header-pastel-purple {
+    background-color: var(--pastel-purple-bg) !important;
+    border-bottom: 1px solid rgba(147, 51, 234, 0.15) !important;
+}
+
+.card-step-purple .header-icon-pastel,
+.header-icon-pastel-purple {
+    background-color: #FFFFFF !important;
+    color: var(--pastel-purple-text) !important;
+    box-shadow: 0 1px 3px rgba(107, 33, 168, 0.15) !important;
+}
+
+.card-step-green {
+    border-left: 4px solid var(--pastel-green-border) !important;
+}
+
+.card-step-green>.card-header-modern,
+.card-header-pastel-green {
+    background-color: var(--pastel-green-bg) !important;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+}
+
+.card-step-green .header-icon-pastel,
+.header-icon-pastel-green {
+    background-color: #FFFFFF !important;
+    color: var(--pastel-green-text) !important;
+    box-shadow: 0 1px 3px rgba(6, 95, 70, 0.15) !important;
+}
+
+/* Fichas de Representantes Pastel */
+.representante-card-padre {
+    border-top: 3px solid var(--pastel-blue-border) !important;
+}
+
+.representante-header-padre {
+    background-color: var(--pastel-blue-bg) !important;
+    color: var(--pastel-blue-text) !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 0.65rem 1rem !important;
+    margin: -1.5rem -1.5rem 1.25rem -1.5rem !important;
+    border-bottom: 1px solid rgba(79, 70, 229, 0.15) !important;
+}
+
+.representante-header-padre i {
+    color: var(--pastel-blue-text) !important;
+}
+
+.representante-card-madre {
+    border-top: 3px solid var(--pastel-pink-border) !important;
+}
+
+.representante-header-madre {
+    background-color: var(--pastel-pink-bg) !important;
+    color: var(--pastel-pink-text) !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 0.65rem 1rem !important;
+    margin: -1.5rem -1.5rem 1.25rem -1.5rem !important;
+    border-bottom: 1px solid rgba(236, 72, 153, 0.15) !important;
+}
+
+.representante-header-madre i {
+    color: var(--pastel-pink-text) !important;
+}
+
+.representante-card-legal {
+    border-top: 3px solid var(--pastel-green-border) !important;
+}
+
+.representante-header-legal {
+    background-color: var(--pastel-green-bg) !important;
+    color: var(--pastel-green-text) !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 0.65rem 1rem !important;
+    margin: -1.5rem -1.5rem 1.25rem -1.5rem !important;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+}
+
+.representante-header-legal i {
+    color: var(--pastel-green-text) !important;
+}
+
+/* Hover dinámico pastel en checkboxes de materias */
+.checkbox-item-modern {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 0.75rem 1rem !important;
+    transition: all 0.18s ease-in-out !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.checkbox-item-modern:hover {
+    background-color: var(--pastel-blue-bg) !important;
+    border-color: var(--pastel-blue-border) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 5px rgba(55, 48, 163, 0.08) !important;
+}
+
+.checkbox-item-modern:hover strong {
+    color: var(--pastel-blue-text) !important;
+}
+
+.checkbox-item-modern.materia-actual:hover {
+    background-color: var(--pastel-purple-bg) !important;
+    border-color: var(--pastel-purple-border) !important;
+    box-shadow: 0 2px 5px rgba(107, 33, 168, 0.08) !important;
+}
+
+.checkbox-item-modern.materia-actual:hover strong {
+    color: var(--pastel-purple-text) !important;
+}
+
+.checkbox-item-modern.border-warning:hover {
+    background-color: var(--pastel-yellow-bg) !important;
+    border-color: var(--pastel-yellow-border) !important;
+}
+
+/* ============================================================================
+   ESTILOS PARA PESTAÑAS (TABS) MODERNAS EN MODALES SAAS Y SHOWMODAL
+   ============================================================================ */
+.nav-tabs-modern {
+    border-bottom: 2px solid #E2E8F0 !important;
+    display: flex !important;
+    gap: 8px !important;
+    padding-bottom: 0 !important;
+}
+
+.nav-tabs-modern .nav-item {
+    margin-bottom: -2px !important;
+}
+
+.nav-tabs-modern .nav-link {
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    color: #64748B !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    padding: 0.75rem 1.25rem !important;
+    background: transparent !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.nav-tabs-modern .nav-link i {
+    font-size: 0.95rem !important;
+    color: #94A3B8 !important;
+    transition: color 0.2s ease !important;
+}
+
+.nav-tabs-modern .nav-link:hover {
+    color: #4A6FC1 !important;
+    border-bottom-color: #CBD5E1 !important;
+    background: transparent !important;
+}
+
+.nav-tabs-modern .nav-link:hover i {
+    color: #4A6FC1 !important;
+}
+
+.nav-tabs-modern .nav-link.active {
+    color: #4A6FC1 !important;
+    background: transparent !important;
+    border-bottom: 2px solid #4A6FC1 !important;
+}
+
+.nav-tabs-modern .nav-link.active i {
+    color: #4A6FC1 !important;
+}
+
+/* Correcciones de texto para modales: Legibilidad y tonos oscuros (#1E293B) */
+.modal-body-view .detail-value,
+.modal-body-view .detail-value.fw-bold,
+.modal-modern .detail-value,
+.modal-modern .detail-value.fw-bold {
+    color: #1E293B !important;
+    text-decoration: none !important;
+}
+
+.modal-body-view .detail-label,
+.modal-modern .detail-label {
+    color: #64748B !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+}
+
+.modal-body-view .detail-label i,
+.modal-modern .detail-label i {
+    color: #64748B !important;
+}
+
+/* Tarjetas Académicas en Modales (Colores Pastel con texto oscuro legible) */
+.card-pastel-stat-blue {
+    background-color: var(--pastel-blue-bg) !important;
+    border: 1px solid rgba(79, 70, 229, 0.2) !important;
+    border-radius: 10px !important;
+}
+
+.card-pastel-stat-blue .detail-label {
+    color: var(--pastel-blue-text) !important;
+}
+
+.card-pastel-stat-blue .detail-label i {
+    color: var(--pastel-blue-text) !important;
+}
+
+.card-pastel-stat-blue .detail-value {
+    color: #1E293B !important;
+}
+
+.card-pastel-stat-green {
+    background-color: var(--pastel-green-bg) !important;
+    border: 1px solid rgba(16, 185, 129, 0.25) !important;
+    border-radius: 10px !important;
+}
+
+.card-pastel-stat-green .detail-label {
+    color: var(--pastel-green-text) !important;
+}
+
+.card-pastel-stat-green .detail-label i {
+    color: var(--pastel-green-text) !important;
+}
+
+.card-pastel-stat-green .detail-value {
+    color: #1E293B !important;
+}
+
+.card-pastel-stat-yellow {
+    background-color: var(--pastel-yellow-bg) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    border-radius: 10px !important;
+}
+
+.card-pastel-stat-yellow .detail-label {
+    color: var(--pastel-yellow-text) !important;
+}
+
+.card-pastel-stat-yellow .detail-label i {
+    color: var(--pastel-yellow-text) !important;
+}
+
+.card-pastel-stat-yellow .detail-value {
+    color: #1E293B !important;
+}
+
+/* Cabeceras de Fichas de Representantes en Modal (Pastel) */
+.card-header-modal-padre {
+    background-color: var(--pastel-blue-bg) !important;
+    color: var(--pastel-blue-text) !important;
+    border-bottom: 1px solid rgba(79, 70, 229, 0.15) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-padre h6 {
+    color: var(--pastel-blue-text) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-padre i {
+    color: var(--pastel-blue-text) !important;
+}
+
+.card-header-modal-madre {
+    background-color: var(--pastel-pink-bg) !important;
+    color: var(--pastel-pink-text) !important;
+    border-bottom: 1px solid rgba(236, 72, 153, 0.15) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-madre h6 {
+    color: var(--pastel-pink-text) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-madre i {
+    color: var(--pastel-pink-text) !important;
+}
+
+.card-header-modal-legal {
+    background-color: var(--pastel-green-bg) !important;
+    color: var(--pastel-green-text) !important;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+    font-weight: 700 !important;
+}
+
+.card-header-modal-legal h6 {
+    color: var(--pastel-green-text) !important;
+    font-weight: 700 !important;
+}
+
+/* ============================================================================
+   ESTILO FLOATING LABEL SAAS (STRIPE / SHOPIFY STYLE)
+   ============================================================================ */
+.floating-group {
+    position: relative;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.floating-group .form-control,
+.floating-group .form-select,
+.floating-group select.form-select,
+.floating-group input.form-control {
+    width: 100% !important;
+    height: 56px !important;
+    /* Campos más altos */
+    padding-top: 24px !important;
+    /* Espacio para el label arriba */
+    padding-bottom: 8px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 6px !important;
+    background-color: #FFFFFF !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+    line-height: 1.25 !important;
+}
+
+.floating-group textarea.form-control,
+.floating-group textarea {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 90px !important;
+    padding-top: 26px !important;
+    padding-bottom: 8px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 6px !important;
+    background-color: #FFFFFF !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #1E293B !important;
+    box-shadow: none !important;
+}
+
+.floating-group .form-control:focus,
+.floating-group .form-select:focus,
+.floating-group select.form-select:focus,
+.floating-group input.form-control:focus,
+.floating-group textarea:focus {
+    border-color: #4A6FC1 !important;
+    /* Azul institucional */
+    box-shadow: 0 0 0 1px #4A6FC1 !important;
+    outline: none !important;
+}
+
+.floating-group label,
+.floating-group .form-label,
+.floating-group .form-label-modern {
+    position: absolute !important;
+    top: 8px !important;
+    left: 12px !important;
+    font-size: 11px !important;
+    color: #64748B !important;
+    /* Gris medio */
+    font-weight: 500 !important;
+    pointer-events: none !important;
+    /* Permite hacer clic en el input a través del label */
+    transition: 0.2s ease all !important;
+    margin-bottom: 0 !important;
+    text-transform: none !important;
+    letter-spacing: 0.2px !important;
+    line-height: 1 !important;
+    z-index: 2 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+/* Efecto cuando el input está vacío y NO está enfocado (Label centrado) */
+.floating-group:has(input.form-control:placeholder-shown:not(:focus)) label {
+    top: 18px !important;
+    font-size: 14px !important;
+    color: #94A3B8 !important;
+}
+
+/* Cuando se enfoca (Label pequeño arriba en azul) */
+.floating-group:has(.form-control:focus) label,
+.floating-group:has(.form-select:focus) label,
+.floating-group:has(textarea:focus) label {
+    color: #4A6FC1 !important;
+    top: 8px !important;
+    font-size: 11px !important;
+}
+
+/* Cuando tiene texto o es un select o date (Label pequeño arriba en gris) */
+.floating-group:has(.form-control:not(:placeholder-shown)) label,
+.floating-group:has(input[type="date"]) label,
+.floating-group:has(.form-select) label,
+.floating-group:has(textarea:not(:placeholder-shown)) label {
+    top: 8px !important;
+    font-size: 11px !important;
+}
+
+/* Ajuste especial para selects */
+.floating-group .form-select,
+.floating-group select.form-select {
+    background-position: right 12px center !important;
+    padding-right: 36px !important;
+}
+
+/* Campos deshabilitados dentro de floating-group */
+.floating-group .form-control:disabled,
+.floating-group .form-select:disabled {
+    background-color: #F8FAFC !important;
+    color: #64748B !important;
+    cursor: not-allowed !important;
+}
+
+/* Mensajes de error en floating-group */
+.floating-group .invalid-feedback,
+.floating-group .invalid-feedback-modern {
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+/* Radio buttons y Checkboxes nítidos estilo SaaS */
+.form-check-input {
+    width: 1.15em !important;
+    height: 1.15em !important;
+    margin-top: 0.15em !important;
+    vertical-align: top !important;
+    border: 1.5px solid #94A3B8 !important;
+    cursor: pointer !important;
+}
+
+.form-check-input:checked {
+    background-color: #4A6FC1 !important;
+    border-color: #4A6FC1 !important;
+}
+
+.form-check-input:focus {
+    border-color: #4A6FC1 !important;
+    box-shadow: 0 0 0 3px rgba(74, 111, 193, 0.2) !important;
+}
+
+.form-check-label {
+    cursor: pointer !important;
+    color: #1E293B !important;
+    font-weight: 500 !important;
+}
+
+.card-header-modal-legal i {
+    color: var(--pastel-green-text) !important;
+}
+
+.checkbox-item-modern.border-warning,
+.checkbox-item-modern.bg-warning-light {
+    background: #FFFBEB !important;
+    background-color: #FFFBEB !important;
+    border: 1px solid #FDE68A !important;
+}
+
+.checkbox-item-modern.border-warning:hover {
+    background: #FEF3C7 !important;
+    background-color: #FEF3C7 !important;
+    border-color: #F59E0B !important;
+}
+
+/* Utilidades de Bloqueo e Interactividad (Livewire Loading) */
+.pe-none {
+    pointer-events: none !important;
+}
+
+.opacity-50 {
+    opacity: 0.5 !important;
+}
+
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+.checkbox-item-modern * {
+    cursor: pointer !important;
+}
+
+/* Píldoras Pastel de Tipo de Representante */
+.badge-pill-progenitor {
+    background-color: var(--pastel-blue-bg, #E0E7FF) !important;
+    color: var(--pastel-blue-text, #3730A3) !important;
+    font-weight: 600 !important;
+    padding: 0.38rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    border: 1px solid transparent !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+.badge-pill-legal {
+    background-color: var(--pastel-purple-bg, #F3E8FF) !important;
+    color: var(--pastel-purple-text, #6B21A8) !important;
+    font-weight: 600 !important;
+    padding: 0.38rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    border: 1px solid transparent !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+/* Píldoras Pastel Universales */
+.badge-pastel-blue {
+    background-color: var(--pastel-blue-bg, #E0E7FF) !important;
+    color: var(--pastel-blue-text, #3730A3) !important;
+    font-weight: 700 !important;
+    padding: 0.35rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    border: 1px solid rgba(79, 70, 229, 0.1) !important;
+}
+
+.badge-pastel-purple {
+    background-color: var(--pastel-purple-bg, #F3E8FF) !important;
+    color: var(--pastel-purple-text, #6B21A8) !important;
+    font-weight: 600 !important;
+    padding: 0.35rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    border: 1px solid rgba(147, 51, 234, 0.1) !important;
+}
+
+.badge-pastel-green {
+    background-color: var(--pastel-green-bg, #DCFCE7) !important;
+    color: var(--pastel-green-text, #166534) !important;
+    font-weight: 600 !important;
+    padding: 0.35rem 0.85rem !important;
+    border-radius: 50px !important;
+    font-size: 0.82rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    border: 1px solid rgba(22, 101, 52, 0.1) !important;
+}
+
+/* Botón de Acción Ícono Limpio (Sin borde, fondo transparente) */
+.action-btn,
+.btn-action-icon,
+.btn-action-view {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    color: #64748B !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.action-btn:hover,
+.btn-action-icon:hover,
+.btn-action-view:hover {
+    background-color: #F1F5F9 !important;
+    color: #3B82F6 !important;
+    border: none !important;
+}
+
+.action-btn:focus,
+.btn-action-icon:focus,
+.btn-action-view:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.action-btn i,
+.btn-action-icon i,
+.btn-action-view i {
+    font-size: 1rem !important;
+}
+
+/* ============================================================================
+   ESTADO ACORDEÓN CON PERMISOS ASIGNADOS
+   ============================================================================ */
+.accordion-item.has-permissions {
+    background-color: #E2E8F0 !important; /* Gris más oscuro y visible */
+    border-left: 4px solid #4A6FC1 !important;
+}
+
+.accordion-item.has-permissions > .accordion-header > .accordion-button {
+    background-color: #E2E8F0 !important;
+    color: #1E293B !important;
+}

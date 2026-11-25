@@ -1,0 +1,475 @@
+/* =========================================================
+   SIDEBAR SAAS MODERNO - AZUL PIZARRA OSCURO (#0F172A)
+   Unificado con la barra superior y paleta #4A6FC1
+   ========================================================= */
+
+:root {
+    --sidebar-width: 280px;
+    --sidebar-mini-width: 70px;
+    --topbar-height: 66px;
+}
+
+/* Mantener fondo claro en body, wrapper y navbar (el oscuro es exclusivo del sidebar) */
+body,
+.wrapper {
+    background-color: #F4F6F9 !important;
+}
+
+/* 1. Estructura principal AdminLTE: Sidebar (z-index 1020) + Topbar fija a la derecha (z-index 1030) */
+.main-sidebar,
+.main-sidebar.sidebar-dark-primary,
+.main-sidebar .sidebar {
+    background-color: #0F172A !important;
+}
+
+.main-sidebar,
+.main-sidebar::before {
+    width: var(--sidebar-width) !important;
+}
+
+.main-sidebar,
+.layout-fixed .main-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    z-index: 1020 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.14) !important;
+    transition: width 0.3s ease-in-out, margin-left 0.3s ease-in-out !important;
+}
+
+.main-sidebar .sidebar {
+    height: calc(100vh - var(--topbar-height)) !important;
+    overflow-y: auto !important;
+    padding-bottom: 1.5rem !important;
+}
+
+.main-header,
+.main-header.navbar {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: var(--sidebar-width) !important;
+    margin-left: 0 !important;
+    width: auto !important;
+    background-color: #FFFFFF !important;
+    min-height: var(--topbar-height) !important;
+    z-index: 1030 !important;
+    transition: left 0.3s ease-in-out, margin-left 0.3s ease-in-out !important;
+}
+
+/* Botón hamburguesa limpio sin fondo ni bordes */
+.main-header .nav-link[data-widget="pushmenu"],
+.main-header .nav-link[data-widget="pushmenu"]:hover,
+.main-header .nav-link[data-widget="pushmenu"]:focus,
+.main-header .nav-link[data-widget="pushmenu"]:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: #475569 !important;
+    padding: 0.45rem 0.65rem !important;
+}
+
+.main-header .nav-link[data-widget="pushmenu"]:hover {
+    color: #0F172A !important;
+}
+
+.content-wrapper {
+    background-color: #F4F6F9;
+    margin-top: var(--topbar-height) !important;
+    padding-top: 12px !important;
+    transition: margin-left 0.3s ease-in-out !important;
+}
+
+.content-wrapper > .content-header {
+    padding-top: 4px !important;
+    padding-bottom: 0.75rem !important;
+}
+
+.main-footer {
+    transition: margin-left 0.3s ease-in-out !important;
+}
+
+@media (min-width: 768px) {
+    body:not(.sidebar-collapse) .main-header,
+    body:not(.sidebar-collapse) .main-header.navbar {
+        left: var(--sidebar-width) !important;
+        right: 0 !important;
+        margin-left: 0 !important;
+        width: auto !important;
+    }
+
+    body:not(.sidebar-collapse) .content-wrapper,
+    body:not(.sidebar-collapse) .main-footer {
+        margin-left: var(--sidebar-width) !important;
+        width: auto !important;
+    }
+
+    body.sidebar-collapse .main-sidebar,
+    body.sidebar-collapse .main-sidebar::before,
+    body.sidebar-collapse .main-sidebar:hover,
+    body.sidebar-collapse .main-sidebar.sidebar-focused {
+        width: var(--sidebar-mini-width) !important;
+        margin-left: 0 !important;
+    }
+
+    body.sidebar-collapse .main-header,
+    body.sidebar-collapse .main-header.navbar {
+        left: var(--sidebar-mini-width) !important;
+        right: 0 !important;
+        margin-left: 0 !important;
+        width: auto !important;
+    }
+
+    body.sidebar-collapse .content-wrapper,
+    body.sidebar-collapse .main-footer {
+        margin-left: var(--sidebar-mini-width) !important;
+        width: auto !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .main-header,
+    .main-header.navbar {
+        left: 0 !important;
+        right: 0 !important;
+        margin-left: 0 !important;
+        width: auto !important;
+    }
+
+    .content-wrapper,
+    .main-footer {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    body:not(.sidebar-open) .main-sidebar {
+        margin-left: -280px !important;
+    }
+
+    body.sidebar-open .main-sidebar {
+        z-index: 1040 !important;
+    }
+}
+
+/* 2. Logo / Marca superior (altura alineada con la barra blanca) */
+.main-sidebar .brand-link {
+    width: 100% !important;
+    height: var(--topbar-height) !important;
+    min-height: var(--topbar-height) !important;
+    box-sizing: border-box !important;
+    background-color: #0F172A !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    text-decoration: none !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0 1.25rem !important;
+    transition: background-color 0.2s ease;
+}
+
+.main-sidebar .brand-link:hover,
+.main-sidebar .brand-link:focus {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    text-decoration: none !important;
+}
+
+.main-sidebar .brand-link .brand-icon-saas {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(74, 111, 193, 0.22);
+    border: 1px solid rgba(96, 165, 250, 0.35);
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.main-sidebar .brand-link .brand-text,
+.main-sidebar .brand-link .brand-text b,
+.main-sidebar .brand-link .brand-text strong {
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    font-size: 1.02rem !important;
+    letter-spacing: -0.01em;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+
+/* 3. Buscador interno del Sidebar */
+.main-sidebar .nav-sidebar .form-inline {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0.5rem 0.85rem 0.65rem !important;
+    margin: 0 !important;
+}
+
+.main-sidebar .nav-sidebar .form-inline .input-group {
+    width: 100% !important;
+    background-color: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.main-sidebar .nav-sidebar .form-inline .input-group:focus-within {
+    border-color: rgba(74, 111, 193, 0.65) !important;
+    box-shadow: 0 0 0 2px rgba(74, 111, 193, 0.22) !important;
+}
+
+.main-sidebar .form-control-sidebar {
+    background-color: transparent !important;
+    border: none !important;
+    color: #E2E8F0 !important;
+    font-size: 0.87rem !important;
+    padding: 0.5rem 0.75rem !important;
+    box-shadow: none !important;
+}
+
+.main-sidebar .form-control-sidebar::placeholder {
+    color: #94A3B8 !important;
+    opacity: 1 !important;
+}
+
+.main-sidebar .btn-sidebar {
+    background-color: transparent !important;
+    border: none !important;
+    color: #94A3B8 !important;
+    padding: 0.45rem 0.75rem !important;
+}
+
+.main-sidebar .btn-sidebar:hover {
+    color: #FFFFFF !important;
+}
+
+/* Resultados del buscador lateral */
+.main-sidebar .sidebar-search-results .list-group {
+    background-color: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+}
+
+.main-sidebar .sidebar-search-results .list-group-item {
+    background-color: transparent !important;
+    color: #CBD5E1 !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.main-sidebar .sidebar-search-results .list-group-item:hover {
+    background-color: rgba(74, 111, 193, 0.18) !important;
+    color: #FFFFFF !important;
+}
+
+/* 4. Categorías / Headers */
+.main-sidebar.sidebar-dark-primary .nav-header,
+.main-sidebar .nav-sidebar .nav-header {
+    color: #64748B !important;
+    background-color: transparent !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    padding: 0.55rem 1.25rem 0.35rem !important;
+    margin-top: 16px !important;
+}
+
+/* 5. Ítems del menú (normal) */
+.main-sidebar .nav-sidebar .nav-item {
+    margin-bottom: 5px !important;
+}
+
+.main-sidebar .nav-sidebar > .nav-item > .nav-link,
+.main-sidebar .nav-treeview > .nav-item > .nav-link {
+    width: calc(100% - 20px) !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    color: #CBD5E1 !important;
+    border-radius: 8px !important;
+    margin: 0 10px !important;
+    padding: 10px 16px !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    border-left: 3px solid transparent !important;
+    box-shadow: none !important;
+    position: relative;
+    transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease !important;
+}
+
+.main-sidebar .nav-treeview > .nav-item > .nav-link {
+    padding: 10px 16px 10px 36px !important;
+    font-size: 0.87rem !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link .nav-icon {
+    color: #64748B !important;
+    font-size: 0.98rem !important;
+    width: 1.5rem !important;
+    margin-right: 10px !important;
+    flex-shrink: 0 !important;
+    transition: color 0.16s ease !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link p {
+    color: inherit !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    white-space: normal !important;
+    line-height: 1.3 !important;
+    gap: 0.5rem !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link .right {
+    position: static !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    color: #64748B !important;
+    transition: transform 0.2s ease, color 0.16s ease !important;
+}
+
+/* 6. Estado Hover */
+.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover:not(.active),
+.main-sidebar.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link:hover:not(.active) {
+    background-color: #1E293B !important;
+    color: #F8FAFC !important;
+    transform: none !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link:hover:not(.active) .nav-icon {
+    color: #CBD5E1 !important;
+    transform: none !important;
+}
+
+/* 7. Estado Activo (SaaS translúcido + borde 3px azul brillante) */
+.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+.main-sidebar.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
+    background-color: rgba(74, 111, 193, 0.15) !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    border-left: 3px solid #60A5FA !important;
+    box-shadow: none !important;
+}
+
+.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active:hover,
+.main-sidebar.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active:hover {
+    background-color: rgba(74, 111, 193, 0.22) !important;
+    color: #FFFFFF !important;
+    transform: none !important;
+}
+
+.main-sidebar .nav-sidebar .nav-link.active .nav-icon {
+    color: #93C5FD !important;
+}
+
+/* Anular pseudo-elemento morado de admin-custom.css */
+.main-sidebar .nav-link.active::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* 8. Submenú padre abierto (sin fondo resaltado, flecha hacia arriba) */
+.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link:not(.active),
+.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item.menu-is-opening > .nav-link:not(.active) {
+    background-color: transparent !important;
+    color: #F1F5F9 !important;
+    border-left-color: transparent !important;
+}
+
+.main-sidebar.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link:not(.active):hover {
+    background-color: #1E293B !important;
+}
+
+.main-sidebar .nav-sidebar > .nav-item.menu-open > .nav-link .right,
+.main-sidebar .nav-sidebar > .nav-item.menu-is-opening > .nav-link .right {
+    transform: rotate(90deg) !important;
+    color: #94A3B8 !important;
+}
+
+/* 9. Estado Colapsado (Solo Íconos - 70px limpio) */
+@media (min-width: 768px) {
+    body.sidebar-collapse .main-sidebar .brand-link,
+    body.sidebar-collapse .main-sidebar:hover .brand-link {
+        width: 70px !important;
+        justify-content: center !important;
+        padding: 0.9rem 0 !important;
+        gap: 0 !important;
+    }
+
+    body.sidebar-collapse .main-sidebar .brand-link .brand-text,
+    body.sidebar-collapse .main-sidebar:hover .brand-link .brand-text {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    body.sidebar-collapse .main-sidebar .nav-header,
+    body.sidebar-collapse .main-sidebar:hover .nav-header,
+    body.sidebar-collapse .main-sidebar .form-inline,
+    body.sidebar-collapse .main-sidebar:hover .form-inline,
+    body.sidebar-collapse .main-sidebar .sidebar-search-results,
+    body.sidebar-collapse .main-sidebar .nav-treeview {
+        display: none !important;
+    }
+
+    body.sidebar-collapse .main-sidebar .nav-sidebar > .nav-item > .nav-link,
+    body.sidebar-collapse .main-sidebar:hover .nav-sidebar > .nav-item > .nav-link {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 48px !important;
+        height: 44px !important;
+        margin: 4px auto !important;
+        padding: 0 !important;
+    }
+
+    body.sidebar-collapse .main-sidebar .nav-sidebar .nav-link p,
+    body.sidebar-collapse .main-sidebar:hover .nav-sidebar .nav-link p,
+    body.sidebar-collapse .main-sidebar .nav-sidebar .nav-link span,
+    body.sidebar-collapse .main-sidebar .nav-sidebar .nav-link .right,
+    body.sidebar-collapse .main-sidebar .nav-sidebar .nav-link .nav-arrow {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    body.sidebar-collapse .main-sidebar .nav-sidebar > .nav-item > .nav-link .nav-icon,
+    body.sidebar-collapse .main-sidebar:hover .nav-sidebar > .nav-item > .nav-link .nav-icon {
+        margin: 0 !important;
+        width: auto !important;
+        font-size: 1.1rem !important;
+        line-height: 1 !important;
+        text-align: center !important;
+    }
+}
+
+/* Scrollbar del sidebar acorde al fondo oscuro */
+.main-sidebar .sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.main-sidebar .sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.main-sidebar .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 999px;
+}
+
+.main-sidebar .sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.45);
+}
+

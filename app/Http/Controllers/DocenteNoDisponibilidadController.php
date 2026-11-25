@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DocenteIndisponibilidad;
 use App\Models\Docente;
 use App\Models\Persona;
-use App\Models\AnioEscolar;
+use App\Support\AnioEscolarSeleccionado;
 use App\Enums\Dia;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -28,8 +28,9 @@ class DocenteNoDisponibilidadController extends Controller
                 });
             }
 
-            if ($request->has('anio_escolar') && !empty($request->anio_escolar)) {
-                $query->where('anio_escolar_id', $request->anio_escolar);
+            $anioEscolarId = $request->input('anio_escolar', AnioEscolarSeleccionado::id());
+            if ($anioEscolarId) {
+                $query->where('anio_escolar_id', $anioEscolarId);
             }
 
             $noDisponibilidades = $query->get()->map(function($item) {

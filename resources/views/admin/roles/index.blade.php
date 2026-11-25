@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
-
+    <link rel="stylesheet" href="{{ asset('css/design-system.css') }}?v={{ @filemtime(public_path('css/design-system.css')) }}">
 @stop
 
 @section('title', 'Gestión de Roles y Permisos')
@@ -26,9 +26,9 @@
 
             {{-- Botón que abre la ventana modal para crear un nuevo rol --}}
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrear"
+                <button type="button" class="btn-primary-modern" data-bs-toggle="modal" data-bs-target="#modalCrear"
                     title="Nuevo Rol">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus me-1"></i>
                     <span>Nuevo Rol</span>
                 </button>
             @endif

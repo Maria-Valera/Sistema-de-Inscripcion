@@ -16,7 +16,8 @@ class AnioEscolarSeeder extends Seeder
         $anios = [
             ['inicio_anio_escolar' => '2023-09-01', 'cierre_anio_escolar' => '2024-06-01', 'status' => 'Inactivo'],
             ['inicio_anio_escolar' => '2024-09-01', 'cierre_anio_escolar' => '2025-06-01', 'status' => 'Inactivo'],
-            ['inicio_anio_escolar' => '2025-09-01', 'cierre_anio_escolar' => '2026-06-01', 'status' => 'Activo'],
+            ['inicio_anio_escolar' => '2025-09-01', 'cierre_anio_escolar' => '2026-06-01', 'status' => 'Inactivo'],
+            ['inicio_anio_escolar' => '2026-09-01', 'cierre_anio_escolar' => '2027-07-31', 'status' => 'Activo'],
         ];
 
         foreach ($anios as $anio) {

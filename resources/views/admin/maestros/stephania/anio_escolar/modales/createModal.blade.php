@@ -1,23 +1,25 @@
-<div class="modal fade" id="modalCrearAnioEscolar" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalCrearAnioEscolar" data-bs-backdrop="static" data-backdrop="static" data-bs-keyboard="false" data-keyboard="false" tabindex="-1" aria-labelledby="modalCrearAnioEscolarLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content modal-modern shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
 
-            {{-- Cabecera Compacta en Índigo --}}
+            {{-- Cabecera con Degradado Azul / Morado (Estilo Lapsos / Autoridades Firmantes) --}}
             <div class="modal-header-create py-3 px-4 d-flex align-items-center" style="background: linear-gradient(135deg, var(--purple, #5b6ee1), var(--purple-dark, #4a5ad4)); border-bottom: none;">
-                <div class="modal-icon-create" style="width: 40px; height: 40px; min-width: 40px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); color: #ffffff; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; margin: 0;">
+                <div class="modal-icon-create" style="width: 42px; height: 42px; min-width: 42px; border-radius: 10px; background: rgba(255, 255, 255, 0.2); color: #ffffff; font-size: 1.15rem; display: flex; align-items: center; justify-content: center; margin: 0;">
                     <i class="fas fa-calendar-plus"></i>
                 </div>
                 <div class="ml-3 me-auto">
-                    <h5 class="modal-title-create mb-0" style="font-size: 1.15rem; font-weight: 700; color: #ffffff;">Nuevo Año Escolar</h5>
+                    <h5 class="modal-title-create mb-0" id="modalCrearAnioEscolarLabel" style="font-size: 1.15rem; font-weight: 700; color: #ffffff;">Nuevo Año Escolar</h5>
                     <small class="text-white-50" style="font-size: 0.8rem;">Apertura o registro de un período lectivo</small>
                 </div>
-                <button type="button" class="btn-close-modal text-white ml-auto" data-bs-dismiss="modal" aria-label="Cerrar" style="background: transparent; border: none; font-size: 1.1rem; opacity: 0.8;">
+                <button type="button" class="btn-close-modal text-white ml-auto" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Cerrar" style="background: transparent; border: none; font-size: 1.1rem; opacity: 0.85; cursor: pointer;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
             <form action="{{ route('admin.anio-escolar.store') }}" method="POST" id="formCrearAnioEscolar">
                 @csrf
+                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+
                 <div class="modal-body-create p-4">
                     <div class="row g-3">
                         {{-- Inicio Año Escolar --}}
@@ -114,14 +116,13 @@
                     </div>
                 </div>
 
-                {{-- Pie de Modal --}}
+                {{-- Pie de Modal (Estilo Lapsos / Autoridades Firmantes) --}}
                 <div class="modal-footer-create py-3 px-4 d-flex justify-content-end align-items-center border-top" style="background: #f8fafc; gap: 0.75rem;">
-                    <button type="button" class="btn btn-light btn-modal-cancel border px-4 py-2" data-bs-dismiss="modal" style="border-radius: 8px; font-weight: 600;">
-                        Cancelar
+                    <button type="button" class="btn btn-light btn-modal-cancel border px-4 py-2" data-bs-dismiss="modal" data-dismiss="modal" style="border-radius: 8px; font-weight: 600;">
+                        <i class="fas fa-times mr-1"></i> Cancelar
                     </button>
                     <button type="submit" class="btn btn-primary btn-modal-save px-4 py-2" id="btn_guardar_anio_crear" style="border-radius: 8px; font-weight: 600; background: var(--purple, #5b6ee1); border-color: var(--purple, #5b6ee1);">
-                        <i class="fas fa-save mr-1 me-1"></i>
-                        Guardar Año Escolar
+                        <i class="fas fa-save mr-1 me-1"></i> Guardar Año Escolar
                     </button>
                 </div>
             </form>
@@ -141,6 +142,24 @@
         const infoDuracion = modalCrear.querySelector('#info_duracion_crear');
         const textoDuracion = modalCrear.querySelector('#texto_duracion_crear');
         const btnGuardar = modalCrear.querySelector('#btn_guardar_anio_crear');
+        const formCrear = modalCrear.querySelector('#formCrearAnioEscolar');
+
+        // Garantizar token CSRF antes de enviar (incluso si fue manipulado en el DOM o enviado por JS)
+        if (formCrear) {
+            formCrear.addEventListener('submit', function (e) {
+                const tokenInputs = formCrear.querySelectorAll('input[name="_token"]');
+                const metaToken = document.querySelector('meta[name="csrf-token"]');
+                const csrfValor = metaToken ? metaToken.getAttribute('content') : null;
+
+                if (csrfValor) {
+                    tokenInputs.forEach(input => {
+                        if (!input.value) {
+                            input.value = csrfValor;
+                        }
+                    });
+                }
+            });
+        }
 
         function validarFechasCrear() {
             if (!inputInicio || !inputCierre) return;
@@ -178,7 +197,7 @@
         if (inputCierre) inputCierre.addEventListener('change', validarFechasCrear);
 
         // Al abrir modal, si están vacías, sugerir fechas estándar del ciclo venezolano (Septiembre a Junio)
-        const modalTriggerEvents = ['show.bs.modal'];
+        const modalTriggerEvents = ['show.bs.modal', 'shown.bs.modal'];
         modalTriggerEvents.forEach(evt => {
             modalCrear.addEventListener(evt, function () {
                 if (!inputInicio.value && !inputCierre.value) {
@@ -192,6 +211,20 @@
                 validarFechasCrear();
             });
         });
+
+        // Soporte para jQuery modal de Bootstrap 4 si está disponible
+        if (typeof window.$ !== 'undefined' && typeof window.$.fn.modal !== 'undefined') {
+            window.$(modalCrear).on('show.bs.modal', function () {
+                if (!inputInicio.value && !inputCierre.value) {
+                    const hoy = new Date();
+                    const anioActual = hoy.getFullYear();
+                    const mesActual = hoy.getMonth();
+                    const anioInicio = mesActual >= 7 ? anioActual : anioActual - 1;
+                    inputInicio.value = `${anioInicio}-09-01`;
+                    inputCierre.value = `${anioInicio + 1}-06-30`;
+                }
+                validarFechasCrear();
+            });
+        }
     });
 </script>
-

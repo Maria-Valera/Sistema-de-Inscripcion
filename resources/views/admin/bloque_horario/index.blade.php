@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="{{ asset('css/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal-styles.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
-
+    <link rel="stylesheet" href="{{ asset('css/horario-pilot.css') }}">
 @stop
 
 @section('title', 'Gestión de Bloques Horarios')
@@ -22,9 +22,9 @@
                 </div>
             </div>
             @if (\App\Support\AnioEscolarSeleccionado::esActual())
-                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearBloqueHorario"
+                <button type="button" class="btn-primary-modern" data-bs-toggle="modal" data-bs-target="#modalCrearBloqueHorario"
                     title="Nuevo Bloque Horario">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus me-1"></i>
                     <span>Nuevo Bloque Horario</span>
                 </button>
             @endif

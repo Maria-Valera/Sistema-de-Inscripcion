@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Dia;
-use App\Models\AnioEscolar;
 use App\Support\AnioEscolarSeleccionado;
 use App\Models\AreaFormacion;
 use App\Models\AreaFormacionPosicion;
@@ -21,61 +20,13 @@ class PosicionMateriaController extends Controller
     ) {}
 
     /**
-     * Muestra la interfaz de configuración de posiciones pedagógicas por materia.
+     * Muestra la vista unificada de configuración posicionada en la pestaña de Posiciones por Materia.
      */
     public function index(Request $request): View
     {
-        $anioActivo = AnioEscolarSeleccionado::modelo();
+        $data = app(ConfiguracionHorarioController::class)->buildUnifiedViewData($request, 'posiciones');
 
-        $areas = AreaFormacion::where('status', true)
-            ->orderBy('nombre_area_formacion', 'asc')
-            ->get();
-
-        $grados = Grado::where('status', true)
-            ->orderBy('numero_grado', 'asc')
-            ->get();
-
-        $configuracion = $anioActivo ? $this->configuracionService->actual($anioActivo->id) : null;
-        $numeroBloques = $configuracion ? (int) $configuracion->numero_bloques : 8;
-        $bloques = $configuracion ? $this->configuracionService->bloques($configuracion) : collect();
-
-        $dias = Dia::cases();
-
-        $areaId = $request->query('area_id', $areas->first()?->id);
-        $gradoId = $request->query('grado_id');
-        if ($gradoId === '' || $gradoId === '0') {
-            $gradoId = null;
-        }
-
-        $posicionesMap = [];
-        if ($areaId) {
-            $posiciones = AreaFormacionPosicion::where('area_formacion_id', $areaId)
-                ->where(function ($q) use ($gradoId) {
-                    if ($gradoId !== null) {
-                        $q->where('grado_id', $gradoId);
-                    } else {
-                        $q->whereNull('grado_id');
-                    }
-                })
-                ->get();
-
-            foreach ($posiciones as $pos) {
-                $diaVal = $pos->dia instanceof Dia ? $pos->dia->value : (int) $pos->dia;
-                $posicionesMap[$diaVal . '_' . $pos->bloque] = $pos->tipo;
-            }
-        }
-
-        return view('admin.horario.posiciones', compact(
-            'anioActivo',
-            'areas',
-            'grados',
-            'dias',
-            'numeroBloques',
-            'bloques',
-            'areaId',
-            'gradoId',
-            'posicionesMap'
-        ));
+        return view('admin.horario.configuracion', $data);
     }
 
     /**
